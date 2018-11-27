@@ -1,0 +1,6 @@
+-IMFREEX/include
+-Ilib/Meschach/
+-Ilib/gpc
+-Ilib/efsflib/lib/include
+-Ilib/clipped_voronoi/lib/include
+-IMFREEX/include

@@ -1,0 +1,1038 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"in",
+				"inc\t#include \"…\""
+			],
+			[
+				"gp",
+				"gpc_polygon"
+			],
+			[
+				"sf",
+				"shape_function_container\tshape_function_container"
+			],
+			[
+				"p",
+				"phi\tVEC * phi"
+			],
+			[
+				"nu",
+				"number_of_points\tint number_of_points"
+			],
+			[
+				"num",
+				"num_neighbours\tint num_neighbours"
+			],
+			[
+				"neg",
+				"neighbours_new\tIVEC * neighbours_new"
+			],
+			[
+				"n",
+				"neighbours\tIVEC * neighbours"
+			],
+			[
+				"distance",
+				"distance\tdouble distance"
+			],
+			[
+				"max",
+				"max_distance\tdouble max_distance"
+			],
+			[
+				"m",
+				"mfree\tmeshfreeDomain * mfree"
+			],
+			[
+				"dis",
+				"distance_min\tdouble distance_min"
+			],
+			[
+				"dist",
+				"distance_min\tdouble distance_min"
+			],
+			[
+				"di",
+				"di"
+			],
+			[
+				"scni",
+				"scni"
+			],
+			[
+				"mass",
+				"mass_vector"
+			],
+			[
+				"scn",
+				"scni"
+			],
+			[
+				"stress",
+				"stressVoigt"
+			],
+			[
+				"F_n",
+				"F_n_1"
+			],
+			[
+				"numn",
+				"numnode"
+			],
+			[
+				"disp_",
+				"disp_inc"
+			],
+			[
+				"disp",
+				"disp_r"
+			],
+			[
+				"no",
+				"nodalDisp"
+			],
+			[
+				"nodes",
+				"nodes_original_coords"
+			],
+			[
+				"efg",
+				"efgBlock"
+			],
+			[
+				"crit",
+				"critLambdaBar"
+			],
+			[
+				"trace",
+				"traceD"
+			],
+			[
+				"j",
+				"Jacobian"
+			],
+			[
+				"tra",
+				"traceD"
+			],
+			[
+				"min",
+				"minSR"
+			],
+			[
+				"bu",
+				"bulk_viscosity"
+			],
+			[
+				"sat",
+				"stateOld"
+			],
+			[
+				"pb",
+				"pb1"
+			],
+			[
+				"trae",
+				"trace_l"
+			],
+			[
+				"sb",
+				"Sb_old"
+			],
+			[
+				"Sb_",
+				"Sb_old"
+			],
+			[
+				"temp",
+				"temp1"
+			],
+			[
+				"eigvec",
+				"eigVecD"
+			],
+			[
+				"inter",
+				"intermediate1"
+			],
+			[
+				"eigvecv",
+				"eigVecVs"
+			],
+			[
+				"mat",
+				"matParams"
+			],
+			[
+				"eigv",
+				"eigVecVs"
+			],
+			[
+				"S_c",
+				"Sc_n_1v"
+			],
+			[
+				"eigVe",
+				"eigVecV"
+			],
+			[
+				"eigve",
+				"eigVecD"
+			],
+			[
+				"eig",
+				"eigVecVp"
+			],
+			[
+				"lam",
+				"lambda1max"
+			],
+			[
+				"lamb",
+				"lambda2max"
+			],
+			[
+				"lambda",
+				"lambda1max"
+			],
+			[
+				"inv",
+				"invBarDefGrad"
+			],
+			[
+				"Savg_",
+				"Savg_bond"
+			],
+			[
+				"Savg",
+				"Savg_conf"
+			],
+			[
+				"eigVec",
+				"eigVecD"
+			],
+			[
+				"alp",
+				"alpha_sig"
+			],
+			[
+				"alpha",
+				"alpha_s"
+			],
+			[
+				"alph",
+				"alpha_T"
+			],
+			[
+				"stea",
+				"stateOld"
+			],
+			[
+				"cri",
+				"critLambdaBar"
+			],
+			[
+				"state",
+				"stateOld"
+			],
+			[
+				"shi",
+				"shiftTemperature"
+			],
+			[
+				"tem",
+				"temperatures"
+			],
+			[
+				"distan",
+				"distanceProj"
+			],
+			[
+				"updat",
+				"updatedNodes"
+			],
+			[
+				"node",
+				"nodeNum"
+			],
+			[
+				"boundary",
+				"boundaryNodes"
+			],
+			[
+				"vor",
+				"voronoi"
+			],
+			[
+				"numno",
+				"numnodes"
+			],
+			[
+				"poin",
+				"pointmarkers"
+			],
+			[
+				"pointmak",
+				"pointmarkers"
+			],
+			[
+				"numnodes",
+				"numnodes"
+			],
+			[
+				"nodem",
+				"nodalMarkers"
+			],
+			[
+				"nodal",
+				"nodalMarkers"
+			],
+			[
+				"boundar",
+				"boundaryNodes"
+			],
+			[
+				"pr",
+				"printOut"
+			],
+			[
+				"set",
+				"set_domain"
+			],
+			[
+				"Cbl",
+				"CblasNoTrans"
+			],
+			[
+				"CBl",
+				"CblasRowMajor"
+			],
+			[
+				"mv_m",
+				"mv_mltadd\tVEC * mv_mltadd(const VEC *x, const VEC *y, const MAT *A, double s, VEC *out)"
+			],
+			[
+				"jcv_p",
+				"jcv_point\tjcv_point"
+			],
+			[
+				"Node",
+				"Nodes"
+			],
+			[
+				"g",
+				"gpc_polygon"
+			],
+			[
+				"vecto",
+				"vectorFlip\tint vectorFlip"
+			],
+			[
+				"vect",
+				"vectorFlip\tint vectorFlip"
+			],
+			[
+				"gpc_v",
+				"gpc_vertex\tgpc_vertex"
+			],
+			[
+				"pol",
+				"poly_i\tgpc_polygon * poly_i"
+			],
+			[
+				"poi",
+				"pointattributelist"
+			],
+			[
+				"at",
+				"attribute\tdouble attribute"
+			],
+			[
+				"seg",
+				"segmentlist"
+			],
+			[
+				"voro",
+				"voronoi_out"
+			],
+			[
+				"numb",
+				"numberofpoints\tint numberofpoints"
+			],
+			[
+				"jc",
+				"jcv_diagram\tjcv_diagram"
+			],
+			[
+				"output",
+				"outputs\tgpc_polygon * outputs"
+			],
+			[
+				"gpc_",
+				"gpc_vertex\tgpc_vertex"
+			],
+			[
+				"c",
+				"contour\tgpc_vertex_list * contour"
+			],
+			[
+				"ho",
+				"holes"
+			],
+			[
+				"connec",
+				"connect_segments\tint * connect_segments"
+			],
+			[
+				"segmen",
+				"segments_copy\tint * segments_copy"
+			],
+			[
+				"segm",
+				"segments_copy\tint * segments_copy"
+			],
+			[
+				"connect",
+				"connected_segments\tint * connected_segments"
+			],
+			[
+				"numberof",
+				"numberofsegments\tint numberofsegments"
+			],
+			[
+				"conn",
+				"connect_segments\tint connect_segments(int *segments, int *connected_segments, int num_segments)"
+			],
+			[
+				"con",
+				"connected_segments\tint * connected_segments"
+			],
+			[
+				"filena",
+				"filename\tchar [7] filename"
+			],
+			[
+				"gpc_poly",
+				"gpc_polygon\tgpc_polygon"
+			],
+			[
+				"tri",
+				"trigen\tint trigen(gpc_polygon *polygon_out, jcv_point *points, gpc_polygon *polygon_in, char *options, char *fileName)"
+			],
+			[
+				"numPoint",
+				"numPointsBoundary"
+			],
+			[
+				"file",
+				"filename"
+			],
+			[
+				"gpc_pol",
+				"gpc_polygon\tgpc_polygon"
+			],
+			[
+				"gpc_fr",
+				"gpc_free_polygon\tvoid gpc_free_polygon(gpc_polygon *polygon)"
+			],
+			[
+				"resu",
+				"result1\tgpc_polygon * result1"
+			],
+			[
+				"gpc_ver",
+				"gpc_vertex_list\tgpc_vertex_list"
+			],
+			[
+				"gpc",
+				"gpc_polygon\tgpc_polygon"
+			],
+			[
+				"for",
+				"for\tFor Loop"
+			],
+			[
+				"jcv_dia",
+				"jcv_diagram_generate\tvoid jcv_diagram_generate(int num_points, const jcv_point *points, const jcv_rect *rect, jcv_diagram *diagram)"
+			],
+			[
+				"gv",
+				"gvClip\tgpc_vertex * gvClip"
+			],
+			[
+				"Cell",
+				"Cell2D"
+			],
+			[
+				"getA",
+				"getArea\tdouble getArea()"
+			],
+			[
+				"CEll",
+				"Cell2D"
+			],
+			[
+				"print",
+				"print_count"
+			],
+			[
+				"call",
+				"call_count\tint call_count"
+			],
+			[
+				"se",
+				"setPoints"
+			],
+			[
+				"Projec",
+				"PROJECT_LINK_LIBS"
+			],
+			[
+				"P",
+				"Point"
+			],
+			[
+				"is_",
+				"is_scalar"
+			],
+			[
+				"is_ve",
+				"is_vector"
+			],
+			[
+				"ad",
+				"add_dof"
+			],
+			[
+				"co",
+				"coordinates"
+			],
+			[
+				"da",
+				"dataVector"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"Packages/C++/C++ Single File.sublime-build",
+					""
+				],
+				[
+					"Packages/C++/C++ Single File.sublime-build",
+					"Run"
+				]
+			],
+			[
+				"Packages/C++/C++ Single File.sublime-build",
+				"Run"
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 312.0,
+		"last_filter": "easy",
+		"selected_items":
+		[
+			[
+				"easy",
+				"EasyClangComplete: Settings"
+			],
+			[
+				"easyc",
+				"EasyClangComplete: Settings"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"remov",
+				"Package Control: Remove Package"
+			],
+			[
+				"easycla",
+				"EasyClangComplete: Settings"
+			],
+			[
+				"easyclan",
+				"EasyClangComplete: Clean current CMake cache"
+			],
+			[
+				"easyclang",
+				"EasyClangComplete: Open completion triggers location"
+			],
+			[
+				"console",
+				"Package Control: Install Local Dependency"
+			],
+			[
+				"easycl",
+				"EasyClangComplete: Settings"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Enable Package"
+			],
+			[
+				"settin",
+				"Preferences: Settings"
+			],
+			[
+				"package set",
+				"Package Control: List Packages"
+			],
+			[
+				"gosublime ",
+				"GoSublime: Browse Packages"
+			],
+			[
+				"gosublime sett",
+				"GoSublime: Show documentation hint"
+			],
+			[
+				"gosublime u",
+				"GoSublime: Default Settings"
+			],
+			[
+				"goSublime us",
+				"GoSublime: User Settings"
+			],
+			[
+				"syntax go",
+				"Set Syntax: GoSublime: Go"
+			],
+			[
+				"remove",
+				"Package Control: Remove Package"
+			],
+			[
+				"gosublime set",
+				"GoSublime: Default Settings"
+			],
+			[
+				"GoSublime m",
+				"GoSublime: Restart Margo"
+			],
+			[
+				"gosubli",
+				"Set Syntax: GoSublime: Go"
+			],
+			[
+				"gosub",
+				"GoSublime: Activate 9o"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"gosublime",
+				"GoSublime: Add/Remove package"
+			],
+			[
+				"goSu",
+				"Set Syntax: GoSublime: Go"
+			],
+			[
+				"e",
+				"EasyClangComplete: Settings"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				":w",
+				":w - Save"
+			],
+			[
+				"eas",
+				"EasyClangComplete: Settings"
+			],
+			[
+				":W",
+				":w - Save"
+			],
+			[
+				"clangc",
+				"EasyClangComplete: Settings"
+			],
+			[
+				"packa",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 476.0
+	},
+	"console":
+	{
+		"height": 160.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/stephen/Documents/Meshless"
+	],
+	"file_history":
+	[
+		"/home/stephen/CMakeLists.txt",
+		"/home/stephen/Documents/clipped_voronoi/test/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/lib/Meschach/makefile",
+		"/home/stephen/Documents/Meshless/lib/Meschach/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/lib/clipped_voronoi/lib/include/callVoronoi.h",
+		"/home/stephen/Documents/Meshless/lib/clipped_voronoi/lib/src/clipVoronoi.c",
+		"/home/stephen/Documents/Meshless/lib/clipped_voronoi/lib/src/callVoronoi.c",
+		"/home/stephen/Documents/Meshless/lib/clipped_voronoi/test/test.c",
+		"/home/stephen/Documents/Meshless/lib/clipped_voronoi/test/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/lib/clipped_voronoi/test/meshgrid.c",
+		"/home/stephen/Meschach-master/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/lib/Meschach/cmake_modules/CheckHeaderSTDC.cmake",
+		"/home/stephen/Documents/Meshless/lib/efsflib/CMakeLists.txt",
+		"/home/stephen/Documents/clipped_voronoi/third party/arch/Meschach/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/lib/efsflib/test/CMakeLists.txt",
+		"/home/stephen/Documents/clipped_voronoi/third party/Meschach/cmake_modules/CheckHeaderSTDC.cmake",
+		"/home/stephen/Documents/Meshless/lib/gpc/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/lib/efsflib/lib/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/CMakeLists.txt",
+		"/home/stephen/Documents/strain_disp/.clang_complete",
+		"/home/stephen/Documents/Meshless/lib/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/lib/clipped_voronoi/lib/include/jc_voronoi.h",
+		"/home/stephen/Documents/Meshless/lib/clipped_voronoi/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/lib/clipped_voronoi/lib/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/lib/gpc/gpc.c",
+		"/home/stephen/Documents/strain_disp/include/SCNI/scni.h",
+		"/home/stephen/Documents/strain_disp/include/B_2D_PS/B_2D_PS.h",
+		"/home/stephen/Documents/clipped_voronoi/.clang_complete",
+		"/home/stephen/Documents/clipped_voronoi/lib/src/callVoronoi.c",
+		"/home/stephen/Documents/clipped_voronoi/lib/src/gpc.c",
+		"/home/stephen/Documents/clipped_voronoi/clipped_voronoi.sublime-project",
+		"/home/stephen/Documents/clipped_voronoi/clipped_voronoi.sublime-",
+		"/home/stephen/Documents/clipped_voronoi/lib/include/callVoronoi.h",
+		"/home/stephen/Documents/clipped_voronoi/lib/src/clipVoronoi.c",
+		"/home/stephen/Documents/clipped_voronoi/lib/include/clipVoronoi.h",
+		"/home/stephen/.config/sublime-text-3/Packages/User/Package Control.sublime-settings",
+		"/home/stephen/Documents/clipped_voronoi/lib/include/gpc.h",
+		"/home/stephen/Documents/clipped_voronoi/lib/CMakeLists.txt",
+		"/home/stephen/Documents/clipped_voronoi/test/test.c",
+		"/home/stephen/Documents/clipped_voronoi/CMakeLists.txt",
+		"/home/stephen/Documents/software/Meshfree/Problems/preform/preform.c",
+		"/home/stephen/Documents/shapefunctions/lib/CMakeLists.txt",
+		"/home/stephen/Documents/shapefunctions/test/CMakeLists.txt",
+		"/home/stephen/Documents/shapefunctions/CMakeLists.txt",
+		"/home/stephen/Documents/shapefunctions/test/test.c",
+		"/home/stephen/Documents/shapefunctions/lib/src/mls_shapefunction.c",
+		"/home/stephen/Documents/shapefunctions/src/Untitled Folder/CMakeLists.txt",
+		"/home/stephen/Documents/shapefunctions/src/CMakeLists.txt",
+		"/home/stephen/Documents/shapefunctions/include/mls_shapefunction.h",
+		"/home/stephen/Documents/shapefunctions/include/meshfree_structs.h",
+		"/home/stephen/Documents/shapefunctions/include/v_outer_product.h",
+		"/home/stephen/Documents/shapefunctions/include/setDomain.h",
+		"/home/stephen/Documents/shapefunctions/include/quartic_spline.h",
+		"/home/stephen/Documents/shapefunctions/include/neighbours.h",
+		"/home/stephen/Documents/shapefunctions/include/weight_function.h",
+		"/home/stephen/Documents/shapefunctions/src/setDomain.c",
+		"/home/stephen/Documents/software/Meshfree/src/readSites.c",
+		"/home/stephen/Documents/software/Meshfree/headers/structure.h",
+		"/home/stephen/Documents/software/Meshfree/Problems/preform_UL/internalForceBuckley.c",
+		"/home/stephen/Documents/software/Meshfree/headers/MLS_shapefunction.h",
+		"/home/stephen/Documents/software/Meshfree/src/MLS_shapefunction.c",
+		"/home/stephen/Documents/software/Meshfree/headers/quartic_spline.h",
+		"/home/stephen/Documents/software/Meshfree/Problems/preform_UL/preform.c",
+		"/home/stephen/Documents/software/Meshfree/src/quartic_spline.c",
+		"/home/stephen/Documents/software/Meshfree/src/circle_spline.c",
+		"/home/stephen/Documents/software/Meshfree/src/smoothstep.c",
+		"/home/stephen/Documents/software/Meshfree/src/externalForce.c",
+		"/home/stephen/Documents/software/Meshfree/src/edwardsVilgis.c",
+		"/home/stephen/Documents/software/Meshfree/src/massMatrix.c",
+		"/home/stephen/Documents/software/Meshfree/src/vGeom.c",
+		"/home/stephen/Documents/software/Meshfree/src/enforceBC.c",
+		"/home/stephen/Documents/software/Meshfree/Problems/preform_UL/contactDetection.c",
+		"/home/stephen/Documents/software/Meshfree/src/getBoundary.c",
+		"/home/stephen/Documents/software/Meshfree/src/lambdaCrit.c",
+		"/home/stephen/Documents/software/Meshfree/src/gamma.c",
+		"/home/stephen/Documents/software/Meshfree/src/buckleyConf.c",
+		"/home/stephen/Documents/software/Meshfree/src/buckleyBond.c",
+		"/home/stephen/Documents/software/Meshfree/Problems/preform/internalForceBuckley.c",
+		"/home/stephen/Documents/software/Meshfree/Problems/preform (3rd copy)/preform",
+		"/home/stephen/Documents/software/Meshfree/Problems/preform (3rd copy)/preform.c",
+		"/home/stephen/Documents/software/Meshfree/headers/cubic_spline.h",
+		"/home/stephen/Documents/software/Meshfree/Problems/preform/polDecA.c",
+		"/home/stephen/Documents/software/Meshfree/Problems/preform/internalForceBuckley.h",
+		"/home/stephen/Documents/software/Meshfree/src/trigen.c",
+		"/home/stephen/Documents/software/Meshfree/Problems/preform (3rd copy)/pre",
+		"/home/stephen/Documents/software/Meshfree/src/generateSCNI.c",
+		"/home/stephen/Documents/software/Meshfree/headers/trigen.h",
+		"/home/stephen/Documents/software/Meshfree/src/updateTraction.c",
+		"/home/stephen/Documents/software/Meshfree/src/setUpTraction.c",
+		"/home/stephen/Documents/software/Meshfree/src/clipVoronoi.c",
+		"/home/stephen/Documents/software/Meshfree/Problems/preform/makefile",
+		"/home/stephen/Documents/software/GPC/main.c",
+		"/home/stephen/Documents/software/Meshfree/Problems/preform/preformc",
+		"/home/stephen/Documents/software/feature/src/nodes.cpp",
+		"/home/stephen/Downloads/hello.go",
+		"/home/stephen/Documents/software/SFLIB/structure.h",
+		"/home/stephen/Documents/software/GPC/generate_scni.h",
+		"/home/stephen/Documents/software/GPC/generate_scni.c",
+		"/home/stephen/Documents/software/GPC/set_domain.c",
+		"/home/stephen/Documents/software/GPC/structure.h",
+		"/home/stephen/.config/sublime-text-3/Packages/GoSublime/CHANGELOG.md",
+		"/home/stephen/Documents/software/GPC/set_domain.h",
+		"/home/stephen/.config/sublime-text-3/Packages/User/GoSublime.sublime-settings",
+		"/home/stephen/.config/sublime-text-3/Packages/GoSublime/GoSublime.sublime-settings",
+		"/home/stephen/.bashrc",
+		"/home/stephen/.profile",
+		"/home/stephen/.bash_profile",
+		"/home/stephen/.config/sublime-text-3/Packages/GoSublime/USAGE.md",
+		"/home/stephen/Documents/software/Meschach/matrix.h",
+		"/home/stephen/Documents/software/GPC/connect_segments.c",
+		"/home/stephen/Documents/software/GPC/connect_segments.h",
+		"/home/stephen/Documents/software/GPC/trigen.h",
+		"/home/stephen/Documents/software/GPC/trigen.c",
+		"/home/stephen/Documents/software/GPC/gpc.h",
+		"/home/stephen/Documents/software/GPC/compile_clang.sh",
+		"/home/stephen/Documents/software/Meshfree/src/tri_mesh.c",
+		"/home/stephen/Documents/software/GPC/triangle.h",
+		"/home/stephen/Documents/software/triangle/triangle.c",
+		"/home/stephen/Documents/software/GPC/clip.txt",
+		"/home/stephen/Documents/software/Meshfree/headers/jc_voronoi.h",
+		"/home/stephen/Documents/software/voronoi-master/test/test.cpp",
+		"/home/stephen/Documents/software/Meshfree/Problems/preform/internalForceBuckley.",
+		"/home/stephen/Documents/Meshfree++/includes/intergration_cell.h",
+		"/home/stephen/Documents/Meshfree++/src/CMakeLists.txt",
+		"/home/stephen/Documents/Meshfree++/CMakeLists.txt",
+		"/home/stephen/Documents/software/Delynoi-1.0/delynoi/include/delynoi/models/generator/functions/functions.h",
+		"/home/stephen/Documents/software/Delynoi-1.0/delynoi/include/delynoi/models/generator/Functor.h",
+		"/home/stephen/Documents/software/Delynoi-1.0/test/UnicornTestMain.cpp"
+	],
+	"find":
+	{
+		"height": 36.0
+	},
+	"find_in_files":
+	{
+		"height": 90.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"xi",
+			"real_flt",
+			"others",
+			"hlist",
+			"malloc",
+			"scn",
+			"scni",
+			"tB",
+			"scni",
+			"_scni",
+			"rho",
+			"scni",
+			"disp",
+			"scni[i].F",
+			"sfIndex",
+			"volume_t",
+			"closestdi",
+			"startnode",
+			"R",
+			"lambda",
+			"->W",
+			"->D",
+			"bar",
+			"DBar",
+			"bar",
+			"velocity",
+			"Dbar",
+			"eigVecDBar",
+			"eigvecDbar",
+			"call_count",
+			"print_count",
+			"srnodes",
+			"srrod",
+			"fnet",
+			"gopath",
+			"builtin",
+			"points",
+			"auto",
+			"points",
+			"write",
+			"segmentlist",
+			"segment",
+			"refine",
+			"triangulateio",
+			"triangulate",
+			"REAL",
+			"return",
+			"node",
+			"dof",
+			"<class Element",
+			"cout",
+			"resize",
+			"computephider",
+			"amder",
+			"phidermatr",
+			"computephider",
+			"cout"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"double"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 28.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.9o:///home/stephen/Downloads":
+	{
+		"height": 118.0
+	},
+	"output.GoSublime-main-output":
+	{
+		"height": 118.0
+	},
+	"output.GoSublime-output":
+	{
+		"height": 118.0
+	},
+	"output.GsDoc-output-output":
+	{
+		"height": 118.0
+	},
+	"output.MarGo-output":
+	{
+		"height": 118.0
+	},
+	"output.exec":
+	{
+		"height": 100.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.mdpopups":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "meshless.sublime-project",
+	"replace":
+	{
+		"height": 52.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 205.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
