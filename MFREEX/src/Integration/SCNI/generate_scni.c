@@ -47,6 +47,9 @@ SCNI ** generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalised,
 	printf("getting shape function value at cell veritices \n ");
 	shape_function_container * sf_verticies = mls_shapefunction(cell_verticies, "quadratic", "quartic", 2, 1, Mfree);
 
+
+	// if axi will have to find shape function at nodes to add the unsmoothed component
+	// at some nodes will have to find, compute could be given as a vector 
 	if ( is_AXI  == 1)
 	{
 		shape_function_container * sf_nodes = mls_shapefunction(nodes, "quadratic" , "quartic", 2, 3, Mfree);
