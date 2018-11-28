@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
+
+
+project(EFSFLIB VERSION 0.1.0 LANGUAGES C)
+
+
+SET(EFSFLIB_LIB_OUT_PATH ${EFSFLIB_SOURCE_DIR}/lib)
+SET(EFSFLIB_BIN_OUT_PATH ${EFSFLIB_SOURCE_DIR}/test/bin)
+
+
+
+add_subdirectory(lib)
