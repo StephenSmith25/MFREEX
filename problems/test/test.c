@@ -5,15 +5,7 @@
 #include "generate_voronoi.h"
 #include "meshgrid.h"
 #include <sys/time.h>
-
-// Jc_voronoi defintion
-#define JC_VORONOI_IMPLEMENTATION
-#define JCV_REAL_TYPE double
-#define JCV_ATAN2 atan2
-#define JCV_FLT_MAX 1.7976931348623157E+308
-#include "jc_voronoi.h"
 #include "Integration/SCNI/generate_scni.h"
-
 #include "mls_shapefunction.h"
 #include "setDomain.h"
 
@@ -31,12 +23,45 @@ int main(void )
 	int dim = 2;
 
 
-	// create a 2D grid of test points on [0,1] x [0,1];
-	int num_nodes_x = 16;
-	int num_nodes_y = 16;
+
+	/* ------------------------------------------*/
+	/* -------------Material & Loading-----------*/
+	/* ------------------------------------------*/
+
+	// material parameters and model (St. Venant Kirchoff)
+	double nu = 0.0;
+	double E = 4.8e3;
+	char * material = "SVK";
+
+	// tip load
+	double P = 1.00;
+
+	// Beam dimensions 
+	double h = 1.00;
+	double L = 20.00;
+
+	// Plotting parameters
+	double Ixx = 1.000/12.000;
+	double yFactor = pow(L,2)/(E*Ixx);
+	double xFactor = 1/L;
+	double yPoint = P*yFactor;
+	double xPoint = 0;
+
+
+	/* ------------------------------------------*/
+	/* --------------Tip Loaded Beam--------------*/
+	/* ------------------------------------------*/
+
+	// Number of nodes
+	int num_nodes_x = 40;
+	int num_nodes_y = 5;
+
 
 	// create nodes
-	MAT * xI = meshgrid(0.000,10.000,num_nodes_x,0.000,10.000,num_nodes_y);
+	printf("eneterd meshgrid \n ");
+	MAT * xI = meshgrid(0.000,L,num_nodes_x,0.000,h,num_nodes_y);
+
+	printf("got out of meshgrid \n ");
 	int boundary[4];
 	int count = 0;
 	// find boundary nodes
@@ -47,19 +72,21 @@ int main(void )
 		{
 			boundary[0] = i;
 		}
-		if ( (x[0] == 0) && ( x[1] == 10))
+		if ( (x[0] == 0) && ( x[1] == h))
 		{
 			boundary[1] = i;
 		}
-		if ( (x[0] == 10) && ( x[1] == 10))
+		if ( (x[0] == L) && ( x[1] == h))
 		{
 			boundary[2] = i;
 		}
-		if ( (x[0] == 10) && ( x[1] == 0))
+		if ( (x[0] == L) && ( x[1] == 0))
 		{
 			boundary[3] = i;
 		}
 	}
+
+	printf("boundary = %d %d %d %d \n", boundary[0],boundary[1],boundary[2],boundary[3]);
 	struct timeval start, end;
 
 	// generate clipped voronoi diagram
@@ -81,8 +108,10 @@ int main(void )
 	fclose(fp);
 
 
+
+
 	/* ------------------------------------------*/
-	/* ------------Find Shape Functions----------*/
+	/* ------------Meshfree Domain---------------*/
 	/* ------------------------------------------*/
 
 	// shape function parameters
@@ -97,33 +126,6 @@ int main(void )
 	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim};
 	setDomain(&mfree,constant_support_size, dmax);
 
-	// create a grid of sample points on [0,1] x [0,1]
-	int num_sample_points_x = 50;
-	int num_sample_points_y = 50;
-	MAT * x_sample = meshgrid(0,10,num_sample_points_x,0,10,num_sample_points_y);
-
-
-	struct timeval start1, end1;
-	gettimeofday(&start1, NULL);
-	// set up return container
-	// generate shape functions at sample points 
-	shape_function_container * sf_container = mls_shapefunction(x_sample, basis, weight, dim, compute, &mfree);
-	gettimeofday(&end1, NULL);
-	 delta = ((end1.tv_sec  - start1.tv_sec) * 1000000u + 
-         end1.tv_usec - start1.tv_usec) / 1.e6;
-
-	//free_shapefunction_container(sf_container);
-
-	printf("Shape function took %lf seconds to run\n", delta);
-
-	// v_foutput(stdout,sf_container->sf_list[0]->phi);
-	// m_foutput(stdout,sf_container->sf_list[0]->dphi);
-	// m_foutput(stdout,sf_container->sf_list[0]->d2phi);
-
-	// V_FREE(dI);
-	// M_FREE(x_sample);
-	// M_FREE(xI);
-
 
 	/* ------------------------------------------*/
 	/* ----------------SCNI CELLS-----------------*/
@@ -131,23 +133,120 @@ int main(void )
 	int is_stabalised = 0;
 	int is_AXI = 0;
 	SCNI ** _scni = NULL;
-
-
-	gettimeofday(&start1, NULL);
+	struct timeval start2, end2;
+	gettimeofday(&start2, NULL);
 	// set up return container
 	// generate shape functions at sample points 
 	_scni = generate_scni(vor, NULL , is_stabalised, is_AXI, dim, &mfree);
-	gettimeofday(&end1, NULL);
-	 delta = ((end1.tv_sec  - start1.tv_sec) * 1000000u + 
-         end1.tv_usec - start1.tv_usec) / 1.e6;
-
-
+	gettimeofday(&end2, NULL);
+	 delta = ((end2.tv_sec  - start2.tv_sec) * 1000000u + 
+         end2.tv_usec - start2.tv_usec) / 1.e6;
 	printf("scni function took %lf seconds to run\n", delta);
+	iv_foutput(stdout, _scni[2]->sfIndex);
+	m_foutput(stdout,_scni[2]->B);
 
 
-	V_FREE(dI);
-	M_FREE(x_sample);
-	M_FREE(xI);
+
+	// get boundary nodes
+	IVEC * eb_nodes = iv_get(num_nodes_y);
+	IVEC * traction_nodes = iv_get(num_nodes_y);
+
+	int num_nodes_eb = 0;
+	int num_nodes_trac = 0;
+	double *x = NULL;
+	for ( int i = 0 ; i < mfree.num_nodes ; i++ )
+	{
+		x = mfree.nodes->me[i];
+
+		if ( x[0] == 0)
+		{
+			traction_nodes->ive[num_nodes_trac] = i;
+			++num_nodes_trac;
+		}
+		if(  x[0] == L)
+		{
+			eb_nodes->ive[num_nodes_eb] = i;
+			++num_nodes_eb;
+		}
+
+	}
+	// 
+	iv_foutput(stdout,traction_nodes);
+	iv_foutput(stdout, eb_nodes);
+
+	/* ------------------------------------------*/
+	/* ----------------Time stepping-------------*/
+	/* ------------------------------------------*/
+	
+	// time parameters
+	double t_max = 1.00; // 1s
+	double delta_t = 1e-6;
+	double t_n = 0;
+	double t_n_1 = 0;
+
+
+
+	// External Forces
+	VEC * Fext_n_1 = v_get(mfree.num_nodes);
+	VEC * Fext_n = v_get(mfree.num_nodes);
+
+	// Internal Forces
+	VEC * Fint_n_1 = v_get(mfree.num_nodes);
+	VEC * Fint_n = v_get(mfree.num_nodes);
+
+	// Net Force
+	VEC * Fnet_n_1 = v_get(mfree.num_nodes);
+
+
+	// Kinematic variables
+	// displacement
+	VEC * d_n_1 = v_get(mfree.num_nodes);
+	VEC * d_n = v_get(mfree.num_nodes);
+	// Velocity
+	VEC * v_n_h = v_get(mfree.num_nodes);
+	VEC * v_n_mh = v_get(mfree.num_nodes);
+	// Acceleration
+	VEC * a_n_1 = v_get(mfree.num_nodes);
+	VEC * a_n = v_get(mfree.num_nodes);
+
+
+	while ( t_n < t_max)
+	{
+
+		// Update time step
+		t_n_1 = t_n + delta_t;
+
+
+		// Find d_n_1 and v_n_h
+
+		// update velocity
+		v_mltadd(v_n_mh, a_n, delta_t, v_n_h);
+		// update displacements
+		v_mltadd(d_n,v_n_h,delta_t,d_n_1);
+
+
+		// Implement boundary conditions
+
+
+
+		// Problem specific code
+		// x-y 
+		//xPoint = nodalDisp->ve[2*traction->nodes->ive[3]+1]*xFactor;
+		//yPoint = traction->tMag * pow(L,2)*(1/Ey)*(1/Ixx);
+
+
+
+
+
+	}
+
+
+
+
+
+
+
+
 
 	exit(0);
 

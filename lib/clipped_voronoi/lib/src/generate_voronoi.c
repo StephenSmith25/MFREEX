@@ -4,11 +4,12 @@
 #include <math.h>
 
 
+
 // find if the point is already a member of the vertex list
 static inline int is_member(double * point, double ** points, int numPoints, int dim ){
 
 
-	double tol_equal = 1e-5;
+	double tol_equal = 1e-6;
 
 	int is_member_row = 0;
 	int i = 0;
@@ -85,16 +86,19 @@ voronoi_diagram * generate_voronoi(double *points, int * boundary, int numPoints
 	{	
 
 		// loop over each vertex of the cell
+		// finding voronoi_1[i]
 		vor = voronoi_1[i];
 		int num_vertices = vor->contour->num_vertices;
-
 		total_verticies += num_vertices;
 
 		vor_out->index[i] = (int*) malloc(num_vertices * sizeof(int));
 		vor_out->num_cell_verticies[i] = num_vertices;
+
 		for ( int k = 0 ; k < num_vertices ; ++k ){
 			
 			double point[2] = {vor->contour->vertex[k].x,vor->contour->vertex[k].y};
+
+
 			int index = -1;
 			index = is_member(point, vertex_list->me, count_vertex_list, dim);
 
@@ -154,7 +158,7 @@ voronoi_diagram * generate_voronoi(double *points, int * boundary, int numPoints
 		vertex_list = m_move(temp,0,0,count_vertex_list,temp->n,vertex_list,0,0);
 		M_FREE(temp);
 	}
-
+	printf("got to return \n ");
 	vor_out->verticies = vertex_list;
 	return vor_out;
 }

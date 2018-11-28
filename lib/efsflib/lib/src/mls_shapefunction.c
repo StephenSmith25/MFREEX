@@ -31,7 +31,7 @@ shape_function_container *  mls_shapefunction(MAT * compute_points, char * basis
 
 	else if ( numPoints < 1000)
 	{
-		omp_set_num_threads(2); 
+		omp_set_num_threads(1); 
 	}else if ( numPoints < 20000){
 
 		omp_set_num_threads(4);
@@ -98,9 +98,8 @@ shape_function_container *  mls_shapefunction(MAT * compute_points, char * basis
 			// get point coordinates
 				double * x = compute_points->me[i];
 			// initialise shape function structure
-				IVEC * neighbours = iv_get(10);
 			// find neighbours of point x;
-				point_neighbours(neighbours,x,mfree);
+				IVEC * neighbours = point_neighbours(x,mfree);
 				int num_neighbours = neighbours->max_dim;
 
 
@@ -136,21 +135,20 @@ shape_function_container *  mls_shapefunction(MAT * compute_points, char * basis
 					for ( int k = 0 ; k < dim ; k++)
 					{
 						xS[k] = x[k] - xi[k];
-
 					}
 
 
-				// get p(x_i)
+					// get p(x_i)
 					polynomial_basis(basis_xi, xi, dim, basis_type, 1);
 					p_xi = get_col(basis_xi,0,p_xi);
 
 
-				// get weight function for node I
+					// get weight function for node I
 					weight_function(weights, xS, di, weight, compute, dim);
 
 
 
-				// shape function matricies
+					// shape function matricies
 				// B;
 					bi = sv_mlt(weights->ve[0], p_xi, bi);
 					B = set_col(B,j,bi);
@@ -192,15 +190,8 @@ shape_function_container *  mls_shapefunction(MAT * compute_points, char * basis
 			{	
 
 				printf("ERROR ERROR : PARTION OF UNITY FAILED \n");
-				printf("ERROR ERROR : PARTION OF UNITY FAILED \n");
-				printf("ERROR ERROR : PARTION OF UNITY FAILED \n");
-				printf("ERROR ERROR : PARTION OF UNITY FAILED \n");
-				printf("ERROR ERROR : PARTION OF UNITY FAILED \n");
-				printf("ERROR ERROR : PARTION OF UNITY FAILED \n");
-				printf("ERROR ERROR : PARTION OF UNITY FAILED \n");
-				printf("ERROR ERROR : PARTION OF UNITY FAILED \n");
-				printf("ERROR ERROR : PARTION OF UNITY FAILED \n");
-				printf("ERROR ERROR : PARTION OF UNITY FAILED \n");
+				printf("phi_sum = %lf\n",phi_sum);
+				v_foutput(stdout,phi);
 
 
 			}
@@ -290,10 +281,8 @@ if ( compute == 2)
 			// get point coordinates
 			double * x = compute_points->me[i];
 
-			// initialise shape function structure
-			IVEC * neighbours = iv_get(10);
 			// find neighbours of point x;
-			point_neighbours(neighbours,x,mfree);
+			IVEC * neighbours = point_neighbours(x,mfree);
 			int num_neighbours = neighbours->max_dim;
 
 
@@ -570,9 +559,8 @@ if ( compute == 2)
 				double * x = compute_points->me[i];
 
 			// initialise shape function structure
-				IVEC * neighbours = iv_get(10);
 			// find neighbours of point x;
-				point_neighbours(neighbours,x,mfree);
+			IVEC * neighbours = point_neighbours(x,mfree);
 				int num_neighbours = neighbours->max_dim;
 
 

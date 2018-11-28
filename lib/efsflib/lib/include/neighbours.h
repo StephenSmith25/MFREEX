@@ -6,7 +6,7 @@
 #include <math.h>
 #include "meshfree_structs.h"
 
-int point_neighbours(IVEC * neighbours_out, double * x, meshfreeDomain * mfree);
+IVEC * point_neighbours(double * x, meshfreeDomain * mfree);
 
 
 

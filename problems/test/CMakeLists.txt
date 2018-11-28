@@ -26,4 +26,4 @@ find_package (Threads)
 
 
 add_executable(test_program test.c meshgrid.c)
-target_link_libraries(test_program EFSFLIB CVLIB meschach m gpc MFREEX)
+target_link_libraries(test_program CVLIB MFREEX EFSFLIB meschach m gpc)

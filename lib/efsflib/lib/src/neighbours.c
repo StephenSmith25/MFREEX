@@ -4,7 +4,7 @@
 #include "matrix2.h"
 
 
-static inline double sq_distance(double *point_1, double * point_2, int  dim)
+double sq_distance(double *point_1, double * point_2, int  dim)
 {
 	double distance = 0;
 	for (int i = 0; i < dim; ++i)
@@ -18,7 +18,7 @@ static inline double sq_distance(double *point_1, double * point_2, int  dim)
 }
 
 
-int point_neighbours(IVEC * neighbours_out, double * x, meshfreeDomain * mfree)
+IVEC * point_neighbours(double * x, meshfreeDomain * mfree)
 {
 
 	MAT * nodes = mfree->nodes;
@@ -36,6 +36,8 @@ int point_neighbours(IVEC * neighbours_out, double * x, meshfreeDomain * mfree)
 	for (int i = 0; i < numnodes; ++i)
 	{
 		distance = sq_distance(x, nodes->me[i], dim);
+
+
 		if ( distance < domainSize->ve[i])
 		{
 			neighbours->ive[count_neighbours] = i;
@@ -57,29 +59,23 @@ int point_neighbours(IVEC * neighbours_out, double * x, meshfreeDomain * mfree)
 			}
 		}
 	}
-
 	if ( neighbours->max_dim > count_neighbours)
 	{
 		IVEC * temp = iv_get(neighbours->max_dim);
 		iv_copy(neighbours,temp);
-
 		iv_resize(neighbours,count_neighbours);
+		neighbours->max_dim = count_neighbours;
 
 		for (int k = 0 ; k < count_neighbours; ++k)
 		{
 			neighbours->ive[k] = temp->ive[k];
 		}
 		IV_FREE(temp);
-		neighbours_out = iv_copy(neighbours,neighbours_out);
-		IV_FREE(neighbours);
-
-		return 0;
+		return neighbours;
 
 	}
 
-	iv_copy(neighbours,neighbours_out);
-	IV_FREE(neighbours);
-	return 0;
+	return neighbours;
 
 }
 

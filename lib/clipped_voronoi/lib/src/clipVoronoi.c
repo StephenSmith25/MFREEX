@@ -25,7 +25,7 @@ int clipVoronoi(gpc_polygon*** voronoi, double points[], int boundary[], int num
   printf("CLIPPING VORONOI\n");
 
   // clip boundary cells
-  for (size_t i = 0; i < numPoints; i++) {
+  for (int i = 0; i < numPoints; i++) {
 
     int indx = i;
     gpc_polygon * clipped_polygon = malloc(1*sizeof(gpc_polygon));
@@ -38,19 +38,19 @@ int clipVoronoi(gpc_polygon*** voronoi, double points[], int boundary[], int num
 
   printf("FINISHED CLIPPING VORONOI\n");
 
- //write cells to file
+ // //write cells to file
 
-  // char fileName[256];
-  // for (int i = 0; i < numPoints; i++) {
-  //   // write cell to file
-  //   	snprintf(fileName,sizeof(fileName),"Cells/%d.txt",i);
-  //   	// write clipped cell to files
-  //   	fp = fopen(fileName,"w");
-  //   	if ( fp != NULL)
-  //   		gpc_write_polygon(fp, 0, (*voronoi)[i]);
-  //   	fclose(fp);
+ //  char fileName[256];
+ //  for (int i = 0; i < numPoints; i++) {
+ //    // write cell to file
+ //    	snprintf(fileName,sizeof(fileName),"Cells/%d.txt",i);
+ //    	// write clipped cell to files
+ //    	fp = fopen(fileName,"w");
+ //    	if ( fp != NULL)
+ //    		gpc_write_polygon(fp, 0, (*voronoi)[i]);
+ //    	fclose(fp);
   
-  // }
+ //  }
   
   
 

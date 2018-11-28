@@ -6,7 +6,9 @@
 #include "matrix2.h"
 #include "mls_shapefunction.h"
 #include "generate_voronoi.h"
+#include "Bmat/generate_Bmat.h"
 #include <math.h>
+#include <omp.h>
 
 
 typedef struct SCNI {

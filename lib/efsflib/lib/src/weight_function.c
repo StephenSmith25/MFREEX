@@ -14,6 +14,13 @@ int weight_function (VEC * weights, double  * xS, double dI, char * type,  int c
 
 	r = sqrt(r)/dI;
 
+	if ( r > 1)
+	{
+		printf("ERROR R > 1 \n");
+		printf("r = %lf\n",r);
+		printf("xS[0] = %lf xS[1] = %lf \n ", xS[0], xS[1]);
+	}
+
 	// check input matrix is of the right dimensions 
 	if (weights == VNULL){
 		if (compute == 1){

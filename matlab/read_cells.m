@@ -1,7 +1,7 @@
 clear all
 close all 
 
-fileID = fopen("bin/cells.txt");
+fileID = fopen("cells.txt");
 
 
 tline = fgetl(fileID);
