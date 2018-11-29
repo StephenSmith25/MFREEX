@@ -33,14 +33,14 @@ int findInt( int a, int * b, int size_b)
 }
 
 
-SCNI ** generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalised, int is_AXI, int dim, meshfreeDomain * Mfree){
+SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalised, int is_AXI, int dim, meshfreeDomain * Mfree){
 
 	// cell points and meshfree nodes
 	MAT * cell_verticies = voronoi->verticies;
 	MAT * nodes = Mfree->nodes;
 
 	printf("getting shape function value at cell veritices \n ");
-	shape_function_container * sf_verticies = mls_shapefunction(cell_verticies, "linear", "quartic", 2, 1, Mfree);
+	shape_function_container * sf_verticies = mls_shapefunction(cell_verticies, "linear", "cubic", 2, 1, Mfree);
 
 
 
@@ -70,8 +70,13 @@ SCNI ** generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalised,
 	SCNI ** scni_  = malloc(num_cells*sizeof(SCNI*));
 
 	int i;
+	IVEC * temp_vec = iv_get(approx_cell_sf_index_length);
 
+	for ( int k = 0 ; k < approx_cell_sf_index_length ; k++)
+	{
+		temp_vec->ive[k] = 1;
 		// cell variables
+	}
 	int length_cell_index = 0;
 
 	int * cell_index = NULL;
@@ -97,6 +102,7 @@ SCNI ** generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalised,
 
 		// smoothed shape function gradients
 		IVEC * cell_sf_index = iv_get(approx_cell_sf_index_length);
+		iv_sub(cell_sf_index,temp_vec, cell_sf_index);
 		bI = m_resize(bI,approx_cell_sf_index_length,2);
 		m_zero(bI);
 
@@ -128,6 +134,39 @@ SCNI ** generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalised,
 		n_m[0] = (normalFactor)*1.00*(v2[1] - v1[1])/seg_length_m;
 		n_m[1] = (normalFactor)*-1.00*(v2[0] - v1[0])/seg_length_m;
 
+		double n[num_cell_verticies][2];
+		double l[num_cell_verticies];
+		for ( int k = 0 ; k < num_cell_verticies ; k++)
+		{
+			v1 = cell_verticies->me[cell_index[k]];
+			if ( k == num_cell_verticies -1)
+			{
+				v2 = cell_verticies->me[cell_index[0]];
+
+			}else{
+				v2 = cell_verticies->me[cell_index[k+1]];
+
+			}
+
+			// segment length
+			l[k] = sqrt(pow(v2[0]-v1[0],2) + pow(v2[1]-v1[1],2));  
+			// segment normals
+			n[k][0] = (normalFactor)*1.00*(v2[1] - v1[1])/seg_length_m;
+			n[k][1] = (normalFactor)*-1.00*(v2[0] - v1[0])/seg_length_m;
+
+
+
+			area += (v1[0]*v2[1] - v2[0]*v1[1]);
+			center[0] += v2[0];
+			center[1] += v2[1];
+		}
+
+		center[0] = center[0]/num_cell_verticies;
+		center[1] = center[1]/num_cell_verticies;
+		area = 0.5*fabs(area);
+
+
+
 
 		// construct smoothed shape function gradients in the cell
 		for ( int k = 0 ; k < num_cell_verticies ; k++)
@@ -135,43 +174,19 @@ SCNI ** generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalised,
 			// node 
 			int indx;
 
-			// create each segment v1 --- v2
-			v1 = cell_verticies->me[cell_index[k]];
-			if ( k < num_cell_verticies -2 ){
-				v2 = cell_verticies->me[cell_index[k+1]];
-				v3 = cell_verticies->me[cell_index[k+2]];		
-				indx = cell_index[k+1];
-			}else if ( k == num_cell_verticies - 2){
-				v2 = cell_verticies->me[cell_index[k+1]];
-				v3 = cell_verticies->me[cell_index[0]];
+
+			if ( k == num_cell_verticies -1)
+			{
 				indx = cell_index[0];
-			}else if ( k == num_cell_verticies - 1) {
-				v2 = cell_verticies->me[cell_index[0]];
-				v3 = cell_verticies->me[cell_index[1]];
-				indx = cell_index[1];
+
 			}else{
-
-				printf("shouldnt get here \n \n");
-
+				indx = cell_index[k+1];
 			}
 
-			// find length of segment 
-			seg_length_m_1 = sqrt(pow(v3[0]-v2[0],2) + pow(v3[1]-v2[1],2));  
-				// printf("seg_length_m_1 = %lf\n ", seg_length_m_1);
 
-			// find outward normal of cell segment
-			n_m_1[0] = (normalFactor)*1.00*(v3[1] - v2[1])/seg_length_m_1;
-			n_m_1[1] = (normalFactor)*-1.00*(v3[0] - v2[0])/seg_length_m_1;
-
-
-			area += (v1[0]*v2[1] - v2[0]*v1[1]);
-			center[0] += v2[0];
-			center[1] += v2[1];
 
 			// get phi at this point 
 			phi = sf_verticies->sf_list[indx]->phi;
-
-
 			neighbours = sf_verticies->sf_list[indx]->neighbours;
 
 			// recursive defitnion b_Ii = sum_Ns [ 0.5 * ( n_im * l_m + n_i(m+1) * l_(m+1) ) phi_I ( M+1)]
@@ -184,10 +199,9 @@ SCNI ** generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalised,
 					// point was already in cell_sf_index
 				if ( idx != -1)
 				{
-
 					// add b_Ii contrbution to b_I;
-					bI->me[idx][0] += 0.5*(n_m[0]*seg_length_m + n_m_1[0]*seg_length_m_1)*phi->ve[j];
-					bI->me[idx][1] += 0.5*(n_m[1]*seg_length_m + n_m_1[1]*seg_length_m_1)*phi->ve[j];
+					bI->me[idx][0] += 0.5*(n[k][0]*l[k] + n[k+1][0]*l[k+1])*phi->ve[j];
+					bI->me[idx][1] += 0.5*(n[k][1]*l[k] + n[k+1][1]*l[k+1])*phi->ve[j];
 
 				}else{
 
@@ -210,23 +224,18 @@ SCNI ** generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalised,
 
 					// add contribution to bI and cell_sf_index 
 					cell_sf_index->ive[length_cell_index-1] = node_nr;
-					bI->me[length_cell_index-1][0] += 0.5*(n_m[0]*seg_length_m + n_m_1[0]*seg_length_m_1)*phi->ve[j];
-					bI->me[length_cell_index-1][1] += 0.5*(n_m[1]*seg_length_m + n_m_1[1]*seg_length_m_1)*phi->ve[j];
+					bI->me[length_cell_index-1][0] += 0.5*(n[k][0]*l[k] + n[k+1][0]*l[k+1])*phi->ve[j];
+					bI->me[length_cell_index-1][1] += 0.5*(n[k][1]*l[k] + n[k+1][1]*l[k+1])*phi->ve[j];
 
 				}
 			}
 			// int factor = 0.5 * ( n_im * l_m + n_i(m+1) * l_(m+1) ) 
 
-			n_m[0] = n_m_1[0]; n_m[1] = n_m_1[1];
-			seg_length_m = seg_length_m_1;
 
-			center[0] = center[0]/num_cell_verticies;
-			center[1] = center[1]/num_cell_verticies;
 
 		} // end of loop over cell verticies
 
 
-		area = 0.5*fabs(area);
 		// m_foutput(stdout, bI);
 		// printf("got to resizing \n");
 		// printf("length_cell_index = %d\n",length_cell_index);
@@ -251,6 +260,7 @@ SCNI ** generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalised,
 		scni_[i]->sfIndex = cell_sf_index;
 		scni_[i]->area = area;
 		scni_[i]->center = center;
+		scni_[i]->fInt = v_get(dim*cell_sf_index->max_dim);
 
 	} // end of loop over cells
 
@@ -263,7 +273,12 @@ SCNI ** generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalised,
 
 	free_shapefunction_container(sf_verticies);
 
-	return scni_;
+
+	SCNI_OBJ * scni_obj = malloc(1*sizeof(SCNI_OBJ));
+	scni_obj->scni = scni_;
+	scni_obj->num_points = num_cells;
+
+	return scni_obj;
 }
 
 

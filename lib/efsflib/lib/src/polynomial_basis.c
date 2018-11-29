@@ -20,6 +20,8 @@ int polynomial_basis(MAT * basis, double * point, int dim, char * order, int com
 	// get size of matricies based on basis used
 
 	int dim_p;
+
+	
 	if ( strcmp(order,"linear") == 0 )
 	{
 		if ( dim == 1){

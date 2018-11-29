@@ -57,6 +57,29 @@ int weight_function (VEC * weights, double  * xS, double dI, char * type,  int c
 
 
 	if (strcmp(type, "cubic")  == 0){
+		VEC * w_arr = v_get(3);
+
+		// find w, w_r, w_rr 
+		cubic_spline(w_arr,r);
+
+		weights->ve[0] = w_arr->ve[0];
+
+		if (( compute == 2) || ( compute == 3)){
+			for ( int i = 0 ; i < dim ; i++)
+			{
+				if ( r != 0 ){
+				double drdi = (xS[i]/(r*dI*dI));
+				weights->ve[1+i] = drdi*w_arr->ve[1];
+				}
+				else{
+				weights->ve[1+i] = 0;
+				}
+			}
+
+		}
+		if ( compute == 3){
+			printf("use higher order basis to find 2nd derivative \n");
+		}
 
 
 	}else if ( strcmp(type,"quartic") == 0)

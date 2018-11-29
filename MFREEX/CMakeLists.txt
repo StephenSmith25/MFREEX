@@ -8,6 +8,7 @@ include_directories(${Meschach_SOURCE_DIR})
 include_directories(${CVLIB_SOURCE_DIR}/lib/include)
 include_directories(${CVLIB_SOURCE_DIR}/test/include)
 include_directories(${GPC_SOURCE_DIR})
+include_directories(${util_SOURCE_DIR}/include)
 
 
 find_package(OpenMP)

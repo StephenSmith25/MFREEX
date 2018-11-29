@@ -1,0 +1,28 @@
+#ifndef INTERNALFORCE_HYPERELASTIC_H_
+#define INTERNALFORCE_HYPERELASTIC_H_
+
+#include "matrix.h"
+#include "matrix2.h"
+#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
+#include <omp.h>
+#include "Integration/SCNI/generate_scni.h"
+#include "Material/Hyperelastic/hyperelastic_materials.h"
+#include "Integration/defgrad.h"
+#define PI 3.14159265359
+
+
+int internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp,VEC * matParams, char * material, int is_axi, int dim);
+
+
+
+
+
+
+
+
+
+
+#endif
+

@@ -6,8 +6,11 @@ include_directories(${EFSFLIB_SOURCE_DIR}/lib/include)
 include_directories(${Meschach_SOURCE_DIR})
 include_directories(${CVLIB_SOURCE_DIR}/lib/include)
 include_directories(${CVLIB_SOURCE_DIR}/test/include)
+include_directories(${util_SOURCE_DIR}/include)
+
 include_directories(${GPC_SOURCE_DIR})
 include_directories(${MFREEX_SOURCE_DIR}/MFREEX/include)
+include_directories(${triangulate_SOURCE_DIR}/include)
 
 
 link_directories(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
@@ -25,5 +28,5 @@ endif()
 find_package (Threads)
 
 
-add_executable(test_program test.c meshgrid.c)
-target_link_libraries(test_program CVLIB MFREEX EFSFLIB meschach m gpc)
+add_executable(test_program test.c)
+target_link_libraries(test_program CVLIB MFREEX EFSFLIB triangulate meschach m gpc util)

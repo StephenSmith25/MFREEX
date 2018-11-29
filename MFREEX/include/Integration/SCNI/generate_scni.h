@@ -7,6 +7,7 @@
 #include "mls_shapefunction.h"
 #include "generate_voronoi.h"
 #include "Bmat/generate_Bmat.h"
+#include "Integration/integration_structure.h"
 #include <math.h>
 #include <omp.h>
 
@@ -22,7 +23,14 @@ typedef struct SCNI {
 }SCNI;
 
 
-SCNI ** generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalised, int is_AXI, int dim, meshfreeDomain * Mfree);
+typedef struct SCNI_OBJ{
+
+	SCNI ** scni;
+	int num_points;
+
+}SCNI_OBJ;
+
+SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalised, int is_AXI, int dim, meshfreeDomain * Mfree);
 int free_scni(SCNI * _scni);
 
 

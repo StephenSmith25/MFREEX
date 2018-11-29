@@ -4,3 +4,6 @@
 -Ilib/efsflib/lib/include
 -Ilib/clipped_voronoi/lib/include
 -IMFREEX/include
+-Ilib/util/include
+-I/usr/lib/gcc/x86_64-linux-gnu/7/include/
+-Ilib/triangulate/include

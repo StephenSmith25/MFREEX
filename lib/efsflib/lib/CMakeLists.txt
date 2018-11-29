@@ -18,6 +18,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 
 add_library(EFSFLIB STATIC src/polynomial_basis.c src/mls_shapefunction.c src/neighbours.c src/setDomain.c src/weight_function.c
-	src/v_outer_product.c src/quartic_spline.c)
+	src/v_outer_product.c src/quartic_spline.c src/cubic_spline.c)
 
 #target_link_libraries(Shapefunction meschach m ${CMAKE_THREAD_LIBS_INIT} )
