@@ -8,6 +8,8 @@ void get_defgrad(MAT * F, MAT * B, VEC * disp, IVEC * neighbours)
 
 	m_zero(F);
 
+	m_ident(F);
+
 	for ( int i = 0 ; i < neighbours->max_dim ; i++)
 	{
 		int indx = neighbours->ive[i];

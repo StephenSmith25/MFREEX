@@ -115,7 +115,7 @@ int main(void )
 	/* ------------------------------------------*/
 
 	// shape function parameters
-	double dmax = 2.5;
+	double dmax = 2;
 	int constant_support_size = 1;
 	char * basis = "quadratic";
 	char * weight = "cubic";
@@ -169,14 +169,14 @@ int main(void )
 
 
 	// Test divergence free condition
-	v_foutput(stdout,dI);
-	int checkPoint = 121;
+	int checkPoint = 133;
 	IVEC * index ;
 	MAT * B; 
 	MAT * check_B = m_get(dim*dim,2);
 	printf("checking divergence free condition at point %d\n", checkPoint);
 	printf("with coordinates %lf %lf\n", mfree.nodes->me[checkPoint][0], mfree.nodes->me[checkPoint][1]);
 	printf("cell area = %lf \n", _scni_obj->scni[checkPoint]->area);
+	printf("and neighbours \n");
 	for ( int i = 0 ; i < _scni_obj->num_points ; i++)
 	{
 		index = _scni_obj->scni[i]->sfIndex;
@@ -202,8 +202,8 @@ int main(void )
 
 
 	// get boundary nodes
-	IVEC * eb_nodes = iv_get(num_nodes_y);
-	IVEC * traction_nodes = iv_get(num_nodes_y);
+	IVEC * eb_nodes = iv_get(10);
+	IVEC * traction_nodes = iv_get(10);
 
 	int num_nodes_eb = 0;
 	int num_nodes_trac = 0;
@@ -223,9 +223,24 @@ int main(void )
 			++num_nodes_eb;
 		}
 
-	}
-	// 
+	}	
+
+
+	IVEC * temp = iv_copy(traction_nodes,IVNULL);
+	iv_resize(traction_nodes, num_nodes_trac);
+	traction_nodes->max_dim = num_nodes_trac;
+	iv_move(temp, 0, num_nodes_trac, traction_nodes, 0);
+	IV_FREE(temp);
+
+	IVEC * temp_1 = iv_copy(eb_nodes,IVNULL);
+	iv_resize(eb_nodes, num_nodes_eb);
+	eb_nodes->max_dim = num_nodes_eb;
+	iv_move(temp_1, 0, num_nodes_eb, eb_nodes, 0);
+	IV_FREE(temp_1);
+
+
 	iv_foutput(stdout,traction_nodes);
+
 	iv_foutput(stdout, eb_nodes);
 
 
@@ -258,7 +273,7 @@ int main(void )
 	
 	// time parameters
 	double t_max = 1.00; // 1s
-	double delta_t = 1e-7;
+	double delta_t = 1e-6;
 	double t_n = 0;
 	double t_n_1 = 0;
 
@@ -312,7 +327,6 @@ int main(void )
 
 
 
-	//while ( t_n < t_max)
 	while ( t_n < t_max)
 	{
 
@@ -349,7 +363,7 @@ int main(void )
 		// Implement boundary conditions
 		// Problem specific code
 		// x-y 
-		xPoint = nodal_disp->ve[traction_nodes->ive[3]*2+1]*xFactor;
+		xPoint = nodal_disp->ve[traction_nodes->ive[2]*2+1]*xFactor;
 		yPoint = tipLoad * pow(L,2)*(1/E)*(1/Ixx);
 
 

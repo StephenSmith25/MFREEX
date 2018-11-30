@@ -21,7 +21,7 @@ int SVK(VEC * stressVoigt, MAT * defGrad, VEC * params){
 
 
 
-	v_zero(stressVoigt);
+
 
 	MAT * strainGL = m_get(defGrad->m,defGrad->m);
 	MAT * ident = m_get(defGrad->m,defGrad->m);
@@ -38,7 +38,10 @@ int SVK(VEC * stressVoigt, MAT * defGrad, VEC * params){
 	
 	m_sub(strainGL,ident,strainGL);
 	sm_mlt(0.5000,strainGL,strainGL);
-	double traceE = trace(strainGL);
+	double traceE = 0;
+	for ( int k = 0 ; k < strainGL->m ; k++){
+		traceE += strainGL->me[k][k];
+	}
 
 
 
