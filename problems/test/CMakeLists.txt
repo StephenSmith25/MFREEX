@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-project(test)
+project(beam)
 
 
 include_directories(${EFSFLIB_SOURCE_DIR}/lib/include)
@@ -16,6 +16,9 @@ include_directories(${triangulate_SOURCE_DIR}/include)
 link_directories(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 
 
+configure_file(square.segs square.segs COPYONLY)
+configure_file(square.nodes square.nodes COPYONLY)
+
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin/Test\ problem)
 
 find_package(OpenMP)
@@ -28,5 +31,18 @@ endif()
 find_package (Threads)
 
 
-add_executable(test_program test.c)
-target_link_libraries(test_program CVLIB MFREEX EFSFLIB triangulate meschach m gpc util)
+add_executable(beam beam.c)
+target_link_libraries(beam CVLIB MFREEX EFSFLIB triangulate meschach m gpc util)
+
+
+# copy input files to location
+add_custom_command(
+        TARGET beam POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_CURRENT_SOURCE_DIR}/square.segs
+                ${EXECUTABLE_OUTPUT_PATH}/square.segs)
+add_custom_command(
+        TARGET beam POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_CURRENT_SOURCE_DIR}/square.nodes
+                ${EXECUTABLE_OUTPUT_PATH}/square.nodes)
