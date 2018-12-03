@@ -261,10 +261,13 @@ int main(void )
 	/* ------------------------------------------*/
 
 	VEC * nodal_mass = v_get(mfree.num_nodes);
+	VEC * inv_nodal_mass = v_get(mfree.num_nodes);
 
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
 		nodal_mass->ve[i] = _scni_obj->scni[i]->area*rho;
+		inv_nodal_mass->ve[i] = 1.000/nodal_mass->ve[i];
+
 	}
 
 	/* ------------------------------------------*/
@@ -272,10 +275,11 @@ int main(void )
 	/* ------------------------------------------*/
 	
 	// time parameters
-	double t_max = 1.00; // 1s
+	double t_max = 0.5; // 1s
 	double delta_t = 1e-6;
 	double t_n = 0;
 	double t_n_1 = 0;
+
 
 
 
@@ -325,9 +329,19 @@ int main(void )
 	double Wkin = 0;
 	double Wbal = 0;
 
+	int num_dof = dim*mfree.num_nodes;
 
+
+
+	MAT * nodes_X = m_copy(mfree.nodes,MNULL);
+
+
+
+	struct timeval start3, end3;
+	gettimeofday(&start3, NULL);
 
 	while ( t_n < t_max)
+	//while ( n < 1000)
 	{
 
 		// Update time step
@@ -336,10 +350,13 @@ int main(void )
 
 		// Find d_n_1 and v_n_h
 		// update velocity
-		v_mltadd(v_n_mh, a_n, delta_t, v_n_h);
-		// update displacements
-		v_mltadd(d_n,v_n_h,delta_t,d_n_1);
+		//v_mltadd(v_n_mh, a_n, delta_t, v_n_h);
 
+		__mltadd__(v_n_h->ve, a_n->ve,delta_t,num_dof);
+
+		// update displacements
+		//v_mltadd(d_n,v_n_h,delta_t,d_n_1);
+		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
 		// implement boundary conditions
 
 		for ( int i = 0 ; i < num_nodes_eb ; i++)
@@ -350,19 +367,13 @@ int main(void )
 			v_n_h->ve[eb_nodes->ive[i]*2 + 1] = 0;
 		}
 
-		// find nodal disp
+		// find new nodal positions
 		mv_mlt(Lambda,d_n_1,nodal_disp);
+		__add__(nodes_X->base, nodal_disp->ve, updatedNodes->base, num_dof);
 
-		for ( int i = 0 ; i < mfree.num_nodes ; i++)
-		{
-			updatedNodes->me[i][0] = mfree.nodes->me[i][0] + nodal_disp->ve[2*i];
-			updatedNodes->me[i][1] = mfree.nodes->me[i][1] + nodal_disp->ve[2*i+1];
 
-		}
 
-		// Implement boundary conditions
-		// Problem specific code
-		// x-y 
+		// Find the x and y points requried for plotting
 		xPoint = nodal_disp->ve[traction_nodes->ive[2]*2+1]*xFactor;
 		yPoint = tipLoad * pow(L,2)*(1/E)*(1/Ixx);
 
@@ -393,19 +404,18 @@ int main(void )
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/
 		/* ------------------------------------------*/
-		v_sub(Fext_n_1, Fint_n_1, Fnet_n_1);
+		__sub__(Fext_n_1->ve, Fint_n_1->ve, Fnet_n_1->ve,num_dof);
 
 		/* ------------------------------------------*/
 		/* ---------------Find Acceleration----------*/
 		/* ------------------------------------------*/
 
-		// if ( n % 1000 == 0)
+		// invM * Fne
 
-		for ( int i = 0 ; i < mfree.num_nodes; i++)
+		for ( int i = 0 ; i < numnodes  ; i++ )
 		{
-			a_n_1->ve[2*i] = Fnet_n_1->ve[2*i]/nodal_mass->ve[i]; 
-			a_n_1->ve[2*i+1] = Fnet_n_1->ve[2*i+1]/nodal_mass->ve[i]; 
-
+			a_n_1->ve[2*i] = Fnet_n_1->ve[2*i]*inv_nodal_mass->ve[i];
+			a_n_1->ve[2*i+1] = Fnet_n_1->ve[2*i+1]*inv_nodal_mass->ve[i];
 		}
 
 
@@ -419,7 +429,6 @@ int main(void )
 			v_n_1->ve[eb_nodes->ive[i]*2] = 0;
 			v_n_1->ve[eb_nodes->ive[i]*2 + 1] = 0;
 		}
-
 
 
 		// save outputs
@@ -436,7 +445,8 @@ int main(void )
 		/* ------------------------------------------*/
 		/* -----------------Find Energy--------------*/
 		/* ------------------------------------------*/
-		delta_disp = v_sub(d_n_1, d_n, delta_disp);
+		// find change in displacement 
+		__sub__(d_n_1->ve, d_n->ve, delta_disp->ve, num_dof);
 
 		Wext += in_prod(delta_disp, Fext_n) + in_prod(delta_disp, Fext_n_1);
 		Wint += in_prod(delta_disp, Fint_n) + in_prod(delta_disp, Fint_n_1);
@@ -460,8 +470,8 @@ int main(void )
 		// Store previous time step quanities for the kinematic, and force variables.
 		v_copy(Fint_n_1,Fint_n);
 		v_copy(Fext_n_1,Fext_n);
-		v_copy(v_n_h,v_n_mh);
-		v_copy(d_n_1,d_n);
+		// v_copy(v_n_h,v_n_mh);
+		// v_copy(d_n_1,d_n);
 		v_copy(v_n_1,v_n);
 		v_copy(a_n_1,a_n);
 
@@ -473,7 +483,10 @@ int main(void )
 	}
 
 
-
+	gettimeofday(&end3, NULL);
+	 delta = ((end3.tv_sec  - start3.tv_sec) * 1000000u + 
+         end3.tv_usec - start3.tv_usec) / 1.e6;
+	printf("Explicit routine took %lf seconds to run\n", delta);
 
 
 

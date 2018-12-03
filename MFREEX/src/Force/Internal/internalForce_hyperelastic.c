@@ -1,16 +1,15 @@
 #include "Force/Internal/internalForce_hyperelastic.h"
 
 
-static int call_count;
-
-
-
 
 int internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC * matParams, char * Material, int is_axi, int dim){
 
 
 	int i = 0 ;
 	v_zero(Fint);
+
+
+	__zero__(Fint->ve,Fint->max_dim);
 
 	// create pointer to correct material
 	int (*mat_func_ptr)(VEC*,MAT*,VEC*) = NULL;
@@ -21,24 +20,30 @@ int internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC 
 
 	}
 
-	MAT * F = m_get(dim,dim);
-	VEC * stressVoigt;
-
+	int dim_v = 0;
 	// check if problem is axisymmetric
 	if ( is_axi == 1){
-		stressVoigt = v_get(5);
+		dim_v = 5;
 	}else{
-		stressVoigt = v_get(dim*dim);
+		dim_v = dim*dim;
 	}
 
 	// loop over all integration points
-	VEC * fIntTemp = v_get(Fint->max_dim);
-
 
 	SCNI ** scni = scni_obj->scni;
 	int num_int_points = scni_obj->num_points;
 
 
+	omp_set_num_threads(3);
+
+#pragma omp parallel 
+{
+
+	MAT * F = m_get(dim,dim);
+	VEC * stressVoigt = v_get(dim_v);
+	VEC * fIntTemp = v_get(Fint->max_dim);
+
+#pragma omp for nowait schedule(dynamic,2)
 	for(i = 0 ; i < num_int_points ; i++){
 
 		/*  Find deformation gradient */
@@ -50,9 +55,11 @@ int internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC 
 
 			intFactor = intFactor * 2*PI*scni[i]->center[0];
 		}
-		mat_func_ptr(stressVoigt,F,matParams);
 
-		v_zero(scni[i]->fInt);
+
+		mat_func_ptr(stressVoigt,F,matParams);
+		__zero__(scni[i]->fInt->ve,scni[i]->fInt->max_dim);
+
 		vm_mlt(scni[i]->B,stressVoigt,scni[i]->fInt);
 
 		for ( int k = 0 ; k < scni[i]->sfIndex->max_dim; k++){
@@ -62,15 +69,16 @@ int internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC 
 	}
 
 	/*  Make this atomic or mutex so it is only done by one thread */
-	v_add(fIntTemp,Fint,Fint);
-
+	#pragma omp critical
+		__add__(fIntTemp->ve, Fint->ve, Fint->ve, Fint->max_dim);
 
 	/*  Free allocated memory */
 	v_free(stressVoigt);
 	v_free(fIntTemp);
 	M_FREE(F);
 
-	++call_count;
+}
+
 
 	return 0;
 }

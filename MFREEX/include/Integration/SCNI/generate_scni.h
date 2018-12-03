@@ -18,6 +18,7 @@ typedef struct SCNI {
 	VEC * phi;
 	MAT * B ; 
 	VEC * fInt;
+	MAT * F_r;
 	double * center;
 	int index;
 }SCNI;

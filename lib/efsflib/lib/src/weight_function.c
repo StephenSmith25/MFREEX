@@ -80,6 +80,8 @@ int weight_function (VEC * weights, double  * xS, double dI, char * type,  int c
 		if ( compute == 3){
 			printf("use higher order basis to find 2nd derivative \n");
 		}
+		v_free(w_arr);
+
 
 
 	}else if ( strcmp(type,"quartic") == 0)

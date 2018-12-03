@@ -19,7 +19,7 @@ link_directories(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 configure_file(square.segs square.segs COPYONLY)
 configure_file(square.nodes square.nodes COPYONLY)
 
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin/Test\ problem)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin/beam)
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
