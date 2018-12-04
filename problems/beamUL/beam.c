@@ -6,6 +6,8 @@
 #include "meshgrid.h"
 #include <sys/time.h>
 #include "Integration/SCNI/generate_scni.h"
+#include "Integration/SCNI/scni_update_B.h"
+
 #include "mls_shapefunction.h"
 #include "setDomain.h"
 #include "smoothstep.h"
@@ -335,14 +337,15 @@ int main(void )
 
 	// updated variable
 
-	VEC * d_inc = v_get(num_dof);
+	VEC * disp_inc = v_get(num_dof);
+	VEC * disp_r = v_get(num_dof);
 
 
 	struct timeval start3, end3;
 	gettimeofday(&start3, NULL);
 
 	//while ( t_n < t_max)
-	//while ( n < 100)
+	while ( n < 51000)
 	{
 
 		// Update time step
@@ -354,8 +357,6 @@ int main(void )
 		// update displacements
 		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
 		// implement boundary conditions
-
-
 
 
 		for ( int i = 0 ; i < num_nodes_eb ; i++)
@@ -373,18 +374,35 @@ int main(void )
 
 		// update the scni diagram based on new nodal positions and get the new Bmat
 
-		if ( n == 1e5)
+		if ( n == 5e4 )
 		{	
 			mfree.nodes = updatedNodes;
+			int digits = 5;
+			double fac = pow(10, digits);
+
+			for ( int k = 0 ; k < num_dof ; k++)
+			{
+				double x = updatedNodes->base[k];
+    			updatedNodes->base[k] = round(x*fac)/fac;
+			}
+
 			//setDomain(&mfree,constant_support_size, dmax);
-			voronoi_diagram * vor_1 = generate_voronoi(mfree.nodes->base, boundaryNodes, mfree.num_nodes, numBoundary, 2);
-			SCNI_OBJ * _scni_obj_1 = generate_scni(vor_1, NULL , is_stabalised, is_AXI, dim, &mfree);
-			FILE * fp = fopen("cells.txt","w");
+			voronoi_diagram * vor_1 = generate_voronoi(updatedNodes->base, boundaryNodes, mfree.num_nodes, numBoundary, 2);
+			scni_update_B(_scni_obj, disp_inc, vor_1, &mfree, is_AXI);
+
+			v_copy(d_n_1,disp_r);
+
+			FILE * fp;
+			fp = fopen("cells1.txt","w");
 			print_voronoi_diagram(fp,vor_1);
 			fclose(fp);
 
+
 		}
 
+
+		// Find incremental displacement accumulated at configuration n
+		__sub__(d_n_1->ve, disp_r->ve,disp_inc->ve, num_dof);
 
 
 		// Find the x and y points requried for plotting
@@ -412,8 +430,8 @@ int main(void )
 		/* ------------Find Internal Force-----------*/
 		/* ------------------------------------------*/
 
-
-		internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, materialParameters, "SVK", is_AXI, dim);
+		// find incremental displacement
+		internalForce_hyperelastic(Fint_n_1, _scni_obj, disp_inc, materialParameters, "SVK", is_AXI, dim);
 
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/
@@ -445,7 +463,7 @@ int main(void )
 
 
 		// save outputs
-		if ( n % writeFreq == 0 ){
+		if ( n > 50000 ){
 			char filename[50];
 			snprintf(filename, 50, "displacement_%d%s",fileCounter,".txt");
 			mat2csv(updatedNodes,"./Displacement",filename);
@@ -499,7 +517,6 @@ int main(void )
 	 delta = ((end3.tv_sec  - start3.tv_sec) * 1000000u + 
          end3.tv_usec - start3.tv_usec) / 1.e6;
 	printf("Explicit routine took %lf seconds to run\n", delta);
-
 
 
 

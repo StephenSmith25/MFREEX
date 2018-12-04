@@ -4,10 +4,15 @@
 #define JCV_REAL_TYPE double
 #define JCV_ATAN2 atan2
 #define JCV_FLT_MAX 1.7976931348623157E+308
+#define JCV_CEIL ceil
+#define JCV_FLOOR floor
+#define JCV_FABS fabs
 #include "jc_voronoi.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 static inline int is_equal_double(double * a, double * b, int dim){
-  double tol = 1e-12;
+  double tol = 1e-14;
 
 
   if (     (fabs(a[0] - b[0]) < tol) && ( fabs(a[1] - b[1]) < tol ) )
@@ -38,9 +43,9 @@ gpc_polygon ** callVoronoi(double points[], int num_points){
   jcv_graphedge * graph_edge;
   memset(&diagram,0,sizeof(jcv_diagram));
 
-  printf("GENERAING VORONOI DIAGRAM \n");
   jcv_diagram_generate(num_points,(const jcv_point *)voronoi_points,NULL,&diagram);
-  printf("FINISHED GENERATING VORONOI DIAGRAM \n");
+
+
 
   // get voronoi sites
   sites = jcv_diagram_get_sites(&diagram);
@@ -83,7 +88,6 @@ gpc_polygon ** callVoronoi(double points[], int num_points){
 
       if ( is_equal_double(v_1, v_2, 2) != 1){
         ++numVert;
-
         v_1[0] = v_2[0];
         v_1[1] = v_2[1];
       }

@@ -19,10 +19,10 @@ int clipVoronoi(gpc_polygon*** voronoi, double points[], int boundary[], int num
   gpc_vertex_list clip_list = {.num_vertices = numBoundary, .vertex = clipVertex};
   gpc_polygon clip_polygon = {.num_contours=1, .hole = NULL, .contour = &clip_list};
 
-  fp = fopen("cells.txt","w");
-  gpc_write_polygon(fp, 0, &clip_polygon);
-  fclose(fp);
-  printf("CLIPPING VORONOI\n");
+  // fp = fopen("cells.txt","w");
+  // gpc_write_polygon(fp, 0, &clip_polygon);
+  // fclose(fp);
+  // printf("CLIPPING VORONOI\n");
 
   // clip boundary cells
   for (int i = 0; i < numPoints; i++) {
@@ -36,21 +36,20 @@ int clipVoronoi(gpc_polygon*** voronoi, double points[], int boundary[], int num
     /* code */
   }
 
-  printf("FINISHED CLIPPING VORONOI\n");
 
- // //write cells to file
+ //write cells to file
 
- //  char fileName[256];
- //  for (int i = 0; i < numPoints; i++) {
- //    // write cell to file
- //    	snprintf(fileName,sizeof(fileName),"Cells/%d.txt",i);
- //    	// write clipped cell to files
- //    	fp = fopen(fileName,"w");
- //    	if ( fp != NULL)
- //    		gpc_write_polygon(fp, 0, (*voronoi)[i]);
- //    	fclose(fp);
+  // char fileName[256];
+  // for (int i = 0; i < numPoints; i++) {
+  //   // write cell to file
+  //   	snprintf(fileName,sizeof(fileName),"Cells/%d.txt",i);
+  //   	// write clipped cell to files
+  //   	fp = fopen(fileName,"w");
+  //   	if ( fp != NULL)
+  //   		gpc_write_polygon(fp, 0, (*voronoi)[i]);
+  //   	fclose(fp);
   
- //  }
+  // }
   
   
 

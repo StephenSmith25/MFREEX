@@ -53,7 +53,7 @@ axis equal
 
 sizeA = [2 inf];
 formatSpec = '%f %f';
-fileID = fopen('loadDisp.txt','r');
+fileID = fopen('./../../build/bin/beam/loadDisp.txt','r');
 A = fscanf(fileID,formatSpec,sizeA);
 
 A = A'

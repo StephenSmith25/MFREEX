@@ -1,6 +1,6 @@
 #include "Force/Internal/internalForce_hyperelastic.h"
 
-
+static int call_count ;
 
 int internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC * matParams, char * Material, int is_axi, int dim){
 
@@ -47,7 +47,7 @@ int internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC 
 	for(i = 0 ; i < num_int_points ; i++){
 
 		/*  Find deformation gradient */
-		get_defgrad(F, scni[i]->B, disp, scni[i]->sfIndex);
+		get_defgrad(F, scni[i], disp);
 
 		/* Integration parameter */
 		double intFactor = scni[i]->area;
@@ -55,7 +55,16 @@ int internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC 
 
 			intFactor = intFactor * 2*PI*scni[i]->center[0];
 		}
+		if ( call_count >49999 )
+		{
+			if ( i == 0){
+			printf("F_r ");
+			m_foutput(stdout, scni[i]->F_r);
 
+			printf("F ");
+			m_foutput(stdout, F);
+			}
+		}
 
 		mat_func_ptr(stressVoigt,F,matParams);
 		__zero__(scni[i]->fInt->ve,scni[i]->fInt->max_dim);
@@ -78,7 +87,7 @@ int internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC 
 	M_FREE(F);
 
 }
-
+	++call_count;
 
 	return 0;
 }

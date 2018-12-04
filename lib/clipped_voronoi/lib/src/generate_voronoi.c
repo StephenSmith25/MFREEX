@@ -6,10 +6,10 @@
 
 
 // find if the point is already a member of the vertex list
-static inline int is_member(double * point, double ** points, int numPoints, int dim ){
+int is_member(double * point, double ** points, int numPoints, int dim ){
 
 
-	double tol_equal = 1e-6;
+	double tol_equal = 1e-14;
 
 	int is_member_row = 0;
 	int i = 0;
@@ -158,14 +158,13 @@ voronoi_diagram * generate_voronoi(double *points, int * boundary, int numPoints
 		vertex_list = m_move(temp,0,0,count_vertex_list,temp->n,vertex_list,0,0);
 		M_FREE(temp);
 	}
-	printf("got to return \n ");
 	vor_out->verticies = vertex_list;
 	return vor_out;
 }
 
 int print_voronoi_diagram(FILE *fp, voronoi_diagram * vor)
 {
-	fprintf(fp,"%d %d\n",vor->verticies->m,2);
+	fprintf(fp,"%d %d\n",vor->verticies->m, 2  );
 
 	for ( int i = 0 ; i < vor->verticies->m ; i++)
 	{

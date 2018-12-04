@@ -43,26 +43,28 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 
 	int dim  = Mfree->dim;
 
+	if (is_AXI == 1)
+	{
+		dim = 3;
+	}
+
 	// get shape function at verticies
 	shape_function_container * sf_verticies = mls_shapefunction(cell_verticies, "linear", "cubic", 2, 1, Mfree);
 
 
 	int num_cells = voronoi->num_cells;
 
-	printf("Looping over cells and construction B \n ");
 	
 	VEC * phi = VNULL;
 	IVEC * neighbours = IVNULL;
 
 
 	// cell combined neighbours
-	// appr
 	int approx_cell_sf_index_length = 20;
 
 
 	SCNI ** scni_  = scni->scni;
 
-	int i;
 	IVEC * temp_vec = iv_get(approx_cell_sf_index_length);
 
 	for ( int k = 0 ; k < approx_cell_sf_index_length ; k++)
@@ -81,15 +83,20 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 
 
 	// size of sfIndex
-	MAT * bI = m_get(Mfree->num_nodes,2);
+	MAT * bI = m_get(Mfree->num_nodes,dim);
+
+
+	MAT  * temp_F = m_get(dim,dim);
 
 
 
 	// also find B^s, the stabalisation matrix if stabasliation is required
+	register int i;
 
 	for ( i = 0 ; i < num_cells; i++)
 	{
-		scni_[i] = malloc(1*sizeof(SCNI));
+
+
 		cell_index = voronoi->index[i];
 		num_cell_verticies = voronoi->num_cell_verticies[i];
 
@@ -102,6 +109,8 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 		center[0] = 0;
 		center[1] = 0;
 		length_cell_index = 0;
+
+
 
 
 		// check orientation of the polygon
@@ -117,6 +126,12 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 		}else{
 			normalFactor = -1;
 		}
+
+		//Update state variable Fr
+
+
+		get_defgrad(temp_F, scni_[i], disp);
+		m_copy(temp_F,scni_[i]->F_r);
 
 
 
@@ -171,14 +186,10 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 				m_2 = k+1;
 			}
 
-
-
 			// get phi at this point 
 			phi = sf_verticies->sf_list[indx]->phi;
 			neighbours = sf_verticies->sf_list[indx]->neighbours;
 
-			// printf("phi at vertex with coordinates %lf %lf \n",cell_verticies->me[indx][0],cell_verticies->me[indx][1]);
-			// v_foutput(stdout,phi);
 
 			// recursive defitnion b_Ii = sum_Ns [ 0.5 * ( n_im * l_m + n_i(m+1) * l_(m+1) ) phi_I ( M+1)]
 			for ( int j = 0 ; j < neighbours->max_dim ; j++)
@@ -218,19 +229,21 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 			}
 		
 
-		// generate Bmat and set up SCNI structure
+		//generate Bmat and set up SCNI structure
 		sm_mlt(1.000/area, bI, bI);
+		M_FREE(scni_[i]->B);
 		scni_[i]->B = generate_Bmat(bI_n,dim,is_AXI,-1);
 		M_FREE(bI_n);
+		IV_FREE(scni_[i]->sfIndex);
 		scni_[i]->sfIndex = cell_sf_index;
-
+		V_FREE(scni_[i]->fInt);
+		scni_[i]->fInt = v_get(dim*cell_sf_index->max_dim);
 	} // end of loop over cells
 
-
+	M_FREE(temp_F);
 	M_FREE(bI);
+	IV_FREE(temp_vec);
 
-
-	printf("Finished looping over cells and constructing B \n ");
 
 
 	free_shapefunction_container(sf_verticies);
@@ -242,7 +255,3 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 }
 
 
-int free_scni(SCNI * _scni){
-
-	return 0;
-}

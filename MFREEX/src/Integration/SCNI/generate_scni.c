@@ -227,6 +227,13 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 		scni_[i]->area = area;
 		scni_[i]->center = center;
 		scni_[i]->fInt = v_get(dim*cell_sf_index->max_dim);
+		
+		if ( is_AXI == 1){
+			scni_[i]->F_r = m_get(3,3);
+		}else{
+			scni_[i]->F_r = m_get(dim,dim);
+		}
+		m_ident(scni_[i]->F_r);
 
 	} // end of loop over cells
 
