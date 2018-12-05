@@ -70,7 +70,7 @@ int main(void )
 
 
 	// Read PLSG 
-	char opt[20] = "pDq30a0.05";
+	char opt[20] = "pDq30a0.1";
 	char fileName[30] = "square";
 	double * points_out ;
 	int * boundaryNodes;
@@ -344,8 +344,8 @@ int main(void )
 	struct timeval start3, end3;
 	gettimeofday(&start3, NULL);
 
-	//while ( t_n < t_max)
-	while ( n < 51000)
+	while ( t_n < t_max)
+	//while ( n < 51000)
 	{
 
 		// Update time step
@@ -374,19 +374,21 @@ int main(void )
 
 		// update the scni diagram based on new nodal positions and get the new Bmat
 
-		if ( n == 5e4 )
+		if ( n % 10000 == 0 )
 		{	
 			mfree.nodes = updatedNodes;
 			int digits = 5;
 			double fac = pow(10, digits);
+
+
 
 			for ( int k = 0 ; k < num_dof ; k++)
 			{
 				double x = updatedNodes->base[k];
     			updatedNodes->base[k] = round(x*fac)/fac;
 			}
-
-			//setDomain(&mfree,constant_support_size, dmax);
+			dmax = 1.01*dmax;
+			setDomain(&mfree,constant_support_size, dmax);
 			voronoi_diagram * vor_1 = generate_voronoi(updatedNodes->base, boundaryNodes, mfree.num_nodes, numBoundary, 2);
 			scni_update_B(_scni_obj, disp_inc, vor_1, &mfree, is_AXI);
 
@@ -463,7 +465,7 @@ int main(void )
 
 
 		// save outputs
-		if ( n > 50000 ){
+		if ( n % writeFreq == 0 ){
 			char filename[50];
 			snprintf(filename, 50, "displacement_%d%s",fileCounter,".txt");
 			mat2csv(updatedNodes,"./Displacement",filename);

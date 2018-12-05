@@ -20,16 +20,19 @@ v.Quality = 95;
 open(v)
 ax = gca();
 
+xlim([0,20])
+ylim([-1,20])
+axis equal
 
-for i = 1:5:numFiles
-filename = strcat('displacement_',num2str(i),'.txt');
+
+for i = 1:1:numFiles
+filename = strcat(path,'/displacement_',num2str(i),'.txt');
 disp = csvread(filename);
 p = plot(disp(:,1),disp(:,2),'k.')   ;        % line plot
 
-xlim([0,20])
-ylim([-1,10])
-axis equal 
 
+xlim([0,20])
+ylim([-1,20])
  
 drawnow();
 writeVideo(v,getframe(ax));
