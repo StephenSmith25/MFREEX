@@ -42,7 +42,7 @@ int main(void )
 
 
 	// tip load
-	double P = 9.00;
+	double P = 10;
 	// direction of the load
 	VEC * dir_load = v_get(dim);
 	dir_load->ve[0] = 0;
@@ -387,7 +387,17 @@ int main(void )
 				double x = updatedNodes->base[k];
     			updatedNodes->base[k] = round(x*fac)/fac;
 			}
-			dmax = 1.01*dmax;
+			int b = rand();
+			if ( b % 2 == 0)
+			{
+				dmax = 2.3;
+			}else{
+				dmax = 1.7;
+			}
+
+			dmax = 2;
+
+		
 			setDomain(&mfree,constant_support_size, dmax);
 			voronoi_diagram * vor_1 = generate_voronoi(updatedNodes->base, boundaryNodes, mfree.num_nodes, numBoundary, 2);
 			scni_update_B(_scni_obj, disp_inc, vor_1, &mfree, is_AXI);

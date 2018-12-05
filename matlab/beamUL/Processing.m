@@ -58,7 +58,7 @@ subplot(2,3,5)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 axis equal
 
-filename = strcat(path,'/displacement_',num2str(plotFiles(9)),'.txt');
+filename = strcat(path,'/displacement_',num2str(plotFiles(10)),'.txt');
 disp = csvread(filename);
 
 
