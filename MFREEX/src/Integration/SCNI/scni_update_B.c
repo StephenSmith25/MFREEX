@@ -1,4 +1,5 @@
 #include "Integration/SCNI/scni_update_B.h"
+#include "Integration/gradient_stabilisation.h"
 
 
 static inline int isCCW(double * a, double * b, double * c){
@@ -51,10 +52,12 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 	// get shape function at verticies
 	shape_function_container * sf_verticies = mls_shapefunction(cell_verticies, "linear", "cubic", 2, 1, Mfree);
 
-	shape_function_container * sf_nodes = mls_shapefunction(nodes, "quadratic", "quartic", 2, 2, Mfree);
+	//shape_function_container * sf_nodes = mls_shapefunction(nodes, "quadratic", "quartic", 2, 3, Mfree);
 
-	
-	free_shapefunction_container(sf_nodes);
+	double eta = 0.1;
+
+	//stabalised_gradient ** G = gradient_stabilisation(sf_nodes, Mfree);
+
 	int num_cells = voronoi->num_cells;
 
 	
@@ -250,6 +253,19 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 
 
 	free_shapefunction_container(sf_verticies);
+
+
+
+	
+	// free_shapefunction_container(sf_nodes);
+	// for (int i = 0 ; i < Mfree->num_nodes ; i++)
+	// {
+	// 	M_FREE(G[i]->g);
+	// 	free(G[i]);
+	// }
+	// free(G);
+
+
 
 
 	return 0;

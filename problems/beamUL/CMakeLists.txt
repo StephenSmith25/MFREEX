@@ -30,6 +30,8 @@ endif()
 
 find_package (Threads)
 
+SET(GCC_COVERAGE_COMPILE_FLAGS "-g")
+add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
 add_executable(beamUL beam.c)
 target_link_libraries(beamUL CVLIB MFREEX EFSFLIB triangulate meschach m gpc util)

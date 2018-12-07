@@ -950,6 +950,8 @@ int free_shapefunction_container(shape_function_container * sf_container)
 		}
 		free(sf_container->sf_list[i]);
 	}
+
+	
 	free(sf_container->sf_list);
 	free(sf_container);
 	return 0;

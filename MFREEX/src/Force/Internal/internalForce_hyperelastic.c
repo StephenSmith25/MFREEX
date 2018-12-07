@@ -72,6 +72,7 @@ int internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC 
 
 		mat_func_ptr(stressVoigt,F,matParams);
 		__zero__(scni[i]->fInt->ve,scni[i]->fInt->max_dim);
+		
 
 		// push forward stress to new reference configuration
 		if ( dim_v == 4)

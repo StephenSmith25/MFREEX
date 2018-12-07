@@ -23,5 +23,7 @@ typedef struct voronoi_diagram
 voronoi_diagram * generate_voronoi(double *points, int * boundary, int numPoints, int numBoundary, int dim);
 int print_voronoi_diagram(FILE *fp, voronoi_diagram * vor);
 
+int free_voronoi_diagram(voronoi_diagram * vor);
+
 
 #endif

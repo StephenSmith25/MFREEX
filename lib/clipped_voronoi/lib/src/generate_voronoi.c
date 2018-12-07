@@ -9,6 +9,7 @@
 int is_member(double * point, double ** points, int numPoints, int dim ){
 
 
+
 	double tol_equal = 1e-14;
 
 	int is_member_row = 0;
@@ -183,6 +184,26 @@ int print_voronoi_diagram(FILE *fp, voronoi_diagram * vor)
 		}
 		fprintf(fp,"\n");
 	}
+
+
+	return 0;
+}
+
+
+int free_voronoi_diagram(voronoi_diagram * vor)
+{
+	M_FREE(vor->verticies);
+	free(vor->num_cell_verticies);
+	for ( int i = 0 ; i < vor->num_cells ; i++)
+	{
+		free(vor->index[i]);
+
+	}
+	free(vor->index);
+
+	free(vor);
+
+
 
 
 	return 0;

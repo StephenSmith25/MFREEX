@@ -345,7 +345,7 @@ int main(void )
 	gettimeofday(&start3, NULL);
 
 	while ( t_n < t_max)
-	//while ( n < 51000)
+	//while ( n < 10001)
 	{
 
 		// Update time step
@@ -374,10 +374,15 @@ int main(void )
 
 		// update the scni diagram based on new nodal positions and get the new Bmat
 
-		if ( n % 10000 == 0 )
+		if ( n % 800 == 0 )
 		{	
 			mfree.nodes = updatedNodes;
-			int digits = 5;
+			int digits;
+			if ( n < 10000){
+				digits = 9;
+			}else{
+				digits = 7;
+			}
 			double fac = pow(10, digits);
 
 
@@ -387,18 +392,17 @@ int main(void )
 				double x = updatedNodes->base[k];
     			updatedNodes->base[k] = round(x*fac)/fac;
 			}
-			int b = rand();
-			if ( b % 2 == 0)
-			{
-				dmax = 2.3;
-			}else{
-				dmax = 1.7;
-			}
+			// int b = rand();
+			// if ( b % 2 == 0)
+			// {
+			// 	dmax = 2.3;
+			// }else{
+			// 	dmax = 1.9;
+			// }
 
-			dmax = 2;
 
 		
-			setDomain(&mfree,constant_support_size, dmax);
+			// setDomain(&mfree,constant_support_size, dmax);
 			voronoi_diagram * vor_1 = generate_voronoi(updatedNodes->base, boundaryNodes, mfree.num_nodes, numBoundary, 2);
 			scni_update_B(_scni_obj, disp_inc, vor_1, &mfree, is_AXI);
 
@@ -408,6 +412,9 @@ int main(void )
 			fp = fopen("cells1.txt","w");
 			print_voronoi_diagram(fp,vor_1);
 			fclose(fp);
+
+
+			free_voronoi_diagram(vor_1);
 
 
 		}
