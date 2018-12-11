@@ -276,7 +276,7 @@ int main(void )
 	
 	// time parameters
 	double t_max = 0.5; // 1s
-	double delta_t = 1e-6;
+	double delta_t = 5e-7;
 	double t_n = 0;
 	double t_n_1 = 0;
 
@@ -345,7 +345,7 @@ int main(void )
 	gettimeofday(&start3, NULL);
 
 	while ( t_n < t_max)
-	//while ( n < 10001)
+	//while ( n < 20001)
 	{
 
 		// Update time step
@@ -374,12 +374,12 @@ int main(void )
 
 		// update the scni diagram based on new nodal positions and get the new Bmat
 
-		if ( n % 800 == 0 )
+		if (( n % 50 == 0)&& ( n >=  20000 ))
 		{	
 			mfree.nodes = updatedNodes;
 			int digits;
 			if ( n < 10000){
-				digits = 9;
+				digits = 7;
 			}else{
 				digits = 7;
 			}
@@ -404,6 +404,8 @@ int main(void )
 		
 			// setDomain(&mfree,constant_support_size, dmax);
 			voronoi_diagram * vor_1 = generate_voronoi(updatedNodes->base, boundaryNodes, mfree.num_nodes, numBoundary, 2);
+
+
 			scni_update_B(_scni_obj, disp_inc, vor_1, &mfree, is_AXI);
 
 			v_copy(d_n_1,disp_r);
@@ -450,7 +452,7 @@ int main(void )
 		/* ------------------------------------------*/
 
 		// find incremental displacement
-		internalForce_hyperelastic(Fint_n_1, _scni_obj, disp_inc, materialParameters, "SVK", is_AXI, dim);
+		double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, disp_inc, v_n_h, materialParameters, "SVK", is_AXI, dim);
 
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/
@@ -526,8 +528,10 @@ int main(void )
 
 		t_n = t_n_1;
 
+		delta_t = 0.85*delta_t_min;
+
 		++n;
-		printf("%i  \t  %lf  \t %lf \t  %10.2E \n",n,t_n,tipLoad, Wbal);
+		printf("%i  \t  %lf  \t %lf \t  %10.2E %10.2E, \n",n,t_n,tipLoad, Wbal, delta_t_min);
 
 	}
 

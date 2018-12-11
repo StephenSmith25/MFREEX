@@ -14,7 +14,7 @@
 #define PI 3.14159265359
 
 
-int internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp,VEC * matParams, char * material, int is_axi, int dim);
+double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC * velocity,VEC * matParams, char * material, int is_axi, int dim);
 
 
 

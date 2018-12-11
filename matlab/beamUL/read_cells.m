@@ -1,7 +1,7 @@
 clear all
 close all 
 
-fileID = fopen("./../../build/bin/beamUL/cells1.txt");
+fileID = fopen("./../../build/bin/beamUL/cells.txt");
 
 
 tline = fgetl(fileID);
@@ -54,6 +54,8 @@ for i = 1:num_cells
     hold on 
     fill(poly(:,1),poly(:,2),rand(1,3));
 end
+sum(area)
+max(area)
 axis equal
 
 % while ischar(tline)

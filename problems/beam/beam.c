@@ -6,6 +6,8 @@
 #include "meshgrid.h"
 #include <sys/time.h>
 #include "Integration/SCNI/generate_scni.h"
+#include "Integration/SCNI/generate_mscni.h"
+
 #include "mls_shapefunction.h"
 #include "setDomain.h"
 #include "smoothstep.h"
@@ -68,7 +70,7 @@ int main(void )
 
 
 	// Read PLSG 
-	char opt[20] = "pDq30a0.05";
+	char opt[20] = "pDq30a0.1";
 	char fileName[30] = "square";
 	double * points_out ;
 	int * boundaryNodes;
@@ -154,22 +156,26 @@ int main(void )
 	int is_stabalised = 0;
 	int is_AXI = 0;
 	SCNI_OBJ * _scni_obj = NULL;
+	MSCNI_OBJ * _mscni_obj = NULL;
+
 	struct timeval start2, end2;
 	gettimeofday(&start2, NULL);
 	// set up return container
 	// generate shape functions at sample points 
 	_scni_obj = generate_scni(vor, NULL , is_stabalised, is_AXI, dim, &mfree);
+	_mscni_obj = generate_mscni(vor, NULL , is_stabalised, is_AXI, &mfree);
+
 	gettimeofday(&end2, NULL);
 	 delta = ((end2.tv_sec  - start2.tv_sec) * 1000000u + 
          end2.tv_usec - start2.tv_usec) / 1.e6;
 	printf("scni function took %lf seconds to run\n", delta);
-	iv_foutput(stdout, _scni_obj->scni[2]->sfIndex);
-	m_foutput(stdout,_scni_obj->scni[2]->B);
+	iv_foutput(stdout, _scni_obj->scni[0]->sfIndex);
+	m_foutput(stdout,_scni_obj->scni[0]->B);
 
 
 
 	// Test divergence free condition
-	int checkPoint = 133;
+	int checkPoint = 0;
 	IVEC * index ;
 	MAT * B; 
 	MAT * check_B = m_get(dim*dim,2);
@@ -195,6 +201,35 @@ int main(void )
 		}
 	}
 	m_foutput(stdout, check_B);
+
+
+	iv_foutput(stdout, _mscni_obj->scni[0]->sfIndex);
+	m_foutput(stdout,_mscni_obj->scni[0]->B);
+
+	MAT * check_B1 = m_get(dim*dim,2);
+	printf("checking divergence free condition at point %d\n", checkPoint);
+	printf("with coordinates %lf %lf\n", mfree.nodes->me[checkPoint][0], mfree.nodes->me[checkPoint][1]);
+	printf("cell area = %lf \n", _mscni_obj->scni[checkPoint]->area);
+	printf("and neighbours \n");
+	for ( int i = 0 ; i < _scni_obj->num_points ; i++)
+	{
+		index = _mscni_obj->scni[i]->sfIndex;
+		B = _mscni_obj->scni[i]->B;
+
+		for (int k = 0 ; k < index->max_dim ; k++){
+			int indx = index->ive[k];
+
+			if ( indx == checkPoint)
+			{
+				check_B1->me[0][0] += B->me[0][2*k]*_mscni_obj->scni[i]->area;
+				check_B1->me[1][1] += B->me[1][2*k+1]*_mscni_obj->scni[i]->area;
+				check_B1->me[2][0] += B->me[2][2*k]*_mscni_obj->scni[i]->area;
+				check_B1->me[3][1] += B->me[3][2*k+1]*_mscni_obj->scni[i]->area;
+			}
+		}
+	}
+	m_foutput(stdout, check_B1);
+
 
 	/* ------------------------------------------*/
 	/* -------------Boundary Conditions----------*/
@@ -276,7 +311,7 @@ int main(void )
 	
 	// time parameters
 	double t_max = 0.5; // 1s
-	double delta_t = 1e-6;
+	double delta_t = 1.55e-6;
 	double t_n = 0;
 	double t_n_1 = 0;
 
@@ -340,8 +375,8 @@ int main(void )
 	struct timeval start3, end3;
 	gettimeofday(&start3, NULL);
 
-	while ( t_n < t_max)
-	//while ( n < 1000)
+	//while ( t_n < t_max)
+	while ( n < 1)
 	{
 
 		// Update time step
@@ -399,7 +434,7 @@ int main(void )
 		/* ------------------------------------------*/
 
 
-		internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, materialParameters, "SVK", is_AXI, dim);
+		double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, v_n_h, materialParameters, "SVK", is_AXI, dim);
 
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/
@@ -478,7 +513,7 @@ int main(void )
 		t_n = t_n_1;
 
 		++n;
-		printf("%i  \t  %lf  \t %lf \t  %10.2E \n",n,t_n,tipLoad, Wbal);
+		printf("%i  \t  %lf  \t %lf \t  %10.2E %10.2E \n",n,t_n,tipLoad, Wbal, delta_t_min);
 
 	}
 

@@ -7,14 +7,11 @@
 #include "mls_shapefunction.h"
 #include <math.h>
 #include <omp.h>
+#include "Integration/SCNI/generate_scni.h"
 
-typedef struct stabalised_gradient
-{
-	MAT * g ;
 
-}stabalised_gradient;
 
-stabalised_gradient **  gradient_stabilisation( shape_function_container * sf_point, meshfreeDomain * mfree  );
+int gradient_stabilisation(SCNI_OBJ * scni_, shape_function_container * sf_point, meshfreeDomain * mfree  );
 
 
 #endif

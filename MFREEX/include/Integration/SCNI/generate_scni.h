@@ -17,11 +17,13 @@ typedef struct SCNI {
 	IVEC * sfIndex ;
 	VEC * phi;
 	MAT * B ; 
+	MAT * Bs;
 	VEC * fInt;
 	MAT * F_r;
 	double * center;
 	int index;
 }SCNI;
+
 
 
 typedef struct SCNI_OBJ{

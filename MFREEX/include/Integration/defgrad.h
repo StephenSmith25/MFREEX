@@ -8,6 +8,9 @@
 void get_defgrad(MAT * F,SCNI * scni, VEC * disp);
 
 
+void get_dot_defgrad(MAT * F, SCNI * scni, VEC * velocity);
+
+
 
 
 

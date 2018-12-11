@@ -1,6 +1,6 @@
 clear all
 
-
+close all 
 path = './../../build/bin/beam/Displacement';
 
 addpath(path)

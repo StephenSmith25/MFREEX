@@ -40,7 +40,7 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 	MAT * nodes = Mfree->nodes;
 
 	printf("getting shape function value at cell veritices \n ");
-	shape_function_container * sf_verticies = mls_shapefunction(cell_verticies, "linear", "cubic", 2, 1, Mfree);
+	shape_function_container * sf_verticies = mls_shapefunction(cell_verticies, "quadratic", "quartic", 2, 1, Mfree);
 
 
 

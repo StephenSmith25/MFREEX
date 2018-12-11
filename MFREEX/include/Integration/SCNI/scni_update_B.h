@@ -1,6 +1,7 @@
 #ifndef SCNI_UPDATE_B
 #define SCNI_UPDATE_B
 
+#include "Integration/gradient_stabilisation.h"
 #include "Integration/SCNI/generate_scni.h"
 #include "matrix.h"
 #include "matrix2.h"

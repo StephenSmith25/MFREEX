@@ -1,5 +1,4 @@
 #include "Integration/SCNI/scni_update_B.h"
-#include "Integration/gradient_stabilisation.h"
 
 
 static inline int isCCW(double * a, double * b, double * c){
@@ -49,14 +48,14 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 		dim = 3;
 	}
 
+
+
 	// get shape function at verticies
 	shape_function_container * sf_verticies = mls_shapefunction(cell_verticies, "linear", "cubic", 2, 1, Mfree);
 
-	//shape_function_container * sf_nodes = mls_shapefunction(nodes, "quadratic", "quartic", 2, 3, Mfree);
+	// shape_function_container * sf_nodes = mls_shapefunction(nodes, "quadratic", "quartic", 2, 3, Mfree);
 
-	double eta = 0.1;
 
-	//stabalised_gradient ** G = gradient_stabilisation(sf_nodes, Mfree);
 
 	int num_cells = voronoi->num_cells;
 
@@ -66,7 +65,7 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 
 
 	// cell combined neighbours
-	int approx_cell_sf_index_length = 20;
+	int approx_cell_sf_index_length = 25;
 
 
 	SCNI ** scni_  = scni->scni;
@@ -220,12 +219,13 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 
 			}
 
+
 			IVEC * cell_sf_index = iv_get(length_index); 
 			MAT * bI_n = m_get(length_index,2);
 			length_index = 0;
 			for ( int k = 0 ; k < Mfree->num_nodes; k++)
 			{
-				if (( bI->me[k][0] != 0) || ( bI->me[k][1] !=0 ))
+				if (( fabs(bI->me[k][0]) > 1e-14 ) || ( fabs(bI->me[k][1]) > 1e-14 ))
 				{
 					cell_sf_index->ive[length_index] = k;
 					bI_n->me[length_index] = bI->me[k];  
@@ -237,6 +237,8 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 
 		//generate Bmat and set up SCNI structure
 		sm_mlt(1.000/area, bI, bI);
+
+
 		M_FREE(scni_[i]->B);
 		scni_[i]->B = generate_Bmat(bI_n,dim,is_AXI,-1);
 		M_FREE(bI_n);
@@ -254,16 +256,6 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 
 	free_shapefunction_container(sf_verticies);
 
-
-
-	
-	// free_shapefunction_container(sf_nodes);
-	// for (int i = 0 ; i < Mfree->num_nodes ; i++)
-	// {
-	// 	M_FREE(G[i]->g);
-	// 	free(G[i]);
-	// }
-	// free(G);
 
 
 
