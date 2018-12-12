@@ -117,7 +117,7 @@ int main(void )
 	/* ------------------------------------------*/
 
 	// shape function parameters
-	double dmax = 2;
+	double dmax = 1.8;
 	int constant_support_size = 1;
 	char * basis = "quadratic";
 	char * weight = "cubic";
@@ -295,6 +295,9 @@ int main(void )
 	VEC * Fnet_n_1 = v_get(dim*mfree.num_nodes);
 
 
+	// damping
+	VEC * F_damping = v_get(dim*mfree.num_nodes);
+
 	// Kinematic variables
 	// displacement
 	VEC * d_n_1 = v_get(dim*mfree.num_nodes);
@@ -374,7 +377,7 @@ int main(void )
 
 		// update the scni diagram based on new nodal positions and get the new Bmat
 
-		if (( n % 50 == 0)&& ( n >=  20000 ))
+		if (( n % 200 == 0)&& ( n >=  20000 ))
 		{	
 			mfree.nodes = updatedNodes;
 			int digits;
@@ -531,7 +534,7 @@ int main(void )
 		delta_t = 0.85*delta_t_min;
 
 		++n;
-		printf("%i  \t  %lf  \t %lf \t  %10.2E %10.2E, \n",n,t_n,tipLoad, Wbal, delta_t_min);
+		printf("%i  \t  %lf  \t %lf \t  %10.2E %10.2E, \n",n,t_n,tipLoad, Wbal, delta_t);
 
 	}
 

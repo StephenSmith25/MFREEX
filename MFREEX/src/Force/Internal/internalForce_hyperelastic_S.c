@@ -1,8 +1,8 @@
-#include "Force/Internal/internalForce_hyperelastic.h"
+#include "Force/Internal/internalForce_hyperelastic_S.h"
 
 static int call_count ;
 
-double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC * velocity, VEC * matParams, char * Material, int is_axi, int dim){
+double internalForce_hyperelastic_S(VEC * Fint, MSCNI_OBJ * scni_obj, VEC * disp, VEC * velocity, VEC * matParams, char * Material, int is_axi, int dim){
 
 
 	v_zero(Fint);
@@ -29,7 +29,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 	// loop over all integration points
 
-	SCNI ** scni = scni_obj->scni;
+	MSCNI ** scni = scni_obj->scni;
 	int num_int_points = scni_obj->num_points;
 
 	
@@ -40,8 +40,19 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	double lambda = matParams->ve[0];
 	double mu = matParams->ve[1];
 
+	VEC * svk_params = v_get(2);
 
-	omp_set_num_threads(3);
+	svk_params->ve[0] = min(lambda,25*mu);
+	svk_params->ve[1] = mu;
+
+	if ( num_int_points < 400)
+	{
+		omp_set_num_threads(3);
+	}else{
+		omp_set_num_threads(4);
+	}
+
+	double c_stabalisation = 0.2;
 
 
 
@@ -62,25 +73,64 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	double delta_t_min_i = 1000;
 	MAT * B ;
 	IVEC * neighbours;
-	MAT * F_r;
+	MAT * F_r ;
 
 
-#pragma omp for nowait schedule(dynamic,4) 
+#pragma omp for nowait schedule(auto) 
 	for(int i = 0 ; i < num_int_points ; i++){
 
 		/*  Find deformation gradient */
 		B = scni[i]->B;
 		neighbours = scni[i]->sfIndex;
 		F_r = scni[i]->F_r;
+		int num_neighbours = neighbours->max_dim;
+
+		v_zero(scni[i]->fInt);
+
+		// stabalisation over subcells
+		double disp_i[dim*num_neighbours];
+		int num_sub_cells = scni[i]->num_sub_cells;
+		
+		for  ( int k = 0 ; k < num_neighbours ; k++)
+		{
+			if ( dim == 2)
+			{
+			disp_i[2*k] = disp->ve[2*neighbours->ive[k]];
+			disp_i[2*k+1] = disp->ve[2*neighbours->ive[k]+1];
+			}
+		}
+
+		for ( int k = 0 ; k < num_sub_cells ; k++)
+		{
+			B = scni[i]->stabalised_B[k];
+			if ( dim == 2)
+			{
+				F11 = 0; F12 = 0; F21 = 0 ; F22 = 0;
+				// form deformation gradient at each subcell
+				for ( int m = 0 ; m < num_neighbours ; m++)
+				{
+					F11 += B->me[0][2*m]*disp_i[2*m];
+					F22 += B->me[1][2*m+1]*disp_i[2*m+1];
+					F12 += B->me[2][2*m]*disp_i[2*m];
+					F21 += B->me[3][2*m+1]*disp_i[2*m+1];
+
+				}
+				F->me[0][0] = 1+ F11;
+				F->me[1][1] = 1+F22;
+				F->me[0][1] = F12;
+				F->me[1][0] = F21;
+
+			}
+			double intFactor = c_stabalisation*scni[i]->stabalised_volumes[k];
+			SVK(stressVoigt,F,svk_params);	
+			vm_mltadd(scni[i]->fInt,stressVoigt,B,intFactor,scni[i]->fInt);
+
+		}
+
+		B = scni[i]->B;
 		/*  Find deformation gradient */
 		get_defgrad(F, B, neighbours,F_r, disp);
 		get_dot_defgrad(Fdot,B, neighbours,F_r,velocity);
-
-		int num_neighbours = neighbours->max_dim;
-
-
-
-
 
 		double Jacobian = 1.00;
 
@@ -136,7 +186,8 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 
 
-		double b1 = 0.08;
+
+		double b1 = 0.06;
 		double b2 = 1.44;
 		double Le = 1.6;
 		double c = sqrt(((lambda+2*mu)/rho));
@@ -150,6 +201,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		}
 
 
+
 		double delta_t = (2.00/sqrt(((lambda + 2*mu)*MaxB)))*(sqrt(1+eta*eta)-eta);
 		if ( delta_t <delta_t_min_i )
 		{
@@ -158,14 +210,14 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 
 
+
 		mat_func_ptr(stressVoigt,F,matParams);
-		__zero__(scni[i]->fInt->ve,scni[i]->fInt->max_dim);
+		//__zero__(scni[i]->fInt->ve,scni[i]->fInt->max_dim);
 
 
 		// push forward stress to new reference configuration
 		if ( dim_v == 4)
 		{
-
 
 			double S11_hyd = (Jacobian)*(P_b1+P_b2)*invF11;
 			double S22_hyd = (Jacobian)*(P_b1+P_b2)*invF22;
@@ -177,10 +229,10 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			F11 = scni[i]->F_r->me[0][0]; F12 = scni[i]->F_r->me[0][1];
 			F21 = scni[i]->F_r->me[1][0]; F22 = scni[i]->F_r->me[1][1];
 
-			stressVoigt->ve[0] = S11*F11 + S12*F12;
-			stressVoigt->ve[1] = S21*F21 + S22*F22; 
-			stressVoigt->ve[2] = S11*F21 + S12*F22;
-			stressVoigt->ve[3] = S21*F11 + S22*F12;
+			stressVoigt->ve[0] = (S11*F11 + S12*F12);
+			stressVoigt->ve[1] = (S21*F21 + S22*F22); 
+			stressVoigt->ve[2] = (S11*F21 + S12*F22);
+			stressVoigt->ve[3] = (S21*F11 + S22*F12);
 
 		}else if ( dim_v == 5)
 		{
@@ -192,22 +244,22 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			F21 = scni[i]->F_r->me[1][0]; F22 = scni[i]->F_r->me[1][1];
 			F33 = scni[i]->F_r->me[2][2];
 
-			stressVoigt->ve[0] = S11*F11 + S12*F12;
-			stressVoigt->ve[1] = S21*F21 + S22*F22; 
-			stressVoigt->ve[2] = S11*F21 + S12*F22;
-			stressVoigt->ve[3] = S21*F11 + S22*F12;
-			stressVoigt->ve[4] = S33*F33;
+			stressVoigt->ve[0] = (S11*F11 + S12*F12);
+			stressVoigt->ve[1] = (S21*F21 + S22*F22); 
+			stressVoigt->ve[2] = (S11*F21 + S12*F22);
+			stressVoigt->ve[3] = (S21*F11 + S22*F12);
+			stressVoigt->ve[4] = (S33*F33)*intFactor;
 
 		}else{
 			fprintf(stderr,"dimension not yet supported");
 		}
 
 
-		vm_mlt(scni[i]->B,stressVoigt,scni[i]->fInt);
+		vm_mltadd(scni[i]->fInt,stressVoigt,scni[i]->B,intFactor,scni[i]->fInt);
 
 		for ( int k = 0 ; k < num_neighbours; k++){
-			fIntTemp->ve[2*scni[i]->sfIndex->ive[k]] += intFactor * scni[i]->fInt->ve[2*k];
-			fIntTemp->ve[2*scni[i]->sfIndex->ive[k]+1] += intFactor * scni[i]->fInt->ve[2*k+1];
+			fIntTemp->ve[2*scni[i]->sfIndex->ive[k]] += scni[i]->fInt->ve[2*k];
+			fIntTemp->ve[2*scni[i]->sfIndex->ive[k]+1] += scni[i]->fInt->ve[2*k+1];
 		}
 	}
 
@@ -229,6 +281,8 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 }
 	++call_count;
+
+	v_free(svk_params);
 
 	return delta_t_min;
 }

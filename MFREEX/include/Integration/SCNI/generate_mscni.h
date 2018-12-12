@@ -19,9 +19,10 @@ typedef struct MSCNI{
 	MAT * F_r;
 	double * center;
 	int index;
-
+	int num_sub_cells;
 	double * stabalised_volumes;
 	MAT ** stabalised_B;
+
 
 }MSCNI;
 

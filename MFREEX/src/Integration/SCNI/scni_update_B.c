@@ -134,8 +134,10 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 
 		//Update state variable Fr
 
-
-		get_defgrad(temp_F, scni_[i], disp);
+		MAT * B = scni_[i]->B;
+		IVEC * neighbours = scni_[i]->sfIndex;
+		MAT * F_r = scni_[i]->F_r;
+		get_defgrad(temp_F, B,neighbours,F_r, disp);
 		m_copy(temp_F,scni_[i]->F_r);
 
 
