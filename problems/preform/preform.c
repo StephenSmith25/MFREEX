@@ -20,23 +20,9 @@
 #include "Boundary/Traction/Pressure/new_pressure_load.h"
 #include "Boundary/Traction/Cavity/cavityVolume.h"
 #include "Boundary/Traction/Cavity/flowRate.h"
+#include <math.h>
 
-// #include "generateSCNI.h"
-// #include <trigen.h>
-// #include "iv_addNode.h"
-// #include "setUpBC.h"
-// #include "jc_voronoi.h"
-// #include "clipVoronoi.h"
-// #include "externalForce.h"
-// #include "smoothstep.h"
-// #include "cavityVolume.h"
-// #include "flowRate.h"
-// #include "massMatrix.h"
-// #include "setUpTraction.h"
-// #include "internalForce.h"
-// #include "enforceBC.h"
-// #include "mat2csv.h"
-// #include <math.h>
+
 // #include "internalForceBuckley.h"
 // #include "contactDetection.h"
 
@@ -242,8 +228,6 @@ int main(int argc, char** argv) {
 	// Traction
 	IVEC * traction_nodes ;
 	getBoundary(&traction_nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,2);
-	// iv_foutput(stdout,traction->nodes);
-	// setUpTraction(traction,efgBlock);
 	pressure_boundary * pB = new_pressure_load(traction_nodes, &mfree);
 
 
