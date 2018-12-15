@@ -114,7 +114,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		double intFactor = scni[i]->area;
 		if( is_axi == 1){
 
-			intFactor = intFactor * 2*PI*scni[i]->center[0];
+			intFactor = intFactor * 2*PI*scni[i]->r;
 		}
 
 		//Find 1D frequency bounds

@@ -20,7 +20,7 @@ typedef struct SCNI {
 	MAT * Bs;
 	VEC * fInt;
 	MAT * F_r;
-	double * center;
+	double r;
 	int index;
 }SCNI;
 

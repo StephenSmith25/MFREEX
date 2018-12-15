@@ -31,7 +31,7 @@ MAT * generate_Bmat(MAT * phi_der, int dim, int is_axi, double r )
 
 		if ( is_axi == 1)
 		{
-			Bmat->me[5][2*i] = phi_der->me[3][i]/r;
+			Bmat->me[4][2*i] = phi_der->me[3][i]/r;
 		}
 
 

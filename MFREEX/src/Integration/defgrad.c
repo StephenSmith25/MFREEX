@@ -11,6 +11,8 @@ void get_defgrad(MAT * f, MAT * B, IVEC * neighbours, MAT * F_r, VEC * disp){
 	f22 = 1;
 	f33 = 1;
 
+
+
 		// Find incremental deformation gradient (f)
 	for ( int i = 0 ; i < neighbours->max_dim ; i++)
 	{

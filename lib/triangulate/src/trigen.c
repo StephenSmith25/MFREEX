@@ -243,9 +243,6 @@ int trigen(double ** output_points, int ** boundary, char * options, char * file
 	{
 		(*pointmarkers)[i] = out->pointmarkerlist[i];
 
-		if ( isAttribute == 1){
-			printf("attributes %lf \n",out->pointattributelist[i]);
-		}
 	}
 
 	// end of program, free memory !

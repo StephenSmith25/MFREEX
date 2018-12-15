@@ -41,22 +41,21 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 
 	printf("getting shape function value at cell veritices \n ");
 	shape_function_container * sf_verticies = mls_shapefunction(cell_verticies, "linear", "cubic", 2, 1, Mfree);
+	shape_function_container * sf_nodes ;
 
 
-
+	int dim_B = dim;
 
 	// if axi will have to find shape function at nodes to add the unsmoothed component
 	// at some nodes will have to find, compute could be given as a vector 
 	if ( is_AXI  == 1)
 	{
-		shape_function_container * sf_nodes = mls_shapefunction(nodes, "linear" , "quartic", 2, 3, Mfree);
+		sf_nodes = mls_shapefunction(nodes, "linear" , "cubic", 2, 2, Mfree);
+		dim_B = 3;
 
 	}
 
-
 	int num_cells = voronoi->num_cells;
-
-	printf("Looping over cells and construction B \n ");
 	
 	VEC * phi = VNULL;
 	IVEC * neighbours = IVNULL;
@@ -86,7 +85,7 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 	double center[2] = {0,0};
 	double area = 0;
 		// size of sfIndex
-	MAT * bI = m_get(Mfree->num_nodes,2);
+	MAT * bI = m_get(Mfree->num_nodes,dim_B);
 
 	for ( i = 0 ; i < num_cells; i++)
 	{
@@ -96,6 +95,9 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 
 		// smoothed shape function gradients
 		m_zero(bI);
+
+
+		double r = Mfree->nodes->me[i][0];
 
 
 		// re initialise parameters
@@ -178,8 +180,6 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 			phi = sf_verticies->sf_list[indx]->phi;
 			neighbours = sf_verticies->sf_list[indx]->neighbours;
 
-			// printf("phi at vertex with coordinates %lf %lf \n",cell_verticies->me[indx][0],cell_verticies->me[indx][1]);
-			// v_foutput(stdout,phi);
 
 			// recursive defitnion b_Ii = sum_Ns [ 0.5 * ( n_im * l_m + n_i(m+1) * l_(m+1) ) phi_I ( M+1)]
 			for ( int j = 0 ; j < neighbours->max_dim ; j++)
@@ -193,39 +193,64 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 
 
 		} // end of loop over cell verticies
-			int length_index = 0;
+		int length_index = 0;
 
-			for ( int k = 0 ; k < Mfree->num_nodes; k++)
+		for ( int k = 0 ; k < Mfree->num_nodes; k++)
+		{
+			if (( bI->me[k][0] != 0) || ( bI->me[k][1] !=0 ))
 			{
-				if (( bI->me[k][0] != 0) || ( bI->me[k][1] !=0 ))
-				{
-					++length_index;
-				}
-
+				++length_index;
 			}
 
-			IVEC * cell_sf_index = iv_get(length_index); 
-			MAT * bI_n = m_get(length_index,2);
-			length_index = 0;
-			for ( int k = 0 ; k < Mfree->num_nodes; k++)
-			{
-				if (( bI->me[k][0] != 0) || ( bI->me[k][1] !=0 ))
-				{
-					cell_sf_index->ive[length_index] = k;
-					bI_n->me[length_index] = bI->me[k];  
-					++length_index;
-				}
+		}
 
+		IVEC * cell_sf_index = iv_get(length_index); 
+		MAT * bI_n = m_get(length_index,dim_B);
+		length_index = 0;
+		for ( int k = 0 ; k < Mfree->num_nodes; k++)
+		{
+			if (( bI->me[k][0] != 0) || ( bI->me[k][1] !=0 ))
+			{
+				cell_sf_index->ive[length_index] = k;
+				bI_n->me[length_index] = bI->me[k];  
+				++length_index;
 			}
+
+		}
+		sm_mlt(1.000/area, bI_n, bI_n);
+		if ( is_AXI == 1)
+		{
+			neighbours = sf_nodes->sf_list[i]->neighbours;
+
+			if ( r > 0)
+			{
+				for ( int k = 0 ; k < neighbours->max_dim ; k++)
+				{
+					int indx = findInt(neighbours->ive[k], cell_sf_index->ive, cell_sf_index->max_dim);
+					bI_n->me[indx][2] = sf_nodes->sf_list[i]->phi->ve[k]/r;
+
+
+				}
+			}else{
+
+				for ( int k = 0 ; k < neighbours->max_dim ; k++)
+				{
+					int indx = findInt(neighbours->ive[k], cell_sf_index->ive, cell_sf_index->max_dim);
+					bI_n->me[indx][2] = sf_nodes->sf_list[i]->dphi->me[k][0];
+				}
+			}
+		}
+
+
 		
 
 		// generate Bmat and set up SCNI structure
-		sm_mlt(1.000/area, bI, bI);
 		scni_[i]->B = generate_Bmat(bI_n,dim,is_AXI,-1);
 		M_FREE(bI_n);
 		scni_[i]->sfIndex = cell_sf_index;
 		scni_[i]->area = area;
-		scni_[i]->center = center;
+		scni_[i]->r = center[0];
+
 		scni_[i]->fInt = v_get(dim*cell_sf_index->max_dim);
 		
 		if ( is_AXI == 1){

@@ -1,7 +1,7 @@
 clear all
 close all 
 
-fileID = fopen("cells.txt");
+fileID = fopen("./../../build/bin/preform/cells.txt");
 
 
 tline = fgetl(fileID);
@@ -36,7 +36,6 @@ C = strsplit(tline);
 num_cells = str2double(C{1});
 
 figure
-
 for i = 1:num_cells
 
     tline = fgetl(fileID);
@@ -55,6 +54,8 @@ for i = 1:num_cells
     hold on 
     fill(poly(:,1),poly(:,2),rand(1,3));
 end
+sum(area)
+max(area)
 axis equal
 
 % while ischar(tline)

@@ -1,7 +1,7 @@
 clear all
 close all 
 
-fileID = fopen("./../../build/bin/beamUL/cells.txt");
+fileID = fopen("./../../build/bin/beamUL/cells1.txt");
 
 
 tline = fgetl(fileID);

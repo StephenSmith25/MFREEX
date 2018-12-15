@@ -6,12 +6,14 @@
 #include "meshgrid.h"
 #include <sys/time.h>
 #include "Integration/SCNI/generate_scni.h"
+#include "Integration/SCNI/generate_mscni.h"
 #include "Integration/SCNI/scni_update_B.h"
-
+#include "Integration/SCNI/mscni_update_B.h"
 #include "mls_shapefunction.h"
 #include "setDomain.h"
 #include "smoothstep.h"
 #include "Force/Internal/internalForce_hyperelastic.h"
+#include "Force/Internal/internalForce_hyperelastic_S.h"
 #include "mat2csv.h"
 #include "trigen.h"
 
@@ -70,7 +72,7 @@ int main(void )
 
 
 	// Read PLSG 
-	char opt[20] = "pDq30a0.1";
+	char opt[20] = "pDq30a0.2";
 	char fileName[30] = "square";
 	double * points_out ;
 	int * boundaryNodes;
@@ -155,48 +157,47 @@ int main(void )
 
 	int is_stabalised = 0;
 	int is_AXI = 0;
-	SCNI_OBJ * _scni_obj = NULL;
+	MSCNI_OBJ * _mscni_obj = NULL;
 	struct timeval start2, end2;
 	gettimeofday(&start2, NULL);
 	// set up return container
 	// generate shape functions at sample points 
-	_scni_obj = generate_scni(vor, NULL , is_stabalised, is_AXI, dim, &mfree);
+	_mscni_obj = generate_mscni(vor, NULL , is_stabalised, is_AXI, &mfree);
 	gettimeofday(&end2, NULL);
 	 delta = ((end2.tv_sec  - start2.tv_sec) * 1000000u + 
          end2.tv_usec - start2.tv_usec) / 1.e6;
 	printf("scni function took %lf seconds to run\n", delta);
-	iv_foutput(stdout, _scni_obj->scni[2]->sfIndex);
-	m_foutput(stdout,_scni_obj->scni[2]->B);
 
 
+	// iv_foutput(stdout, _scni_obj->scni[2]->sfIndex);
+	// m_foutput(stdout,_scni_obj->scni[2]->B);
+	// // Test divergence free condition
+	// int checkPoint = 133;
+	// IVEC * index ;
+	// MAT * B; 
+	// MAT * check_B = m_get(dim*dim,2);
+	// printf("checking divergence free condition at point %d\n", checkPoint);
+	// printf("with coordinates %lf %lf\n", mfree.nodes->me[checkPoint][0], mfree.nodes->me[checkPoint][1]);
+	// printf("cell area = %lf \n", _scni_obj->scni[checkPoint]->area);
+	// printf("and neighbours \n");
+	// for ( int i = 0 ; i < _scni_obj->num_points ; i++)
+	// {
+	// 	index = _scni_obj->scni[i]->sfIndex;
+	// 	B = _scni_obj->scni[i]->B;
 
-	// Test divergence free condition
-	int checkPoint = 133;
-	IVEC * index ;
-	MAT * B; 
-	MAT * check_B = m_get(dim*dim,2);
-	printf("checking divergence free condition at point %d\n", checkPoint);
-	printf("with coordinates %lf %lf\n", mfree.nodes->me[checkPoint][0], mfree.nodes->me[checkPoint][1]);
-	printf("cell area = %lf \n", _scni_obj->scni[checkPoint]->area);
-	printf("and neighbours \n");
-	for ( int i = 0 ; i < _scni_obj->num_points ; i++)
-	{
-		index = _scni_obj->scni[i]->sfIndex;
-		B = _scni_obj->scni[i]->B;
+	// 	for (int k = 0 ; k < index->max_dim ; k++){
+	// 		int indx = index->ive[k];
 
-		for (int k = 0 ; k < index->max_dim ; k++){
-			int indx = index->ive[k];
-
-			if ( indx == checkPoint)
-			{
-				check_B->me[0][0] += B->me[0][2*k]*_scni_obj->scni[i]->area;
-				check_B->me[1][1] += B->me[1][2*k+1]*_scni_obj->scni[i]->area;
-				check_B->me[2][0] += B->me[2][2*k]*_scni_obj->scni[i]->area;
-				check_B->me[3][1] += B->me[3][2*k+1]*_scni_obj->scni[i]->area;
-			}
-		}
-	}
-	m_foutput(stdout, check_B);
+	// 		if ( indx == checkPoint)
+	// 		{
+	// 			check_B->me[0][0] += B->me[0][2*k]*_scni_obj->scni[i]->area;
+	// 			check_B->me[1][1] += B->me[1][2*k+1]*_scni_obj->scni[i]->area;
+	// 			check_B->me[2][0] += B->me[2][2*k]*_scni_obj->scni[i]->area;
+	// 			check_B->me[3][1] += B->me[3][2*k+1]*_scni_obj->scni[i]->area;
+	// 		}
+	// 	}
+	// }
+	// m_foutput(stdout, check_B);
 
 	/* ------------------------------------------*/
 	/* -------------Boundary Conditions----------*/
@@ -266,7 +267,7 @@ int main(void )
 	VEC * inv_nodal_mass = v_get(mfree.num_nodes);
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
-		nodal_mass->ve[i] = _scni_obj->scni[i]->area*rho;
+		nodal_mass->ve[i] = _mscni_obj->scni[i]->area*rho;
 		inv_nodal_mass->ve[i] = 1.000/nodal_mass->ve[i];
 	}
 
@@ -377,7 +378,7 @@ int main(void )
 
 		// update the scni diagram based on new nodal positions and get the new Bmat
 
-		if (( n % 200 == 0)&& ( n >=  20000 ))
+		if (( n % 100 == 0)&& ( n >=  1000 ))
 		{	
 			mfree.nodes = updatedNodes;
 			int digits;
@@ -395,21 +396,16 @@ int main(void )
 				double x = updatedNodes->base[k];
     			updatedNodes->base[k] = round(x*fac)/fac;
 			}
-			// int b = rand();
-			// if ( b % 2 == 0)
-			// {
-			// 	dmax = 2.3;
-			// }else{
-			// 	dmax = 1.9;
-			// }
-
-
-		
+	
 			// setDomain(&mfree,constant_support_size, dmax);
 			voronoi_diagram * vor_1 = generate_voronoi(updatedNodes->base, boundaryNodes, mfree.num_nodes, numBoundary, 2);
 
 
-			scni_update_B(_scni_obj, disp_inc, vor_1, &mfree, is_AXI);
+			mscni_update_B(_mscni_obj, disp_inc, vor_1, &mfree, is_AXI);
+			double area =0;
+			for ( int l = 0 ; l < numnodes ; l++){
+				area += _mscni_obj->scni[l]->area;
+			}
 
 			v_copy(d_n_1,disp_r);
 
@@ -430,7 +426,7 @@ int main(void )
 
 
 		// Find the x and y points requried for plotting
-		xPoint = nodal_disp->ve[traction_nodes->ive[2]*2+1]*xFactor;
+		xPoint = nodal_disp->ve[traction_nodes->ive[1]*2+1]*xFactor;
 		yPoint = tipLoad * pow(L,2)*(1/E)*(1/Ixx);
 
 
@@ -439,8 +435,8 @@ int main(void )
 		/* ------------------------------------------*/
 
 		/*  Manually find point load */
-		neighbours = phi_traction->sf_list[2]->neighbours;
-		phi = phi_traction->sf_list[2]->phi;
+		neighbours = phi_traction->sf_list[1]->neighbours;
+		phi = phi_traction->sf_list[1]->phi;
 		tipLoad = P*smoothstep(t_n_1,t_max,0);
 		v_zero(Fext_n_1);
 		for ( int i = 0 ; i < neighbours->max_dim; i++){
@@ -455,7 +451,7 @@ int main(void )
 		/* ------------------------------------------*/
 
 		// find incremental displacement
-		double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, disp_inc, v_n_h, materialParameters, "SVK", is_AXI, dim);
+		double delta_t_min = internalForce_hyperelastic_S(Fint_n_1, _mscni_obj, disp_inc, v_n_h, materialParameters, "SVK", is_AXI, dim);
 
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/

@@ -45,11 +45,11 @@ double internalForce_hyperelastic_S(VEC * Fint, MSCNI_OBJ * scni_obj, VEC * disp
 	svk_params->ve[0] = min(lambda,25*mu);
 	svk_params->ve[1] = mu;
 
-	if ( num_int_points < 400)
+	if ( num_int_points < 150)
 	{
 		omp_set_num_threads(3);
 	}else{
-		omp_set_num_threads(4);
+		omp_set_num_threads(3);
 	}
 
 	double c_stabalisation = 0.2;
@@ -76,7 +76,7 @@ double internalForce_hyperelastic_S(VEC * Fint, MSCNI_OBJ * scni_obj, VEC * disp
 	MAT * F_r ;
 
 
-#pragma omp for nowait schedule(auto) 
+#pragma omp for nowait schedule(dynamic,1) 
 	for(int i = 0 ; i < num_int_points ; i++){
 
 		/*  Find deformation gradient */
@@ -91,14 +91,6 @@ double internalForce_hyperelastic_S(VEC * Fint, MSCNI_OBJ * scni_obj, VEC * disp
 		double disp_i[dim*num_neighbours];
 		int num_sub_cells = scni[i]->num_sub_cells;
 		
-		for  ( int k = 0 ; k < num_neighbours ; k++)
-		{
-			if ( dim == 2)
-			{
-			disp_i[2*k] = disp->ve[2*neighbours->ive[k]];
-			disp_i[2*k+1] = disp->ve[2*neighbours->ive[k]+1];
-			}
-		}
 
 		for ( int k = 0 ; k < num_sub_cells ; k++)
 		{
@@ -109,13 +101,13 @@ double internalForce_hyperelastic_S(VEC * Fint, MSCNI_OBJ * scni_obj, VEC * disp
 				// form deformation gradient at each subcell
 				for ( int m = 0 ; m < num_neighbours ; m++)
 				{
-					F11 += B->me[0][2*m]*disp_i[2*m];
-					F22 += B->me[1][2*m+1]*disp_i[2*m+1];
-					F12 += B->me[2][2*m]*disp_i[2*m];
-					F21 += B->me[3][2*m+1]*disp_i[2*m+1];
+					F11 += B->me[0][2*m]*disp->ve[2*neighbours->ive[m]];
+					F22 += B->me[1][2*m+1]*disp->ve[2*neighbours->ive[m]+1];
+					F12 += B->me[2][2*m]*disp->ve[2*neighbours->ive[m]];
+					F21 += B->me[3][2*m+1]*disp->ve[2*neighbours->ive[m]+1];
 
 				}
-				F->me[0][0] = 1+ F11;
+				F->me[0][0] = 1+F11;
 				F->me[1][1] = 1+F22;
 				F->me[0][1] = F12;
 				F->me[1][0] = F21;
@@ -133,6 +125,8 @@ double internalForce_hyperelastic_S(VEC * Fint, MSCNI_OBJ * scni_obj, VEC * disp
 		get_dot_defgrad(Fdot,B, neighbours,F_r,velocity);
 
 		double Jacobian = 1.00;
+
+
 
 
 		if ( dim == 2)
@@ -185,10 +179,14 @@ double internalForce_hyperelastic_S(VEC * Fint, MSCNI_OBJ * scni_obj, VEC * disp
 		MaxB = max(B11,B22);
 
 
+		// find equivalent lambda and mu
 
 
 		double b1 = 0.06;
 		double b2 = 1.44;
+
+
+
 		double Le = 1.6;
 		double c = sqrt(((lambda+2*mu)/rho));
 

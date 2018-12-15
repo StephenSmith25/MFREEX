@@ -7,7 +7,6 @@
 #include <sys/time.h>
 #include "Integration/SCNI/generate_scni.h"
 #include "Integration/SCNI/generate_mscni.h"
-
 #include "mls_shapefunction.h"
 #include "setDomain.h"
 #include "smoothstep.h"
@@ -72,7 +71,7 @@ int main(void )
 
 
 	// Read PLSG 
-	char opt[20] = "pDq0a0.2";
+	char opt[20] = "pDq0a0.15";
 	char fileName[30] = "square";
 	double * points_out ;
 	int * boundaryNodes;
@@ -119,7 +118,7 @@ int main(void )
 	/* ------------------------------------------*/
 
 	// shape function parameters
-	double dmax = 2;
+	double dmax = 1.6;
 	int constant_support_size = 1;
 	char * basis = "quadratic";
 	char * weight = "cubic";
@@ -198,60 +197,60 @@ int main(void )
 	MAT * B; 
 	MAT * check_B = m_get(dim*dim,2);
 	printf("checking scni \n \n");
-	int checkPoint = 0;
+	int checkPoint = 45;
 
-	//m_foutput(stdout,_scni_obj->scni[checkPoint]->B);
-	//iv_foutput(stdout, _scni_obj->scni[checkPoint]->sfIndex);
+	m_foutput(stdout,_scni_obj->scni[checkPoint]->B);
+	iv_foutput(stdout, _scni_obj->scni[checkPoint]->sfIndex);
 
-	// printf("checking divergence free condition at point %d\n", checkPoint);
-	// printf("with coordinates %lf %lf\n", mfree.nodes->me[checkPoint][0], mfree.nodes->me[checkPoint][1]);
-	// printf("cell area = %lf \n", _scni_obj->scni[checkPoint]->area);
-	// printf("and neighbours \n");
-	// for ( int i = 0 ; i < _scni_obj->num_points ; i++)
-	// {
-	// 	index = _scni_obj->scni[i]->sfIndex;
-	// 	B = _scni_obj->scni[i]->B;
+	printf("checking divergence free condition at point %d\n", checkPoint);
+	printf("with coordinates %lf %lf\n", mfree.nodes->me[checkPoint][0], mfree.nodes->me[checkPoint][1]);
+	printf("cell area = %lf \n", _scni_obj->scni[checkPoint]->area);
+	printf("and neighbours \n");
+	for ( int i = 0 ; i < _scni_obj->num_points ; i++)
+	{
+		index = _scni_obj->scni[i]->sfIndex;
+		B = _scni_obj->scni[i]->B;
 
-	// 	for (int k = 0 ; k < index->max_dim ; k++){
-	// 		int indx = index->ive[k];
+		for (int k = 0 ; k < index->max_dim ; k++){
+			int indx = index->ive[k];
 
-	// 		if ( indx == checkPoint)
-	// 		{
-	// 			check_B->me[0][0] += B->me[0][2*k]*_scni_obj->scni[i]->area;
-	// 			check_B->me[1][1] += B->me[1][2*k+1]*_scni_obj->scni[i]->area;
-	// 			check_B->me[2][0] += B->me[2][2*k]*_scni_obj->scni[i]->area;
-	// 			check_B->me[3][1] += B->me[3][2*k+1]*_scni_obj->scni[i]->area;
-	// 		}
-	// 	}
-	// }
-	// m_foutput(stdout, check_B);
+			if ( indx == checkPoint)
+			{
+				check_B->me[0][0] += B->me[0][2*k]*_scni_obj->scni[i]->area;
+				check_B->me[1][1] += B->me[1][2*k+1]*_scni_obj->scni[i]->area;
+				check_B->me[2][0] += B->me[2][2*k]*_scni_obj->scni[i]->area;
+				check_B->me[3][1] += B->me[3][2*k+1]*_scni_obj->scni[i]->area;
+			}
+		}
+	}
+	m_foutput(stdout, check_B);
 
-	// printf("checking mscni \n \n");
-	// //m_foutput(stdout,_mscni_obj->scni[checkPoint]->B);
-	// //iv_foutput(stdout, _mscni_obj->scni[checkPoint]->sfIndex);
-	// MAT * check_B1 = m_get(dim*dim,2);
-	// printf("checking divergence free condition at point %d\n", checkPoint);
-	// printf("with coordinates %lf %lf\n", mfree.nodes->me[checkPoint][0], mfree.nodes->me[checkPoint][1]);
-	// printf("cell area = %lf \n", _mscni_obj->scni[checkPoint]->area);
-	// printf("and neighbours \n");
-	// for ( int i = 0 ; i < _scni_obj->num_points ; i++)
-	// {
-	// 	index = _mscni_obj->scni[i]->sfIndex;
-	// 	B = _mscni_obj->scni[i]->B;
+	printf("checking mscni \n \n");
+	//m_foutput(stdout,_mscni_obj->scni[checkPoint]->B);
+	//iv_foutput(stdout, _mscni_obj->scni[checkPoint]->sfIndex);
+	MAT * check_B1 = m_get(dim*dim,2);
+	printf("checking divergence free condition at point %d\n", checkPoint);
+	printf("with coordinates %lf %lf\n", mfree.nodes->me[checkPoint][0], mfree.nodes->me[checkPoint][1]);
+	printf("cell area = %lf \n", _mscni_obj->scni[checkPoint]->area);
+	printf("and neighbours \n");
+	for ( int i = 0 ; i < _scni_obj->num_points ; i++)
+	{
+		index = _mscni_obj->scni[i]->sfIndex;
+		B = _mscni_obj->scni[i]->B;
 
-	// 	for (int k = 0 ; k < index->max_dim ; k++){
-	// 		int indx = index->ive[k];
+		for (int k = 0 ; k < index->max_dim ; k++){
+			int indx = index->ive[k];
 
-	// 		if ( indx == checkPoint)
-	// 		{
-	// 			check_B1->me[0][0] += B->me[0][2*k]*_mscni_obj->scni[i]->area;
-	// 			check_B1->me[1][1] += B->me[1][2*k+1]*_mscni_obj->scni[i]->area;
-	// 			check_B1->me[2][0] += B->me[2][2*k]*_mscni_obj->scni[i]->area;
-	// 			check_B1->me[3][1] += B->me[3][2*k+1]*_mscni_obj->scni[i]->area;
-	// 		}
-	// 	}
-	// }
-	// m_foutput(stdout, check_B1);
+			if ( indx == checkPoint)
+			{
+				check_B1->me[0][0] += B->me[0][2*k]*_mscni_obj->scni[i]->area;
+				check_B1->me[1][1] += B->me[1][2*k+1]*_mscni_obj->scni[i]->area;
+				check_B1->me[2][0] += B->me[2][2*k]*_mscni_obj->scni[i]->area;
+				check_B1->me[3][1] += B->me[3][2*k+1]*_mscni_obj->scni[i]->area;
+			}
+		}
+	}
+	m_foutput(stdout, check_B1);
 
 
 	/* ------------------------------------------*/

@@ -93,4 +93,4 @@ B = fscanf(fileID,formatSpec,sizeA);
 B = B'
 
 hold on 
-plot(B(:,1),B(:,2),'r.');
+plot(B(:,1),B(:,2),'rx','markersize',6);
