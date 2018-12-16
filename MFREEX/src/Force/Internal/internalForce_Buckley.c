@@ -44,21 +44,18 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	{
 
 		MAT * F_n_1 = m_get(dim_s,dim_s);
-		MAT * invF_n_h = m_get(dim_s,dim_s);
+		MAT * F_n_1_bar = m_get(dim_s,dim_s);
 		MAT * invF_n_1 = m_get(dim_s,dim_s);
-		MAT * Fdot_n_h = m_get(dim_s,dim_s);
-		MAT * F_n_h = m_get(dim_s,dim_s);
+		MAT * invF_n_1_bar = m_get(dim_s,dim_s);
+		MAT * Fdot = m_get(dim_s,dim_s);
+		MAT * Fdot_bar = m_get(dim_s,dim_s);
 
 		VEC * stressVoigt = v_get(dim_v);
 		VEC * fIntTemp = v_get(Fint->max_dim);
 		
 		double div_v;
 		double delta_t_min_i = 1000;
-		MAT * B ;
-		MAT * F_n;
-		MAT * L_n_h;
-		MAT * D_n_h;
-		MAT * W_n_h;
+		MAT * B;
 		IVEC * neighbours;
 		MAT * F_r;
 		double Jacobian_n;
@@ -74,39 +71,44 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			
 			/*  Find deformation gradient */
 			get_defgrad(F_n_1, B, neighbours,F_r, disp);
-			get_dot_defgrad(Fdot_n_h,B, neighbours,F_r,velocity);
+
+			/* Find Fdot and Fbar dot */
+			m_sub(F_n_1, state_n[i]->F, Fdot);
+			__smlt__(Fdot->base, 1.00/deltat, Fdot->base, dim_s*dim_s);
 
 			// inverse deformation gradient
 			m_inverse(F_n_1,invF_n_1);
-			F_n = state_n[i]->F;
-
-			// Find half time step deformation gradient 
-			ms_mltadd(F_n, Fdot_n_h, 0.5*deltat, F_n_h);
-			m_inverse(F_n_h,invF_n_h);
-			
-			L_n_h = state_n[i]->L;
-			D_n_h = state_n[i]->D;
-			W_n_h = state_n[i]->W;
 
 			// Find velocity gradient 
-			velocity_grad(L_n_h, D_n_h, W_n_h, Fdot_n_h,invF_n_h);
+			velocity_grad(state_n[i]->L, state_n[i]->D, state_n[i]->W, Fdot,invF_n_1);
 
 			// Find Jacobian at t_n_1;
 
 			if ( dim_s == 2)
 			{
-				div_v = L_n_h->me[0][0] + L_n_h->me[1][1];
+				div_v = state_n[i]->L->me[0][0] + state_n[i]->L->me[1][1];
 
 			}else if ( dim_s == 3)
 			{
-				div_v = L_n_h->me[0][0] + L_n_h->me[1][1] + L_n_h->me[2][2];
+				div_v = state_n[i]->L->me[0][0] + state_n[i]->L->me[1][1] + state_n[i]->L->me[2][2];
 
 			}
 			// Update Jacobian
 			Jacobian_n = state_n[i]->Jacobian;
 			Jacobian_n_1 = Jacobian_n + Jacobian_n*div_v*deltat;
 
-	
+
+			/* Distortional deformation */
+			__smlt__(F_n_1->base, pow(Jacobian_n_1,-1.00/3.00), F_n_1_bar->base, dim_s*dim_s);
+			// inv Fbar_n_1
+			__smlt__(invF_n_1->base,pow(Jacobian_n_1,1.00/3.00), invF_n_1_bar->base, dim_s*dim_s);
+
+			// F bar dot
+			m_sub(F_n_1_bar, state_n[i]->Fbar, Fdot_bar);
+			__smlt__(Fdot->base, 1.00/deltat, Fdot_bar->base, dim_s*dim_s);
+
+			velocity_grad(state_n[i]->Lbar, state_n[i]->Lbar,state_n[i]->Wbar, Fdot_bar,invF_n_1_bar);
+
 			/* Integration parameter */
 			double intFactor = scni[i]->area;
 			if( is_axi == 1){
@@ -116,11 +118,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 			// Find bond and confromation stresss
 
-
-
-
-
-
+			// Find increments 
 
 
 
