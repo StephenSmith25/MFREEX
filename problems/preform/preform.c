@@ -403,8 +403,18 @@ int main(int argc, char** argv) {
 		state_n[i] =  malloc(sizeof(state_Buckley));
 		state_n[i]->Fbar = m_get(3,3);
 		m_ident(state_n[i]->Fbar); 
+		state_n[i]->F = m_get(3,3);
+		m_ident(state_n[i]->F);
+
+		state_n[i]->L = m_get(3,3);
+		state_n[i]->D = m_get(3,3);
+		state_n[i]->W = m_get(3,3);
+
+		state_n[i]->Lbar = m_get(3,3);
 		state_n[i]->Dbar = m_get(3,3);
 		state_n[i]->Bbar = m_get(3,3);
+		state_n[i]->Wbar = m_get(3,3);
+
 		m_ident(state_n[i]->Bbar);
 		state_n[i]->Wbar = m_get(3,3);
 		state_n[i]->Sc = m_get(3,3);

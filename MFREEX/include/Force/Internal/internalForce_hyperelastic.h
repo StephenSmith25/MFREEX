@@ -24,6 +24,5 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 
 
-
 #endif
 
