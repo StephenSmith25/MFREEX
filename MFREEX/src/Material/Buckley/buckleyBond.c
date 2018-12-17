@@ -17,8 +17,8 @@
  */
 #include "Material/Buckley/buckleyBond.h"
 
-int buckleyBond(MAT * Sb_n_1, state_Buckley * stateOld, VEC * para, double dt){
-
+int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para, double dt)
+{
 
 
 	// material constants
@@ -33,6 +33,9 @@ int buckleyBond(MAT * Sb_n_1, state_Buckley * stateOld, VEC * para, double dt){
 	double vogel_T = para->ve[3];
 	double Cv = para->ve[6];
 
+
+	MAT * Sb_n = stateOld->Sb;
+	MAT * Sb_n_1 = stateNew->Sb;
 
 
 

@@ -28,7 +28,7 @@
 #include <math.h>
 #include "Material/Buckley/edwardsVilgis.h"
 
-int buckleyConf(MAT * Sc_n_1, state_Buckley * stateOld, VEC * para, double deltaT, double Jacobian);
+int buckleyConf(state_Buckley * stateNew,VEC * para, double deltaT);
 
 
 

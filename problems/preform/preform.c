@@ -22,6 +22,7 @@
 #include "Boundary/Traction/Cavity/flowRate.h"
 #include <math.h>
 #include "Deformation/poldec.h"
+#include "Material/Buckley/new_Buckley_State.h"
 
 
 // #include "internalForceBuckley.h"
@@ -428,41 +429,8 @@ int main(int argc, char** argv) {
 	/* --------------State storage---------------*/
 	/* ------------------------------------------*/
 	// store F, D at each time step for each material point for use with buckley model 
-
-	state_Buckley ** state_n = malloc(mfree.num_nodes * sizeof(state_Buckley*) );
-
-
-	for ( int i = 0 ; i < mfree.num_nodes; i++){
-		state_n[i] =  malloc(sizeof(state_Buckley));
-		state_n[i]->Fbar = m_get(3,3);
-		m_ident(state_n[i]->Fbar); 
-		state_n[i]->F = m_get(3,3);
-		m_ident(state_n[i]->F);
-
-		state_n[i]->L = m_get(3,3);
-		state_n[i]->D = m_get(3,3);
-		state_n[i]->W = m_get(3,3);
-
-		state_n[i]->Lbar = m_get(3,3);
-		state_n[i]->Dbar = m_get(3,3);
-		state_n[i]->Bbar = m_get(3,3);
-		state_n[i]->Wbar = m_get(3,3);
-
-		m_ident(state_n[i]->Bbar);
-		state_n[i]->Wbar = m_get(3,3);
-		state_n[i]->Sc = m_get(3,3);
-		state_n[i]->Sb = m_get(3,3);
-		state_n[i]->eigValDBar = v_get(3);
-		state_n[i]->critLambdaBar = 100.00;
-		state_n[i]->mSigma = 0;
-		state_n[i]->lambdaBar = v_get(3);
-		state_n[i]->lambdaNMax = 1;
-		state_n[i]->temperature = temperatures[i] ;
-		state_n[i]->Jacobian = 1;
-
-	}
-
-
+	state_Buckley ** state_n = new_Buckley_State(mfree.num_nodes,NULL,is_AXI,dim);;
+	state_Buckley ** state_n_1 = new_Buckley_State(mfree.num_nodes,NULL,is_AXI,dim);
 
 
 	// ///////////////////////////////////////////////////////////////

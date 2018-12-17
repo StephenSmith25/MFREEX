@@ -19,10 +19,9 @@ typedef struct state
 typedef struct state_Buckley
 {
 	// deformation gradient
-	MAT * Fbar;
 	MAT * F;
-	double Jacobian;
-	double div_v; 
+	MAT * invF;
+
 	// velocity gradinet
 	MAT * L; 
 	MAT * D;
@@ -37,13 +36,16 @@ typedef struct state_Buckley
 	VEC * eigValDBar ;
 
 	// True strain
-	MAT * ep_true;
+	MAT * true_strain;
 
-
-	// velocity gradinet
+	// Isochoric components
+	MAT * Fbar;
+	MAT * invFBar;
 	MAT * Lbar; 
 	MAT * Dbar;
 	MAT * Wbar;
+
+
 	// Deformation tensors
 	MAT * Bbar;
 	// bond and conformational stress
@@ -60,6 +62,8 @@ typedef struct state_Buckley
 	double temperature;
 	// critical network stretch
 	double critLambdaBar;
+	double Jacobian;
+	double div_v; 
 
 
 

@@ -22,7 +22,8 @@
 
 static int call_count_2 = 0;
 
-int buckleyConf(MAT * Sc_n_1, state_Buckley * stateOld, VEC * para,double deltaT,double Jacobian){
+int buckleyConf(state_Buckley * stateNew, VEC * para, double deltaT)
+{
 
 
 
@@ -38,19 +39,23 @@ int buckleyConf(MAT * Sc_n_1, state_Buckley * stateOld, VEC * para,double deltaT
 	MAT * eigVecB = m_get(3,3);
 	VEC * eigValB = v_get(3);
 
+	MAT * Sc_n_1 = stateNew->Sc;
+
+	double Jacobian = stateNew->Jacobian;
+
 	int index = 0; 
 	++call_count_2;
 
 	// conformational stress
 
-	//if ( stateOld->eigValDBar->ve[1] > 0 ){
-	if (stateOld->div_v > 0 ){ 
+	//if ( stateNew->eigValDBar->ve[1] > 0 ){
+	if (stateNew->div_v > 0 ){ 
 
-	if ( stateOld->lambdaNMax < stateOld->critLambdaBar){
-		double gamma_n_1 = gammaV(stateOld->lambdaBar,stateOld->lambdaNMax,stateOld->critLambdaBar,stateOld->eigValDBar,para);
-		sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
+	if ( stateNew->lambdaNMax < stateNew->critLambdaBar){
+		double gamma_n_1 = gammaV(stateNew->lambdaBar,stateNew->lambdaNMax,stateNew->critLambdaBar,stateNew->eigValDBar,para);
+		sm_mlt(1.0000/gamma_n_1,stateNew->Sc,Ds);
 
-		//m_foutput(stdout,stateOld->Sc);
+		//m_foutput(stdout,stateNew->Sc);
 	}else{
 		m_zero(Ds);
 	}
@@ -58,21 +63,21 @@ int buckleyConf(MAT * Sc_n_1, state_Buckley * stateOld, VEC * para,double deltaT
 
 
 	// network rate of deformation tensor 
-	m_sub(stateOld->Dbar,Ds,Dn);
+	m_sub(stateNew->Dbar,Ds,Dn);
 	// BnCr = Dn_n*Bn_n + Bn_n*Dn_n; 
-	m_mlt(Dn,stateOld->Bbar,intermediate1);
-	m_mlt(stateOld->Bbar,Dn,intermediate2);
+	m_mlt(Dn,stateNew->Bbar,intermediate1);
+	m_mlt(stateNew->Bbar,Dn,intermediate2);
 	m_add(intermediate1,intermediate2,BnCr);
 	// Bndot = BnCr + W*B - B*W; 
-	m_mlt(stateOld->Wbar,stateOld->Bbar,intermediate1);
-	m_mlt(stateOld->Bbar,stateOld->Wbar,intermediate2);
+	m_mlt(stateNew->Wbar,stateNew->Bbar,intermediate1);
+	m_mlt(stateNew->Bbar,stateNew->Wbar,intermediate2);
 	m_add(BnCr,intermediate1,BnDot);
 	m_sub(BnDot,intermediate2,BnDot);
 	// deltaB = deltaT * BnDot
 	sm_mlt(deltaT,BnDot,deltaB);
 	// Bn_n_1 = Bn_n + deltaB;
-	m_add(stateOld->Bbar,deltaB,stateOld->Bbar);
-	symmeig(stateOld->Bbar,eigVecB,eigValB);	
+	m_add(stateNew->Bbar,deltaB,stateNew->Bbar);
+	symmeig(stateNew->Bbar,eigVecB,eigValB);	
 	// find edwards vilgis stress
 	edwardsVilgis(Sc_n_1p,eigValB,para, Jacobian);
 	// Find /\, such that /\ = Q^T * A * Q;
@@ -90,7 +95,7 @@ int buckleyConf(MAT * Sc_n_1, state_Buckley * stateOld, VEC * para,double deltaT
 
 	// update maximum network stre
 
-	stateOld->lambdaNMax = sqrt(v_max(eigValB,&index));
+	stateNew->lambdaNMax = sqrt(v_max(eigValB,&index));
 
 
 

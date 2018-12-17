@@ -20,7 +20,7 @@
 
 
 double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC * velocity,
-	VEC * matParams, state_Buckley ** state_n ,int is_axi, int dim, double deltat);
+	VEC * matParams, state_Buckley ** stateNew, state_Buckley ** stateOld, int is_axi, int dim, double deltat);
 
 
 
