@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 
-#include "lambdaCrit.h"
+#include "Material/Buckley/lambdaCrit.h"
 
 double lambdaCrit(double critLambda_n, VEC * lambda, VEC * eigD, VEC * para){
 
@@ -34,7 +34,6 @@ double lambdaCrit(double critLambda_n, VEC * lambda, VEC * eigD, VEC * para){
 
 
 	if ( maxSr == 0){
-		printf("ERROR\n ERROR \n ERROR \n ERROR \n ERROR \n ERROR \n ERROR \n ERROR \n ERROR \n ERROR \n");
 		maxSr = 0.00000001; 
 	}
 

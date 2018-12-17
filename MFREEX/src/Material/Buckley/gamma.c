@@ -17,8 +17,7 @@
  * =====================================================================================
  */
 
-#include "gamma.h"
-#include <math.h>
+#include "Material/Buckley/gamma.h"
 
 double gammaV(VEC * lambda, double maxLambdaN,double critLambda,VEC * eigD,VEC * para){
 

@@ -1,12 +1,12 @@
 /*
  * =====================================================================================
  *
- *       Filename:  buckleyBond.h
+ *       Filename:  contraction.c
  *
- *    Description:  
+ *    Description:  Performs contraction of two second order tensors
  *
  *        Version:  1.0
- *        Created:  04/05/18 12:14:53
+ *        Created:  04/05/18 11:29:57
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -16,17 +16,16 @@
  * =====================================================================================
  */
 
-#ifndef BUCKLEYBOND_H_
-#define BUCKLEYBOND_H_
-
-#include <stdlib.h>
-#include <math.h>
-#include "matrix.h"
-#include "matrix2.h"
-#include "Material/material.h"
 #include "contraction.h"
 
-int buckleyBond( MAT * Sb_n_1, state_Buckley * state , VEC * para, double dt);
 
+double contraction(MAT * A, MAT * B){
 
-#endif
+	double returnValue = 0;
+	for ( int i = 0 ; i < A->m ; i++){
+		for ( int j = 0 ; j < A->m; j++){
+			returnValue += A->me[i][j]*B->me[i][j];
+		}
+	}
+	return returnValue;
+}

@@ -15,7 +15,7 @@
  *
  * =====================================================================================
  */
-#include "flowRate.h"
+#include "Boundary/Traction/Cavity/flowRate.h"
 
 
 double flowRate(double pRatio,double T0, double P0,double R, double Ar, double gamma )

@@ -24,6 +24,7 @@
 #include "matrix2.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 double gammaV(VEC * lambda, double maxLambdaN,double critLambda, VEC * eigD, VEC * para);
 

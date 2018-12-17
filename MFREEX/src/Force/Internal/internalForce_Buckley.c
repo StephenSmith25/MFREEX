@@ -1,7 +1,7 @@
 #include "Force/Internal/internalForce_Buckley.h"
 
 
-
+static int call_count;
 
 double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC * velocity,VEC * matParams, 
 	state_Buckley ** state_n ,int is_axi, int dim, double deltat){
@@ -49,10 +49,30 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		MAT * invF_n_1_bar = m_get(dim_s,dim_s);
 		MAT * Fdot = m_get(dim_s,dim_s);
 		MAT * Fdot_bar = m_get(dim_s,dim_s);
-
 		VEC * stressVoigt = v_get(dim_v);
 		VEC * fIntTemp = v_get(Fint->max_dim);
-		
+		MAT * R = m_get(dim_s,dim_s);
+		MAT * U = m_get(dim_s,dim_s);
+		MAT * V = m_get(dim_s,dim_s);	
+		MAT * temp = m_get(dim_s,dim_s);
+		MAT * delta_F = m_get(dim_s,dim_s);
+
+
+		// Stress variables
+		MAT * cauchy_dev = m_get(dim_s,dim_s);
+		MAT * cauchy_hyd = m_get(dim_s,dim_s);
+
+		// strain varaibles
+		MAT * delta_ep_true = m_get(dim_s,dim_s);
+		MAT * delta_ep_true_vol = m_get(dim_s,dim_s);
+		MAT * delta_ep_true_iso = m_get(dim_s,dim_s);
+
+
+		MAT * delta_cauchy_dev = m_get(dim_s,dim_s);
+		MAT * delta_cauchy_hyd = m_get(dim_s,dim_s);
+		MAT * Sb_n_1 = m_get(dim_s,dim_s);
+		MAT * Sc_n_1 = m_get(dim_s,dim_s);
+
 		double div_v;
 		double delta_t_min_i = 1000;
 		MAT * B;
@@ -64,6 +84,17 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 #pragma omp for nowait schedule(dynamic,4) 
 		for(int i = 0 ; i < num_int_points ; i++){
 
+
+
+			/* ------------------------------------------*/
+			/* -----------------Deformation--------------*/
+			/* ------------------------------------------*/
+
+			//------------------------//
+			//        Def Grad        //
+			//------------------------//
+
+
 			/*  Find deformation gradient */
 			B = scni[i]->B;
 			neighbours = scni[i]->sfIndex;
@@ -73,16 +104,23 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			get_defgrad(F_n_1, B, neighbours,F_r, disp);
 
 			/* Find Fdot and Fbar dot */
-			m_sub(F_n_1, state_n[i]->F, Fdot);
-			__smlt__(Fdot->base, 1.00/deltat, Fdot->base, dim_s*dim_s);
+			m_sub(F_n_1, state_n[i]->F, delta_F);
+			__smlt__(delta_F->base, 1.00/deltat, Fdot->base, dim_s*dim_s);
 
 			// inverse deformation gradient
 			m_inverse(F_n_1,invF_n_1);
 
+			// polar decomposition to find delta R
+			poldec(delta_F, R, U, V);
+
+			//------------------------//
+			//      Velocity grad     //
+			//------------------------//
+
 			// Find velocity gradient 
 			velocity_grad(state_n[i]->L, state_n[i]->D, state_n[i]->W, Fdot,invF_n_1);
 
-			// Find Jacobian at t_n_1;
+			// div_v
 
 			if ( dim_s == 2)
 			{
@@ -93,10 +131,45 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 				div_v = state_n[i]->L->me[0][0] + state_n[i]->L->me[1][1] + state_n[i]->L->me[2][2];
 
 			}
+
+			state_n[i]->div_v = div_v;
+			//------------------------//
+			//   Update true strain   //
+			//------------------------//
+
+
+			sm_mlt(deltat, state_n[i]->D, delta_ep_true);
+			// update total strain
+			m_mlt(R, state_n[i]->ep_true, temp);
+			mmtr_mlt(temp, R, state_n[i]->ep_true);
+			m_add(state_n[i]->ep_true, delta_ep_true, state_n[i]->ep_true);
+			double delta_ep_vol = 0;
+
+			if ( dim == 2)
+			{
+				delta_ep_vol = (1.00/3.00)*(delta_ep_true->me[0][0] +delta_ep_true->me[1][1]);
+				delta_ep_true_vol->me[0][0] = delta_ep_vol;
+				delta_ep_true_vol->me[1][1] = delta_ep_vol;
+
+			}else if ( dim == 3)
+			{
+				delta_ep_vol = (1.00/3.00)*(delta_ep_true->me[0][0] +delta_ep_true->me[1][1] +delta_ep_true->me[2][2] );
+				delta_ep_true_vol->me[0][0] = delta_ep_vol;
+				delta_ep_true_vol->me[1][1] = delta_ep_vol;
+				delta_ep_true_vol->me[2][2] = delta_ep_vol;
+			}
+
+			m_sub(delta_ep_true,delta_ep_true_vol,delta_ep_true_iso);
+
+
+
 			// Update Jacobian
 			Jacobian_n = state_n[i]->Jacobian;
 			Jacobian_n_1 = Jacobian_n + Jacobian_n*div_v*deltat;
 
+			/* ------------------------------------------*/
+			/* ---------Isochoric   Deformation---------*/
+			/* ------------------------------------------*/
 
 			/* Distortional deformation */
 			__smlt__(F_n_1->base, pow(Jacobian_n_1,-1.00/3.00), F_n_1_bar->base, dim_s*dim_s);
@@ -107,7 +180,48 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			m_sub(F_n_1_bar, state_n[i]->Fbar, Fdot_bar);
 			__smlt__(Fdot->base, 1.00/deltat, Fdot_bar->base, dim_s*dim_s);
 
-			velocity_grad(state_n[i]->Lbar, state_n[i]->Lbar,state_n[i]->Wbar, Fdot_bar,invF_n_1_bar);
+			velocity_grad(state_n[i]->Lbar, state_n[i]->Dbar, state_n[i]->Wbar, Fdot_bar, invF_n_1_bar);
+
+
+			/* ------------------------------------------*/
+			/* ------------- --Find Stress--------------*/
+			/* ------------------------------------------*/
+			/*  Obtain stresses using explicit integration of stress rate */
+			buckleyBond(Sb_n_1,state_n[i],matParams,deltat);
+
+			// Conformational stress
+			buckleyConf(Sc_n_1,state_n[i],matParams,deltat,Jacobian_n_1);
+
+
+
+			/* ------------------------------------------*/
+			/* --------------New time increment----------*/
+			/* ------------------------------------------*/
+			m_add(Sb_n_1, Sc_n_1, cauchy_dev);
+
+
+			// Find hydrostatic and deviatoric stress
+
+			m_sub(cauchy_dev,state_n[i]->dev_Stress,delta_cauchy_dev);
+
+			for ( int k = 0 ; k < dim_s ; k++)
+			{
+				cauchy_hyd->me[i][i] = matParams->ve[5]*log(Jacobian_n_1);
+
+			}
+			m_sub(cauchy_hyd,state_n[i]->hyd_Stress,delta_cauchy_hyd);
+
+
+			/* ------------------------------------------*/
+			/* ---------------Bulk Damping---------------*/
+			/* ------------------------------------------*/
+
+
+
+			/* ------------------------------------------*/
+			/* --------------Internal Force--------------*/
+			/* ------------------------------------------*/
+
 
 			/* Integration parameter */
 			double intFactor = scni[i]->area;
@@ -119,7 +233,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			// Find bond and confromation stresss
 
 			// Find increments 
-
+			// Find Delta_
 
 
 
@@ -226,11 +340,11 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			}
 		}
 
-	/*  Free allocated memory */
-		v_free(stressVoigt);
-		v_free(fIntTemp);
-		M_FREE(F);
-		M_FREE(Fdot);
+	// /*  Free allocated memory */
+	// 	v_free(stressVoigt);
+	// 	v_free(fIntTemp);
+	// 	M_FREE(F);
+	// 	M_FREE(Fdot);
 
 	}
 	++call_count;

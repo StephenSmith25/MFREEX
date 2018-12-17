@@ -22,7 +22,6 @@
 #include "matrix2.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include "structure.h"
 #include <math.h>
 
 int edwardsVilgis(VEC * stress, VEC* lambda, VEC* para, double Jacobian);

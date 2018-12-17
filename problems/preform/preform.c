@@ -21,6 +21,7 @@
 #include "Boundary/Traction/Cavity/cavityVolume.h"
 #include "Boundary/Traction/Cavity/flowRate.h"
 #include <math.h>
+#include "Deformation/poldec.h"
 
 
 // #include "internalForceBuckley.h"
@@ -390,6 +391,38 @@ int main(int argc, char** argv) {
 	double pRatio;
 
 
+	// tst poldec
+
+	int test_dim = 3;
+	MAT * F = m_get(test_dim,test_dim);
+	F->me[0][0] = 1;
+	F->me[0][1] = 0.495;
+	F->me[0][2] = 0.5;
+
+	F->me[1][0] = -0.333;
+	F->me[1][1] = 1;
+	F->me[1][2] = -0.247;
+
+
+	F->me[2][0] = 0.959;
+	F->me[2][1] = 0;
+	F->me[2][2] = 1.5;
+
+
+	MAT * R = m_get(test_dim,test_dim);
+	MAT * U = m_get(test_dim,test_dim);
+	MAT * V = m_get(test_dim,test_dim);
+
+
+	poldec(F, R, U, V);
+	printf("F = \n");
+	m_foutput(stdout,F);
+	printf("R = \n");
+	m_foutput(stdout,R);
+	printf("U = \n");
+	m_foutput(stdout,U);
+	printf("V = \n");
+	m_foutput(stdout,V);
 
 	/* ------------------------------------------*/
 	/* --------------State storage---------------*/

@@ -15,15 +15,14 @@
  *
  * =====================================================================================
  */
-#include "buckleyConf.h"
-#include <math.h>
-#include "edwardsVilgis.h"
+#include "Material/Buckley/buckleyConf.h"
+
 
 
 
 static int call_count_2 = 0;
 
-int buckleyConf(MAT * Sc_n_1, State stateOld, VEC * para,double deltaT,double Jacobian){
+int buckleyConf(MAT * Sc_n_1, state_Buckley * stateOld, VEC * para,double deltaT,double Jacobian){
 
 
 
@@ -36,16 +35,17 @@ int buckleyConf(MAT * Sc_n_1, State stateOld, VEC * para,double deltaT,double Ja
 	MAT * BnDot = m_get(3,3);
 	MAT * deltaB = m_get(3,3);
 	VEC * Sc_n_1p = v_get(3);
-	MAT * Sc_n_1pm = m_get(3,3);
 	MAT * eigVecB = m_get(3,3);
 	VEC * eigValB = v_get(3);
+
 	int index = 0; 
 	++call_count_2;
 
 	// conformational stress
 
 	//if ( stateOld->eigValDBar->ve[1] > 0 ){
-	if (stateOld->trace_D > 0 ){ 
+	if (stateOld->div_v > 0 ){ 
+
 	if ( stateOld->lambdaNMax < stateOld->critLambdaBar){
 		double gamma_n_1 = gammaV(stateOld->lambdaBar,stateOld->lambdaNMax,stateOld->critLambdaBar,stateOld->eigValDBar,para);
 		sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
@@ -76,12 +76,15 @@ int buckleyConf(MAT * Sc_n_1, State stateOld, VEC * para,double deltaT,double Ja
 	// find edwards vilgis stress
 	edwardsVilgis(Sc_n_1p,eigValB,para, Jacobian);
 	// Find /\, such that /\ = Q^T * A * Q;
-	Sc_n_1pm->me[0][0] = Sc_n_1p->ve[0];
-	Sc_n_1pm->me[1][1] = Sc_n_1p->ve[1];
-	Sc_n_1pm->me[2][2] = Sc_n_1p->ve[2];
+
+	for ( int i = 0 ; i < Sc_n_1p->max_dim ; i++)
+	{
+		Sc_n_1->me[i][i] = Sc_n_1p->ve[i];
+	}
+
 
 	// rotate stress to global coordinates 
-	m_mlt(eigVecB,Sc_n_1pm,intermediate1);
+	m_mlt(eigVecB,Sc_n_1,intermediate1);
 	mmtr_mlt(intermediate1,eigVecB,Sc_n_1);
 
 
@@ -98,7 +101,6 @@ int buckleyConf(MAT * Sc_n_1, State stateOld, VEC * para,double deltaT,double Ja
 	M_FREE(BnCr);
 	M_FREE(BnDot);
 	M_FREE(deltaB);
-	M_FREE(Sc_n_1pm);
 	M_FREE(eigVecB);
 
 

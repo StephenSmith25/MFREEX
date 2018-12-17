@@ -15,10 +15,9 @@
  *
  * =====================================================================================
  */
-#include "buckleyBond.h"
-#include "trace.h"
+#include "Material/Buckley/buckleyBond.h"
 
-int buckleyBond(MAT * Sb_n_1, State stateOld, VEC * para, double dt){
+int buckleyBond(MAT * Sb_n_1, state_Buckley * stateOld, VEC * para, double dt){
 
 
 
@@ -64,17 +63,10 @@ int buckleyBond(MAT * Sb_n_1, State stateOld, VEC * para, double dt){
 	double tau = (star_mu0/(2*Gb))*alpha_sig*alpha_s*alpha_T;
 
 
-	MAT * deltaSb = m_get(3,3);
 	MAT * mat1 = m_get(3,3) ;
 	MAT * mat2 = m_get(3,3) ;
-	MAT * mat3 = m_get(3,3);
-	MAT * mat4 = m_get(3,3);
-	MAT * l = m_get(3,3);
+	MAT * deltaSb = m_get(3,3);
 
-
-	m_add(stateOld->Dbar,stateOld->Wbar,l);
-
-	double trace_l = l->me[0][0] + l->me[1][1] + l->me[2][2]; 
 
 	double sbFactor = 1;
 
@@ -84,6 +76,7 @@ int buckleyBond(MAT * Sb_n_1, State stateOld, VEC * para, double dt){
 
 	// mat1 = 2Gb*D*tau
 	sm_mlt(2*Gb*tau,stateOld->Dbar,mat1);
+
 
 	// 2Gb*D*tau - Sb_n
 	m_sub(mat1,stateOld->Sb,deltaSb);
@@ -95,31 +88,24 @@ int buckleyBond(MAT * Sb_n_1, State stateOld, VEC * para, double dt){
 	m_add(stateOld->Sb,deltaSb,Sb_n_1);
 
 	// Spin component of stress
-	// l*s
-	m_mlt(l,stateOld->Sb,mat1);
-	// s*l'
-	mmtr_mlt(stateOld->Sb,l,mat2);
-	// trace(l)*S
-	sm_mlt(trace_l,stateOld->Sb,mat3);
-	// l+s + s*l'
-	m_add(mat1,mat2,mat4);
-	// l*s + s*l' + trace(l)s
-	m_sub(mat4,mat3,mat1);
-	// mat1 = (mat1)*dt;
-	sm_mlt(dt,mat1,mat2);
+	// (WSb_n - Sb_n W)dt
+	// W*s
+	m_mlt(stateOld->Wbar,stateOld->Sb,mat1);
+	// s*l
+	m_mlt(stateOld->Sb,stateOld->Wbar,mat2);
+	m_sub(mat1,mat2,mat1);	
+	sm_mlt(dt,mat1,mat1);
 
-	// finally update Sb_n_1
-	m_add(Sb_n_1,mat2,Sb_n_1);
+	// Sb_n_1 = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
+	m_add(Sb_n_1,mat1,Sb_n_1);
 
 
 	
 
-	M_FREE(l);
 	M_FREE(deltaSb); 
 	M_FREE(mat1);
 	M_FREE(mat2);
-	M_FREE(mat3);
-	M_FREE(mat4);
+
 
 
 

@@ -1,12 +1,12 @@
 /*
  * =====================================================================================
  *
- *       Filename:  buckleyBond.h
+ *       Filename:  contraction.h
  *
  *    Description:  
  *
  *        Version:  1.0
- *        Created:  04/05/18 12:14:53
+ *        Created:  04/05/18 12:17:44
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -16,17 +16,18 @@
  * =====================================================================================
  */
 
-#ifndef BUCKLEYBOND_H_
-#define BUCKLEYBOND_H_
+#ifndef CONTRACTION_H_
+#define CONTRACTION_H_
 
 #include <stdlib.h>
-#include <math.h>
 #include "matrix.h"
 #include "matrix2.h"
-#include "Material/material.h"
-#include "contraction.h"
 
-int buckleyBond( MAT * Sb_n_1, state_Buckley * state , VEC * para, double dt);
+
+double contraction(MAT * A, MAT * B);
+
+
+
 
 
 #endif

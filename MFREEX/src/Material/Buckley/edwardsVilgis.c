@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 
-#include "edwardsVilgis.h"
+#include "Material/Buckley/edwardsVilgis.h"
 
 int edwardsVilgis(VEC * stress, VEC * lambda, VEC * para, double Jacobian){
 

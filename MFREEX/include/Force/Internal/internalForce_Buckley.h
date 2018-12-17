@@ -11,6 +11,9 @@
 #include "Deformation/velocity_grad.h"
 #include "Material/material.h"
 #include "Integration/defgrad.h"
+#include "Deformation/poldec.h"
+#include "Material/Buckley/buckleyBond.h"
+#include "Material/Buckley/buckleyConf.h"
 
 #define PI 3.14159265359
 

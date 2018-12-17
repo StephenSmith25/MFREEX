@@ -22,15 +22,25 @@ typedef struct state_Buckley
 	MAT * Fbar;
 	MAT * F;
 	double Jacobian;
+	double div_v; 
 	// velocity gradinet
 	MAT * L; 
 	MAT * D;
 	MAT * W;
 
+	// Polar decomposition
+	MAT * R;
+	MAT * U;
+	MAT * V;
 
+	// Eigen values
 	VEC * eigValDBar ;
 
-		// velocity gradinet
+	// True strain
+	MAT * ep_true;
+
+
+	// velocity gradinet
 	MAT * Lbar; 
 	MAT * Dbar;
 	MAT * Wbar;
@@ -39,6 +49,8 @@ typedef struct state_Buckley
 	// bond and conformational stress
 	MAT * Sb;
 	MAT * Sc;
+	MAT * dev_Stress;
+	MAT * hyd_Stress;
 	// mean stress
 	double mSigma;
 	// stretch

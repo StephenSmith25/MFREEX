@@ -23,11 +23,12 @@
 #include "matrix2.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include "structure.h"
+#include "Material/material.h"
 #include "gamma.h"
+#include <math.h>
+#include "Material/Buckley/edwardsVilgis.h"
 
-
-int buckleyConf(MAT * Sc_n_1, State stateOld, VEC * para, double deltaT, double Jacobian);
+int buckleyConf(MAT * Sc_n_1, state_Buckley * stateOld, VEC * para, double deltaT, double Jacobian);
 
 
 
