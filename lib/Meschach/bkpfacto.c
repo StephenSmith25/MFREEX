@@ -31,9 +31,9 @@
 static	char	rcsid[] = "$Id: bkpfacto.c,v 1.7 1994/01/13 05:45:50 des Exp $";
 
 #include	<stdio.h>
+#include	<math.h>
 #include	"matrix.h"
 #include        "matrix2.h"
-#include	<math.h>
 
 #define	btos(x)	((x) ? "TRUE" : "FALSE")
 
@@ -99,9 +99,13 @@ int	i, j;	/* assumed in range */
 	P is a permutation matrix, M lower triangular and D is block
 	diagonal with blocks of size 1 or 2
 	-- P is stored in pivot; blocks[i]==i iff D[i][i] is a block */
+#ifndef ANSI_C
 MAT	*BKPfactor(A,pivot,blocks)
 MAT	*A;
 PERM	*pivot, *blocks;
+#else
+MAT	*BKPfactor(MAT *A, PERM *pivot, PERM *blocks)
+#endif
 {
 	int	i, j, k, n, onebyone, r;
 	Real	**A_me, aii, aip1, aip1i, lambda, sigma, tmp;
@@ -224,12 +228,17 @@ dopivot:
 
 /* BKPsolve -- solves A.x = b where A has been factored a la BKPfactor()
 	-- returns x, which is created if NULL */
+#ifndef ANSI_C
 VEC	*BKPsolve(A,pivot,block,b,x)
 MAT	*A;
 PERM	*pivot, *block;
 VEC	*b, *x;
+#else
+VEC	*BKPsolve(const MAT *A, PERM *pivot, const PERM *block,
+		  const VEC *b, VEC *x)
+#endif
 {
-	VEC	*tmp=VNULL;	/* dummy storage needed */
+	STATIC VEC	*tmp=VNULL;	/* dummy storage needed */
 	int	i, j, n, onebyone;
 	Real	**A_me, a11, a12, a22, b1, b2, det, sum, *tmp_ve, tmp_diag;
 
@@ -241,7 +250,7 @@ VEC	*b, *x;
 	if ( b->dim != n || pivot->size != n || block->size != n )
 		error(E_SIZES,"BKPsolve");
 	x = v_resize(x,n);
-	tmp = v_get(n);
+	tmp = v_resize(tmp,n);
 	MEM_STAT_REG(tmp,TYPE_VEC);
 
 	A_me = A->me;	tmp_ve = tmp->ve;
@@ -303,7 +312,11 @@ VEC	*b, *x;
 	/* printf("# BKPsolve: solving L^T part: tmp =\n");v_output(tmp); */
 	/* and do final permutation */
 	x = pxinv_vec(pivot,tmp,x);
-	v_free(tmp);
+
+#ifdef THREADSAFE
+	V_FREE(tmp);
+#endif
+
 	return x;
 }
 

@@ -35,9 +35,9 @@
 static	char	rcsid[] = "$Id: ";
 
 #include	<stdio.h>
+#include	<math.h>
 #include	"zmatrix.h"
 #include        "zmatrix2.h"
-#include	<math.h>
 
 /*
 	(Complex) Givens rotation matrix:
@@ -116,14 +116,16 @@ int	i,k;
 double	c;
 complex	s;
 {
-	u_int	j;
+	unsigned int	j;
 	complex	temp1, temp2;
 
 	if ( mat==ZMNULL )
 		error(E_NULL,"zrot_rows");
 	if ( i < 0 || i >= mat->m || k < 0 || k >= mat->m )
 		error(E_RANGE,"zrot_rows");
-	out = zm_copy(mat,out);
+
+	if ( mat != out )
+		out = zm_copy(mat,zm_resize(out,mat->m,mat->n));
 
 	/* temp1 = c*out->me[i][j] - s*out->me[k][j]; */
 	for ( j=0; j<mat->n; j++ )
@@ -154,14 +156,16 @@ int	i,k;
 double	c;
 complex	s;
 {
-	u_int	j;
+	unsigned int	j;
 	complex	x, y;
 
 	if ( mat==ZMNULL )
 		error(E_NULL,"zrot_cols");
 	if ( i < 0 || i >= mat->n || k < 0 || k >= mat->n )
 		error(E_RANGE,"zrot_cols");
-	out = zm_copy(mat,out);
+
+	if ( mat != out )
+		out = zm_copy(mat,zm_resize(out,mat->m,mat->n));
 
 	for ( j=0; j<mat->m; j++ )
 	{

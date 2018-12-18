@@ -30,8 +30,8 @@
 */
 
 #include	<stdio.h>
-#include        "sparse2.h"
 #include	<math.h>
+#include        "sparse2.h"
 
 
 
@@ -45,16 +45,20 @@
 			|a[p][k]| >= alpha * max_i |a[i][k]|
 	-- creates fill-in as needed
 	-- in situ factorisation */
+#ifndef ANSI_C
 SPMAT	*spLUfactor(A,px,alpha)
 SPMAT	*A;
 PERM	*px;
 double	alpha;
+#else
+SPMAT	*spLUfactor(SPMAT *A, PERM *px, double alpha)
+#endif
 {
 	int	i, best_i, k, idx, len, best_len, m, n;
 	SPROW	*r, *r_piv, tmp_row;
-	static	SPROW	*merge = (SPROW *)NULL;
+	STATIC	SPROW	*merge = (SPROW *)NULL;
 	Real	max_val, tmp;
-	static VEC	*col_vals=VNULL;
+	STATIC VEC	*col_vals=VNULL;
 
 	if ( ! A || ! px )
 		error(E_NULL,"spLUfctr");
@@ -154,6 +158,9 @@ double	alpha;
 			merge->len*sizeof(row_elt));
 	    }
 	}
+#ifdef	THREADSAFE
+	sprow_free(merge);	V_FREE(col_vals);
+#endif
 
 	return A;
 }
@@ -161,10 +168,14 @@ double	alpha;
 /* spLUsolve -- solve A.x = b using factored matrix A from spLUfactor()
 	-- returns x
 	-- may not be in-situ */
+#ifndef ANSI_C
 VEC	*spLUsolve(A,pivot,b,x)
 SPMAT	*A;
 PERM	*pivot;
 VEC	*b, *x;
+#else
+VEC	*spLUsolve(const SPMAT *A, PERM *pivot, const VEC *b, VEC *x)
+#endif
 {
 	int	i, idx, len, lim;
 	Real	sum, *x_ve;
@@ -215,16 +226,20 @@ VEC	*b, *x;
 /* spLUTsolve -- solve A.x = b using factored matrix A from spLUfactor()
 	-- returns x
 	-- may not be in-situ */
+#ifndef ANSI_C
 VEC	*spLUTsolve(A,pivot,b,x)
 SPMAT	*A;
 PERM	*pivot;
 VEC	*b, *x;
+#else
+VEC	*spLUTsolve(SPMAT *A, PERM *pivot, const VEC *b, VEC *x)
+#endif
 {
 	int	i, idx, lim, rownum;
 	Real	sum, *tmp_ve;
 	/* SPROW	*r; */
 	row_elt	*elt;
-	static VEC	*tmp=VNULL;
+	STATIC VEC	*tmp=VNULL;
 
 	if ( ! A || ! b )
 	    error(E_NULL,"spLUTsolve");
@@ -289,6 +304,10 @@ VEC	*b, *x;
 	else
 	    x = v_copy(tmp,x);
 
+#ifdef	THREADSAFE
+	V_FREE(tmp);
+#endif
+
 	return x;
 }
 
@@ -298,9 +317,13 @@ VEC	*b, *x;
 	-- setting alpha = 0 gives incomplete LU factorisation
 	-- no fill-in is generated
 	-- in situ factorisation */
+#ifndef ANSI_C
 SPMAT	*spILUfactor(A,alpha)
 SPMAT	*A;
 double	alpha;
+#else
+SPMAT	*spILUfactor(SPMAT *A, double alpha)
+#endif
 {
     int		i, k, idx, idx_piv, m, n, old_idx, old_idx_piv;
     SPROW	*r, *r_piv;

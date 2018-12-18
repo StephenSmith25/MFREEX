@@ -27,7 +27,7 @@ int poldec(MAT *F, MAT *R, MAT *U, MAT * V)
 
 	m_mlt(Q,P,temp);
 	mmtr_mlt(temp, Q, U);
-	m_inverse(U, temp);
+	temp = m_inverse(U, temp);
 	m_mlt(F,temp,R);
 	mmtr_mlt(F,R,V );
 

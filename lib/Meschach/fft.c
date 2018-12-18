@@ -30,19 +30,23 @@
 	"Digital Signal Processing"
 */
 
-static char rcsid[] = "$Id: fft.c,v 1.3 1994/01/13 05:45:33 des Exp $";
+static char rcsid[] = "$Id: fft.c,v 1.4 1996/08/20 14:21:05 stewart Exp $";
 
 #include        <stdio.h>
+#include        <math.h>
 #include        "matrix.h"
 #include        "matrix2.h"
-#include        <math.h>
 
 
 /* fft -- d.i.t. fast Fourier transform 
         -- radix-2 FFT only
         -- vector extended to a power of 2 */
+#ifndef ANSI_C
 void    fft(x_re,x_im)
 VEC     *x_re, *x_im;
+#else
+void    fft(VEC *x_re, VEC *x_im)
+#endif
 {
     int         i, ip, j, k, li, n, length;
     Real      *xr, *xi;
@@ -60,8 +64,8 @@ VEC     *x_re, *x_im;
         n *= 2;
     x_re = v_resize(x_re,n);
     x_im = v_resize(x_im,n);
-    printf("# fft: x_re =\n");  v_output(x_re);
-    printf("# fft: x_im =\n");  v_output(x_im);
+    /*  printf("# fft: x_re =\n");  v_output(x_re); */
+    /*  printf("# fft: x_im =\n");  v_output(x_im); */
     xr   = x_re->ve;
     xi   = x_im->ve;
 
@@ -133,12 +137,17 @@ VEC     *x_re, *x_im;
 }
 
 /* ifft -- inverse FFT using the same interface as fft() */
+#ifndef ANSI_C
 void	ifft(x_re,x_im)
 VEC	*x_re, *x_im;
+#else
+void	ifft(VEC *x_re, VEC *x_im)
+#endif
 {
     /* we just use complex conjugates */
 
     sv_mlt(-1.0,x_im,x_im);
     fft(x_re,x_im);
     sv_mlt(-1.0/((double)(x_re->dim)),x_im,x_im);
+    sv_mlt( 1.0/((double)(x_re->dim)),x_re,x_re);
 }

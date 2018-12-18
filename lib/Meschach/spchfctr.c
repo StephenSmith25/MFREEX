@@ -30,11 +30,11 @@
 
 */
 
-static char	rcsid[] = "$Id: spchfctr.c,v 1.4 1994/01/13 05:31:32 des Exp $";
+static char	rcsid[] = "$Id: spchfctr.c,v 1.5 1996/08/20 19:45:33 stewart Exp $";
 
 #include	<stdio.h>
-#include        "sparse2.h"
 #include	<math.h>
+#include        "sparse2.h"
 
 
 #ifndef MALLOCDECL
@@ -48,12 +48,15 @@ extern	char	*calloc(), *realloc();
 /* sprow_ip -- finds the (partial) inner product of a pair of sparse rows
 	-- uses a "merging" approach & assumes column ordered rows
 	-- row indices for inner product are all < lim */
-double	sprow_ip(row1, row2, lim)
+#ifndef ANSI_C
+static double	sprow_ip(row1, row2, lim)
 SPROW	*row1, *row2;
 int	lim;
+#else
+static double	sprow_ip(const SPROW *row1, const SPROW *row2, int lim)
+#endif
 {
 	int			idx1, idx2, len1, len2, tmp;
-	int			sprow_idx();
 	register row_elt	*elts1, *elts2;
 	register Real		sum;
 
@@ -121,9 +124,13 @@ int	lim;
 }
 
 /* sprow_sqr -- returns same as sprow_ip(row, row, lim) */
-double	sprow_sqr(row, lim)
+#ifndef ANSI_C
+static double	sprow_sqr(row, lim)
 SPROW	*row;
 int	lim;
+#else
+static double	sprow_sqr(const SPROW *row, int lim)
+#endif
 {
 	register	row_elt	*elts;
 	int		idx, len;
@@ -148,13 +155,20 @@ static	int	scan_len = 0;
 
 /* set_scan -- expand scan_row and scan_idx arrays
 	-- return new length */
+#ifndef ANSI_C
 int	set_scan(new_len)
 int	new_len;
+#else
+int	set_scan(int new_len)
+#endif
 {
 	if ( new_len <= scan_len )
 		return scan_len;
 	if ( new_len <= scan_len+5 )
 		new_len += 5;
+
+	/* update scan_len */
+        scan_len = new_len;
 
 	if ( ! scan_row || ! scan_idx || ! col_list )
 	{
@@ -176,8 +190,12 @@ int	new_len;
 
 /* spCHfactor -- sparse Cholesky factorisation
 	-- only the lower triangular part of A (incl. diagonal) is used */
+#ifndef ANSI_C
 SPMAT	*spCHfactor(A)
 SPMAT	*A;
+#else
+SPMAT	*spCHfactor(SPMAT *A)
+#endif
 {
 	register 	int	i;
 	int	idx, k, m, minim, n, num_scan, diag_idx, tmp1;
@@ -241,11 +259,9 @@ SPMAT	*A;
 		    }
 		    /* printf("minim = %d\n",minim); */
 		    /* printf("col_list: "); */
-/**********************************************************************
-		    for ( i = 0; i < num_scan; i++ )
-			printf("%d ",col_list[i]);
-		    printf("\n");
-**********************************************************************/
+		    /*  for ( i = 0; i < num_scan; i++ ) */
+			/*  printf("%d ",col_list[i]); */
+		    /*  printf("\n"); */
 
 		    if ( minim >= n )
 			break;	/* nothing more to do for this column */
@@ -307,9 +323,13 @@ SPMAT	*A;
 /* spCHsolve -- solve L.L^T.out=b where L is a sparse matrix,
 	-- out, b dense vectors
 	-- returns out; operation may be in-situ */
+#ifndef ANSI_C
 VEC	*spCHsolve(L,b,out)
 SPMAT	*L;
 VEC	*b, *out;
+#else
+VEC	*spCHsolve(SPMAT *L, const VEC *b, VEC *out)
+#endif
 {
 	int	i, j_idx, n, scan_idx, scan_row;
 	SPROW	*row;
@@ -379,8 +399,12 @@ VEC	*b, *out;
 /* spICHfactor -- sparse Incomplete Cholesky factorisation
 	-- does a Cholesky factorisation assuming NO FILL-IN
 	-- as for spCHfactor(), only the lower triangular part of A is used */
+#ifndef ANSI_C
 SPMAT	*spICHfactor(A)
 SPMAT	*A;
+#else
+SPMAT	*spICHfactor(SPMAT *A)
+#endif
 {
 	int	k, m, n, nxt_row, nxt_idx, diag_idx;
 	Real	pivot, tmp2;
@@ -441,8 +465,12 @@ SPMAT	*A;
 /* spCHsymb -- symbolic sparse Cholesky factorisation
 	-- does NOT do any floating point arithmetic; just sets up the structure
 	-- only the lower triangular part of A (incl. diagonal) is used */
+#ifndef ANSI_C
 SPMAT	*spCHsymb(A)
 SPMAT	*A;
+#else
+SPMAT	*spCHsymb(SPMAT *A)
+#endif
 {
 	register 	int	i;
 	int	idx, k, m, minim, n, num_scan, diag_idx, tmp1;
@@ -551,8 +579,12 @@ SPMAT	*A;
 }
 
 /* comp_AAT -- compute A.A^T where A is a given sparse matrix */
+#ifndef ANSI_C
 SPMAT	*comp_AAT(A)
 SPMAT	*A;
+#else
+SPMAT	*comp_AAT(SPMAT *A)
+#endif
 {
 	SPMAT	*AAT;
 	SPROW	*r, *r2;

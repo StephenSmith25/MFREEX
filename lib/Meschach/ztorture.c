@@ -32,8 +32,8 @@
 static char rcsid[] = "$Id: $";
 
 #include	<stdio.h>
-#include 	"zmatrix2.h"
 #include	<math.h>
+#include 	"zmatrix2.h"
 #include        "matlab.h"
 
 
@@ -44,7 +44,9 @@ static char rcsid[] = "$Id: $";
 /* #define MEMCHK() if ( malloc_chain_check(0) ) \
 { printf("Error in malloc chain: \"%s\", line %d\n", \
 	 __FILE__, __LINE__); exit(0); } */
-#define	MEMCHK() 
+#define	MEMCHK()
+
+#define	checkpt()	printf("At line %d in file \"%s\"\n",__LINE__,__FILE__)
 
 /* cmp_perm -- returns 1 if pi1 == pi2, 0 otherwise */
 int	cmp_perm(pi1, pi2)
@@ -274,10 +276,10 @@ char	*argv[];
     x = zv_resize(x,12);
     zv_rand(x);
     for ( i = 0; i < x->dim; i++ )
-	if ( zabs(v_entry(x,i)) >= 0.7 )
-	    v_set_val(x,i,ONE);
+	if ( zabs(zv_entry(x,i)) >= 0.7 )
+	    zv_set_val(x,i,ONE);
         else
-	    v_set_val(x,i,zneg(ONE));
+	    zv_set_val(x,i,zneg(ONE));
     s1 = zv_norm1(x);
     s2 = zv_norm2(x);	
     s3 = zv_norm_inf(x);
@@ -294,7 +296,7 @@ char	*argv[];
     zm_inverse(A,B);
     zm_mlt(A,B,C);
     for ( i = 0; i < C->m; i++ )
-	m_set_val(C,i,i,zsub(m_entry(C,i,i),ONE));
+	zm_sub_val(C,i,i,ONE);
     if ( zm_norm_inf(C) >= MACHEPS*zm_norm_inf(A)*zm_norm_inf(B)*5 )
 	errmesg("zm_inverse()/zm_mlt()");
 
@@ -305,20 +307,20 @@ char	*argv[];
     zm_adjoint(A,A);	/* can do square matrices in situ */
     zmam_mlt(A,B,C);
     for ( i = 0; i < C->m; i++ )
-	m_set_val(C,i,i,zsub(m_entry(C,i,i),ONE));
+	zm_set_val(C,i,i,zsub(zm_entry(C,i,i),ONE));
     if ( zm_norm_inf(C) >= MACHEPS*zm_norm_inf(A)*zm_norm_inf(B)*5 )
 	errmesg("zm_adjoint()/zmam_mlt()");
     zm_adjoint(A,A);
     zm_adjoint(B,B);
     zmma_mlt(A,B,C);
     for ( i = 0; i < C->m; i++ )
-	m_set_val(C,i,i,zsub(m_entry(C,i,i),ONE));
+	zm_set_val(C,i,i,zsub(zm_entry(C,i,i),ONE));
     if ( zm_norm_inf(C) >= MACHEPS*zm_norm_inf(A)*zm_norm_inf(B)*5 )
 	errmesg("zm_adjoint()/zmma_mlt()");
     zsm_mlt(zmake(3.71,2.753),B,B);
     zmma_mlt(A,B,C);
     for ( i = 0; i < C->m; i++ )
-	m_set_val(C,i,i,zsub(m_entry(C,i,i),zmake(3.71,-2.753)));
+	zm_set_val(C,i,i,zsub(zm_entry(C,i,i),zmake(3.71,-2.753)));
     if ( zm_norm_inf(C) >= MACHEPS*zm_norm_inf(A)*zm_norm_inf(B)*5 )
 	errmesg("szm_mlt()/zmma_mlt()");
     zm_adjoint(B,B);
@@ -365,7 +367,7 @@ char	*argv[];
     zset_col(B,3,y);
     zm_mlt(A,B,C);
     for ( i = 0; i < C->m; i++ )
-	m_set_val(C,i,i,zsub(m_entry(C,i,i),ONE));
+	zm_set_val(C,i,i,zsub(zm_entry(C,i,i),ONE));
     if ( zm_norm_inf(C) >= MACHEPS*zm_norm_inf(A)*zm_norm_inf(B)*5 )
 	errmesg("zset_row()/zset_col()");
 
@@ -383,7 +385,7 @@ char	*argv[];
     C = zmam_mlt(A,A,C);
     z1.re = z1.im = 0.0;
     for ( i = 0; i < C->m && i < C->n; i++ )
-	z1 = zadd(z1,m_entry(C,i,i));
+	z1 = zadd(z1,zm_entry(C,i,i));
     if ( fabs(sqrt(z1.re) - zm_norm_frob(A)) >= MACHEPS*A->m*A->n )
 	errmesg("zm_norm_frob");
 
@@ -553,7 +555,7 @@ char	*argv[];
     D = zm_get(A->m,Q->m);
     zmam_mlt(Q,Q,D);
     for ( i = 0; i < D->m; i++ )
-	m_set_val(D,i,i,zsub(m_entry(D,i,i),ONE));
+	zm_set_val(D,i,i,zsub(zm_entry(D,i,i),ONE));
     if ( zm_norm1(D) >= MACHEPS*zm_norm1(Q)*zm_norm_inf(Q) )
     {
 	errmesg("QRfactor()/makeQ()/makeR()");
@@ -618,7 +620,7 @@ char	*argv[];
     MEMCHK();
 
     B = zschur(B,Q);
-    MEMCHK();
+    checkpt();
 
     zm_mlt(Q,B,C);
     zmma_mlt(C,Q,D);
@@ -634,7 +636,7 @@ char	*argv[];
     /* orthogonality check */
     zmma_mlt(Q,Q,D);
     for ( i = 0; i < D->m; i++ )
-	m_set_val(D,i,i,zsub(m_entry(D,i,i),ONE));
+	zm_set_val(D,i,i,zsub(zm_entry(D,i,i),ONE));
     if ( zm_norm1(D) >= MACHEPS*zm_norm1(Q)*zm_norm_inf(Q)*10 )
     {
 	errmesg("zschur()");

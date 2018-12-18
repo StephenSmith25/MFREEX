@@ -91,7 +91,7 @@ int sp_get_vars();
 int sp_resize_vars();
 int sp_free_vars();
 
-#endif
+#endif /* ANSI_C */
 
 /* Sparse Matrix Operations and Utilities */
 #ifndef ANSI_C
@@ -127,49 +127,51 @@ extern  void   sp_dump(), sprow_dump();
 extern  MAT  *sp_m2dense();
 
 #else
-SPMAT	*sp_get(int,int,int), *sp_copy(SPMAT *),
-	*sp_copy2(SPMAT *,SPMAT *),
+SPMAT	*sp_get(int,int,int), *sp_copy(const SPMAT *),
+	*sp_copy2(const SPMAT *,SPMAT *),
 	*sp_zero(SPMAT *), *sp_resize(SPMAT *,int,int),
 	*sp_compact(SPMAT *,double);
-double	sp_get_val(SPMAT *,int,int), sp_set_val(SPMAT *,int,int,double);
-VEC	*sp_mv_mlt(SPMAT *,VEC *,VEC *), *sp_vm_mlt(SPMAT *,VEC *,VEC *);
+double	sp_get_val(const SPMAT *,int,int), sp_set_val(SPMAT *,int,int,double);
+VEC	*sp_mv_mlt(const SPMAT *, const VEC *, VEC *), 
+        *sp_vm_mlt(const SPMAT *, const VEC *, VEC *);
 int	sp_free(SPMAT *);
 
 /* Access path operations */
 SPMAT	*sp_col_access(SPMAT *);
 SPMAT	*sp_diag_access(SPMAT *);
-int     chk_col_access(SPMAT *);
+int     chk_col_access(const SPMAT *);
 
 /* Input/output operations */
 SPMAT	*sp_finput(FILE *);
-void	sp_foutput(FILE *,SPMAT *), sp_foutput2(FILE *,SPMAT *);
+void	sp_foutput(FILE *, const SPMAT *);
 
 /* algebraic operations */
-SPMAT *sp_smlt(SPMAT *A,double alpha,SPMAT *B),
-      *sp_add(SPMAT *A,SPMAT *B,SPMAT *C),
-      *sp_sub(SPMAT *A,SPMAT *B,SPMAT *C),
-      *sp_mltadd(SPMAT *A,SPMAT *B,double alpha,SPMAT *C);
+SPMAT *sp_smlt(const SPMAT *A,double alpha,SPMAT *B),
+      *sp_add(const SPMAT *A,const SPMAT *B,SPMAT *C),
+      *sp_sub(const SPMAT *A,const SPMAT *B,SPMAT *C),
+      *sp_mltadd(const SPMAT *A,const SPMAT *B,double alpha,SPMAT *C);
 
 /* sparse row operations */
 SPROW	*sprow_get(int), *sprow_xpd(SPROW *r,int n,int type),
         *sprow_resize(SPROW *r,int n,int type),
-	*sprow_merge(SPROW *,SPROW *,SPROW *,int type),
-        *sprow_copy(SPROW *,SPROW *,SPROW *,int type),
-	*sprow_mltadd(SPROW *,SPROW *,double,int,SPROW *,int type);
-SPROW *sprow_add(SPROW *r1,SPROW *r2, int j0,SPROW *r_out, int type), 
-        *sprow_sub(SPROW *r1,SPROW *r2, int j0,SPROW *r_out, int type), 
-        *sprow_smlt(SPROW *r1,double alpha, int j0,SPROW *r_out, int type);
+	*sprow_merge(const SPROW *,const SPROW *,SPROW *,int type),
+        *sprow_copy(const SPROW *,const SPROW *,SPROW *,int type),
+	*sprow_mltadd(const SPROW *r1,const SPROW *r2, double alpha,
+		      int j0, SPROW *r_out, int type);
+SPROW *sprow_add(const SPROW *r1,const SPROW *r2, int j0,SPROW *r_out, int type), 
+        *sprow_sub(const SPROW *r1,const SPROW *r2, int j0,SPROW *r_out, int type), 
+        *sprow_smlt(const SPROW *r1,double alpha, int j0,SPROW *r_out, int type);
 double	sprow_set_val(SPROW *,int,double);
 int      sprow_free(SPROW *);
-int	sprow_idx(SPROW *,int);
-void	sprow_foutput(FILE *,SPROW *);
+int	sprow_idx(const SPROW *,int);
+void	sprow_foutput(FILE *,const SPROW *);
 
 /* dump */
-void    sp_dump(FILE *fp, SPMAT *A);
-void    sprow_dump(FILE *fp, SPROW *r);
-MAT	*sp_m2dense(SPMAT *A,MAT *out);
+void    sp_dump(FILE *fp, const SPMAT *A);
+void    sprow_dump(FILE *fp, const SPROW *r);
+MAT	*sp_m2dense(const SPMAT *A,MAT *out);
 
-#endif
+#endif /* ANSI_C */
 
 /* MACROS */
 
@@ -215,5 +217,5 @@ MAT	*sp_m2dense(SPMAT *A,MAT *out);
 
 */
 
-#endif
+#endif /* SPARSEH */
 

@@ -46,23 +46,40 @@ static char rcsid[] = "$Id: iter0.c,v 1.3 1995/01/30 14:50:56 des Exp $";
 /* standard functions */
 
 /* standard information */
+#ifndef ANSI_C
 void iter_std_info(ip,nres,res,Bres)
 ITER *ip;
 double nres;
 VEC *res, *Bres;
+#else
+void iter_std_info(const ITER *ip, double nres, VEC *res, VEC *Bres)
+#endif
 {
    if (nres >= 0.0)
+#ifndef MEX
      printf(" %d. residual = %g\n",ip->steps,nres);
+#else
+     mexPrintf(" %d. residual = %g\n",ip->steps,nres);
+#endif
    else 
+#ifndef MEX
      printf(" %d. residual = %g (WARNING !!! should be >= 0) \n",
 	    ip->steps,nres);
+#else
+     mexPrintf(" %d. residual = %g (WARNING !!! should be >= 0) \n",
+	       ip->steps,nres);
+#endif
 }
 
 /* standard stopping criterion */
+#ifndef ANSI_C
 int iter_std_stop_crit(ip, nres, res, Bres)
 ITER *ip;
 double nres;
 VEC *res, *Bres;
+#else
+int iter_std_stop_crit(const ITER *ip, double nres, VEC *res, VEC *Bres)
+#endif
 {
    /* standard stopping criterium */
    if (nres <= ip->init_res*ip->eps) return TRUE; 
@@ -71,9 +88,12 @@ VEC *res, *Bres;
 
 
 /* iter_get - create a new structure pointing to ITER */
-
+#ifndef ANSI_C
 ITER *iter_get(lenb, lenx)
 int lenb, lenx;
+#else
+ITER *iter_get(int lenb, int lenx)
+#endif
 {
    ITER *ip;
 
@@ -114,8 +134,12 @@ int lenb, lenx;
 
 
 /* iter_free - release memory */
+#ifndef ANSI_C
 int iter_free(ip)
 ITER *ip;
+#else
+int iter_free(ITER *ip)
+#endif
 {
    if (ip == (ITER *)NULL) return -1;
    
@@ -132,9 +156,13 @@ ITER *ip;
    return 0;
 }
 
+#ifndef ANSI_C
 ITER *iter_resize(ip,new_lenb,new_lenx)
 ITER *ip;
 int new_lenb, new_lenx;
+#else
+ITER *iter_resize(ITER *ip, int new_lenb, int new_lenx)
+#endif
 {
    VEC *old;
 
@@ -153,11 +181,15 @@ int new_lenb, new_lenx;
    return ip;
 }
 
-
+#ifndef MEX
 /* print out ip structure - for diagnostic purposes mainly */
+#ifndef ANSI_C
 void iter_dump(fp,ip)
 ITER *ip;
 FILE *fp;
+#else
+void iter_dump(FILE *fp, ITER *ip)
+#endif
 {
    if (ip == NULL) {
       fprintf(fp," ITER structure: NULL\n");
@@ -179,15 +211,19 @@ FILE *fp;
    fprintf(fp,"\n");
    
 }
-
+#endif
 
 /* copy the structure ip1 to ip2 preserving vectors x and b of ip2
    (vectors x and b in ip2 are the same before and after iter_copy2)
    if ip2 == NULL then a new structure is created with x and b being NULL
    and other members are taken from ip1
 */
+#ifndef ANSI_C
 ITER *iter_copy2(ip1,ip2)
 ITER *ip1, *ip2;
+#else
+ITER *iter_copy2(ITER *ip1, ITER *ip2)
+#endif
 {
    VEC *x, *b;
    int shx, shb;
@@ -221,8 +257,12 @@ ITER *ip1, *ip2;
 
 
 /* copy the structure ip1 to ip2 copying also the vectors x and b */
+#ifndef ANSI_C
 ITER *iter_copy(ip1,ip2)
 ITER *ip1, *ip2;
+#else
+ITER *iter_copy(const ITER *ip1, ITER *ip2)
+#endif
 {
    VEC *x, *b;
 
@@ -260,8 +300,12 @@ ITER *ip1, *ip2;
    n x n matrix, 
    nrow - number of nonzero entries in a row
    */
+#ifndef ANSI_C
 SPMAT	*iter_gen_sym(n,nrow)
 int	n, nrow;
+#else
+SPMAT	*iter_gen_sym(int n, int nrow)
+#endif
 {
    SPMAT	*A;
    VEC	        *u;
@@ -301,9 +345,13 @@ int	n, nrow;
    diag - number which is put in diagonal entries and then permuted
    (if diag is zero then 1.0 is there)
 */
+#ifndef ANSI_C
 SPMAT	*iter_gen_nonsym(m,n,nrow,diag)
 int	m, n, nrow;
 double diag;
+#else
+SPMAT	*iter_gen_nonsym(int m, int n, int nrow, double diag)
+#endif
 {
    SPMAT	*A;
    PERM		*px;
@@ -338,13 +386,17 @@ double diag;
    return A;
 }
 
-
+#if ( 0 )
 /* iter_gen_nonsym -- generate non-symmetric positive definite 
    n x n sparse matrix;
    nrow - number of entries in a row
 */
+#ifndef ANSI_C
 SPMAT	*iter_gen_nonsym_posdef(n,nrow)
 int	n, nrow;
+#else
+SPMAT	*iter_gen_nonsym(int m, int n, int nrow, double diag)
+#endif
 {
    SPMAT	*A;
    PERM		*px;
@@ -376,6 +428,8 @@ int	n, nrow;
    V_FREE(u);
    return A;
 }
+#endif
+
 
 
 

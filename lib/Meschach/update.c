@@ -32,9 +32,9 @@
 static	char	rcsid[] = "$Id: update.c,v 1.2 1994/01/13 05:26:06 des Exp $";
 
 #include	<stdio.h>
+#include	<math.h>
 #include	"matrix.h"
 #include        "matrix2.h"
-#include	<math.h>
 
 
 
@@ -44,12 +44,16 @@ static	char	rcsid[] = "$Id: update.c,v 1.2 1994/01/13 05:26:06 des Exp $";
 /* LDLupdate -- updates a CHolesky factorisation, replacing LDL' by
 	MD~M' = LDL' + alpha.w.w' Note: w is overwritten
 	Ref: Gill et al Math Comp 28, p516 Algorithm C1 */
+#ifndef ANSI_C
 MAT	*LDLupdate(CHmat,w,alpha)
 MAT	*CHmat;
 VEC	*w;
 double	alpha;
+#else
+MAT	*LDLupdate(MAT *CHmat, VEC *w, double alpha)
+#endif
 {
-	u_int	i,j;
+	unsigned int	i,j;
 	Real	diag,new_diag,beta,p;
 
 	if ( CHmat==(MAT *)NULL || w==(VEC *)NULL )
@@ -83,9 +87,13 @@ double	alpha;
 	Finds Q+, R+ s.t. Q+.R+ = Q.(R+u.v') and Q+ orthogonal, R+ upper triang
 	Ref: Golub & van Loan Matrix Computations pp437-443
 	-- does not update Q if it is NULL */
+#ifndef ANSI_C
 MAT	*QRupdate(Q,R,u,v)
 MAT	*Q,*R;
 VEC	*u,*v;
+#else
+MAT	*QRupdate(MAT *Q, MAT *R, VEC *u, VEC *v)
+#endif
 {
 	int	i,j,k;
 	Real	c,s,temp;

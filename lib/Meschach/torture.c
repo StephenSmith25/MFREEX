@@ -31,11 +31,11 @@
 static char rcsid[] = "$Id: torture.c,v 1.6 1994/08/25 15:22:11 des Exp $";
 
 #include	<stdio.h>
-#include	"matrix2.h"
 #include	<math.h>
+#include	"matrix2.h"
 #include        "matlab.h"
 
-#define	errmesg(mesg)	{printf("Error: %s error: line %d\n",mesg,__LINE__); return 1;}
+#define	errmesg(mesg)	printf("Error: %s error: line %d\n",mesg,__LINE__)
 #define notice(mesg)	printf("# Testing %s...\n",mesg);
 
 static char *test_err_list[] = {
@@ -51,7 +51,6 @@ static char *test_err_list[] = {
 /* #define MEMCHK() if ( malloc_chain_check(0) ) \
 { printf("Error in malloc chain: \"%s\", line %d\n", \
 	 __FILE__, __LINE__); exit(0); } */
-
 #define	MEMCHK() 
 
 /* cmp_perm -- returns 1 if pi1 == pi2, 0 otherwise */
@@ -397,14 +396,14 @@ char	*argv[];
     /* MATLAB save/load */
     notice("MATLAB save/load");
     A = m_resize(A,12,11);
-    if ( (fp=fopen(SAVE_FILE,"wb")) == (FILE *)NULL )
+    if ( (fp=fopen(SAVE_FILE,"w")) == (FILE *)NULL )
 	printf("Cannot perform MATLAB save/load test\n");
     else
     {
 	m_rand(A);
 	m_save(fp, A, name);
 	fclose(fp);
-	if ( (fp=fopen(SAVE_FILE,"rb")) == (FILE *)NULL )
+	if ( (fp=fopen(SAVE_FILE,"r")) == (FILE *)NULL )
 	    printf("Cannot open save file \"%s\"\n",SAVE_FILE);
 	else
 	{
@@ -590,7 +589,7 @@ char	*argv[];
 	       v_norm2(z), MACHEPS);
     }
     /* modified Cholesky factorisation should be identical with Cholesky
-       factorisation provided the matrix is "sufficiently positive definite */
+       factorisation provided the matrix is "sufficiently positive definite" */
     mtrm_mlt(B,B,C);
     MCHfactor(C,MACHEPS);
     m_sub(A,C,C);
@@ -723,7 +722,6 @@ char	*argv[];
    mv_mlt(A,x,w);
    /* test of bd_mv_mlt */
    notice("bd_mv_mlt");
-   VEC *bd_mv_mlt(BAND *A, VEC *x, VEC *out);
    bd_mv_mlt(bA,x,z);
    v_sub(z,w,z);
    if (v_norm2(z) > v_norm2(x)*sqrt(MACHEPS)) {
@@ -1026,9 +1024,7 @@ char	*argv[];
        printf(" norm = %g\n",v_norm2(x));
     }
 
-	// Deallocates static variables. Not needed since BKPSolve no longer
-	// has a static variable.
-    //mem_stat_free(1);
+    mem_stat_free(1);
 
     MEMCHK();
 

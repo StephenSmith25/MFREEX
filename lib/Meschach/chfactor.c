@@ -32,18 +32,21 @@
 static	char	rcsid[] = "$Id: chfactor.c,v 1.2 1994/01/13 05:36:36 des Exp $";
 
 #include	<stdio.h>
+#include	<math.h>
 #include	"matrix.h"
 #include        "matrix2.h"
-#include	<math.h>
-
 
 /* Most matrix factorisation routines are in-situ unless otherwise specified */
 
 /* CHfactor -- Cholesky L.L' factorisation of A in-situ */
+#ifndef ANSI_C
 MAT	*CHfactor(A)
 MAT	*A;
+#else
+MAT	*CHfactor(MAT *A)
+#endif
 {
-	u_int	i, j, k, n;
+	unsigned int	i, j, k, n;
 	Real	**A_ent, *A_piv, *A_row, sum, tmp;
 
 	if ( A==(MAT *)NULL )
@@ -88,11 +91,15 @@ MAT	*A;
 
 
 /* CHsolve -- given a CHolesky factorisation in A, solve A.x=b */
+#ifndef ANSI_C
 VEC	*CHsolve(A,b,x)
 MAT	*A;
 VEC	*b,*x;
+#else
+VEC	*CHsolve(const MAT *A, const VEC *b, VEC *x)
+#endif
 {
-	if ( A==(MAT *)NULL || b==(VEC *)NULL )
+	if ( A==MNULL || b==VNULL )
 		error(E_NULL,"CHsolve");
 	if ( A->m != A->n || A->n != b->dim )
 		error(E_SIZES,"CHsolve");
@@ -104,13 +111,17 @@ VEC	*b,*x;
 }
 
 /* LDLfactor -- L.D.L' factorisation of A in-situ */
+#ifndef ANSI_C
 MAT	*LDLfactor(A)
 MAT	*A;
+#else
+MAT	*LDLfactor(MAT *A)
+#endif
 {
-	u_int	i, k, n, p;
+	unsigned int	i, k, n, p;
 	Real	**A_ent;
 	Real d, sum;
-	static VEC	*r = VNULL;
+	STATIC VEC	*r = VNULL;
 
 	if ( ! A )
 		error(E_NULL,"LDLfactor");
@@ -144,12 +155,22 @@ MAT	*A;
 		}
 	}
 
+#ifdef THREADSAFE
+	V_FREE(r);
+#endif
+
 	return A;
 }
 
+/* LDLsolve -- solves linear system A.x = b with A factored by LDLfactor()
+   -- returns x, which is created if it is NULL on entry */
+#ifndef ANSI_C
 VEC	*LDLsolve(LDL,b,x)
 MAT	*LDL;
 VEC	*b, *x;
+#else
+VEC	*LDLsolve(const MAT *LDL, const VEC *b, VEC *x)
+#endif
 {
 	if ( ! LDL || ! b )
 		error(E_NULL,"LDLsolve");
@@ -167,11 +188,15 @@ VEC	*b, *x;
 }
 
 /* MCHfactor -- Modified Cholesky L.L' factorisation of A in-situ */
+#ifndef ANSI_C
 MAT	*MCHfactor(A,tol)
 MAT	*A;
 double  tol;
+#else
+MAT	*MCHfactor(MAT *A, double tol)
+#endif
 {
-	u_int	i, j, k, n;
+	unsigned int	i, j, k, n;
 	Real	**A_ent, *A_piv, *A_row, sum, tmp;
 
 	if ( A==(MAT *)NULL )

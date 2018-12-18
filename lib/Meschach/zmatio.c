@@ -40,8 +40,12 @@ static char line[MAXLINE];
   Input routines
   **************************************************************************/
 
+#ifndef ANSI_C
 complex	z_finput(fp)
 FILE	*fp;
+#else
+complex	z_finput(FILE *fp)
+#endif
 {
     int		io_code;
     complex	z;
@@ -72,10 +76,13 @@ FILE	*fp;
     return z;
 }
 
-
+#ifndef ANSI_C
 ZMAT	*zm_finput(fp,a)
 FILE    *fp;
 ZMAT	*a;
+#else
+ZMAT	*zm_finput(FILE *fp,ZMAT *a)
+#endif
 {
      ZMAT        *izm_finput(),*bzm_finput();
      
@@ -86,12 +93,16 @@ ZMAT	*a;
 }
 
 /* izm_finput -- interactive input of matrix */
+#ifndef ANSI_C
 ZMAT     *izm_finput(fp,mat)
 FILE    *fp;
 ZMAT     *mat;
+#else
+ZMAT     *izm_finput(FILE *fp, ZMAT *mat)
+#endif
 {
      char       c;
-     u_int      i, j, m, n, dynamic;
+     unsigned int      i, j, m, n, dynamic;
      /* dynamic set to TRUE if memory allocated here */
      
      /* get matrix size */
@@ -150,11 +161,15 @@ ZMAT     *mat;
 }
 
 /* bzm_finput -- batch-file input of matrix */
+#ifndef ANSI_C
 ZMAT     *bzm_finput(fp,mat)
 FILE    *fp;
 ZMAT     *mat;
+#else
+ZMAT     *bzm_finput(FILE *fp,ZMAT *mat)
+#endif
 {
-     u_int      i,j,m,n,dummy;
+     unsigned int      i,j,m,n,dummy;
      int        io_code;
      
      /* get dimension */
@@ -189,9 +204,13 @@ ZMAT     *mat;
      return (mat);
 }
 
+#ifndef ANSI_C
 ZVEC     *zv_finput(fp,x)
 FILE    *fp;
 ZVEC     *x;
+#else
+ZVEC     *zv_finput(FILE *fp,ZVEC *x)
+#endif
 {
      ZVEC        *izv_finput(),*bzv_finput();
      
@@ -202,11 +221,15 @@ ZVEC     *x;
 }
 
 /* izv_finput -- interactive input of vector */
+#ifndef ANSI_C
 ZVEC     *izv_finput(fp,vec)
 FILE    *fp;
 ZVEC     *vec;
+#else
+ZVEC     *izv_finput(FILE *fp,ZVEC *vec)
+#endif
 {
-     u_int      i,dim,dynamic;  /* dynamic set if memory allocated here */
+     unsigned int      i,dim,dynamic;  /* dynamic set if memory allocated here */
      
      /* get vector dimension */
      if ( vec != ZVNULL && vec->dim<MAXDIM )
@@ -250,11 +273,15 @@ ZVEC     *vec;
 }
 
 /* bzv_finput -- batch-file input of vector */
+#ifndef ANSI_C
 ZVEC     *bzv_finput(fp,vec)
 FILE    *fp;
 ZVEC    *vec;
+#else
+ZVEC     *bzv_finput(FILE *fp, ZVEC *vec)
+#endif
 {
-     u_int      i,dim;
+     unsigned int      i,dim;
      int        io_code;
      
      /* get dimension */
@@ -285,12 +312,16 @@ ZVEC    *vec;
 /**************************************************************************
   Output routines
   **************************************************************************/
-static char    *zformat = " (%14.9g, %14.9g) ";
+static const char    *zformat = " (%14.9g, %14.9g) ";
 
+#ifndef ANSI_C
 char	*setzformat(f_string)
 char    *f_string;
+#else
+const char	*setzformat(const char *f_string)
+#endif
 {
-    char	*old_f_string;
+    const char	*old_f_string;
     old_f_string = zformat;
     if ( f_string != (char *)NULL && *f_string != '\0' )
 	zformat = f_string;
@@ -298,19 +329,27 @@ char    *f_string;
     return old_f_string;
 }
 
+#ifndef ANSI_C
 void	z_foutput(fp,z)
 FILE	*fp;
 complex	z;
+#else
+void	z_foutput(FILE *fp,complex z)
+#endif
 {
     fprintf(fp,zformat,z.re,z.im);
     putc('\n',fp);
 }
 
+#ifndef ANSI_C
 void    zm_foutput(fp,a)
 FILE    *fp;
 ZMAT     *a;
+#else
+void    zm_foutput(FILE *fp,ZMAT *a)
+#endif
 {
-     u_int      i, j, tmp;
+     unsigned int      i, j, tmp;
      
      if ( a == ZMNULL )
      {  fprintf(fp,"ComplexMatrix: NULL\n");   return;         }
@@ -329,11 +368,15 @@ ZMAT     *a;
      }
 }
 
+#ifndef ANSI_C
 void    zv_foutput(fp,x)
 FILE    *fp;
 ZVEC     *x;
+#else
+void    zv_foutput(FILE *fp,ZVEC *x)
+#endif
 {
-     u_int      i, tmp;
+     unsigned int      i, tmp;
      
      if ( x == ZVNULL )
      {  fprintf(fp,"ComplexVector: NULL\n");   return;         }
@@ -348,12 +391,15 @@ ZVEC     *x;
      if ( (tmp % 2) != 0 )        putc('\n',fp);
 }
 
-
+#ifndef ANSI_C
 void    zm_dump(fp,a)
 FILE    *fp;
 ZMAT     *a;
+#else
+void    zm_dump(FILE *fp, ZMAT *a)
+#endif
 {
-	u_int   i, j, tmp;
+	unsigned int   i, j, tmp;
      
      if ( a == ZMNULL )
      {  fprintf(fp,"ComplexMatrix: NULL\n");   return;         }
@@ -377,12 +423,15 @@ ZMAT     *a;
 }
 
 
-
+#ifndef ANSI_C
 void    zv_dump(fp,x)
 FILE    *fp;
 ZVEC     *x;
+#else
+void    zv_dump(FILE *fp,ZVEC *x)
+#endif
 {
-     u_int      i, tmp;
+     unsigned int      i, tmp;
      
      if ( ! x )
      {  fprintf(fp,"ComplexVector: NULL\n");   return;         }

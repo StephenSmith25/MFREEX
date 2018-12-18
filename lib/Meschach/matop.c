@@ -30,14 +30,18 @@
 #include	<stdio.h>
 #include	"matrix.h"
 
-static	char	rcsid[] = "$Id: matop.c,v 1.3 1994/01/13 05:30:28 des Exp $";
+static	char	rcsid[] = "$Id: matop.c,v 1.4 1995/03/27 15:43:57 des Exp $";
 
 
 /* m_add -- matrix addition -- may be in-situ */
+#ifndef ANSI_C
 MAT	*m_add(mat1,mat2,out)
 MAT	*mat1,*mat2,*out;
+#else
+MAT	*m_add(const MAT *mat1, const MAT *mat2, MAT *out)
+#endif
 {
-	u_int	m,n,i;
+	unsigned int	m,n,i;
 
 	if ( mat1==(MAT *)NULL || mat2==(MAT *)NULL )
 		error(E_NULL,"m_add");
@@ -59,10 +63,14 @@ MAT	*mat1,*mat2,*out;
 }
 
 /* m_sub -- matrix subtraction -- may be in-situ */
+#ifndef ANSI_C
 MAT	*m_sub(mat1,mat2,out)
 MAT	*mat1,*mat2,*out;
+#else
+MAT	*m_sub(const MAT *mat1, const MAT *mat2, MAT *out)
+#endif
 {
-	u_int	m,n,i;
+	unsigned int	m,n,i;
 
 	if ( mat1==(MAT *)NULL || mat2==(MAT *)NULL )
 		error(E_NULL,"m_sub");
@@ -84,10 +92,14 @@ MAT	*mat1,*mat2,*out;
 }
 
 /* m_mlt -- matrix-matrix multiplication */
+#ifndef ANSI_C
 MAT	*m_mlt(A,B,OUT)
 MAT	*A,*B,*OUT;
+#else
+MAT	*m_mlt(const MAT *A, const MAT *B, MAT *OUT)
+#endif
 {
-	u_int	i, /* j, */ k, m, n, p;
+	unsigned int	i, /* j, */ k, m, n, p;
 	Real	**A_v, **B_v /*, *B_row, *OUT_row, sum, tmp */;
 
 	if ( A==(MAT *)NULL || B==(MAT *)NULL )
@@ -130,8 +142,12 @@ MAT	*A,*B,*OUT;
 
 /* mmtr_mlt -- matrix-matrix transposed multiplication
 	-- A.B^T is returned, and stored in OUT */
+#ifndef ANSI_C
 MAT	*mmtr_mlt(A,B,OUT)
 MAT	*A, *B, *OUT;
+#else
+MAT	*mmtr_mlt(const MAT *A, const MAT *B, MAT *OUT)
+#endif
 {
 	int	i, j, limit;
 	/* Real	*A_row, *B_row, sum; */
@@ -165,8 +181,12 @@ MAT	*A, *B, *OUT;
 
 /* mtrm_mlt -- matrix transposed-matrix multiplication
 	-- A^T.B is returned, result stored in OUT */
+#ifndef ANSI_C
 MAT	*mtrm_mlt(A,B,OUT)
 MAT	*A, *B, *OUT;
+#else
+MAT	*mtrm_mlt(const MAT *A, const MAT *B, MAT *OUT)
+#endif
 {
 	int	i, k, limit;
 	/* Real	*B_row, *OUT_row, multiplier; */
@@ -201,11 +221,15 @@ MAT	*A, *B, *OUT;
 
 /* mv_mlt -- matrix-vector multiplication 
 		-- Note: b is treated as a column vector */
+#ifndef ANSI_C
 VEC	*mv_mlt(A,b,out)
 MAT	*A;
 VEC	*b,*out;
+#else
+VEC	*mv_mlt(const MAT *A, const VEC *b, VEC *out)
+#endif
 {
-	u_int	i, m, n;
+	unsigned int	i, m, n;
 	Real	**A_v, *b_v /*, *A_row */;
 	/* register Real	sum; */
 
@@ -237,11 +261,15 @@ VEC	*b,*out;
 }
 
 /* sm_mlt -- scalar-matrix multiply -- may be in-situ */
+#ifndef ANSI_C
 MAT	*sm_mlt(scalar,matrix,out)
 double	scalar;
 MAT	*matrix,*out;
+#else
+MAT	*sm_mlt(double scalar, const MAT *matrix, MAT *out)
+#endif
 {
-	u_int	m,n,i;
+	unsigned int	m,n,i;
 
 	if ( matrix==(MAT *)NULL )
 		error(E_NULL,"sm_mlt");
@@ -259,11 +287,15 @@ MAT	*matrix,*out;
 
 /* vm_mlt -- vector-matrix multiplication 
 		-- Note: b is treated as a row vector */
+#ifndef ANSI_C
 VEC	*vm_mlt(A,b,out)
 MAT	*A;
 VEC	*b,*out;
+#else
+VEC	*vm_mlt(const MAT *A, const VEC *b, VEC *out)
+#endif
 {
-	u_int	j,m,n;
+	unsigned int	j,m,n;
 	/* Real	sum,**A_v,*b_v; */
 
 	if ( A==(MAT *)NULL || b==(VEC *)NULL )
@@ -296,8 +328,12 @@ VEC	*b,*out;
 }
 
 /* m_transp -- transpose matrix */
+#ifndef ANSI_C
 MAT	*m_transp(in,out)
 MAT	*in, *out;
+#else
+MAT	*m_transp(const MAT *in, MAT *out)
+#endif
 {
 	int	i, j;
 	int	in_situ;
@@ -326,10 +362,14 @@ MAT	*in, *out;
 	return out;
 }
 
-/* swap_rows -- swaps rows i and j of matrix A upto column lim */
+/* swap_rows -- swaps rows i and j of matrix A for cols lo through hi */
+#ifndef ANSI_C
 MAT	*swap_rows(A,i,j,lo,hi)
 MAT	*A;
 int	i, j, lo, hi;
+#else
+MAT	*swap_rows(MAT *A, int i, int j, int lo, int hi)
+#endif
 {
 	int	k;
 	Real	**A_me, tmp;
@@ -351,10 +391,14 @@ int	i, j, lo, hi;
 	return A;
 }
 
-/* swap_cols -- swap columns i and j of matrix A upto row lim */
+/* swap_cols -- swap columns i and j of matrix A for cols lo through hi */
+#ifndef ANSI_C
 MAT	*swap_cols(A,i,j,lo,hi)
 MAT	*A;
 int	i, j, lo, hi;
+#else
+MAT	*swap_cols(MAT *A, int i, int j, int lo, int hi)
+#endif
 {
 	int	k;
 	Real	**A_me, tmp;
@@ -379,9 +423,13 @@ int	i, j, lo, hi;
 /* ms_mltadd -- matrix-scalar multiply and add
 	-- may be in situ
 	-- returns out == A1 + s*A2 */
+#ifndef ANSI_C
 MAT	*ms_mltadd(A1,A2,s,out)
 MAT	*A1, *A2, *out;
 double	s;
+#else
+MAT	*ms_mltadd(const MAT *A1, const MAT *A2, double s, MAT *out)
+#endif
 {
 	/* register Real	*A1_e, *A2_e, *out_e; */
 	/* register int	j; */
@@ -391,6 +439,9 @@ double	s;
 		error(E_NULL,"ms_mltadd");
 	if ( A1->m != A2->m || A1->n != A2->n )
 		error(E_SIZES,"ms_mltadd");
+
+	if ( out != A1 && out != A2 )
+		out = m_resize(out,A1->m,A1->n);
 
 	if ( s == 0.0 )
 		return m_copy(A1,out);
@@ -418,10 +469,15 @@ double	s;
 /* mv_mltadd -- matrix-vector multiply and add
 	-- may not be in situ
 	-- returns out == v1 + alpha*A*v2 */
+#ifndef ANSI_C
 VEC	*mv_mltadd(v1,v2,A,alpha,out)
 VEC	*v1, *v2, *out;
 MAT	*A;
 double	alpha;
+#else
+VEC	*mv_mltadd(const VEC *v1, const VEC *v2, const MAT *A,
+		   double alpha, VEC *out)
+#endif
 {
 	/* register	int	j; */
 	int	i, m, n;
@@ -431,7 +487,7 @@ double	alpha;
 		error(E_NULL,"mv_mltadd");
 	if ( out == v2 )
 		error(E_INSITU,"mv_mltadd");
-	if ( v1->dim != A->m || v2->dim != A-> n )
+	if ( v1->dim != A->m || v2->dim != A->n )
 		error(E_SIZES,"mv_mltadd");
 
 	tracecatch(out = v_copy(v1,out),"mv_mltadd");
@@ -460,10 +516,15 @@ double	alpha;
 /* vm_mltadd -- vector-matrix multiply and add
 	-- may not be in situ
 	-- returns out' == v1' + v2'*A */
+#ifndef ANSI_C
 VEC	*vm_mltadd(v1,v2,A,alpha,out)
 VEC	*v1, *v2, *out;
 MAT	*A;
 double	alpha;
+#else
+VEC	*vm_mltadd(const VEC *v1, const VEC *v2, const MAT *A,
+		   double alpha, VEC *out)
+#endif
 {
 	int	/* i, */ j, m, n;
 	Real	tmp, /* *A_e, */ *out_ve;

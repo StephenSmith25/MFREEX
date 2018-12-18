@@ -392,45 +392,45 @@ int main(int argc, char** argv) {
 	double pRatio;
 
 
-	// tst poldec
+	// // tst poldec
 
-	int test_dim = 3;
-	MAT * F = m_get(test_dim,test_dim);
-	F->me[0][0] = 1;
-	F->me[0][1] = 0.495;
-	F->me[0][2] = 0.5;
+	// int test_dim = 3;
+	// MAT * F = m_get(test_dim,test_dim);
+	// F->me[0][0] = 1;
+	// F->me[0][1] = 0.495;
+	// F->me[0][2] = 0.5;
 
-	F->me[1][0] = -0.333;
-	F->me[1][1] = 1;
-	F->me[1][2] = -0.247;
-
-
-	F->me[2][0] = 0.959;
-	F->me[2][1] = 0;
-	F->me[2][2] = 1.5;
+	// F->me[1][0] = -0.333;
+	// F->me[1][1] = 1;
+	// F->me[1][2] = -0.247;
 
 
-	MAT * R = m_get(test_dim,test_dim);
-	MAT * U = m_get(test_dim,test_dim);
-	MAT * V = m_get(test_dim,test_dim);
+	// F->me[2][0] = 0.959;
+	// F->me[2][1] = 0;
+	// F->me[2][2] = 1.5;
 
 
-	poldec(F, R, U, V);
-	printf("F = \n");
-	m_foutput(stdout,F);
-	printf("R = \n");
-	m_foutput(stdout,R);
-	printf("U = \n");
-	m_foutput(stdout,U);
-	printf("V = \n");
-	m_foutput(stdout,V);
+	// MAT * R = m_get(test_dim,test_dim);
+	// MAT * U = m_get(test_dim,test_dim);
+	// MAT * V = m_get(test_dim,test_dim);
+
+
+	// poldec(F, R, U, V);
+	// printf("F = \n");
+	// m_foutput(stdout,F);
+	// printf("R = \n");
+	// m_foutput(stdout,R);
+	// printf("U = \n");
+	// m_foutput(stdout,U);
+	// printf("V = \n");
+	// m_foutput(stdout,V);
 
 	/* ------------------------------------------*/
 	/* --------------State storage---------------*/
 	/* ------------------------------------------*/
 	// store F, D at each time step for each material point for use with buckley model 
-	state_Buckley ** state_n = new_Buckley_State(mfree.num_nodes,NULL,is_AXI,dim);;
-	state_Buckley ** state_n_1 = new_Buckley_State(mfree.num_nodes,NULL,is_AXI,dim);
+	state_Buckley ** state_n = new_Buckley_State(mfree.num_nodes,temperatures,is_AXI,dim);;
+	state_Buckley ** state_n_1 = new_Buckley_State(mfree.num_nodes,temperatures,is_AXI,dim);
 
 
 	// ///////////////////////////////////////////////////////////////

@@ -27,18 +27,23 @@
 #include	<stdio.h>
 #include	"matrix.h"
 #include	"zmatrix.h"
-static	char	rcsid[] = "$Id: zvecop.c,v 1.2 1994/03/08 05:51:07 des Exp $";
+static	char	rcsid[] = "$Id: zvecop.c,v 1.3 1997/10/07 16:13:54 stewart Exp stewart $";
 
 
 
 /* _zin_prod -- inner product of two vectors from i0 downwards
 	-- flag != 0 means compute sum_i a[i]*.b[i];
 	-- flag == 0 means compute sum_i a[i].b[i] */
+#ifndef ANSI_C
 complex	_zin_prod(a,b,i0,flag)
 ZVEC	*a,*b;
-u_int	i0, flag;
+unsigned int	i0, flag;
+#else
+complex	_zin_prod(const ZVEC *a, const ZVEC *b, 
+		  unsigned int i0, unsigned int flag)
+#endif
 {
-	u_int	limit;
+	unsigned int	limit;
 
 	if ( a==ZVNULL || b==ZVNULL )
 		error(E_NULL,"_zin_prod");
@@ -50,11 +55,15 @@ u_int	i0, flag;
 }
 
 /* zv_mlt -- scalar-vector multiply -- may be in-situ */
+#ifndef ANSI_C
 ZVEC	*zv_mlt(scalar,vector,out)
 complex	scalar;
 ZVEC	*vector,*out;
+#else
+ZVEC	*zv_mlt(complex scalar, const ZVEC *vector, ZVEC *out)
+#endif
 {
-	/* u_int	dim, i; */
+	/* unsigned int	dim, i; */
 	/* complex	*out_ve, *vec_ve; */
 
 	if ( vector==ZVNULL )
@@ -72,10 +81,14 @@ ZVEC	*vector,*out;
 }
 
 /* zv_add -- vector addition -- may be in-situ */
+#ifndef ANSI_C
 ZVEC	*zv_add(vec1,vec2,out)
 ZVEC	*vec1,*vec2,*out;
+#else
+ZVEC	*zv_add(const ZVEC *vec1, const ZVEC *vec2, ZVEC *out)
+#endif
 {
-	u_int	dim;
+	unsigned int	dim;
 
 	if ( vec1==ZVNULL || vec2==ZVNULL )
 		error(E_NULL,"zv_add");
@@ -91,11 +104,15 @@ ZVEC	*vec1,*vec2,*out;
 
 /* zv_mltadd -- scalar/vector multiplication and addition
 		-- out = v1 + scale.v2		*/
+#ifndef ANSI_C
 ZVEC	*zv_mltadd(v1,v2,scale,out)
 ZVEC	*v1,*v2,*out;
 complex	scale;
+#else
+ZVEC	*zv_mltadd(const ZVEC *v1, const ZVEC *v2, complex scale, ZVEC *out)
+#endif
 {
-	/* register u_int	dim, i; */
+	/* register unsigned int	dim, i; */
 	/* complex	*out_ve, *v1_ve, *v2_ve; */
 
 	if ( v1==ZVNULL || v2==ZVNULL )
@@ -124,10 +141,14 @@ complex	scale;
 }
 
 /* zv_sub -- vector subtraction -- may be in-situ */
+#ifndef ANSI_C
 ZVEC	*zv_sub(vec1,vec2,out)
 ZVEC	*vec1,*vec2,*out;
+#else
+ZVEC	*zv_sub(const ZVEC *vec1, const ZVEC *vec2, ZVEC *out)
+#endif
 {
-	/* u_int	i, dim; */
+	/* unsigned int	i, dim; */
 	/* complex	*out_ve, *vec1_ve, *vec2_ve; */
 
 	if ( vec1==ZVNULL || vec2==ZVNULL )
@@ -144,6 +165,7 @@ ZVEC	*vec1,*vec2,*out;
 
 /* zv_map -- maps function f over components of x: out[i] = f(x[i])
 	-- _zv_map sets out[i] = f(x[i],params) */
+#ifndef ANSI_C
 ZVEC	*zv_map(f,x,out)
 #ifdef PROTOYPES_IN_STRUCT
 complex	(*f)(complex);
@@ -151,6 +173,9 @@ complex	(*f)(complex);
 complex (*f)();
 #endif
 ZVEC	*x, *out;
+#else
+ZVEC	*zv_map(complex (*f)(complex), const ZVEC *x, ZVEC *out)
+#endif
 {
 	complex	*x_ve, *out_ve;
 	int	i, dim;
@@ -167,6 +192,7 @@ ZVEC	*x, *out;
 	return out;
 }
 
+#ifndef ANSI_C
 ZVEC	*_zv_map(f,params,x,out)
 #ifdef PROTOTYPES_IN_STRUCT
 complex	(*f)(void *,complex);
@@ -175,6 +201,10 @@ complex	(*f)();
 #endif
 ZVEC	*x, *out;
 void	*params;
+#else
+ZVEC	*_zv_map(complex (*f)(void *,complex), void *params,
+		 const ZVEC *x, ZVEC *out)
+#endif
 {
 	complex	*x_ve, *out_ve;
 	int	i, dim;
@@ -192,10 +222,14 @@ void	*params;
 }
 
 /* zv_lincomb -- returns sum_i a[i].v[i], a[i] real, v[i] vectors */
+#ifndef ANSI_C
 ZVEC	*zv_lincomb(n,v,a,out)
 int	n;	/* number of a's and v's */
 complex	a[];
 ZVEC	*v[], *out;
+#else
+ZVEC	*zv_lincomb(int n, const ZVEC *v[], const complex a[], ZVEC *out)
+#endif
 {
 	int	i;
 
@@ -315,8 +349,12 @@ ZVEC  *zv_linlist(va_alist) va_dcl
 
 /* zv_star -- computes componentwise (Hadamard) product of x1 and x2
 	-- result out is returned */
+#ifndef ANSI_C
 ZVEC	*zv_star(x1, x2, out)
 ZVEC	*x1, *x2, *out;
+#else
+ZVEC	*zv_star(const ZVEC *x1, const ZVEC *x2, ZVEC *out)
+#endif
 {
     int		i;
     Real	t_re, t_im;
@@ -343,8 +381,12 @@ ZVEC	*x1, *x2, *out;
 	-- out[i] = x2[i] / x1[i]
 	-- if x1[i] == 0 for some i, then raise E_SING error
 	-- result out is returned */
+#ifndef ANSI_C
 ZVEC	*zv_slash(x1, x2, out)
 ZVEC	*x1, *x2, *out;
+#else
+ZVEC	*zv_slash(const ZVEC *x1, const ZVEC *x2, ZVEC *out)
+#endif
 {
     int		i;
     Real	r2, t_re, t_im;
@@ -364,7 +406,7 @@ ZVEC	*x1, *x2, *out;
 	tmp.re =   x1->ve[i].re / r2;
 	tmp.im = - x1->ve[i].im / r2;
 	t_re = tmp.re*x2->ve[i].re - tmp.im*x2->ve[i].im;
-	t_im = tmp.re*x2->ve[i].im - tmp.im*x2->ve[i].re;
+	t_im = tmp.re*x2->ve[i].im + tmp.im*x2->ve[i].re;
 	out->ve[i].re = t_re;
 	out->ve[i].im = t_im;
     }
@@ -373,8 +415,12 @@ ZVEC	*x1, *x2, *out;
 }
 
 /* zv_sum -- returns sum of entries of a vector */
+#ifndef ANSI_C
 complex	zv_sum(x)
 ZVEC	*x;
+#else
+complex	zv_sum(const ZVEC *x)
+#endif
 {
     int		i;
     complex	sum;
@@ -393,11 +439,15 @@ ZVEC	*x;
 }
 
 /* px_zvec -- permute vector */
+#ifndef ANSI_C
 ZVEC	*px_zvec(px,vector,out)
 PERM	*px;
 ZVEC	*vector,*out;
+#else
+ZVEC	*px_zvec(PERM *px, ZVEC *vector, ZVEC *out)
+#endif
 {
-    u_int	old_i, i, size, start;
+    unsigned int	old_i, i, size, start;
     complex	tmp;
     
     if ( px==PNULL || vector==ZVNULL )
@@ -462,11 +512,15 @@ ZVEC	*vector,*out;
 
 /* pxinv_zvec -- apply the inverse of px to x, returning the result in out
 		-- may NOT be in situ */
+#ifndef ANSI_C
 ZVEC	*pxinv_zvec(px,x,out)
 PERM	*px;
 ZVEC	*x, *out;
+#else
+ZVEC	*pxinv_zvec(PERM *px, ZVEC *x, ZVEC *out)
+#endif
 {
-    u_int	i, size;
+    unsigned int	i, size;
     
     if ( ! px || ! x )
 	error(E_NULL,"pxinv_zvec");
@@ -498,8 +552,12 @@ ZVEC	*x, *out;
 }
 
 /* zv_rand -- randomise a complex vector; uniform in [0,1)+[0,1)*i */
+#ifndef ANSI_C
 ZVEC	*zv_rand(x)
 ZVEC	*x;
+#else
+ZVEC	*zv_rand(ZVEC *x)
+#endif
 {
     if ( ! x )
 	error(E_NULL,"zv_rand");

@@ -29,15 +29,20 @@
 #include	<stdio.h>
 #include	"matrix.h"
 
-static	char	rcsid[] = "$Id: vecop.c,v 1.4 1994/03/08 05:50:39 des Exp $";
+static	char	rcsid[] = "$Id: vecop.c,v 1.5 1996/08/20 18:18:10 stewart Exp $";
 
 
-/* _in_prod -- inner product of two vectors from i0 downwards */
+/* _in_prod -- inner product of two vectors from i0 downwards
+	-- that is, returns a(i0:dim)^T.b(i0:dim) */
+#ifndef ANSI_C
 double	_in_prod(a,b,i0)
 VEC	*a,*b;
-u_int	i0;
+unsigned int	i0;
+#else
+double	_in_prod(const VEC *a, const VEC *b, unsigned int i0)
+#endif
 {
-	u_int	limit;
+	unsigned int	limit;
 	/* Real	*a_v, *b_v; */
 	/* register Real	sum; */
 
@@ -58,12 +63,17 @@ u_int	i0;
 	******************************************/
 }
 
-/* sv_mlt -- scalar-vector multiply -- may be in-situ */
+/* sv_mlt -- scalar-vector multiply -- out <- scalar*vector 
+	-- may be in-situ */
+#ifndef ANSI_C
 VEC	*sv_mlt(scalar,vector,out)
 double	scalar;
 VEC	*vector,*out;
+#else
+VEC	*sv_mlt(double scalar, const VEC *vector, VEC *out)
+#endif
 {
-	/* u_int	dim, i; */
+	/* unsigned int	dim, i; */
 	/* Real	*out_ve, *vec_ve; */
 
 	if ( vector==(VEC *)NULL )
@@ -86,11 +96,15 @@ VEC	*vector,*out;
 	return (out);
 }
 
-/* v_add -- vector addition -- may be in-situ */
+/* v_add -- vector addition -- out <- v1+v2 -- may be in-situ */
+#ifndef ANSI_C
 VEC	*v_add(vec1,vec2,out)
 VEC	*vec1,*vec2,*out;
+#else
+VEC	*v_add(const VEC *vec1, const VEC *vec2, VEC *out)
+#endif
 {
-	u_int	dim;
+	unsigned int	dim;
 	/* Real	*out_ve, *vec1_ve, *vec2_ve; */
 
 	if ( vec1==(VEC *)NULL || vec2==(VEC *)NULL )
@@ -113,11 +127,15 @@ VEC	*vec1,*vec2,*out;
 
 /* v_mltadd -- scalar/vector multiplication and addition
 		-- out = v1 + scale.v2		*/
+#ifndef ANSI_C
 VEC	*v_mltadd(v1,v2,scale,out)
 VEC	*v1,*v2,*out;
 double	scale;
+#else
+VEC	*v_mltadd(const VEC *v1, const VEC *v2, double scale, VEC *out)
+#endif
 {
-	/* register u_int	dim, i; */
+	/* register unsigned int	dim, i; */
 	/* Real	*out_ve, *v1_ve, *v2_ve; */
 
 	if ( v1==(VEC *)NULL || v2==(VEC *)NULL )
@@ -152,10 +170,14 @@ double	scale;
 }
 
 /* v_sub -- vector subtraction -- may be in-situ */
+#ifndef ANSI_C
 VEC	*v_sub(vec1,vec2,out)
 VEC	*vec1,*vec2,*out;
+#else
+VEC	*v_sub(const VEC *vec1, const VEC *vec2, VEC *out)
+#endif
 {
-	/* u_int	i, dim; */
+	/* unsigned int	i, dim; */
 	/* Real	*out_ve, *vec1_ve, *vec2_ve; */
 
 	if ( vec1==(VEC *)NULL || vec2==(VEC *)NULL )
@@ -178,14 +200,18 @@ VEC	*vec1,*vec2,*out;
 }
 
 /* v_map -- maps function f over components of x: out[i] = f(x[i])
-	-- _v_map sets out[i] = f(params,x[i]) */
+	-- v_map sets out[i] = f(params,x[i]) */
+#ifndef ANSI_C
 VEC	*v_map(f,x,out)
-#ifdef PROTOTYPES_IN_STRUCT
-double	(*f)(double);
-#else
 double	(*f)();
-#endif
 VEC	*x, *out;
+#else
+#ifdef PROTOTYPES_IN_STRUCT
+VEC	*v_map(double (*f)(double), const VEC *x, VEC *out)
+#else
+VEC	*v_map(double (*f)(), const VEC *x, VEC *out)
+#endif
+#endif
 {
 	Real	*x_ve, *out_ve;
 	int	i, dim;
@@ -202,14 +228,19 @@ VEC	*x, *out;
 	return out;
 }
 
+/* _v_map -- sets out[i] <- f(params, x[i]), i = 0, 1, .., dim-1 */
+#ifndef ANSI_C
 VEC	*_v_map(f,params,x,out)
-#ifdef PROTOTYPES_IN_STRUCT
-double	(*f)(void *,double);
-#else
 double	(*f)();
-#endif
-VEC	*x, *out;
 void	*params;
+VEC	*x, *out;
+#else
+#ifdef PROTOTYPES_IN_STRUCT
+VEC	*_v_map(double (*f)(void *,double), void *params, const VEC *x, VEC *out)
+#else
+VEC	*_v_map(double (*f)(), void *params, const VEC *x, VEC *out)
+#endif
+#endif
 {
 	Real	*x_ve, *out_ve;
 	int	i, dim;
@@ -227,10 +258,14 @@ void	*params;
 }
 
 /* v_lincomb -- returns sum_i a[i].v[i], a[i] real, v[i] vectors */
+#ifndef ANSI_C
 VEC	*v_lincomb(n,v,a,out)
 int	n;	/* number of a's and v's */
 Real	a[];
 VEC	*v[], *out;
+#else
+VEC	*v_lincomb(int n, const VEC *v[], const Real a[], VEC *out)
+#endif
 {
 	int	i;
 
@@ -350,8 +385,12 @@ VEC  *v_linlist(va_alist) va_dcl
 
 /* v_star -- computes componentwise (Hadamard) product of x1 and x2
 	-- result out is returned */
+#ifndef ANSI_C
 VEC	*v_star(x1, x2, out)
 VEC	*x1, *x2, *out;
+#else
+VEC	*v_star(const VEC *x1, const VEC *x2, VEC *out)
+#endif
 {
     int		i;
 
@@ -371,8 +410,12 @@ VEC	*x1, *x2, *out;
 	-- out[i] = x2[i] / x1[i]
 	-- if x1[i] == 0 for some i, then raise E_SING error
 	-- result out is returned */
+#ifndef ANSI_C
 VEC	*v_slash(x1, x2, out)
 VEC	*x1, *x2, *out;
+#else
+VEC	*v_slash(const VEC *x1, const VEC *x2, VEC *out)
+#endif
 {
     int		i;
     Real	tmp;
@@ -396,9 +439,13 @@ VEC	*x1, *x2, *out;
 
 /* v_min -- computes minimum component of x, which is returned
 	-- also sets min_idx to the index of this minimum */
+#ifndef ANSI_C
 double	v_min(x, min_idx)
 VEC	*x;
 int	*min_idx;
+#else
+double	v_min(const VEC *x, int *min_idx)
+#endif
 {
     int		i, i_min;
     Real	min_val, tmp;
@@ -426,9 +473,13 @@ int	*min_idx;
 
 /* v_max -- computes maximum component of x, which is returned
 	-- also sets max_idx to the index of this maximum */
+#ifndef ANSI_C
 double	v_max(x, max_idx)
 VEC	*x;
 int	*max_idx;
+#else
+double	v_max(const VEC *x, int *max_idx)
+#endif
 {
     int		i, i_max;
     Real	max_val, tmp;
@@ -462,9 +513,13 @@ int	*max_idx;
 	the permutation is order = [2, 0, 1].
 	-- if order is NULL on entry then it is ignored
 	-- the sorted vector x is returned */
+#ifndef ANSI_C
 VEC	*v_sort(x, order)
 VEC	*x;
 PERM	*order;
+#else
+VEC	*v_sort(VEC *x, PERM *order)
+#endif
 {
     Real	*x_ve, tmp, v;
     /* int		*order_pe; */
@@ -500,8 +555,9 @@ PERM	*order;
 	    {
 		while ( x_ve[++i] < v )
 		    ;
-		while ( x_ve[--j] > v )
-		    ;
+		--j;
+		while ( x_ve[j] > v && j != 0 )
+		    --j;
 		if ( i >= j )	break;
 		
 		tmp = x_ve[i];
@@ -541,8 +597,12 @@ PERM	*order;
 }
 
 /* v_sum -- returns sum of entries of a vector */
+#ifndef ANSI_C
 double	v_sum(x)
 VEC	*x;
+#else
+double	v_sum(const VEC *x)
+#endif
 {
     int		i;
     Real	sum;
@@ -558,8 +618,12 @@ VEC	*x;
 }
 
 /* v_conv -- computes convolution product of two vectors */
+#ifndef ANSI_C
 VEC	*v_conv(x1, x2, out)
 VEC	*x1, *x2, *out;
+#else
+VEC	*v_conv(const VEC *x1, const VEC *x2, VEC *out)
+#endif
 {
     int		i;
 
@@ -580,8 +644,12 @@ VEC	*x1, *x2, *out;
 
 /* v_pconv -- computes a periodic convolution product
 	-- the period is the dimension of x2 */
+#ifndef ANSI_C
 VEC	*v_pconv(x1, x2, out)
 VEC	*x1, *x2, *out;
+#else
+VEC	*v_pconv(const VEC *x1, const VEC *x2, VEC *out)
+#endif
 {
     int		i;
 

@@ -32,10 +32,11 @@
 
 
 #include	<stdio.h>
+#include	<math.h>
 #include	"zmatrix.h"
 #include        "zmatrix2.h"
-#include	<math.h>
 
+static char rcsid[] = "$Id: zschur.c,v 1.4 1995/04/07 16:28:58 des Exp $";
 
 #define	is_zero(z)	((z).re == 0.0 && (z).im == 0.0)
 #define	b2s(t_or_f)	((t_or_f) ? "TRUE" : "FALSE")
@@ -52,7 +53,7 @@ ZMAT	*A, *Q;
     complex	det, discrim, lambda, lambda0, lambda1, s, sum, ztmp;
     complex	x, y;	/* for chasing algorithm */
     complex	**A_me;
-    static	ZVEC	*diag=ZVNULL;
+    STATIC	ZVEC	*diag=ZVNULL;
     
     if ( ! A )
 	error(E_NULL,"zschur");
@@ -109,8 +110,13 @@ ZMAT	*A, *Q;
 	    sum.im  = 0.5*(a00.im + a11.im);
 	    lambda0 = zadd(sum,discrim);
 	    lambda1 = zsub(sum,discrim);
-	    det = zsub(zmlt(a00,a11),zmlt(a01,a10));
-	    if ( zabs(lambda0) > zabs(lambda1) )
+	    det = zsub(zmlt(a00,a11),zmlt(a01,a10)); 
+	    
+	    if ( is_zero(lambda0) && is_zero(lambda1) )
+	      {                                                          
+		lambda.re = lambda.im = 0.0;
+	      } 
+	    else if ( zabs(lambda0) > zabs(lambda1) )
 		lambda = zdiv(det,lambda0);
 	    else
 		lambda = zdiv(det,lambda1);
@@ -177,6 +183,10 @@ ZMAT	*A, *Q;
 	    (zabs(A_me[i][i])+zabs(A_me[i+1][i+1])) )
 	    A_me[i+1][i].re = A_me[i+1][i].im = 0.0;
 
+#ifdef	THREADSAFE
+    ZV_FREE(diag);
+#endif
+
     return A;
 }
 
@@ -199,7 +209,7 @@ MAT	*T, *Q, *X_re, *X_im;
 		val1_re, val1_im, val2_re, val2_im,
 		tmp_val1_re, tmp_val1_im, tmp_val2_re, tmp_val2_im, **T_me;
 	Real	sum, diff, discrim, magdet, norm, scale;
-	static VEC	*tmp1_re=VNULL, *tmp1_im=VNULL,
+	STATIC VEC	*tmp1_re=VNULL, *tmp1_im=VNULL,
 			*tmp2_re=VNULL, *tmp2_im=VNULL;
 
 	if ( ! T || ! X_re )
@@ -373,3 +383,4 @@ MAT	*T, *Q, *X_re, *X_im;
 }
 
 #endif
+

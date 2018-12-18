@@ -36,16 +36,20 @@
 #include        "matrix.h"
 #include	"matlab.h"
 
-static char rcsid[] = "$Id: matlab.c,v 1.7 1994/01/13 05:30:09 des Exp $";
+static char rcsid[] = "$Id: matlab.c,v 1.8 1995/02/14 20:12:36 des Exp $";
 
 /* m_save -- save matrix in ".mat" file for MATLAB
 	-- returns matrix to be saved */
+#ifndef ANSI_C
 MAT     *m_save(fp,A,name)
 FILE    *fp;
 MAT     *A;
 char    *name;
+#else
+MAT     *m_save(FILE *fp, MAT *A, const char *name)
+#endif
 {
-	int     i;
+	int     i, j;
 	matlab  mat;
 
 	if ( ! A )
@@ -65,8 +69,14 @@ char    *name;
 	else
 		fwrite(name,sizeof(char),(int)(mat.namlen),fp);
 	/* write actual data */
+#if ORDER == ROW_ORDER
 	for ( i = 0; i < A->m; i++ )
 		fwrite(A->me[i],sizeof(Real),(int)(A->n),fp);
+#else /* column major order: ORDER == COL_ORDER */
+	for ( j = 0; j < A->n; j++ )
+	  for ( i = 0; i < A->m; i++ )
+	    fwrite(&(A->me[i][j]),sizeof(Real),1,fp);
+#endif
 
 	return A;
 }
@@ -75,10 +85,14 @@ char    *name;
 /* v_save -- save vector in ".mat" file for MATLAB
 	-- saves it as a row vector
 	-- returns vector to be saved */
+#ifndef ANSI_C
 VEC     *v_save(fp,x,name)
 FILE    *fp;
 VEC     *x;
 char    *name;
+#else
+VEC     *v_save(FILE *fp, VEC *x, const char *name)
+#endif
 {
 	matlab  mat;
 
@@ -107,10 +121,14 @@ char    *name;
 /* d_save -- save double in ".mat" file for MATLAB
 	-- saves it as a row vector
 	-- returns vector to be saved */
+#ifndef ANSI_C
 double	d_save(fp,x,name)
 FILE    *fp;
 double	x;
 char    *name;
+#else
+double	d_save(FILE *fp, double x, const char *name)
+#endif
 {
 	matlab  mat;
 	Real x1 = x;
@@ -136,9 +154,13 @@ char    *name;
 
 /* m_load -- loads in a ".mat" file variable as produced by MATLAB
 	-- matrix returned; imaginary parts ignored */
+#ifndef ANSI_C
 MAT     *m_load(fp,name)
 FILE    *fp;
 char    **name;
+#else
+MAT     *m_load(FILE *fp, char **name)
+#endif
 {
 	MAT     *A;
 	int     i;

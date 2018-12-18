@@ -28,7 +28,7 @@
 #include	<stdio.h>
 #include	"zmatrix.h"
 
-static	char	rcsid[] = "$Id: zmatop.c,v 1.1 1994/01/13 04:24:46 des Exp $";
+static	char	rcsid[] = "$Id: zmatop.c,v 1.2 1995/03/27 15:49:03 des Exp $";
 
 
 #define	is_zero(z)	((z).re == 0.0 && (z).im == 0.0)
@@ -37,7 +37,7 @@ static	char	rcsid[] = "$Id: zmatop.c,v 1.1 1994/01/13 04:24:46 des Exp $";
 ZMAT	*zm_add(mat1,mat2,out)
 ZMAT	*mat1,*mat2,*out;
 {
-    u_int	m,n,i;
+    unsigned int	m,n,i;
     
     if ( mat1==ZMNULL || mat2==ZMNULL )
 	error(E_NULL,"zm_add");
@@ -62,7 +62,7 @@ ZMAT	*mat1,*mat2,*out;
 ZMAT	*zm_sub(mat1,mat2,out)
 ZMAT	*mat1,*mat2,*out;
 {
-    u_int	m,n,i;
+    unsigned int	m,n,i;
     
     if ( mat1==ZMNULL || mat2==ZMNULL )
 	error(E_NULL,"zm_sub");
@@ -93,7 +93,7 @@ ZMAT	*mat1,*mat2,*out;
 ZMAT	*zm_mlt(A,B,OUT)
 ZMAT	*A,*B,*OUT;
 {
-    u_int	i, /* j, */ k, m, n, p;
+    unsigned int	i, /* j, */ k, m, n, p;
     complex	**A_v, **B_v /*, *B_row, *OUT_row, sum, tmp */;
     
     if ( A==ZMNULL || B==ZMNULL )
@@ -207,7 +207,7 @@ ZVEC	*zmv_mlt(A,b,out)
 ZMAT	*A;
 ZVEC	*b,*out;
 {
-    u_int	i, m, n;
+    unsigned int	i, m, n;
     complex	**A_v, *b_v /*, *A_row */;
     /* register complex	sum; */
     
@@ -243,7 +243,7 @@ ZMAT	*zsm_mlt(scalar,matrix,out)
 complex	scalar;
 ZMAT	*matrix,*out;
 {
-    u_int	m,n,i;
+    unsigned int	m,n,i;
     
     if ( matrix==ZMNULL )
 	error(E_NULL,"zsm_mlt");
@@ -264,7 +264,7 @@ ZVEC	*zvm_mlt(A,b,out)
 ZMAT	*A;
 ZVEC	*b,*out;
 {
-    u_int	j,m,n;
+    unsigned int	j,m,n;
     /* complex	sum,**A_v,*b_v; */
     
     if ( A==ZMNULL || b==ZVNULL )
@@ -406,13 +406,16 @@ complex	s;
 	error(E_NULL,"mz_mltadd");
     if ( A1->m != A2->m || A1->n != A2->n )
 	error(E_SIZES,"mz_mltadd");
+
+    if ( out != A1 && out != A2 )
+        out = zm_resize(out,A1->m,A1->n);
     
     if ( s.re == 0.0 && s.im == 0.0 )
 	return zm_copy(A1,out);
     if ( s.re == 1.0 && s.im == 0.0 )
 	return zm_add(A1,A2,out);
     
-    tracecatch(out = zm_copy(A1,out),"mz_mltadd");
+    out = zm_copy(A1,out);
     
     m = A1->m;	n = A1->n;
     for ( i = 0; i < m; i++ )
@@ -518,7 +521,7 @@ int	col;
 ZMAT	*mat;
 ZVEC	*vec;
 {
-	u_int	i;
+	unsigned int	i;
 
 	if ( mat==ZMNULL )
 		error(E_NULL,"zget_col");
@@ -563,7 +566,7 @@ ZMAT	*mat;
 ZVEC	*vec;
 int	col;
 {
-	u_int	i,lim;
+	unsigned int	i,lim;
 
 	if ( mat==ZMNULL || vec==ZVNULL )
 		error(E_NULL,"zset_col");
@@ -582,7 +585,7 @@ ZMAT	*mat;
 ZVEC	*vec;
 int	row;
 {
-	u_int	/* j, */ lim;
+	unsigned int	/* j, */ lim;
 
 	if ( mat==ZMNULL || vec==ZVNULL )
 		error(E_NULL,"zset_row");

@@ -31,9 +31,9 @@
   */
 
 #include <stdio.h>
+#include <math.h>
 #include "matrix.h"
 #include "matrix2.h"
-#include <math.h>
 
 static char	rcsid[] = "$Id: mfunc.c,v 1.2 1994/11/01 05:57:56 des Exp $";
 
@@ -41,9 +41,13 @@ static char	rcsid[] = "$Id: mfunc.c,v 1.2 1994/11/01 05:57:56 des Exp $";
 
 /* _m_pow -- computes integer powers of a square matrix A, A^p
    -- uses tmp as temporary workspace */
+#ifndef ANSI_C
 MAT	*_m_pow(A, p, tmp, out)
 MAT	*A, *tmp, *out;
 int	p;
+#else
+MAT	*_m_pow(const MAT *A, int p, MAT *tmp, MAT *out)
+#endif
 {
    int		it_cnt, k, max_bit;
    
@@ -95,11 +99,15 @@ int	p;
 }
 
 /* m_pow -- computes integer powers of a square matrix A, A^p */
+#ifndef ANSI_C
 MAT	*m_pow(A, p, out)
 MAT	*A, *out;
 int	p;
+#else
+MAT	*m_pow(const MAT *A, int p, MAT *out)
+#endif
 {
-   static MAT	*wkspace, *tmp;
+   STATIC MAT	*wkspace=MNULL, *tmp=MNULL;
    
    if ( ! A )
      error(E_NULL,"m_pow");
@@ -113,11 +121,16 @@ int	p;
        tmp = m_resize(tmp,A->m,A->n);
        MEM_STAT_REG(tmp,TYPE_MAT);
        tracecatch(m_inverse(A,tmp),"m_pow");
-       return _m_pow(tmp, -p, wkspace, out);
+       out = _m_pow(tmp, -p, wkspace, out);
    }
    else
-       return _m_pow(A, p, wkspace, out);
-   
+       out = _m_pow(A, p, wkspace, out);
+
+#ifdef	THREADSAFE
+   M_FREE(wkspace);	M_FREE(tmp);
+#endif
+
+   return out;
 }
 
 /**************************************************/
@@ -130,15 +143,19 @@ int	p;
    -- j_out - the power of 2 for scaling the matrix A
               such that ||A/2^j_out|| <= 0.5
 */
+#ifndef ANSI_C
 MAT *_m_exp(A,eps,out,q_out,j_out)
 MAT *A,*out;
 double eps;
 int *q_out, *j_out;
+#else
+MAT *_m_exp(MAT *A, double eps, MAT *out, int *q_out, int *j_out)
+#endif
 {
-   static MAT *D = MNULL, *Apow = MNULL, *N = MNULL, *Y = MNULL;
-   static VEC *c1 = VNULL, *tmp = VNULL;
+   STATIC MAT *D = MNULL, *Apow = MNULL, *N = MNULL, *Y = MNULL;
+   STATIC VEC *c1 = VNULL, *tmp = VNULL;
    VEC y0, y1;  /* additional structures */
-   static PERM *pivot = PNULL;
+   STATIC PERM *pivot = PNULL;
    int j, k, l, q, r, s, j2max, t;
    double inf_norm, eqq, power2, c, sign;
    
@@ -286,6 +303,13 @@ int *q_out, *j_out;
 
    /* restore the matrix A */
    sm_mlt(1.0/power2,A,A);
+
+#ifdef	THREADSAFE
+   M_FREE(D);	M_FREE(Apow);	M_FREE(N);	M_FREE(Y);
+   V_FREE(c1); 	V_FREE(tmp);
+   PX_FREE(pivot);
+#endif
+
    return out;
 
 #undef Z
@@ -293,9 +317,13 @@ int *q_out, *j_out;
 
 
 /* simple interface for _m_exp */
+#ifndef ANSI_C
 MAT *m_exp(A,eps,out)
 MAT *A,*out;
 double eps;
+#else
+MAT *m_exp(MAT *A, double eps, MAT *out)
+#endif
 {
    int q_out, j_out;
 
@@ -307,12 +335,16 @@ double eps;
 
 /* m_poly -- computes sum_i a[i].A^i, where i=0,1,...dim(a);
    -- uses C. Van Loan's fast and memory efficient method  */
+#ifndef ANSI_C
 MAT *m_poly(A,a,out)
 MAT *A,*out;
 VEC *a;
+#else
+MAT *m_poly(const MAT *A, const VEC *a, MAT *out)
+#endif
 {
-   static MAT	*Apow = MNULL, *Y = MNULL;
-   static VEC   *tmp;
+   STATIC MAT	*Apow = MNULL, *Y = MNULL;
+   STATIC VEC   *tmp = VNULL;
    VEC y0, y1;  /* additional vectors */
    int j, k, l, q, r, s, t;
    
@@ -391,6 +423,10 @@ VEC *a;
    }
 
    m_transp(out,out);
+
+#ifdef	THREADSAFE
+   M_FREE(Apow);	M_FREE(Y);	V_FREE(tmp);	
+#endif
    
    return out;
 }

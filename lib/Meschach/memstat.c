@@ -50,9 +50,11 @@ extern MEM_CONNECT mem_connect[MEM_CONNECT_MAX_LISTS];
 /* local type */
 
 typedef struct {
-   void **var;    /* for &A, where A is a pointer */
-   int type;     /* type of A */
-   int mark;      /* what mark is chosen */
+  void	**var;	/* for &A, where A is a pointer */
+  int	type;	/* type of A */
+  int	mark;	/* what mark is chosen */
+  char	*fname;	/* source file name where last registered */
+  int	line;	/* line # of file where last registered */
 } MEM_STAT_STRUCT;
 
 
@@ -76,9 +78,12 @@ static unsigned int mem_hash_idx_end = 0;
 
 
 /* hashing function */
-
+#ifndef ANSI_C
 static unsigned int mem_hash(ptr)
 void **ptr;
+#else
+static unsigned int mem_hash(void **ptr)
+#endif
 {
    unsigned long lp = (unsigned long)ptr;
 
@@ -87,8 +92,12 @@ void **ptr;
 
 
 /* look for a place in mem_stat_var */
+#ifndef ANSI_C
 static int mem_lookup(var)
 void **var;
+#else
+static int mem_lookup(void **var)
+#endif
 {
    int k, j;
 
@@ -142,15 +151,23 @@ void **var;
      var - variable to be registered,
      type - type of this variable; 
      list - list of types
+     fname - source file name where last registered
+     line - line number of source file
 
    returned value < 0  --> error,
    returned value == 0 --> not registered,
    returned value >= 0 --> registered with this mark;
 */
-
-int mem_stat_reg_list(var,type,list)
-void **var;
-int type,list;
+#ifndef ANSI_C
+int mem_stat_reg_list(var,type,list,fname,line)
+void	**var;
+int	type,list;
+char	*fname;
+int	line;
+#else
+int mem_stat_reg_list(void **var, int type, int list,
+		      char *fname, int line)
+#endif
 {
    int n;
 
@@ -171,6 +188,8 @@ int type,list;
       mem_stat_var[n].var = var;
       mem_stat_var[n].mark = mem_stat_mark_curr;
       mem_stat_var[n].type = type;
+      mem_stat_var[n].fname = fname;
+      mem_stat_var[n].line = line;
       /* save n+1, not n */
       mem_hash_idx[mem_hash_idx_end++] = n+1;
    }
@@ -187,9 +206,12 @@ int type,list;
              0 if mark == 0,
 	     -1 if mark is negative.
 */
-
+#ifndef ANSI_C
 int mem_stat_mark(mark)
 int mark;
+#else
+int mem_stat_mark(int mark)
+#endif
 {
    if (mark < 0) {
       mem_stat_mark_curr = 0;
@@ -216,11 +238,14 @@ int mark;
      -1 if mark < 0 (error);
      0  if mark == 0;
 */
-
+#ifndef ANSI_C
 int mem_stat_free_list(mark,list)
 int mark,list;
+#else
+int mem_stat_free_list(int mark, int list)
+#endif
 {
-   u_int i,j;
+   unsigned int i,j;
    int	 (*free_fn)();
 
    if ( list < 0 || list >= MEM_CONNECT_MAX_LISTS 
@@ -241,6 +266,9 @@ int mark,list;
       return -1;
    }
 
+#ifdef DEBUG
+   printf("mem_stat_free: Freeing variables registered for mark %d\n", mark);
+#endif /* DEBUG */
    /* deallocate the marked variables */
    for (i=0; i < mem_hash_idx_end; i++) {
       j = mem_hash_idx[i];
@@ -249,6 +277,10 @@ int mark,list;
 	 j--;
 	 if (mem_stat_var[j].mark == mark) {
 	     free_fn = mem_connect[list].free_funcs[mem_stat_var[j].type];
+#ifdef DEBUG
+	     printf("# Freeing variable(s) registered in file \"%s\", line %d\n",
+		    mem_stat_var[j].fname, mem_stat_var[j].line);
+#endif /* DEBUG */
 	     if ( free_fn != NULL )
 		 (*free_fn)(*mem_stat_var[j].var);
 	     else
@@ -257,6 +289,8 @@ int mark,list;
 	    *(mem_stat_var[j].var) = NULL;
 	    mem_stat_var[j].var = NULL;
 	    mem_stat_var[j].mark = 0;
+	    mem_stat_var[j].fname = NULL;
+	    mem_stat_var[j].line = 0;
 	    mem_hash_idx[i] = 0;
 	 }
       }
@@ -272,12 +306,15 @@ int mark,list;
 
 
 /* only for diagnostic purposes */
-
+#ifndef ANSI_C
 void mem_stat_dump(fp,list)
 FILE *fp;
 int list;
+#else
+void mem_stat_dump(FILE *fp, int list)
+#endif
 {
-   u_int i,j,k=1;
+   unsigned int i,j,k=1;
 
    if ( list < 0 || list >= MEM_CONNECT_MAX_LISTS 
        || mem_connect[list].free_funcs == NULL )
@@ -331,15 +368,16 @@ int mem_stat_show_mark()
      (of course they must be of the same type)
 */
 
-int mem_stat_reg_vars(int list,int type,...)
+int mem_stat_reg_vars(int list,int type,char *fname,int line, ...)
 {
    va_list ap;
    int i=0;
    void **par;
    
-   va_start(ap, type);
+   /* va_start(ap, type); */
+   va_start(ap,line);	/* Changed for Linux 7th Oct, 2003 */
    while (par = va_arg(ap,void **)) {   /* NULL ends the list*/
-      mem_stat_reg_list(par,type,list);
+      mem_stat_reg_list(par,type,list,fname,line);
       i++;
    } 
 

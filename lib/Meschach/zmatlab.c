@@ -37,7 +37,7 @@
 #include        "zmatrix.h"
 #include	"matlab.h"
 
-static char rcsid[] = "$Id: zmatlab.c,v 1.1 1994/01/13 04:24:57 des Exp $";
+static char rcsid[] = "$Id: zmatlab.c,v 1.2 1995/02/14 20:13:27 des Exp $";
 
 /* zm_save -- save matrix in ".mat" file for MATLAB
    -- returns matrix to be saved */
@@ -66,12 +66,21 @@ char    *name;
     else
 	fwrite(name,sizeof(char),(int)(mat.namlen),fp);
     /* write actual data */
+#if ORDER == ROW_ORDER
     for ( i = 0; i < A->m; i++ )
 	for ( j = 0; j < A->n; j++ )
 	    fwrite(&(A->me[i][j].re),sizeof(Real),1,fp);
     for ( i = 0; i < A->m; i++ )
 	for ( j = 0; j < A->n; j++ )
 	    fwrite(&(A->me[i][j].im),sizeof(Real),1,fp);
+#else /* column major order: ORDER == COL_ORDER */
+    for ( j = 0; j < A->n; j++ )
+	for ( i = 0; i < A->m; i++ )
+	    fwrite(&(A->me[i][j].re),sizeof(Real),1,fp);
+    for ( j = 0; j < A->n; j++ )
+	for ( i = 0; i < A->m; i++ )
+	    fwrite(&(A->me[i][j].im),sizeof(Real),1,fp);
+#endif
     
     return A;
 }
@@ -85,7 +94,7 @@ FILE    *fp;
 ZVEC    *x;
 char    *name;
 {
-    int	i;
+    int	i, j;
     matlab  mat;
     
     if ( ! x )

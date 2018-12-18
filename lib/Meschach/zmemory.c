@@ -35,8 +35,12 @@ static	char	rcsid[] = "$Id: zmemory.c,v 1.2 1994/04/05 02:13:14 des Exp $";
 
 /* zv_zero -- zeros all entries of a complex vector
    -- uses __zzero__() */
+#ifndef ANSI_C
 ZVEC	*zv_zero(x)
 ZVEC	*x;
+#else
+ZVEC	*zv_zero(ZVEC *x)
+#endif
 {
    if ( ! x )
      error(E_NULL,"zv_zero");
@@ -47,8 +51,12 @@ ZVEC	*x;
 
 /* zm_zero -- zeros all entries of a complex matrix
    -- uses __zzero__() */
+#ifndef ANSI_C
 ZMAT	*zm_zero(A)
 ZMAT	*A;
+#else
+ZMAT	*zm_zero(ZMAT *A)
+#endif
 {
    int		i;
    
@@ -61,11 +69,15 @@ ZMAT	*A;
 }
 
 /* zm_get -- gets an mxn complex matrix (in ZMAT form) */
+#ifndef ANSI_C
 ZMAT	*zm_get(m,n)
 int	m,n;
+#else
+ZMAT	*zm_get(int m, int n)
+#endif
 {
    ZMAT	*matrix;
-   u_int	i;
+   unsigned int	i;
    
    if (m < 0 || n < 0)
      error(E_NEG,"zm_get");
@@ -118,8 +130,12 @@ int	m,n;
 
 /* zv_get -- gets a ZVEC of dimension 'dim'
    -- Note: initialized to zero */
+#ifndef ANSI_C
 ZVEC	*zv_get(size)
 int	size;
+#else
+ZVEC	*zv_get(int size)
+#endif
 {
    ZVEC	*vector;
 
@@ -145,8 +161,12 @@ int	size;
 }
 
 /* zm_free -- returns ZMAT & asoociated memory back to memory heap */
+#ifndef ANSI_C
 int	zm_free(mat)
 ZMAT	*mat;
+#else
+int	zm_free(ZMAT *mat)
+#endif
 {
 #ifdef SEGMENTED
    int	i;
@@ -191,8 +211,12 @@ ZMAT	*mat;
 
 
 /* zv_free -- returns ZVEC & asoociated memory back to memory heap */
+#ifndef ANSI_C
 int	zv_free(vec)
 ZVEC	*vec;
+#else
+int	zv_free(ZVEC *vec)
+#endif
 {
    if ( vec==(ZVEC *)NULL || (int)(vec->dim) < 0 )
      /* don't trust it */
@@ -223,11 +247,15 @@ ZVEC	*vec;
 
 /* zm_resize -- returns the matrix A of size new_m x new_n; A is zeroed
    -- if A == NULL on entry then the effect is equivalent to m_get() */
+#ifndef ANSI_C
 ZMAT	*zm_resize(A,new_m,new_n)
 ZMAT	*A;
 int	new_m, new_n;
+#else
+ZMAT	*zm_resize(ZMAT *A, int new_m, int new_n)
+#endif
 {
-   u_int	i, new_max_m, new_max_n, new_size, old_m, old_n;
+   unsigned int	i, new_max_m, new_max_n, new_size, old_m, old_n;
    
    if (new_m < 0 || new_n < 0)
      error(E_NEG,"zm_resize");
@@ -358,9 +386,13 @@ int	new_m, new_n;
 
 /* zv_resize -- returns the (complex) vector x with dim new_dim
    -- x is set to the zero vector */
+#ifndef ANSI_C
 ZVEC	*zv_resize(x,new_dim)
 ZVEC	*x;
 int	new_dim;
+#else
+ZVEC	*zv_resize(ZVEC *x, int new_dim)
+#endif
 {
    if (new_dim < 0)
      error(E_NEG,"zv_resize");

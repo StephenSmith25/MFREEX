@@ -37,16 +37,16 @@
 
 
 #ifdef ANSI_C
-SPMAT	*spCHfactor(SPMAT *), *spICHfactor(SPMAT *), *spCHsymb(SPMAT *);
-VEC	*spCHsolve(SPMAT *,VEC *,VEC *);
+SPMAT	*spCHfactor(SPMAT *A), *spICHfactor(SPMAT *A), *spCHsymb(SPMAT *A);
+VEC	*spCHsolve(SPMAT *CH, const VEC *b, VEC *x);
 
-SPMAT	*spLUfactor(SPMAT *,PERM *,double);
-SPMAT	*spILUfactor(SPMAT *,double);
-VEC	*spLUsolve(SPMAT *,PERM *,VEC *,VEC *),
-	*spLUTsolve(SPMAT *,PERM *,VEC *,VEC *);
+SPMAT	*spLUfactor(SPMAT *A,PERM *pivot,double threshold);
+SPMAT	*spILUfactor(SPMAT *A,double theshold);
+VEC	*spLUsolve(const SPMAT *LU,PERM *pivot, const VEC *b,VEC *x),
+	*spLUTsolve(SPMAT *LU,PERM *pivot, const VEC *b,VEC *x);
 
 SPMAT	*spBKPfactor(SPMAT *, PERM *, PERM *, double);
-VEC	*spBKPsolve(SPMAT *, PERM *, PERM *, VEC *, VEC *);
+VEC	*spBKPsolve(SPMAT *, PERM *, PERM *, const VEC *, VEC *);
 
 VEC	*pccg(VEC *(*A)(),void *A_par,VEC *(*M_inv)(),void *M_par,VEC *b,
 						double tol,VEC *x);
@@ -64,9 +64,9 @@ VEC	*lanczos2(VEC *(*A)(),void *A_par,int m,VEC *x0,VEC *evals,
 						VEC *err_est);
 VEC	*sp_lanczos2(SPMAT *,int,VEC *,VEC *,VEC *);
 extern  void    scan_to(SPMAT *,IVEC *,IVEC *,IVEC *,int);
-extern  row_elt  *chase_col(SPMAT *,int,int *,int *,int);
-extern  row_elt  *chase_past(SPMAT *,int,int *,int *,int);
-extern  row_elt  *bump_col(SPMAT *,int,int *,int *);
+extern  row_elt  *chase_col(const SPMAT *,int,int *,int *,int);
+extern  row_elt  *chase_past(const SPMAT *,int,int *,int *,int);
+extern  row_elt  *bump_col(const SPMAT *,int,int *,int *);
 
 #else
 extern SPMAT	*spCHfactor(), *spICHfactor(), *spCHsymb();

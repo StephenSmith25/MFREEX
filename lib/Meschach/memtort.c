@@ -248,11 +248,11 @@ int par;
    MEM_STAT_REG(AT,TYPE_MAT);
 
 #ifdef ANSI_C
-   mem_stat_reg_vars(0,TYPE_VEC,&xt1,&xt2,&xt3,&xt4,&yt1,
+   mem_stat_reg_vars(0,TYPE_VEC,__FILE__,__LINE__,&xt1,&xt2,&xt3,&xt4,&yt1,
 		     &yt2,&yt3,&yt4,NULL);
 #else
 #ifdef VARARGS
-   mem_stat_reg_vars(0,TYPE_VEC,&xt1,&xt2,&xt3,&xt4,&yt1,
+   mem_stat_reg_vars(0,TYPE_VEC,__FILE__,__LINE__,&xt1,&xt2,&xt3,&xt4,&yt1,
 		     &yt2,&yt3,&yt4,NULL);
 #else
    MEM_STAT_REG(xt1,TYPE_VEC);
@@ -708,8 +708,8 @@ char    *argv[];
    printf(" foo_2->a[%d][%d] = %g\n",2,1,foo_2->a[2][1]);
    
    mem_stat_mark(5);
-   mem_stat_reg_list((void **)&foo_1,TYPE_FOO_1,FOO_LIST);
-   mem_stat_reg_list((void **)&foo_2,TYPE_FOO_2,FOO_LIST);
+   mem_stat_reg_list((void **)&foo_1,TYPE_FOO_1,FOO_LIST,__FILE__,__LINE__);
+   mem_stat_reg_list((void **)&foo_2,TYPE_FOO_2,FOO_LIST,__FILE__,__LINE__);
    mem_stat_dump(stdout,FOO_LIST);
    mem_info_file(stdout,FOO_LIST);
    mem_stat_free_list(5,FOO_LIST);
@@ -754,5 +754,7 @@ char    *argv[];
 #endif /*#if defined(ANSI_C) || defined(VARAGS) */
 
    printf("# Finished memory torture test\n");
+
+   dmalloc_shutdown();
    return;
 }

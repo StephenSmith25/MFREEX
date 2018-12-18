@@ -89,7 +89,8 @@ void mem_bytes_list(int type,int old_size,int new_size,
 		       int list);
 void mem_numvar_list(int type, int num, int list);
 
-int mem_stat_reg_list(void **var,int type,int list);
+#ifndef THREADSAFE
+int mem_stat_reg_list(void **var,int type,int list,char *fname,int line);
 int mem_stat_mark(int mark);
 int mem_stat_free_list(int mark,int list);
 int mem_stat_show_mark(void);
@@ -99,8 +100,8 @@ int mem_attach_list(int list,int ntypes,char *type_names[],
 int mem_free_vars(int list);
 int mem_is_list_attached(int list);
 void mem_dump_list(FILE *fp,int list);
-int mem_stat_reg_vars(int list,int type,...);
-
+int mem_stat_reg_vars(int list,int type,char *fname,int line,...);
+#endif /* THREADSAFE */
 #else
 int mem_info_is_on();
 int mem_info_on();
@@ -112,6 +113,7 @@ void mem_info_file();
 void mem_bytes_list();
 void mem_numvar_list();
 
+#ifndef THREADSAFE
 int mem_stat_reg_list();
 int mem_stat_mark();
 int mem_stat_free_list();
@@ -122,6 +124,7 @@ int mem_free_vars();
 int mem_is_list_attached();
 void mem_dump_list();
 int mem_stat_reg_vars();
+#endif /* THREADSAFE */
 
 #endif 
 
@@ -129,9 +132,15 @@ int mem_stat_reg_vars();
 
 #define mem_info()   mem_info_file(stdout,0)
 
-#define mem_stat_reg(var,type)  mem_stat_reg_list((void **)var,type,0)
-#define MEM_STAT_REG(var,type)  mem_stat_reg_list((void **)&(var),type,0)
+#ifndef THREADSAFE
+#define mem_stat_reg(var,type)  mem_stat_reg_list((void **)var,type,0,__FILE__,__LINE__)
+#define MEM_STAT_REG(var,type)  mem_stat_reg_list((void **)&(var),type,0,__FILE__,__LINE__)
 #define mem_stat_free(mark)   mem_stat_free_list(mark,0)
+#else
+#define mem_stat_reg(var,type)
+#define MEM_STAT_REG(var,type)
+#define mem_stat_free(mark)
+#endif
 
 #define mem_bytes(type,old_size,new_size)  \
   mem_bytes_list(type,old_size,new_size,0)

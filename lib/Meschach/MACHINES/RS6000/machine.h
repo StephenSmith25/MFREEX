@@ -34,7 +34,7 @@
 /* if the system has malloc.h */
 #ifdef HAVE_MALLOC_H
 #define	MALLOCDECL	1
-#include	<stdlib.h>
+#include	<malloc.h>
 #endif
 
 /* any compiler should have this header */

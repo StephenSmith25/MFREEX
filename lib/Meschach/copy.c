@@ -30,12 +30,17 @@ static	char	rcsid[] = "$Id: copy.c,v 1.2 1994/01/13 05:37:14 des Exp $";
 
 
 
-/* _m_copy -- copies matrix into new area */
+/* _m_copy -- copies matrix into new area
+	-- out(i0:m,j0:n) <- in(i0:m,j0:n) */
+#ifndef ANSI_C
 MAT	*_m_copy(in,out,i0,j0)
 MAT	*in,*out;
-u_int	i0,j0;
+unsigned int	i0,j0;
+#else
+MAT	*_m_copy(const MAT *in, MAT *out, unsigned int i0, unsigned int j0)
+#endif
 {
-	u_int	i /* ,j */;
+	unsigned int	i /* ,j */;
 
 	if ( in==MNULL )
 		error(E_NULL,"_m_copy");
@@ -53,12 +58,17 @@ u_int	i0,j0;
 	return (out);
 }
 
-/* _v_copy -- copies vector into new area */
+/* _v_copy -- copies vector into new area
+	-- out(i0:dim) <- in(i0:dim) */
+#ifndef ANSI_C
 VEC	*_v_copy(in,out,i0)
 VEC	*in,*out;
-u_int	i0;
+unsigned int	i0;
+#else
+VEC	*_v_copy(const VEC *in, VEC *out, unsigned int i0)
+#endif
 {
-	/* u_int	i,j; */
+	/* unsigned int	i,j; */
 
 	if ( in==VNULL )
 		error(E_NULL,"_v_copy");
@@ -74,9 +84,14 @@ u_int	i0;
 	return (out);
 }
 
-/* px_copy -- copies permutation 'in' to 'out' */
+/* px_copy -- copies permutation 'in' to 'out'
+	-- out is resized to in->size */
+#ifndef ANSI_C
 PERM	*px_copy(in,out)
 PERM	*in,*out;
+#else
+PERM	*px_copy(const PERM *in, PERM *out)
+#endif
 {
 	/* int	i; */
 
@@ -87,7 +102,7 @@ PERM	*in,*out;
 	if ( out == PNULL || out->size != in->size )
 		out = px_resize(out,in->size);
 
-	MEM_COPY(in->pe,out->pe,in->size*sizeof(u_int));
+	MEM_COPY(in->pe,out->pe,in->size*sizeof(unsigned int));
 	/* for ( i = 0; i < in->size; i++ )
 		out->pe[i] = in->pe[i]; */
 
@@ -105,9 +120,14 @@ PERM	*in,*out;
 	   to the corresponding submatrix of out with top-left co-ordinates
 	   (i1,j1)
 	-- out is resized (& created) if necessary */
+#ifndef ANSI_C
 MAT	*m_move(in,i0,j0,m0,n0,out,i1,j1)
 MAT	*in, *out;
 int	i0, j0, m0, n0, i1, j1;
+#else
+MAT	*m_move(const MAT *in, int i0,int j0, int m0,int n0,
+		MAT *out, int i1, int j1)
+#endif
 {
     int		i;
 
@@ -133,9 +153,14 @@ int	i0, j0, m0, n0, i1, j1;
 	-- moves the length dim0 subvector with initial index i0
 	   to the corresponding subvector of out with initial index i1
 	-- out is resized if necessary */
+#ifndef ANSI_C
 VEC	*v_move(in,i0,dim0,out,i1)
 VEC	*in, *out;
 int	i0, dim0, i1;
+#else
+VEC	*v_move(const VEC *in, int i0, int dim0,
+		VEC *out, int i1)
+#endif
 {
     if ( ! in )
 	error(E_NULL,"v_move");
@@ -156,10 +181,15 @@ int	i0, dim0, i1;
 	   the subvector with initial index i1 (and length m0*n0)
 	-- rows are copied contiguously
 	-- out is resized if necessary */
+#ifndef ANSI_C
 VEC	*mv_move(in,i0,j0,m0,n0,out,i1)
 MAT	*in;
 VEC	*out;
 int	i0, j0, m0, n0, i1;
+#else
+VEC	*mv_move(const MAT *in, int i0,int j0, int m0, int n0,
+		 VEC *out, int i1)
+#endif
 {
     int		dim1, i;
 
@@ -180,14 +210,20 @@ int	i0, j0, m0, n0, i1;
 }
 
 /* vm_move -- copies selected piece of vector to a matrix
-	-- moves the subvector with initial index i0 and length m1*n1 to
+	
+-- moves the subvector with initial index i0 and length m1*n1 to
 	   the m1 x n1 submatrix with top-left co-ordinate (i1,j1)
         -- copying is done by rows
 	-- out is resized if necessary */
+#ifndef ANSI_C
 MAT	*vm_move(in,i0,out,i1,j1,m1,n1)
 VEC	*in;
 MAT	*out;
 int	i0, i1, j1, m1, n1;
+#else
+MAT	*vm_move(const VEC *in, int i0,
+		 MAT *out, int i1, int j1, int m1, int n1)
+#endif
 {
     int		dim0, i;
 

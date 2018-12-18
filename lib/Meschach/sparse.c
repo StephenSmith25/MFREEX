@@ -41,9 +41,13 @@ static char	rcsid[] = "$Id: sparse.c,v 1.10 1994/03/08 05:46:07 des Exp $";
 
 
 /* sp_get_val -- returns the (i,j) entry of the sparse matrix A */
+#ifndef ANSI_C
 double	sp_get_val(A,i,j)
 SPMAT	*A;
 int	i, j;
+#else
+double	sp_get_val(const SPMAT *A, int i, int j)
+#endif
 {
    SPROW	*r;
    int	idx;
@@ -62,10 +66,14 @@ int	i, j;
 }
 
 /* sp_set_val -- sets the (i,j) entry of the sparse matrix A */
+#ifndef ANSI_C
 double	sp_set_val(A,i,j,val)
 SPMAT	*A;
 int	i, j;
 double	val;
+#else
+double	sp_set_val(SPMAT *A, int i, int j, double val)
+#endif
 {
    SPROW	*r;
    int	idx, idx2, new_len;
@@ -119,9 +127,13 @@ double	val;
 /* sp_mv_mlt -- sparse matrix/dense vector multiply
    -- result is in out, which is returned unless out==NULL on entry
    --  if out==NULL on entry then the result vector is created */
+#ifndef ANSI_C
 VEC	*sp_mv_mlt(A,x,out)
 SPMAT	*A;
 VEC	*x, *out;
+#else
+VEC	*sp_mv_mlt(const SPMAT *A, const VEC *x, VEC *out)
+#endif
 {
    int	i, j_idx, m, n, max_idx;
    Real	sum, *x_ve;
@@ -155,9 +167,13 @@ VEC	*x, *out;
 /* sp_vm_mlt -- sparse matrix/dense vector multiply from left
    -- result is in out, which is returned unless out==NULL on entry
    -- if out==NULL on entry then result vector is created & returned */
+#ifndef ANSI_C
 VEC	*sp_vm_mlt(A,x,out)
 SPMAT	*A;
 VEC	*x, *out;
+#else
+VEC	*sp_vm_mlt(const SPMAT *A, const VEC *x, VEC *out)
+#endif
 {
    int	i, j_idx, m, n, max_idx;
    Real	tmp, *x_ve, *out_ve;
@@ -194,8 +210,12 @@ VEC	*x, *out;
 /* sp_get -- get sparse matrix
    -- len is number of elements available for each row without
    allocating further memory */
+#ifndef ANSI_C
 SPMAT	*sp_get(m,n,maxlen)
 int	m, n, maxlen;
+#else
+SPMAT	*sp_get(int m, int n, int maxlen)
+#endif
 {
    SPMAT	*A;
    SPROW	*rows;
@@ -256,8 +276,12 @@ int	m, n, maxlen;
 
 
 /* sp_free -- frees up the memory for a sparse matrix */
+#ifndef ANSI_C
 int	sp_free(A)
 SPMAT	*A;
+#else
+int	sp_free(SPMAT *A)
+#endif
 {
    SPROW	*r;
    int	i;
@@ -316,8 +340,12 @@ SPMAT	*A;
    -- note that the max_len fields (etc) are no larger in the copy
    than necessary
    -- result is returned */
+#ifndef ANSI_C
 SPMAT	*sp_copy(A)
 SPMAT	*A;
+#else
+SPMAT	*sp_copy(const SPMAT *A)
+#endif
 {
    SPMAT	*out;
    SPROW	*row1, *row2;
@@ -372,8 +400,12 @@ SPMAT	*A;
 
 /* sp_col_access -- set column access path; i.e. nxt_row, nxt_idx fields
    -- returns A */
+#ifndef ANSI_C
 SPMAT	*sp_col_access(A)
 SPMAT	*A;
+#else
+SPMAT	*sp_col_access(SPMAT *A)
+#endif
 {
    int	i, j, j_idx, len, m, n;
    SPROW	*row;
@@ -413,8 +445,12 @@ SPMAT	*A;
 }
 
 /* sp_diag_access -- set diagonal access path(s) */
+#ifndef ANSI_C
 SPMAT	*sp_diag_access(A)
 SPMAT	*A;
+#else
+SPMAT	*sp_diag_access(SPMAT *A)
+#endif
 {
    int	i, m;
    SPROW	*row;
@@ -434,9 +470,13 @@ SPMAT	*A;
 }
 
 /* sp_m2dense -- convert a sparse matrix to a dense one */
+#ifndef ANSI_C
 MAT	*sp_m2dense(A,out)
 SPMAT	*A;
 MAT	*out;
+#else
+MAT	*sp_m2dense(const SPMAT *A, MAT *out)
+#endif
 {
    int	i, j_idx;
    SPROW	*row;
@@ -461,12 +501,16 @@ MAT	*out;
 
 
 /*  C = A+B, can be in situ */
+#ifndef ANSI_C
 SPMAT *sp_add(A,B,C)
 SPMAT *A, *B, *C;
+#else
+SPMAT *sp_add(const SPMAT *A, const SPMAT *B, SPMAT *C)
+#endif
 {
    int i, in_situ;
    SPROW *rc;
-   static SPROW *tmp;
+   STATIC SPROW *tmp = NULL;
 
    if ( ! A || ! B )
      error(E_NULL,"sp_add");
@@ -504,16 +548,24 @@ SPMAT *A, *B, *C;
 
    C->flag_col = C->flag_diag = FALSE;
 
+#ifdef	THREADSAFE
+   sprow_free(tmp);
+#endif
+
    return C;
 }
 
 /*  C = A-B, cannot be in situ */
+#ifndef ANSI_C
 SPMAT *sp_sub(A,B,C)
 SPMAT *A, *B, *C;
+#else
+SPMAT *sp_sub(const SPMAT *A, const SPMAT *B, SPMAT *C)
+#endif
 {
    int i, in_situ;
    SPROW *rc;
-   static SPROW *tmp;
+   STATIC SPROW *tmp = NULL;
    
    if ( ! A || ! B )
      error(E_NULL,"sp_sub");
@@ -550,18 +602,26 @@ SPMAT *A, *B, *C;
      }
 
    C->flag_col = C->flag_diag = FALSE;
-   
+
+#ifdef	THREADSAFE
+   sprow_free(tmp);
+#endif
+
    return C;
 }
 
 /*  C = A+alpha*B, cannot be in situ */
+#ifndef ANSI_C
 SPMAT *sp_mltadd(A,B,alpha,C)
 SPMAT *A, *B, *C;
 double alpha;
+#else
+SPMAT *sp_mltadd(const SPMAT *A, const SPMAT *B, double alpha, SPMAT *C)
+#endif
 {
    int i, in_situ;
    SPROW *rc;
-   static SPROW *tmp;
+   STATIC SPROW *tmp = NULL;
 
    if ( ! A || ! B )
      error(E_NULL,"sp_mltadd");
@@ -599,6 +659,10 @@ double alpha;
      }
    
    C->flag_col = C->flag_diag = FALSE;
+
+#ifdef	THREADSAFE
+   sprow_free(tmp);
+#endif
    
    return C;
 }
@@ -606,9 +670,13 @@ double alpha;
 
 
 /*  B = alpha*A, can be in situ */
+#ifndef ANSI_C
 SPMAT *sp_smlt(A,alpha,B)
 SPMAT *A, *B;
 double alpha;
+#else
+SPMAT *sp_smlt(const SPMAT *A, double alpha, SPMAT *B)
+#endif
 {
    int i;
 
@@ -629,8 +697,12 @@ double alpha;
 
 
 /* sp_zero -- zero all the (represented) elements of a sparse matrix */
+#ifndef ANSI_C
 SPMAT	*sp_zero(A)
 SPMAT	*A;
+#else
+SPMAT	*sp_zero(SPMAT *A)
+#endif
 {
    int	i, idx, len;
    row_elt	*elt;
@@ -651,12 +723,16 @@ SPMAT	*A;
 
 /* sp_copy2 -- copy sparse matrix (type 2) 
    -- keeps structure of the OUT matrix */
+#ifndef ANSI_C
 SPMAT	*sp_copy2(A,OUT)
 SPMAT	*A, *OUT;
+#else
+SPMAT	*sp_copy2(const SPMAT *A, SPMAT *OUT)
+#endif
 {
    int	i /* , idx, len1, len2 */;
    SPROW	*r1, *r2;
-   static SPROW	*scratch = (SPROW *)NULL;
+   STATIC SPROW	*scratch = (SPROW *)NULL;
    /* row_elt	*e1, *e2; */
    
    if ( ! A )
@@ -717,15 +793,24 @@ SPMAT	*A, *OUT;
    }
 
    sp_col_access(OUT);
+
+#ifdef	THREADSAFE
+   sprow_free(scratch);
+#endif
+
    return OUT;
 }
 
 /* sp_resize -- resize a sparse matrix
    -- don't destroying any contents if possible
    -- returns resized matrix */
+#ifndef ANSI_C
 SPMAT	*sp_resize(A,m,n)
 SPMAT	*A;
 int	m, n;
+#else
+SPMAT	*sp_resize(SPMAT *A, int m, int n)
+#endif
 {
    int	i, len;
    SPROW	*r;
@@ -806,9 +891,13 @@ int	m, n;
 
 
 /* sp_compact -- removes zeros and near-zeros from a sparse matrix */
+#ifndef ANSI_C
 SPMAT	*sp_compact(A,tol)
 SPMAT	*A;
 double	tol;
+#else
+SPMAT	*sp_compact(SPMAT *A, double tol)
+#endif
 {
    int	i, idx1, idx2;
    SPROW	*r;
@@ -840,6 +929,45 @@ double	tol;
    }
    
    return A;
+}
+
+/* sp_mlt (C) Copyright David Stewart and Fabrizio Novalis <novalis@mars.elet.polimi.it> */
+/* sp_mlt -- computes out = A*B and returns out */
+SPMAT   *sp_mlt(const SPMAT *A, const SPMAT *B, SPMAT *out)
+{
+  int     i, j, k, idx, cp;
+  SPROW   *rA, *rB, *rout, *rtemp;
+  double  valA;
+
+  if ( ! A || ! B )
+    error(E_NULL,"sp_mlt");
+  if ( A->n != B->m )
+    error(E_SIZES,"sp_mlt");
+  out = sp_resize(out,A->m,B->n);
+  sp_zero(out);
+  rtemp = sprow_get(B->n);
+  for ( i = 0; i < A->m; i++ ) /* per ogni riga */
+    {
+      rtemp = sprow_resize(rtemp,0,TYPE_SPROW);
+      rA = &(A->row[i]);
+      rout = &(out->row[i]);
+      for ( idx = 0; idx < rA->len; idx++ ) /* per ogni elemento != 0
+					       della riga corrente */
+	{
+	  j = rA->elt[idx].col;
+	  valA = rA->elt[idx].val;
+	  rB = &(B->row[j]);
+	  sprow_mltadd(rtemp,rB,valA,0,rout,TYPE_SPMAT);
+
+	  for ( cp = 0; cp < rout->len; cp++ )
+	    {
+	      rtemp->elt[cp].col = rout->elt[cp].col;
+	      rtemp->elt[cp].val = rout->elt[cp].val;
+	    }
+	  rtemp->len=rout->len;
+	}
+    }
+  return out;
 }
 
 /* varying number of arguments */

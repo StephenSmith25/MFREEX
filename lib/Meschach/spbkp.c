@@ -31,15 +31,15 @@
   Radical revision completed Mon 07th Dec 1992, 10:59:57 AM
 */
 
-static	char	rcsid[] = "$Id: spbkp.c,v 1.5 1994/01/13 05:44:35 des Exp $";
+static	char	rcsid[] = "$Id: spbkp.c,v 1.6 1996/08/20 19:53:10 stewart Exp $";
 
 #include	<stdio.h>
-#include        "sparse2.h"
 #include	<math.h>
+#include        "sparse2.h"
 
 
 #ifdef MALLOCDECL
-#include <stdlib.h>
+#include <malloc.h>
 #endif
 
 #define alpha	0.6403882032022076 /* = (1+sqrt(17))/8 */
@@ -53,9 +53,13 @@ static	char	rcsid[] = "$Id: spbkp.c,v 1.5 1994/01/13 05:44:35 des Exp $";
 /* unord_get_idx -- returns index (encoded if entry not allocated)
 	of the element of row r with column j
 	-- uses linear search */
+#ifndef ANSI_C
 int	unord_get_idx(r,j)
 SPROW	*r;
 int	j;
+#else
+int	unord_get_idx(SPROW *r, int j)
+#endif
 {
     int		idx;
     row_elt	*e;
@@ -73,9 +77,13 @@ int	j;
 
 /* unord_get_val -- returns value of the (i,j) entry of A
 	-- same assumptions as unord_get_idx() */
+#ifndef ANSI_C
 double	unord_get_val(A,i,j)
 SPMAT	*A;
 int	i, j;
+#else
+double	unord_get_val(SPMAT *A, int i, int j)
+#endif
 {
     SPROW	*r;
     int		idx;
@@ -96,9 +104,14 @@ int	i, j;
 	    
 /* bkp_swap_elt -- swaps the (i,j) with the (k,l) entry of sparse matrix
 	-- either or both of the entries may be unallocated */
+#ifndef ANSI_C
 static SPMAT	*bkp_swap_elt(A,i1,j1,idx1,i2,j2,idx2)
 SPMAT	*A;
 int	i1, j1, idx1, i2, j2, idx2;
+#else
+static SPMAT	*bkp_swap_elt(SPMAT *A, int i1, int j1, 
+			      int idx1, int i2, int j2, int idx2)
+#endif
 {
     int		tmp_row, tmp_idx;
     SPROW	*r1, *r2;
@@ -199,9 +212,13 @@ int	i1, j1, idx1, i2, j2, idx2;
 }
 
 /* bkp_bump_col -- bumps row and idx to next entry in column j */
+#ifndef ANSI_C
 row_elt	*bkp_bump_col(A, j, row, idx)
 SPMAT	*A;
 int	j, *row, *idx;
+#else
+row_elt	*bkp_bump_col(SPMAT *A, int j, int *row, int *idx)
+#endif
 {
     SPROW	*r;
     row_elt	*e;
@@ -228,9 +245,13 @@ int	j, *row, *idx;
 
 /* bkp_interchange -- swap rows/cols i and j (symmetric pivot)
 	-- uses just the upper triangular part */
+#ifndef ANSI_C
 SPMAT	*bkp_interchange(A, i1, i2)
 SPMAT	*A;
 int	i1, i2;
+#else
+SPMAT	*bkp_interchange(SPMAT *A, int i1, int i2)
+#endif
 {
     int		tmp_row, tmp_idx;
     int		row1, row2, idx1, idx2, tmp_row1, tmp_idx1, tmp_row2, tmp_idx2;
@@ -410,9 +431,13 @@ int	i1, i2;
 
 /* iv_min -- returns minimum of an integer vector
    -- sets index to the position in iv if index != NULL */
+#ifndef ANSI_C
 int	iv_min(iv,index)
 IVEC	*iv;
 int	*index;
+#else
+int	iv_min(IVEC *iv, int *index)
+#endif
 {
     int		i, i_min, min_val, tmp;
     
@@ -440,9 +465,13 @@ int	*index;
 
 /* max_row_col -- returns max { |A[j][k]| : k >= i, k != j, k != l } given j
 	using symmetry and only the upper triangular part of A */
+#ifndef ANSI_C
 static double max_row_col(A,i,j,l)
 SPMAT	*A;
 int	i, j, l;
+#else
+static double max_row_col(SPMAT *A, int i,int j, int l)
+#endif
 {
     int		row_num, idx;
     SPROW	*r;
@@ -492,8 +521,12 @@ int	i, j, l;
 }
 
 /* nonzeros -- counts non-zeros in A */
+#ifndef ANSI_C
 static int	nonzeros(A)
 SPMAT	*A;
+#else
+static int	nonzeros(const SPMAT *A)
+#endif
 {
     int		cnt, i;
 
@@ -508,8 +541,12 @@ SPMAT	*A;
 
 /* chk_col_access -- for spBKPfactor()
 	-- checks that column access path is OK */
+#ifndef ANSI_C
 int	chk_col_access(A)
 SPMAT	*A;
+#else
+int	chk_col_access(const SPMAT *A)
+#endif
 {
     int		cnt_nz, j, row, idx;
     SPROW	*r;
@@ -547,8 +584,12 @@ SPMAT	*A;
 }
 
 /* col_cmp -- compare two columns -- for sorting rows using qsort() */
+#ifndef ANSI_C
 static int	col_cmp(e1,e2)
 row_elt	*e1, *e2;
+#else
+static int	col_cmp(const row_elt *e1, const row_elt *e2)
+#endif
 {
     return e1->col - e2->col;
 }
@@ -558,10 +599,14 @@ row_elt	*e1, *e2;
    P is a permutation matrix, M lower triangular and D is block
    diagonal with blocks of size 1 or 2
    -- P is stored in pivot; blocks[i]==i iff D[i][i] is a block */
+#ifndef ANSI_C
 SPMAT	*spBKPfactor(A,pivot,blocks,tol)
 SPMAT	*A;
 PERM	*pivot, *blocks;
 double	tol;
+#else
+SPMAT	*spBKPfactor(SPMAT *A, PERM *pivot, PERM *blocks, double tol)
+#endif
 {
     int		i, j, k, l, n, onebyone, r;
     int		idx, idx1, idx_piv;
@@ -573,11 +618,11 @@ double	tol;
     row_elt	*e, *e1;
     Real	aii, aip1, aip1i;
     Real	det, max_j, max_l, s, t;
-    static IVEC	*scan_row = IVNULL, *scan_idx = IVNULL, *col_list = IVNULL,
+    STATIC IVEC	*scan_row = IVNULL, *scan_idx = IVNULL, *col_list = IVNULL,
 		*tmp_iv = IVNULL;
-    static IVEC *deg_list = IVNULL;
-    static IVEC	*orig_idx = IVNULL, *orig1_idx = IVNULL;
-    static PERM	*order = PNULL;
+    STATIC IVEC *deg_list = IVNULL;
+    STATIC IVEC	*orig_idx = IVNULL, *orig1_idx = IVNULL;
+    STATIC PERM	*order = PNULL;
 
     if ( ! A || ! pivot || ! blocks )
 	error(E_NULL,"spBKPfactor");
@@ -595,6 +640,8 @@ double	tol;
     ignore_deg = FALSE;
 
     deg_list = iv_resize(deg_list,n);
+    if ( order != NULL )
+      px_ident(order);
     order = px_resize(order,n);
     MEM_STAT_REG(deg_list,TYPE_IVEC);
     MEM_STAT_REG(order,TYPE_PERM);
@@ -1244,17 +1291,27 @@ double	tol;
 	qsort(A->row[i].elt,A->row[i].len,sizeof(row_elt),(int(*)())col_cmp);
     A->flag_col = A->flag_diag = FALSE;
 
+#ifdef	THREADSAFE
+    IV_FREE(scan_row);	IV_FREE(scan_idx);	IV_FREE(col_list);
+    IV_FREE(tmp_iv);	IV_FREE(deg_list);	IV_FREE(orig_idx);
+    IV_FREE(orig1_idx);	PX_FREE(order);
+#endif
     return A;
 }
 
 /* spBKPsolve -- solves A.x = b where A has been factored a la BKPfactor()
    -- returns x, which is created if NULL */
+#ifndef ANSI_C
 VEC	*spBKPsolve(A,pivot,block,b,x)
 SPMAT	*A;
 PERM	*pivot, *block;
 VEC	*b, *x;
+#else
+VEC	*spBKPsolve(SPMAT *A, PERM *pivot, PERM *block,
+		    const VEC *b, VEC *x)
+#endif
 {
-    static VEC	*tmp=VNULL;	/* dummy storage needed */
+    STATIC VEC	*tmp=VNULL;	/* dummy storage needed */
     int		i /* , j */, n, onebyone;
     int		row_num, idx;
     Real	a11, a12, a22, b1, b2, det, sum, *tmp_ve, tmp_diag;
@@ -1376,6 +1433,10 @@ VEC	*b, *x;
     /* printf("# BKPsolve: solving L^T part: tmp =\n");v_output(tmp); */
     /* and do final permutation */
     x = pxinv_vec(pivot,tmp,x);
+
+#ifdef	THREADSAFE
+    V_FREE(tmp);
+#endif
 
     return x;
 }

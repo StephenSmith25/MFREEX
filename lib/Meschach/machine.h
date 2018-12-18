@@ -2,8 +2,6 @@
 /* Any machine specific stuff goes here */
 /* Add details necessary for your own installation here! */
 
-/* RCS id: $Id: machine.h.in,v 1.2 1994/03/13 23:07:30 des Exp $ */
-
 /* This is for use with "configure" -- if you are not using configure
 	then use machine.van for the "vanilla" version of machine.h */
 
@@ -16,42 +14,16 @@
 
 /* #undef MALLOCDECL */
 #define NOT_SEGMENTED 1
-#define HAVE_MEMORY_H 1
 /* #undef HAVE_COMPLEX_H */
 #define HAVE_MALLOC_H 1
 #define STDC_HEADERS 1
-/* #undef HAVE_BCOPY */
-/* #undef HAVE_BZERO */
+#define HAVE_BCOPY 1
+#define HAVE_BZERO 1
 #define CHAR0ISDBL0 1
-#define WORDS_BIGENDIAN 1
-/* #undef U_INT_DEF */
+/* #undef WORDS_BIGENDIAN */
+#define U_INT_DEF 1
 #define VARARGS 1
-#define HAVE_PROTOTYPES 1
-/* #undef HAVE_PROTOTYPES_IN_STRUCT */
 
-/* for inclusion into C++ files */
-#ifdef __cplusplus
-#define ANSI_C 1
-#ifndef HAVE_PROTOTYPES 
-#define HAVE_PROTOTYPES 1
-#endif
-#ifndef HAVE_PROTOTYPES_IN_STRUCT
-#define HAVE_PROTOTYPES_IN_STRUCT 1
-#endif
-#endif /* __cplusplus */
-
-/* example usage: VEC *PROTO(v_get,(int dim)); */
-#ifdef HAVE_PROTOTYPES
-#define	PROTO(name,args)	name args
-#else
-#define PROTO(name,args)	name()
-#endif /* HAVE_PROTOTYPES */
-#ifdef HAVE_PROTOTYPES_IN_STRUCT
-/* PROTO_() is to be used instead of PROTO() in struct's and typedef's */
-#define	PROTO_(name,args)	name args
-#else
-#define PROTO_(name,args)	name()
-#endif /* HAVE_PROTOTYPES_IN_STRUCT */
 
 /* for basic or larger versions */
 /* #undef COMPLEX 1 */
@@ -60,6 +32,8 @@
 /* for loop unrolling */
 /* #undef VUNROLL */
 /* #undef MUNROLL */
+#define VUNROLL
+#define MUNROLL 
 
 /* for segmented memory */
 #ifndef NOT_SEGMENTED
@@ -69,7 +43,7 @@
 /* if the system has malloc.h */
 #ifdef HAVE_MALLOC_H
 #define	MALLOCDECL	1
-#include	<stdlib.h>
+#include	<malloc.h>
 #endif
 
 /* any compiler should have this header */
@@ -122,6 +96,7 @@
 /* If prototypes are available & ANSI_C not yet defined, then define it,
 	but don't include any header files as the proper ANSI C headers
         aren't here */
+#define HAVE_PROTOTYPES 1
 #ifdef HAVE_PROTOTYPES
 #ifndef ANSI_C
 #define ANSI_C  1
@@ -206,6 +181,11 @@
 #ifndef MAX_RAND
 #define	MAX_RAND ((double)(M_MAX_INT))
 #endif
+#endif
+
+/* for non-ANSI systems */
+#ifndef HUGE_VAL
+#define HUGE_VAL HUGE
 #endif
 
 

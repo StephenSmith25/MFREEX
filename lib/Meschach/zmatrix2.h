@@ -48,6 +48,7 @@ extern ZVEC	*zhhvec(ZVEC *,int,Real *,ZVEC *,complex *);
 extern ZVEC	*zhhtrvec(ZVEC *,double,int,ZVEC *,ZVEC *);
 extern ZMAT	*zhhtrrows(ZMAT *,int,int,ZVEC *,double);
 extern ZMAT	*zhhtrcols(ZMAT *,int,int,ZVEC *,double);
+extern ZMAT	*_zhhtrcols(ZMAT *,int,int,ZVEC *,double,ZVEC *);
 extern ZMAT     *zHfactor(ZMAT *,ZVEC *);
 extern ZMAT     *zHQunpack(ZMAT *,ZVEC *,ZMAT *,ZMAT *);
 
@@ -88,6 +89,7 @@ extern ZVEC	*zhhvec();
 extern ZVEC	*zhhtrvec();
 extern ZMAT	*zhhtrrows();
 extern ZMAT     *zhhtrcols();
+extern ZMAT     *_zhhtrcols();
 extern ZMAT     *zHfactor();
 extern ZMAT     *zHQunpack();
 
@@ -112,7 +114,7 @@ extern ZMAT	*zrot_rows(), *zrot_cols();
 extern ZVEC	*rot_zvec();
 extern ZMAT	*zschur();
 /* extern ZMAT	*schur_vecs(); */
-#endif
+#endif /* ANSI_C */
 
-#endif
+#endif /* ZMATRIX2H */
 

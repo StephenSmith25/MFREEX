@@ -41,9 +41,9 @@
 static	char	rcsid[] = "$Id: zqrfctr.c,v 1.1 1994/01/13 04:21:22 des Exp $";
 
 #include	<stdio.h>
+#include	<math.h>
 #include	"zmatrix.h"
 #include	"zmatrix2.h" 
-#include	<math.h>
 
 
 #define	is_zero(z)	((z).re == 0.0 && (z).im == 0.0)
@@ -65,9 +65,9 @@ ZMAT	*zQRfactor(A,diag)
 ZMAT	*A;
 ZVEC	*diag;
 {
-    u_int	k,limit;
+    unsigned int	k,limit;
     Real	beta;
-    static	ZVEC	*tmp1=ZVNULL;
+    STATIC	ZVEC	*tmp1=ZVNULL, *w=ZVNULL;
     
     if ( ! A || ! diag )
 	error(E_NULL,"zQRfactor");
@@ -76,20 +76,24 @@ ZVEC	*diag;
 	error(E_SIZES,"zQRfactor");
     
     tmp1 = zv_resize(tmp1,A->m);
+    w    = zv_resize(w,   A->n);
     MEM_STAT_REG(tmp1,TYPE_ZVEC);
+    MEM_STAT_REG(w,   TYPE_ZVEC);
     
     for ( k=0; k<limit; k++ )
     {
 	/* get H/holder vector for the k-th column */
 	zget_col(A,k,tmp1);
-	/* hhvec(tmp1,k,&beta->ve[k],tmp1,&A->me[k][k]); */
 	zhhvec(tmp1,k,&beta,tmp1,&A->me[k][k]);
 	diag->ve[k] = tmp1->ve[k];
 	
 	/* apply H/holder vector to remaining columns */
-	/* hhtrcols(A,k,k+1,tmp1,beta->ve[k]); */
-	tracecatch(zhhtrcols(A,k,k+1,tmp1,beta),"zQRfactor");
+	tracecatch(_zhhtrcols(A,k,k+1,tmp1,beta,w),"zQRfactor");
     }
+
+#ifdef	THREADSAFE
+    ZV_FREE(tmp1);	ZV_FREE(w);
+#endif
 
     return (A);
 }
@@ -102,9 +106,9 @@ ZMAT	*A;
 ZVEC	*diag;
 PERM	*px;
 {
-    u_int	i, i_max, j, k, limit;
-    static	ZVEC	*tmp1=ZVNULL, *tmp2=ZVNULL;
-    static	VEC	*gamma=VNULL;
+    unsigned int	i, i_max, j, k, limit;
+    STATIC	ZVEC	*tmp1=ZVNULL, *tmp2=ZVNULL, *w=ZVNULL;
+    STATIC	VEC	*gamma=VNULL;
     Real 	beta;
     Real	maxgamma, sum, tmp;
     complex	ztmp;
@@ -118,9 +122,11 @@ PERM	*px;
     tmp1 = zv_resize(tmp1,A->m);
     tmp2 = zv_resize(tmp2,A->m);
     gamma = v_resize(gamma,A->n);
+    w    = zv_resize(w,A->n);
     MEM_STAT_REG(tmp1,TYPE_ZVEC);
     MEM_STAT_REG(tmp2,TYPE_ZVEC);
     MEM_STAT_REG(gamma,TYPE_VEC);
+    MEM_STAT_REG(w,   TYPE_ZVEC);
     
     /* initialise gamma and px */
     for ( j=0; j<A->n; j++ )
@@ -169,14 +175,16 @@ PERM	*px;
 	diag->ve[k] = tmp1->ve[k];
 	
 	/* apply H/holder vector to remaining columns */
-	/* hhtrcols(A,k,k+1,tmp1,beta->ve[k]); */
-	zhhtrcols(A,k,k+1,tmp1,beta);
+	_zhhtrcols(A,k,k+1,tmp1,beta,w);
 	
 	/* update gamma values */
 	for ( j=k+1; j<A->n; j++ )
 	    gamma->ve[j] -= square(A->me[k][j].re)+square(A->me[k][j].im);
     }
 
+#ifdef	THREADSAFE
+    ZV_FREE(tmp1);	ZV_FREE(tmp2);	V_FREE(gamma);	ZV_FREE(w);
+#endif
     return (A);
 }
 
@@ -187,7 +195,7 @@ ZVEC	*_zQsolve(QR,diag,b,x,tmp)
 ZMAT	*QR;
 ZVEC	*diag, *b, *x, *tmp;
 {
-    u_int	dynamic;
+    unsigned int	dynamic;
     int		k, limit;
     Real	beta, r_ii, tmp_val;
     
@@ -227,8 +235,8 @@ ZMAT	*zmakeQ(QR,diag,Qout)
 ZMAT	*QR,*Qout;
 ZVEC	*diag;
 {
-    static	ZVEC	*tmp1=ZVNULL,*tmp2=ZVNULL;
-    u_int	i, limit;
+    STATIC	ZVEC	*tmp1=ZVNULL,*tmp2=ZVNULL;
+    unsigned int	i, limit;
     Real	beta, r_ii, tmp_val;
     int	j;
 
@@ -267,6 +275,10 @@ ZVEC	*diag;
 	zset_col(Qout,i,tmp1);
     }
 
+#ifdef	THREADSAFE
+    ZV_FREE(tmp1);	ZV_FREE(tmp2);
+#endif
+
     return (Qout);
 }
 
@@ -275,7 +287,7 @@ ZVEC	*diag;
 ZMAT	*zmakeR(QR,Rout)
 ZMAT	*QR,*Rout;
 {
-    u_int	i,j;
+    unsigned int	i,j;
     
     if ( QR==ZMNULL )
 	error(E_NULL,"zmakeR");
@@ -295,7 +307,7 @@ ZMAT	*QR;
 ZVEC	*diag, *b, *x;
 {
     int	limit;
-    static	ZVEC	*tmp = ZVNULL;
+    STATIC	ZVEC	*tmp = ZVNULL;
     
     if ( ! QR || ! diag || ! b )
 	error(E_NULL,"zQRsolve");
@@ -310,6 +322,10 @@ ZVEC	*diag, *b, *x;
     x = zUsolve(QR,x,x,0.0);
     x = zv_resize(x,QR->n);
 
+#ifdef	THREADSAFE
+    ZV_FREE(tmp);
+#endif
+
     return x;
 }
 
@@ -322,7 +338,7 @@ ZVEC	*diag, *b, *x;
 {
     int		j, limit;
     Real	beta, r_ii, tmp_val;
-    static	ZVEC	*tmp = ZVNULL;
+    STATIC	ZVEC	*tmp = ZVNULL;
     
     if ( ! QR || ! diag || ! b )
 	error(E_NULL,"zQRAsolve");
@@ -336,7 +352,7 @@ ZVEC	*diag, *b, *x;
 
     tmp = zv_resize(tmp,x->dim);
     MEM_STAT_REG(tmp,TYPE_ZVEC);
-    printf("zQRAsolve: tmp->dim = %d, x->dim = %d\n", tmp->dim, x->dim);
+    /*  printf("zQRAsolve: tmp->dim = %d, x->dim = %d\n", tmp->dim, x->dim); */
     
     /* apply H/h transforms in reverse order */
     for ( j=limit-1; j>=0; j-- )
@@ -350,6 +366,9 @@ ZVEC	*diag, *b, *x;
 	zhhtrvec(tmp,beta,j,x,x);
     }
 
+#ifdef	THREADSAFE
+    ZV_FREE(tmp);
+#endif
 
     return x;
 }
@@ -425,13 +444,13 @@ ZVEC	*x, *out;
 	-- note that as Q does not affect the 2-norm condition number,
 		it is not necessary to pass the diag, beta (or pivot) vectors
 	-- generates a lower bound on the true condition number
-	-- if the matrix is exactly singular, HUGE is returned
+	-- if the matrix is exactly singular, HUGE_VAL is returned
 	-- note that QRcondest() is likely to be more reliable for
 		matrices factored using QRCPfactor() */
 double	zQRcondest(QR)
 ZMAT	*QR;
 {
-    static	ZVEC	*y=ZVNULL;
+    STATIC	ZVEC	*y=ZVNULL;
     Real	norm, norm1, norm2, tmp1, tmp2;
     complex	sum, tmp;
     int		i, j, limit;
@@ -443,7 +462,7 @@ ZMAT	*QR;
     for ( i = 0; i < limit; i++ )
 	/* if ( QR->me[i][i] == 0.0 ) */
 	if ( is_zero(QR->me[i][i]) )
-	    return HUGE;
+	    return HUGE_VAL;
 
     y = zv_resize(y,limit);
     MEM_STAT_REG(y,TYPE_ZVEC);
@@ -489,7 +508,7 @@ ZMAT	*QR;
 	for ( j = i+1; j < limit; j++ )
 	    sum = zadd(sum,zmlt(QR->me[i][j],y->ve[j]));
 	if ( is_zero(QR->me[i][i]) )
-	    return HUGE;
+	    return HUGE_VAL;
 	tmp = zdiv(sum,QR->me[i][i]);
 	if ( is_zero(tmp) )
 	{
@@ -519,6 +538,10 @@ ZMAT	*QR;
     norm2 = sqrt(tmp1)*sqrt(tmp2);
 
     /* printf("QRcondest: norm1 = %g, norm2 = %g\n",norm1,norm2); */
+
+#ifdef	THREADSAFE
+    ZV_FREE(y);
+#endif
 
     return norm1*norm2;
 }

@@ -34,18 +34,22 @@
 */
 
 /* givens.c 1.2 11/25/87 */
-static	char	rcsid[] = "$Id: givens.c,v 1.2 1994/01/13 05:39:42 des Exp $";
+static	char	rcsid[] = "$Id: givens.c,v 1.3 1995/03/27 15:41:15 des Exp $";
 
 #include	<stdio.h>
+#include	<math.h>
 #include	"matrix.h"
 #include        "matrix2.h"
-#include	<math.h>
 
 /* givens -- returns c,s parameters for Givens rotation to
 		eliminate y in the vector [ x y ]' */
+#ifndef ANSI_C
 void	givens(x,y,c,s)
 double  x,y;
 Real	*c,*s;
+#else
+void	givens(double x, double y, Real *c, Real *s)
+#endif
 {
 	Real	norm;
 
@@ -57,10 +61,15 @@ Real	*c,*s;
 }
 
 /* rot_vec -- apply Givens rotation to x's i & k components */
+#ifndef ANSI_C
 VEC	*rot_vec(x,i,k,c,s,out)
 VEC	*x,*out;
-u_int	i,k;
+unsigned int	i,k;
 double	c,s;
+#else
+VEC	*rot_vec(const VEC *x,unsigned int i,unsigned int k, double c,double s,
+		 VEC *out)
+#endif
 {
 	Real	temp;
 
@@ -81,19 +90,25 @@ double	c,s;
 }
 
 /* rot_rows -- premultiply mat by givens rotation described by c,s */
+#ifndef ANSI_C
 MAT	*rot_rows(mat,i,k,c,s,out)
 MAT	*mat,*out;
-u_int	i,k;
+unsigned int	i,k;
 double	c,s;
+#else
+MAT	*rot_rows(const MAT *mat, unsigned int i, unsigned int k,
+		  double c, double s, MAT *out)
+#endif
 {
-	u_int	j;
+	unsigned int	j;
 	Real	temp;
 
 	if ( mat==(MAT *)NULL )
 		error(E_NULL,"rot_rows");
 	if ( i >= mat->m || k >= mat->m )
 		error(E_RANGE,"rot_rows");
-	out = m_copy(mat,out);
+	if ( mat != out )
+		out = m_copy(mat,m_resize(out,mat->m,mat->n));
 
 	for ( j=0; j<mat->n; j++ )
 	{
@@ -109,19 +124,25 @@ double	c,s;
 }
 
 /* rot_cols -- postmultiply mat by givens rotation described by c,s */
+#ifndef ANSI_C
 MAT	*rot_cols(mat,i,k,c,s,out)
 MAT	*mat,*out;
-u_int	i,k;
+unsigned int	i,k;
 double	c,s;
+#else
+MAT	*rot_cols(const MAT *mat,unsigned int i,unsigned int k,
+		  double c, double s, MAT *out)
+#endif
 {
-	u_int	j;
+	unsigned int	j;
 	Real	temp;
 
 	if ( mat==(MAT *)NULL )
 		error(E_NULL,"rot_cols");
 	if ( i >= mat->n || k >= mat->n )
 		error(E_RANGE,"rot_cols");
-	out = m_copy(mat,out);
+	if ( mat != out )
+		out = m_copy(mat,m_resize(out,mat->m,mat->n));
 
 	for ( j=0; j<mat->m; j++ )
 	{

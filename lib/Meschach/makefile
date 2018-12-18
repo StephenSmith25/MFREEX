@@ -4,7 +4,7 @@
 #
 # Copyright (C) David Stewart & Zbigniew Leyk 1993
 #
-# $Id: makefile.in,v 1.4 1994/03/14 01:24:06 des Exp $
+# $Id: $
 #
 
 srcdir = .
@@ -13,10 +13,12 @@ VPATH = .
 CC = cc
 
 DEFS = -DHAVE_CONFIG_H
-LIBS =  -lm
-RANLIB = :
+LIBS =  -lm 
+RANLIB = ranlib
 
 
+# CFLAGS = -O -g
+# CFLAGS = -pg -g
 CFLAGS = -O
 
 
@@ -24,7 +26,7 @@ CFLAGS = -O
 	$(CC) -c $(CFLAGS) $(DEFS) $<
 
 SHELL = /bin/sh
-MES_PAK = mesch12b
+MES_PAK = mesch12a
 TAR = tar
 SHAR = stree -u
 ZIP = zip -r -l
@@ -65,45 +67,35 @@ OTHERS = dmacheps.c extras.c fmacheps.c maxint.c  makefile.in \
 
 
 # Different configurations
-# the dependencies **between** the parts are for dmake
 all:  part1 part2 part3 zpart1 zpart2 
-part2: part1
-part3: part2
 basic: part1 part2
 sparse: part1 part2 part3 
-zpart2: zpart1
 complex: part1 part2 zpart1 zpart2
 
 
 $(LIST1): $(HBASE)
 part1: $(LIST1)
-	ar ru meschach.a $(LIST1)
-	$(RANLIB) meschach.a
+	ar ru meschach.a $(LIST1); $(RANLIB) meschach.a
 
 $(LIST2): $(HBASE) matrix2.h
 part2: $(LIST2)
-	ar ru meschach.a $(LIST2)
-	$(RANLIB) meschach.a
+	ar ru meschach.a $(LIST2); $(RANLIB) meschach.a
 
 $(LIST3): $(HBASE) sparse.h sparse2.h
 part3: $(LIST3)
-	ar ru meschach.a $(LIST3)
-	$(RANLIB) meschach.a
+	ar ru meschach.a $(LIST3); $(RANLIB) meschach.a
 
 $(ZLIST1): $(HBASDE) zmatrix.h
 zpart1: $(ZLIST1)
-	ar ru meschach.a $(ZLIST1)
-	$(RANLIB) meschach.a
+	ar ru meschach.a $(ZLIST1); $(RANLIB) meschach.a
 
 $(ZLIST2): $(HBASE) zmatrix.h zmatrix2.h 
 zpart2: $(ZLIST2)
-	ar ru meschach.a $(ZLIST2)
-	$(RANLIB) meschach.a
+	ar ru meschach.a $(ZLIST2); $(RANLIB) meschach.a
 
 $(OLDLIST): $(HBASE) sparse.h sparse2.h 
 oldpart: $(OLDLIST)
-	ar ru meschach.a $(OLDLIST)
-	$(RANLIB) meschach.a
+	ar ru meschach.a $(OLDLIST); $(RANLIB) meschach.a
 
 
 
@@ -177,11 +169,6 @@ clean:
 cleanup:
 	/bin/rm -f *.o core asx5213a.mat iotort.dat *.a 
 
-realclean:
-	/bin/rm -f *.o core asx5213a.mat iotort.dat *.a
-	/bin/rm -f torture sptort ztorture memtort itertort mfuntort iotort
-	/bin/rm -f makefile machine.h config.status maxint macheps
- 
 alltorture: torture sptort ztorture memtort itertort mfuntort iotort
 
 torture:torture.o meschach.a

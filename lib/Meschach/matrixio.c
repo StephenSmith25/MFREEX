@@ -43,8 +43,12 @@ static char line[MAXLINE];
   **************************************************************************/
 /* skipjunk -- skips white spaces and strings of the form #....\n
    Here .... is a comment string */
+#ifndef ANSI_C
 int     skipjunk(fp)
 FILE    *fp;
+#else
+int	skipjunk(FILE *fp)
+#endif
 {
      int        c;
      
@@ -69,9 +73,18 @@ FILE    *fp;
      return 0;
 }
 
+/* m_finput -- input matrix
+	-- input from a terminal is handled interactively
+	-- batch/file input has the same format as produced by m_foutput
+	except that whitespace and comments ("#..\n") are skipped
+	-- returns a, which is created if a == NULL on entry */
+#ifndef ANSI_C
 MAT     *m_finput(fp,a)
 FILE    *fp;
 MAT     *a;
+#else
+MAT	*m_finput(FILE *fp, MAT *a)
+#endif
 {
      MAT        *im_finput(),*bm_finput();
      
@@ -82,12 +95,16 @@ MAT     *a;
 }
 
 /* im_finput -- interactive input of matrix */
+#ifndef ANSI_C
 MAT     *im_finput(fp,mat)
 FILE    *fp;
 MAT     *mat;
+#else
+MAT     *im_finput(FILE *fp,MAT *mat)
+#endif
 {
      char       c;
-     u_int      i, j, m, n, dynamic;
+     unsigned int      i, j, m, n, dynamic;
      /* dynamic set to TRUE if memory allocated here */
      
      /* get matrix size */
@@ -144,11 +161,15 @@ MAT     *mat;
 }
 
 /* bm_finput -- batch-file input of matrix */
+#ifndef ANSI_C
 MAT     *bm_finput(fp,mat)
 FILE    *fp;
 MAT     *mat;
+#else
+MAT     *bm_finput(FILE *fp,MAT *mat)
+#endif
 {
-     u_int      i,j,m,n,dummy;
+     unsigned int      i,j,m,n,dummy;
      int        io_code;
      
      /* get dimension */
@@ -179,9 +200,18 @@ MAT     *mat;
      return (mat);
 }
 
+/* px_finput -- inputs permutation from file/stream fp
+	-- input from a terminal is handled interactively
+	-- batch/file input has the same format as produced by px_foutput
+	except that whitespace and comments ("#..\n") are skipped
+	-- returns px, which is created if px == NULL on entry */
+#ifndef ANSI_C
 PERM    *px_finput(fp,px)
 FILE    *fp;
 PERM    *px;
+#else
+PERM    *px_finput(FILE *fp,PERM *px)
+#endif
 {
      PERM       *ipx_finput(),*bpx_finput();
      
@@ -193,12 +223,16 @@ PERM    *px;
 
 
 /* ipx_finput -- interactive input of permutation */
+#ifndef ANSI_C
 PERM    *ipx_finput(fp,px)
 FILE    *fp;
 PERM    *px;
+#else
+PERM    *ipx_finput(FILE *fp,PERM *px)
+#endif
 {
-     u_int      i,j,size,dynamic; /* dynamic set if memory allocated here */
-     u_int      entry,ok;
+     unsigned int      i,j,size,dynamic; /* dynamic set if memory allocated here */
+     unsigned int      entry,ok;
      
      /* get permutation size */
      if ( px!=(PERM *)NULL && px->size<MAXDIM )
@@ -247,11 +281,15 @@ PERM    *px;
 }
 
 /* bpx_finput -- batch-file input of permutation */
+#ifndef ANSI_C
 PERM    *bpx_finput(fp,px)
 FILE    *fp;
 PERM    *px;
+#else
+PERM    *bpx_finput(FILE *fp,PERM *px)
+#endif
 {
-     u_int      i,j,size,entry,ok;
+     unsigned int      i,j,size,entry,ok;
      int        io_code;
      
      /* get size of permutation */
@@ -288,10 +326,18 @@ PERM    *px;
      return (px);
 }
 
-
+/* v_finput -- inputs vector from file/stream fp
+	-- input from a terminal is handled interactively
+	-- batch/file input has the same format as produced by px_foutput
+	except that whitespace and comments ("#..\n") are skipped
+	-- returns x, which is created if x == NULL on entry */
+#ifndef ANSI_C
 VEC     *v_finput(fp,x)
 FILE    *fp;
 VEC     *x;
+#else
+VEC     *v_finput(FILE *fp,VEC *x)
+#endif
 {
      VEC        *ifin_vec(),*bfin_vec();
      
@@ -302,11 +348,15 @@ VEC     *x;
 }
 
 /* ifin_vec -- interactive input of vector */
+#ifndef ANSI_C
 VEC     *ifin_vec(fp,vec)
 FILE    *fp;
 VEC     *vec;
+#else
+VEC     *ifin_vec(FILE *fp,VEC *vec)
+#endif
 {
-     u_int      i,dim,dynamic;  /* dynamic set if memory allocated here */
+     unsigned int      i,dim,dynamic;  /* dynamic set if memory allocated here */
      
      /* get vector dimension */
      if ( vec != (VEC *)NULL && vec->dim<MAXDIM )
@@ -347,11 +397,15 @@ VEC     *vec;
 }
 
 /* bfin_vec -- batch-file input of vector */
+#ifndef ANSI_C
 VEC     *bfin_vec(fp,vec)
 FILE    *fp;
 VEC     *vec;
+#else
+VEC     *bfin_vec(FILE *fp,VEC *vec)
+#endif
 {
-     u_int      i,dim;
+     unsigned int      i,dim;
      int        io_code;
      
      /* get dimension */
@@ -380,12 +434,18 @@ VEC     *vec;
 /**************************************************************************
   Output routines
   **************************************************************************/
-static char    *format = "%14.9g ";
+static const char    *format = "%14.9g ";
 
+/* setformat -- sets the printf format string for the Meschach I/O operations
+	-- returns the previous format string */
+#ifndef ANSI_C
 char	*setformat(f_string)
 char    *f_string;
+#else
+const char	*setformat(const char *f_string)
+#endif
 {
-    char	*old_f_string;
+    const char	*old_f_string;
     old_f_string = format;
     if ( f_string != (char *)NULL && *f_string != '\0' )
 	format = f_string;
@@ -393,11 +453,16 @@ char    *f_string;
     return old_f_string;
 }
 
+/* m_foutput -- prints a representation of the matrix a onto file/stream fp */
+#ifndef ANSI_C
 void    m_foutput(fp,a)
 FILE    *fp;
 MAT     *a;
+#else
+void    m_foutput(FILE *fp, const MAT *a)
+#endif
 {
-     u_int      i, j, tmp;
+     unsigned int      i, j, tmp;
      
      if ( a == (MAT *)NULL )
      {  fprintf(fp,"Matrix: NULL\n");   return;         }
@@ -416,16 +481,21 @@ MAT     *a;
      }
 }
 
+/* px_foutput -- prints a representation of px onto file/stream fp */
+#ifndef ANSI_C
 void    px_foutput(fp,px)
 FILE    *fp;
 PERM    *px;
+#else
+void	px_foutput(FILE *fp, const PERM *px)
+#endif
 {
-     u_int      i;
+     unsigned int      i;
      
      if ( px == (PERM *)NULL )
      {  fprintf(fp,"Permutation: NULL\n");      return;         }
      fprintf(fp,"Permutation: size: %u\n",px->size);
-     if ( px->pe == (u_int *)NULL )
+     if ( px->pe == (unsigned int *)NULL )
      {  fprintf(fp,"NULL\n");   return;         }
      for ( i=0; i<px->size; i++ )
 	if ( ! (i % 8) && i != 0 )
@@ -435,11 +505,16 @@ PERM    *px;
      fprintf(fp,"\n");
 }
 
+/* v_foutput -- prints a representation of x onto file/stream fp */
+#ifndef ANSI_C
 void    v_foutput(fp,x)
 FILE    *fp;
 VEC     *x;
+#else
+void	v_foutput(FILE *fp, const VEC *x)
+#endif
 {
-     u_int      i, tmp;
+     unsigned int      i, tmp;
      
      if ( x == (VEC *)NULL )
      {  fprintf(fp,"Vector: NULL\n");   return;         }
@@ -454,12 +529,17 @@ VEC     *x;
      if ( tmp % 5 != 0 )        putc('\n',fp);
 }
 
-
+/* m_dump -- prints a dump of all pointers and data in a onto fp
+	-- suitable for low-level debugging */
+#ifndef ANSI_C
 void    m_dump(fp,a)
 FILE    *fp;
 MAT     *a;
+#else
+void	m_dump(FILE *fp, const MAT *a)
+#endif
 {
-	u_int   i, j, tmp;
+	unsigned int   i, j, tmp;
      
      if ( a == (MAT *)NULL )
      {  fprintf(fp,"Matrix: NULL\n");   return;         }
@@ -482,11 +562,17 @@ MAT     *a;
      }
 }
 
+/* px_dump --  prints a dump of all pointers and data in a onto fp
+	-- suitable for low-level debugging */
+#ifndef ANSI_C
 void    px_dump(fp,px)
 FILE    *fp;
 PERM    *px;
+#else
+void	px_dump(FILE *fp, const PERM *px)
+#endif
 {
-     u_int      i;
+     unsigned int      i;
      
      if ( ! px )
      {  fprintf(fp,"Permutation: NULL\n");      return;         }
@@ -500,11 +586,17 @@ PERM    *px;
 }
 
 
+/* v_dump --  prints a dump of all pointers and data in a onto fp
+	-- suitable for low-level debugging */
+#ifndef ANSI_C
 void    v_dump(fp,x)
 FILE    *fp;
 VEC     *x;
+#else
+void	v_dump(FILE *fp, const VEC *x)
+#endif
 {
-     u_int      i, tmp;
+     unsigned int      i, tmp;
      
      if ( ! x )
      {  fprintf(fp,"Vector: NULL\n");   return;         }
@@ -519,4 +611,162 @@ VEC     *x;
      }
      if ( tmp % 5 != 0 )        putc('\n',fp);
 }
+
+
+/* iv_foutput -- print a representation of iv on stream fp */
+#ifndef ANSI_C
+void	iv_foutput(fp,iv)
+FILE	*fp;
+IVEC	*iv;
+#else
+void	iv_foutput(FILE *fp, const IVEC *iv)
+#endif
+{
+   int	i;
+   
+   fprintf(fp,"IntVector: ");
+   if ( iv == IVNULL )
+   {
+      fprintf(fp,"**** NULL ****\n");
+      return;
+   }
+   fprintf(fp,"dim: %d\n",iv->dim);
+   for ( i = 0; i < iv->dim; i++ )
+   {
+      if ( (i+1) % 8 )
+	fprintf(fp,"%8d ",iv->ive[i]);
+      else
+	fprintf(fp,"%8d\n",iv->ive[i]);
+   }
+   if ( i % 8 )
+     fprintf(fp,"\n");
+}
+
+
+/* iv_finput -- input integer vector from stream fp
+	-- input from a terminal is handled interactively
+	-- batch/file input has the same format as produced by
+	iv_foutput except that whitespace and comments ("#...\n") 
+	are skipped */
+#ifndef ANSI_C
+IVEC	*iv_finput(fp,x)
+FILE	*fp;
+IVEC	*x;
+#else
+IVEC	*iv_finput(FILE *fp, IVEC *x)
+#endif
+{
+   IVEC	*iiv_finput(),*biv_finput();
+   
+   if ( isatty(fileno(fp)) )
+     return iiv_finput(fp,x);
+   else
+     return biv_finput(fp,x);
+}
+
+/* iiv_finput -- interactive input of IVEC iv */
+#ifndef ANSI_C
+IVEC	*iiv_finput(fp,iv)
+FILE	*fp;
+IVEC	*iv;
+#else
+IVEC	*iiv_finput(FILE *fp, IVEC *iv)
+#endif
+{
+   unsigned int	i,dim,dynamic;	/* dynamic set if memory allocated here */
+   
+   /* get dimension */
+   if ( iv != (IVEC *)NULL && iv->dim<MAXDIM )
+   {	dim = iv->dim;	dynamic = FALSE;	}
+   else
+   {
+      dynamic = TRUE;
+      do
+      {
+	 fprintf(stderr,"IntVector: dim: ");
+	 if ( fgets(line,MAXLINE,fp)==NULL )
+	   error(E_INPUT,"iiv_finput");
+      } while ( sscanf(line,"%u",&dim)<1 || dim>MAXDIM );
+      iv = iv_get(dim);
+   }
+   
+   /* input elements */
+   for ( i=0; i<dim; i++ )
+     do
+     {
+      redo:
+	fprintf(stderr,"entry %u: ",i);
+	if ( !dynamic )
+	  fprintf(stderr,"old: %-9d  new: ",iv->ive[i]);
+	if ( fgets(line,MAXLINE,fp)==NULL )
+	  error(E_INPUT,"iiv_finput");
+	if ( (*line == 'b' || *line == 'B') && i > 0 )
+	{	i--;	dynamic = FALSE;	goto redo;	   }
+	if ( (*line == 'f' || *line == 'F') && i < dim-1 )
+	{	i++;	dynamic = FALSE;	goto redo;	   }
+     } while ( *line=='\0' || sscanf(line,"%d",&iv->ive[i]) < 1 );
+   
+   return (iv);
+}
+
+/* biv_finput -- batch-file input of IVEC iv */
+#ifndef ANSI_C
+IVEC	*biv_finput(fp,iv)
+FILE	*fp;
+IVEC	*iv;
+#else
+IVEC	*biv_finput(FILE *fp, IVEC *iv)
+#endif
+{
+   unsigned int	i,dim;
+   int	io_code;
+   
+   /* get dimension */
+   skipjunk(fp);
+   if ((io_code=fscanf(fp," IntVector: dim:%u",&dim)) < 1 ||
+       dim>MAXDIM )
+     error(io_code==EOF ? 7 : 6,"biv_finput");
+   
+   /* allocate memory if necessary */
+   if ( iv==(IVEC *)NULL || iv->dim<dim )
+     iv = iv_resize(iv,dim);
+   
+   /* get entries */
+   skipjunk(fp);
+   for ( i=0; i<dim; i++ )
+     if ((io_code=fscanf(fp,"%d",&iv->ive[i])) < 1 )
+       error(io_code==EOF ? 7 : 6,"biv_finput");
+   
+   return (iv);
+}
+
+/* iv_dump -- dumps all the contents of IVEC iv onto stream fp */
+#ifndef ANSI_C
+void	iv_dump(fp,iv)
+FILE*fp;
+IVEC*iv;
+#else
+void	iv_dump(FILE *fp, const IVEC *iv)
+#endif
+{
+   int		i;
+   
+   fprintf(fp,"IntVector: ");
+   if ( ! iv )
+   {
+      fprintf(fp,"**** NULL ****\n");
+      return;
+   }
+   fprintf(fp,"dim: %d, max_dim: %d\n",iv->dim,iv->max_dim);
+   fprintf(fp,"ive @ 0x%lx\n",(long)(iv->ive));
+   for ( i = 0; i < iv->max_dim; i++ )
+   {
+      if ( (i+1) % 8 )
+	fprintf(fp,"%8d ",iv->ive[i]);
+      else
+	fprintf(fp,"%8d\n",iv->ive[i]);
+   }
+   if ( i % 8 )
+     fprintf(fp,"\n");
+}	
 

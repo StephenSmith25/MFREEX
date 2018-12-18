@@ -31,7 +31,7 @@
 	Complex version
 */
 
-static	char	rcsid[] = "$Id: zhessen.c,v 1.1 1994/01/13 04:27:00 des Exp $";
+static	char	rcsid[] = "$Id: zhessen.c,v 1.2 1995/03/27 15:47:50 des Exp $";
 
 #include	<stdio.h>
 #include	"zmatrix.h"
@@ -45,7 +45,7 @@ ZMAT	*zHfactor(A, diag)
 ZMAT	*A;
 ZVEC	*diag;
 {
-	static	ZVEC	*tmp1 = ZVNULL;
+	STATIC	ZVEC	*tmp1 = ZVNULL, *w = ZVNULL;
 	Real	beta;
 	int	k, limit;
 
@@ -58,7 +58,9 @@ ZVEC	*diag;
 	limit = A->m - 1;
 
 	tmp1 = zv_resize(tmp1,A->m);
+	w    = zv_resize(w,   A->n);
 	MEM_STAT_REG(tmp1,TYPE_ZVEC);
+	MEM_STAT_REG(w,   TYPE_ZVEC);
 
 	for ( k = 0; k < limit; k++ )
 	{
@@ -68,10 +70,14 @@ ZVEC	*diag;
 	    /* printf("zHfactor: k = %d, beta = %g, tmp1 =\n",k,beta);
 	    zv_output(tmp1); */
 	    
-	    zhhtrcols(A,k+1,k+1,tmp1,beta);
+	    _zhhtrcols(A,k+1,k+1,tmp1,beta,w);
 	    zhhtrrows(A,0  ,k+1,tmp1,beta);
 	    /* printf("# at stage k = %d, A =\n",k);	zm_output(A); */
 	}
+
+#ifdef	THREADSAFE
+	ZV_FREE(tmp1);	ZV_FREE(w);
+#endif
 
 	return (A);
 }
@@ -88,7 +94,7 @@ ZVEC	*diag;
 {
 	int	i, j, limit;
 	Real	beta, r_ii, tmp_val;
-	static	ZVEC	*tmp1 = ZVNULL, *tmp2 = ZVNULL;
+	STATIC	ZVEC	*tmp1 = ZVNULL, *tmp2 = ZVNULL;
 
 	if ( HQ==ZMNULL || diag==ZVNULL )
 		error(E_NULL,"zHQunpack");
@@ -137,13 +143,17 @@ ZVEC	*diag;
 
 	if ( H != ZMNULL )
 	{
-	    H = zm_copy(HQ,H);
+	    H = zm_copy(HQ,zm_resize(H,HQ->m,HQ->n));
 	    
 	    limit = H->m;
 	    for ( i = 1; i < limit; i++ )
 		for ( j = 0; j < i-1; j++ )
 		    H->me[i][j].re = H->me[i][j].im = 0.0;
 	}
+
+#ifdef	THREADSAFE
+	ZV_FREE(tmp1);	ZV_FREE(tmp2);
+#endif
 
 	return HQ;
 }

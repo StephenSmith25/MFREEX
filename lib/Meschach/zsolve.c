@@ -32,8 +32,8 @@
 static	char	rcsid[] = "$Id: zsolve.c,v 1.1 1994/01/13 04:20:33 des Exp $";
 
 #include	<stdio.h>
-#include        "zmatrix2.h"
 #include	<math.h>
+#include        "zmatrix2.h"
 
 
 #define	is_zero(z)	((z).re == 0.0 && (z).im == 0.0 )
@@ -47,7 +47,7 @@ ZMAT	*matrix;
 ZVEC	*b, *out;
 double	diag;
 {
-    u_int	dim /* , j */;
+    unsigned int	dim /* , j */;
     int	i, i_lim;
     complex	**mat_ent, *mat_row, *b_ent, *out_ent, *out_col, sum;
     
@@ -103,7 +103,7 @@ ZMAT	*matrix;
 ZVEC	*b,*out;
 double	diag;
 {
-    u_int	dim, i, i_lim /* , j */;
+    unsigned int	dim, i, i_lim /* , j */;
     complex	**mat_ent, *mat_row, *b_ent, *out_ent, *out_col, sum;
     
     if ( matrix==ZMNULL || b==ZVNULL )
@@ -158,7 +158,7 @@ ZMAT	*U;
 ZVEC	*b,*out;
 double	diag;
 {
-    u_int	dim, i, i_lim /* , j */;
+    unsigned int	dim, i, i_lim /* , j */;
     complex	**U_me, *b_ve, *out_ve, tmp;
     Real	invdiag;
     
@@ -218,7 +218,7 @@ ZVEC	*zDsolve(A,b,x)
 ZMAT	*A;
 ZVEC	*b,*x;
 {
-    u_int	dim, i;
+    unsigned int	dim, i;
     
     if ( ! A || ! b )
 	error(E_NULL,"zDsolve");
@@ -245,7 +245,7 @@ ZMAT	*L;
 ZVEC	*b, *out;
 double	diag;
 {
-    u_int	dim;
+    unsigned int	dim;
     int		i, i_lim;
     complex	**L_me, *b_ve, *out_ve, tmp;
     Real	invdiag;

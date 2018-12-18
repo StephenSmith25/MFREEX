@@ -31,11 +31,15 @@ static	char	rcsid[] = "$Id: zcopy.c,v 1.1 1994/01/13 04:28:42 des Exp $";
 
 
 /* _zm_copy -- copies matrix into new area */
+#ifndef ANSI_C
 ZMAT	*_zm_copy(in,out,i0,j0)
 ZMAT	*in,*out;
-u_int	i0,j0;
+unsigned int	i0,j0;
+#else
+ZMAT	*_zm_copy(const ZMAT *in, ZMAT *out, int i0, int j0)
+#endif
 {
-	u_int	i /* ,j */;
+	unsigned int	i /* ,j */;
 
 	if ( in==ZMNULL )
 		error(E_NULL,"_zm_copy");
@@ -54,11 +58,15 @@ u_int	i0,j0;
 }
 
 /* _zv_copy -- copies vector into new area */
+#ifndef ANSI_C
 ZVEC	*_zv_copy(in,out,i0)
 ZVEC	*in,*out;
-u_int	i0;
+unsigned int	i0;
+#else
+ZVEC	*_zv_copy(const ZVEC *in, ZVEC *out, int i0)
+#endif
 {
-	/* u_int	i,j; */
+	/* unsigned int	i,j; */
 
 	if ( in==ZVNULL )
 		error(E_NULL,"_zv_copy");
@@ -86,9 +94,14 @@ u_int	i0;
 	   to the corresponding submatrix of out with top-left co-ordinates
 	   (i1,j1)
 	-- out is resized (& created) if necessary */
+#ifndef ANSI_C
 ZMAT	*zm_move(in,i0,j0,m0,n0,out,i1,j1)
 ZMAT	*in, *out;
 int	i0, j0, m0, n0, i1, j1;
+#else
+ZMAT	*zm_move(const ZMAT *in, int i0, int j0, int m0, int n0,
+		 ZMAT *out, int i1, int j1)
+#endif
 {
     int		i;
 
@@ -114,9 +127,14 @@ int	i0, j0, m0, n0, i1, j1;
 	-- moves the length dim0 subvector with initial index i0
 	   to the corresponding subvector of out with initial index i1
 	-- out is resized if necessary */
+#ifndef ANSI_C
 ZVEC	*zv_move(in,i0,dim0,out,i1)
 ZVEC	*in, *out;
 int	i0, dim0, i1;
+#else
+ZVEC	*zv_move(const ZVEC *in, int i0, int dim0,
+		 ZVEC *out, int i1)
+#endif
 {
     if ( ! in )
 	error(E_NULL,"zv_move");
@@ -138,10 +156,15 @@ int	i0, dim0, i1;
 	   the subvector with initial index i1 (and length m0*n0)
 	-- rows are copied contiguously
 	-- out is resized if necessary */
+#ifndef ANSI_C
 ZVEC	*zmv_move(in,i0,j0,m0,n0,out,i1)
 ZMAT	*in;
 ZVEC	*out;
 int	i0, j0, m0, n0, i1;
+#else
+ZVEC	*zmv_move(const ZMAT *in, int i0, int j0, int m0, int n0,
+		  ZVEC *out, int i1)
+#endif
 {
     int		dim1, i;
 
@@ -166,10 +189,15 @@ int	i0, j0, m0, n0, i1;
 	   the m1 x n1 submatrix with top-left co-ordinate (i1,j1)
         -- copying is done by rows
 	-- out is resized if necessary */
+#ifndef ANSI_C
 ZMAT	*zvm_move(in,i0,out,i1,j1,m1,n1)
 ZVEC	*in;
 ZMAT	*out;
 int	i0, i1, j1, m1, n1;
+#else
+ZMAT	*zvm_move(const ZVEC *in, int i0,
+		  ZMAT *out, int i1, int j1, int m1, int n1)
+#endif
 {
     int		dim0, i;
 

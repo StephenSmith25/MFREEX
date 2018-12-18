@@ -103,12 +103,18 @@ MEM_CONNECT mem_connect[MEM_CONNECT_MAX_LISTS] = {
 
 
 /* attach a new list of types */
-
+#ifndef ANSI_C
 int mem_attach_list(list, ntypes, type_names, free_funcs, info_sum)
 int list,ntypes;         /* number of a list and number of types there */
 char *type_names[];      /* list of names of types */
 int (*free_funcs[])();   /* list of releasing functions */
 MEM_ARRAY info_sum[];    /* local table */
+#else
+int mem_attach_list(int list, int ntypes, 
+		    char *type_names[], 
+		    int (*free_funcs[])(void *), 
+		    MEM_ARRAY info_sum[])
+#endif
 {
    if (list < 0 || list >= MEM_CONNECT_MAX_LISTS)
      return -1;
@@ -130,8 +136,12 @@ MEM_ARRAY info_sum[];    /* local table */
 
 
 /* release a list of types */
+#ifndef ANSI_C
 int mem_free_vars(list)
 int list;
+#else
+int mem_free_vars(int list)
+#endif
 {	
    if (list < 0 || list >= MEM_CONNECT_MAX_LISTS)
      return -1;
@@ -147,9 +157,12 @@ int list;
 
 
 /* check if list is attached */
-
+#ifndef ANSI_C
 int mem_is_list_attached(list)
 int list;
+#else
+int mem_is_list_attached(int list)
+#endif
 {
    if ( list < 0 || list >= MEM_CONNECT_MAX_LISTS )
    return FALSE;
@@ -162,10 +175,15 @@ int list;
 }
 
 /* to print out the contents of mem_connect[list] */
+#ifndef MEX
 
+#ifndef ANSI_C
 void mem_dump_list(fp,list)
 FILE *fp;
 int list;
+#else
+void mem_dump_list(FILE *fp, int list)
+#endif
 {
    int i;
    MEM_CONNECT *mlist;
@@ -194,6 +212,7 @@ int list;
    
    fprintf(fp,"\n");
 }
+#endif /* MEX */
 
 
 
@@ -206,9 +225,12 @@ static int	mem_switched_on = MEM_SWITCH_ON_DEF;  /* on/off */
 
 
 /* switch on/off memory info */
-
+#ifndef ANSI_C
 int mem_info_on(sw)
 int sw;
+#else
+int mem_info_on(int sw)
+#endif
 {
    int old = mem_switched_on;
    
@@ -229,9 +251,12 @@ int mem_info_is_on()
 /* information about allocated memory */
 
 /* return the number of allocated bytes for type 'type' */
-
+#ifndef ANSI_C
 long mem_info_bytes(type,list)
 int type,list;
+#else
+long mem_info_bytes(int type, int list)
+#endif
 {
    if ( list < 0 || list >= MEM_CONNECT_MAX_LISTS )
      return 0l;
@@ -244,8 +269,12 @@ int type,list;
 }
 
 /* return the number of allocated variables for type 'type' */
+#ifndef ANSI_C
 int mem_info_numvar(type,list)
 int type,list;
+#else
+int mem_info_numvar(int type, int list)
+#endif
 {
    if ( list < 0 || list >= MEM_CONNECT_MAX_LISTS )
      return 0l;
@@ -258,11 +287,16 @@ int type,list;
 }
 
 
+#ifndef MEX
 
 /* print out memory info to the file fp */
+#ifndef ANSI_C
 void mem_info_file(fp,list)
 FILE *fp;
 int list;
+#else
+void mem_info_file(FILE *fp, int list)
+#endif
 {
    unsigned int type;
    long t = 0l, d;
@@ -295,6 +329,7 @@ int list;
 	   "total:",t, (t!=1 ? 's' : ' '),
 	   nt, (nt!=1 ? 's' : ' '));
 }
+#endif
 
 
 /* function for memory information */
@@ -308,11 +343,13 @@ int list;
    new_size - new size of allocated memory (in bytes);
    list - list of types
    */
-
-
+#ifndef ANSI_C
 void mem_bytes_list(type,old_size,new_size,list)
 int type,list;
 int old_size,new_size;
+#else
+void mem_bytes_list(int type, int old_size, int new_size, int list)
+#endif
 {
    MEM_CONNECT *mlist;
    
@@ -334,6 +371,7 @@ int old_size,new_size;
 
       if (mlist->info_sum[type].bytes < 0)
       {
+#ifndef MEX
 	 fprintf(stderr,
 	   "\n WARNING !! memory info: allocated memory is less than 0\n");
 	 fprintf(stderr,"\t TYPE %s \n\n", mlist->type_names[type]);
@@ -343,9 +381,14 @@ int old_size,new_size;
 	      "\n WARNING !! memory info: allocated memory is less than 0\n");
 	    fprintf(stdout,"\t TYPE %s \n\n", mlist->type_names[type]);
 	 }
+#else
+	 mexPrintf("\n WARNING !! memory info: allocated memory < 0\n");
+	 mexPrintf("\t TYPE %s \n\n", mlist->type_names[type]);
+#endif
       }
    }
 }
+
 
 
 /* mem_numvar_list
@@ -356,9 +399,12 @@ int old_size,new_size;
    list - list of types
    */
 
-
+#ifndef ANSI_C
 void mem_numvar_list(type,num,list)
 int type,list,num;
+#else
+void mem_numvar_list(int type, int num, int list)
+#endif
 {
    MEM_CONNECT *mlist;
    
@@ -377,6 +423,7 @@ int type,list,num;
 
       if (mlist->info_sum[type].numvar < 0)
       {
+#ifndef MEX
 	 fprintf(stderr,
        "\n WARNING !! memory info: allocated # of variables is less than 0\n");
 	 fprintf(stderr,"\t TYPE %s \n\n", mlist->type_names[type]);
@@ -385,6 +432,10 @@ int type,list,num;
       "\n WARNING !! memory info: allocated # of variables is less than 0\n");
 	    fprintf(stdout,"\t TYPE %s \n\n", mlist->type_names[type]);
 	 }
+#else
+	 mexPrintf("\n WARNING !! memory info: allocated # of variables < 0\n");
+	 mexPrintf(stderr,"\t TYPE %s \n\n", mlist->type_names[type]);
+#endif
       }
    }
 }

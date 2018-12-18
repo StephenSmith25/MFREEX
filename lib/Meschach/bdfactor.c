@@ -33,8 +33,8 @@
 static	char	rcsid[] = "$Id: ";
 
 #include	<stdio.h>
-#include        "matrix2.h"
 #include	<math.h>
+#include        "matrix2.h"
 
 
 /* generate band matrix 
@@ -48,9 +48,12 @@ static	char	rcsid[] = "$Id: ";
    in such a way that the elements which were previously
    in one column are now also in one column
 */
-
+#ifndef ANSI_C
 BAND *bd_get(lb,ub,n)
 int lb, ub, n;
+#else
+BAND *bd_get(int lb, int ub, int n)
+#endif
 {
    BAND *A;
 
@@ -70,8 +73,13 @@ int lb, ub, n;
    return A;
 }
 
+/* bd_free -- frees BAND matrix -- returns (-1) on error and 0 otherwise */
+#ifndef ANSI_C
 int bd_free(A)
 BAND *A;
+#else
+int bd_free(BAND *A)
+#endif
 {
    if ( A == (BAND *)NULL || A->lb < 0 || A->ub < 0 )
      /* don't trust it */
@@ -90,10 +98,13 @@ BAND *A;
 
 
 /* resize band matrix */
-
+#ifndef ANSI_C
 BAND *bd_resize(A,new_lb,new_ub,new_n)
 BAND *A;
 int new_lb,new_ub,new_n;
+#else
+BAND *bd_resize(BAND *A, int new_lb, int new_ub, int new_n)
+#endif
 {
    int lb,ub,i,j,l,shift,umin;
    Real **Av;
@@ -151,9 +162,15 @@ int new_lb,new_ub,new_n;
 }
 
 
-
+/* bd_copy -- copies band matrix A to B, returning B
+	-- if B is NULL, create
+	-- B is set to the correct size */
+#ifndef ANSI_C
 BAND *bd_copy(A,B)
 BAND *A,*B;
+#else
+BAND *bd_copy(const BAND *A, BAND *B)
+#endif
 {
    int lb,ub,i,j,n;
    
@@ -182,16 +199,20 @@ BAND *A,*B;
 }
 
 
-/* copy band matrix to a square matrix */
+/* copy band matrix bA to a square matrix A returning A */
+#ifndef ANSI_C
 MAT *band2mat(bA,A)
 BAND *bA;
 MAT *A;
+#else
+MAT *band2mat(const BAND *bA, MAT *A)
+#endif
 {
    int i,j,l,n,n1;
    int lb, ub;
    Real **bmat;
 
-   if ( !bA || !A)
+   if ( !bA )
      error(E_NULL,"band2mat");
    if ( bA->mat == A )
      error(E_INSITU,"band2mat");
@@ -214,19 +235,23 @@ MAT *A;
 
 /* copy a square matrix to a band matrix with 
    lb subdiagonals and ub superdiagonals */
+#ifndef ANSI_C
 BAND *mat2band(A,lb,ub,bA)
 BAND *bA;
 MAT *A;
 int lb, ub;
+#else
+BAND *mat2band(const MAT *A, int lb, int ub,BAND *bA)
+#endif
 {
    int i, j, l, n1;
    Real **bmat;
    
-   if (! A || ! bA)
+   if (! A )
      error(E_NULL,"mat2band");
    if (ub < 0 || lb < 0)
      error(E_SIZES,"mat2band");
-   if (bA->mat == A)
+   if ( bA != (BAND *)NULL && bA->mat == A )
      error(E_INSITU,"mat2band");
 
    n1 = A->n-1;
@@ -248,9 +273,12 @@ int lb, ub;
    out - matrix after transposition;
    can be done in situ
 */
-
+#ifndef ANSI_C
 BAND *bd_transp(in,out)
 BAND *in, *out;
+#else
+BAND *bd_transp(const BAND *in, BAND *out)
+#endif
 {
    int i, j, jj, l, k, lb, ub, lub, n, n1;
    int in_situ;
@@ -347,7 +375,129 @@ BAND *in, *out;
    return out;
 }
 
+/* bdv_mltadd -- band matrix-vector multiply and add
+   -- returns out <- x + s.bA.y
+   -- if y is NULL then create y (as zero vector)
+   -- error if either A or x is NULL */
+#ifndef ANSI_C
+VEC	*bdv_mltadd(x,y,bA,s,out)
+     BAND	*bA;
+     VEC	*x, *y;
+     double	s;
+     VEC *out;
+#else
+VEC	*bdv_mltadd(const VEC *x, const VEC *y, const BAND *bA,
+		    double s, VEC *out)
+#endif
+{
+  int	i, j;
 
+  if ( ! bA || ! x || ! y )
+    error(E_NULL,"bdv_mltadd");
+  if ( bA->mat->n != x->dim || y->dim != x->dim )
+    error(E_SIZES,"bdv_mltadd");
+  if ( ! out || out->dim != x->dim )
+    out = v_resize(out,x->dim);
+  out = v_copy(x,out);
+
+  for ( j = 0; j < x->dim; j++ )
+    for ( i = max(j-bA->ub,0); i <= j+bA->lb && i < x->dim; i++ )
+      out->ve[i] += s*bd_get_val(bA,i,j)*y->ve[j];
+
+  return out;
+}
+
+/* vbd_mltadd -- band matrix-vector multiply and add
+   -- returns out^T <- x^T + s.y^T.bA
+   -- if out is NULL then create out (as zero vector)
+   -- error if either bA or x is NULL */
+#ifndef ANSI_C
+VEC	*vbd_mltadd(x,y,bA,s,out)
+     BAND	*bA;
+     VEC	*x, *y;
+     double	s;
+     VEC *out;
+#else
+VEC	*vbd_mltadd(const VEC *x, const VEC *y, const BAND *bA,
+		    double s, VEC *out)
+#endif
+{
+  int	i, j;
+
+  if ( ! bA || ! x || ! y )
+    error(E_NULL,"vbd_mltadd");
+  if ( bA->mat->n != x->dim || y->dim != x->dim )
+    error(E_SIZES,"vbd_mltadd");
+  if ( ! out || out->dim != x->dim )
+    out = v_resize(out,x->dim);
+  out = v_copy(x,out);
+
+  for ( j = 0; j < x->dim; j++ )
+    for ( i = max(j-bA->ub,0); i <= j+bA->lb && i < x->dim; i++ )
+      out->ve[j] += s*bd_get_val(bA,i,j)*y->ve[i];
+
+  return out;
+}
+
+/* bd_zero -- zeros band matrix A which is returned */
+#ifndef ANSI_C
+BAND	*bd_zero(A)
+BAND	*A;
+#else
+BAND	*bd_zero(BAND *A)
+#endif
+{
+  if ( ! A )
+    error(E_NULL,"bd_zero");
+
+  m_zero(A->mat);
+  return A;
+}
+
+/* bds_mltadd -- returns OUT <- A+alpha*B
+	-- OUT is created (as zero) if NULL
+	-- if OUT is not the correct size, it is re-sized before the operation
+	-- if A or B are null, and error is generated */
+#ifndef ANSI_C
+BAND	*bds_mltadd(A,B,alpha,OUT)
+BAND	*A, *B, *OUT;
+Real	alpha;
+#else
+BAND	*bds_mltadd(const BAND *A, const BAND *B, double alpha, BAND *OUT)
+#endif
+{
+  int	i;
+
+  if ( ! A || ! B )
+    error(E_NULL,"bds_mltadd");
+  if ( A->mat->n != B->mat->n )
+    error(E_SIZES,"bds_mltadd");
+  if ( A == OUT || B == OUT )
+    error(E_INSITU,"bds_mltadd");
+
+  OUT = bd_copy(A,OUT);
+  OUT = bd_resize(OUT,max(A->lb,B->lb),max(A->ub,B->ub),A->mat->n);
+  for ( i = 0; i <= B->lb + B->ub; i++ )
+    __mltadd__(OUT->mat->me[i+OUT->lb-B->lb],B->mat->me[i],alpha,B->mat->n);
+  
+  return OUT;
+}
+
+/* sbd_mlt -- returns OUT <- s.A */
+#ifndef ANSI_C
+BAND	*sbd_mlt(Real s, BAND *A, BAND *OUT)
+#else
+BAND	*sbd_mlt(Real s, const BAND *A, BAND *OUT)
+#endif
+{
+  if ( ! A )
+    error(E_NULL,"sbd_mlt");
+
+  OUT = bd_resize(OUT,A->lb,A->ub,A->mat->n);
+  sm_mlt(s,A->mat,OUT->mat);
+
+  return OUT;
+}
 
 /* bdLUfactor -- gaussian elimination with partial pivoting
    -- on entry, the matrix A in band storage with elements 
@@ -362,9 +512,13 @@ BAND *in, *out;
       Matrix U is permuted, whereas L is not permuted !!!
       Therefore we save some memory.
    */
+#ifndef ANSI_C
 BAND	*bdLUfactor(bA,pivot)
 BAND	*bA;
 PERM	*pivot;
+#else
+BAND	*bdLUfactor(BAND *bA, PERM *pivot)
+#endif
 {
    int	i, j, k, l, n, n1, lb, ub, lub, k_end, k_lub;
    int	i_max, shift;
@@ -445,10 +599,14 @@ PERM	*pivot;
 
 /* bdLUsolve -- given an LU factorisation in bA, solve bA*x=b */
 /* pivot is changed upon return  */
+#ifndef ANSI_C
 VEC	*bdLUsolve(bA,pivot,b,x)
 BAND	*bA;
 PERM	*pivot;
 VEC	*b,*x;
+#else
+VEC	*bdLUsolve(const BAND *bA, PERM *pivot, const VEC *b, VEC *x)
+#endif
 {
    int i,j,l,n,n1,pi,lb,ub,jmin, maxj;
    Real c;
@@ -502,9 +660,12 @@ VEC	*b,*x;
    it works using only lower bandwidth & main diagonal
    so it is possible to set A->ub = 0
  */
-
+#ifndef ANSI_C
 BAND *bdLDLfactor(A)
 BAND *A;
+#else
+BAND *bdLDLfactor(BAND *A)
+#endif
 {
    int i,j,k,n,n1,lb,ki,jk,ji,lbkm,lbkp;
    Real **Av;
@@ -550,9 +711,13 @@ BAND *A;
 
 /* solve A*x = b, where A is factorized by 
    Choleski LDL^T factorization */
+#ifndef ANSI_C
 VEC    *bdLDLsolve(A,b,x)
 BAND   *A;
 VEC    *b, *x;
+#else
+VEC    *bdLDLsolve(const BAND *A, const VEC *b, VEC *x)
+#endif
 {
    int i,j,l,n,n1,lb,ilb;
    Real **Av, *Avlb;

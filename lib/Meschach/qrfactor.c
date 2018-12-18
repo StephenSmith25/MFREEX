@@ -43,7 +43,6 @@ static	char	rcsid[] = "$Id: qrfactor.c,v 1.5 1994/01/13 05:35:07 des Exp $";
 #include	<stdio.h>
 #include	<math.h>
 #include        "matrix2.h"
-#include	<math.h>
 
 
 
@@ -61,14 +60,17 @@ extern	VEC	*Usolve();	/* See matrix2.h */
 
 /* QRfactor -- forms the QR factorisation of A -- factorisation stored in
    compact form as described above ( not quite standard format ) */
-/* MAT	*QRfactor(A,diag,beta) */
+#ifndef ANSI_C
 MAT	*QRfactor(A,diag)
 MAT	*A;
-VEC	*diag /* ,*beta */;
+VEC	*diag;
+#else
+MAT	*QRfactor(MAT *A, VEC *diag)
+#endif
 {
-    u_int	k,limit;
+    unsigned int	k,limit;
     Real	beta;
-    static	VEC	*tmp1=VNULL;
+    STATIC	VEC	*hh=VNULL, *w=VNULL;
     
     if ( ! A || ! diag )
 	error(E_NULL,"QRfactor");
@@ -76,21 +78,27 @@ VEC	*diag /* ,*beta */;
     if ( diag->dim < limit )
 	error(E_SIZES,"QRfactor");
     
-    tmp1 = v_resize(tmp1,A->m);
-    MEM_STAT_REG(tmp1,TYPE_VEC);
+    hh = v_resize(hh,A->m);
+    w  = v_resize(w, A->n);
+    MEM_STAT_REG(hh,TYPE_VEC);
+    MEM_STAT_REG(w, TYPE_VEC);
     
     for ( k=0; k<limit; k++ )
     {
 	/* get H/holder vector for the k-th column */
-	get_col(A,k,tmp1);
-	/* hhvec(tmp1,k,&beta->ve[k],tmp1,&A->me[k][k]); */
-	hhvec(tmp1,k,&beta,tmp1,&A->me[k][k]);
-	diag->ve[k] = tmp1->ve[k];
+	get_col(A,k,hh);
+	/* hhvec(hh,k,&beta->ve[k],hh,&A->me[k][k]); */
+	hhvec(hh,k,&beta,hh,&A->me[k][k]);
+	diag->ve[k] = hh->ve[k];
 	
 	/* apply H/holder vector to remaining columns */
-	/* hhtrcols(A,k,k+1,tmp1,beta->ve[k]); */
-	hhtrcols(A,k,k+1,tmp1,beta);
+	/* hhtrcols(A,k,k+1,hh,beta->ve[k]); */
+	_hhtrcols(A,k,k+1,hh,beta,w);
     }
+
+#ifdef	THREADSAFE
+    V_FREE(hh);	V_FREE(w);
+#endif
 
     return (A);
 }
@@ -98,14 +106,17 @@ VEC	*diag /* ,*beta */;
 /* QRCPfactor -- forms the QR factorisation of A with column pivoting
    -- factorisation stored in compact form as described above
    ( not quite standard format )				*/
-/* MAT	*QRCPfactor(A,diag,beta,px) */
+#ifndef ANSI_C
 MAT	*QRCPfactor(A,diag,px)
 MAT	*A;
-VEC	*diag /* , *beta */;
+VEC	*diag;
 PERM	*px;
+#else
+MAT	*QRCPfactor(MAT *A, VEC *diag, PERM *px)
+#endif
 {
-    u_int	i, i_max, j, k, limit;
-    static	VEC	*gamma=VNULL, *tmp1=VNULL, *tmp2=VNULL;
+    unsigned int	i, i_max, j, k, limit;
+    STATIC	VEC	*gamma=VNULL, *tmp1=VNULL, *tmp2=VNULL, *w=VNULL;
     Real	beta, maxgamma, sum, tmp;
     
     if ( ! A || ! diag || ! px )
@@ -117,9 +128,11 @@ PERM	*px;
     tmp1 = v_resize(tmp1,A->m);
     tmp2 = v_resize(tmp2,A->m);
     gamma = v_resize(gamma,A->n);
+    w    = v_resize(w,   A->n);
     MEM_STAT_REG(tmp1,TYPE_VEC);
     MEM_STAT_REG(tmp2,TYPE_VEC);
     MEM_STAT_REG(gamma,TYPE_VEC);
+    MEM_STAT_REG(w,   TYPE_VEC);
     
     /* initialise gamma and px */
     for ( j=0; j<A->n; j++ )
@@ -169,24 +182,32 @@ PERM	*px;
 	
 	/* apply H/holder vector to remaining columns */
 	/* hhtrcols(A,k,k+1,tmp1,beta->ve[k]); */
-	hhtrcols(A,k,k+1,tmp1,beta);
+	_hhtrcols(A,k,k+1,tmp1,beta,w);
 	
 	/* update gamma values */
 	for ( j=k+1; j<A->n; j++ )
 	    gamma->ve[j] -= square(A->me[k][j]);
     }
 
+#ifdef	THREADSAFE
+    V_FREE(gamma);	V_FREE(tmp1);	V_FREE(tmp2);	V_FREE(w);
+#endif
+
     return (A);
 }
 
 /* Qsolve -- solves Qx = b, Q is an orthogonal matrix stored in compact
    form a la QRfactor() -- may be in-situ */
-/* VEC	*_Qsolve(QR,diag,beta,b,x,tmp) */
+#ifndef ANSI_C
 VEC	*_Qsolve(QR,diag,b,x,tmp)
 MAT	*QR;
-VEC	*diag /* ,*beta */ , *b, *x, *tmp;
+VEC	*diag, *b, *x, *tmp;
+#else
+VEC	*_Qsolve(const MAT *QR, const VEC *diag, const VEC *b, 
+		 VEC *x, VEC *tmp)
+#endif
 {
-    u_int	dynamic;
+    unsigned int	dynamic;
     int		k, limit;
     Real	beta, r_ii, tmp_val;
     
@@ -222,13 +243,16 @@ VEC	*diag /* ,*beta */ , *b, *x, *tmp;
 
 /* makeQ -- constructs orthogonal matrix from Householder vectors stored in
    compact QR form */
-/* MAT	*makeQ(QR,diag,beta,Qout) */
+#ifndef ANSI_C
 MAT	*makeQ(QR,diag,Qout)
 MAT	*QR,*Qout;
-VEC	*diag /* , *beta */;
+VEC	*diag;
+#else
+MAT	*makeQ(const MAT *QR,const VEC *diag, MAT *Qout)
+#endif
 {
-    static	VEC	*tmp1=VNULL,*tmp2=VNULL;
-    u_int	i, limit;
+    STATIC	VEC	*tmp1=VNULL,*tmp2=VNULL;
+    unsigned int	i, limit;
     Real	beta, r_ii, tmp_val;
     int	j;
     
@@ -268,17 +292,25 @@ VEC	*diag /* , *beta */;
 	set_col(Qout,i,tmp1);
     }
 
+#ifdef	THREADSAFE
+    V_FREE(tmp1);	V_FREE(tmp2);
+#endif
+
     return (Qout);
 }
 
 /* makeR -- constructs upper triangular matrix from QR (compact form)
    -- may be in-situ (all it does is zero the lower 1/2) */
+#ifndef ANSI_C
 MAT	*makeR(QR,Rout)
 MAT	*QR,*Rout;
+#else
+MAT	*makeR(const MAT *QR, MAT *Rout)
+#endif
 {
-    u_int	i,j;
+    unsigned int	i,j;
     
-    if ( QR==(MAT *)NULL )
+    if ( QR==MNULL )
 	error(E_NULL,"makeR");
     Rout = m_copy(QR,Rout);
     
@@ -291,13 +323,16 @@ MAT	*QR,*Rout;
 
 /* QRsolve -- solves the system Q.R.x=b where Q & R are stored in compact form
    -- returns x, which is created if necessary */
-/* VEC	*QRsolve(QR,diag,beta,b,x) */
+#ifndef ANSI_C
 VEC	*QRsolve(QR,diag,b,x)
 MAT	*QR;
 VEC	*diag /* , *beta */ , *b, *x;
+#else
+VEC	*QRsolve(const MAT *QR, const VEC *diag, const VEC *b, VEC *x)
+#endif
 {
     int	limit;
-    static	VEC	*tmp = VNULL;
+    STATIC	VEC	*tmp = VNULL;
     
     if ( ! QR || ! diag || ! b )
 	error(E_NULL,"QRsolve");
@@ -312,37 +347,53 @@ VEC	*diag /* , *beta */ , *b, *x;
     x = Usolve(QR,x,x,0.0);
     v_resize(x,QR->n);
 
+#ifdef	THREADSAFE
+    V_FREE(tmp);
+#endif
+
     return x;
 }
 
 /* QRCPsolve -- solves A.x = b where A is factored by QRCPfactor()
    -- assumes that A is in the compact factored form */
-/* VEC	*QRCPsolve(QR,diag,beta,pivot,b,x) */
+#ifndef ANSI_C
 VEC	*QRCPsolve(QR,diag,pivot,b,x)
 MAT	*QR;
-VEC	*diag /* , *beta */;
+VEC	*diag;
 PERM	*pivot;
 VEC	*b, *x;
+#else
+VEC	*QRCPsolve(const MAT *QR, const VEC *diag, PERM *pivot,
+		   const VEC *b, VEC *x)
+#endif
 {
-    static	VEC	*tmp=VNULL;
+    STATIC	VEC	*tmp=VNULL;
     
     if ( ! QR || ! diag || ! pivot || ! b )
 	error(E_NULL,"QRCPsolve");
     if ( (QR->m > diag->dim &&QR->n > diag->dim) || QR->n != pivot->size )
 	error(E_SIZES,"QRCPsolve");
     
-    tmp = QRsolve(QR,diag /* , beta */ ,b,tmp);
+    tmp = QRsolve(QR,diag,b,tmp);
     MEM_STAT_REG(tmp,TYPE_VEC);
     x = pxinv_vec(pivot,tmp,x);
+
+#ifdef	THREADSAFE
+    V_FREE(tmp);
+#endif
 
     return x;
 }
 
 /* Umlt -- compute out = upper_triang(U).x
 	-- may be in situ */
+#ifndef ANSI_C
 static	VEC	*Umlt(U,x,out)
 MAT	*U;
 VEC	*x, *out;
+#else
+static	VEC	*Umlt(const MAT *U, const VEC *x, VEC *out)
+#endif
 {
     int		i, limit;
 
@@ -360,9 +411,13 @@ VEC	*x, *out;
 }
 
 /* UTmlt -- returns out = upper_triang(U)^T.x */
+#ifndef ANSI_C
 static	VEC	*UTmlt(U,x,out)
 MAT	*U;
 VEC	*x, *out;
+#else
+static	VEC	*UTmlt(const MAT *U, const VEC *x, VEC *out)
+#endif
 {
     Real	sum;
     int		i, j, limit;
@@ -387,9 +442,13 @@ VEC	*x, *out;
 	compact form
 	-- returns sc
 	-- original due to Mike Osborne modified Wed 09th Dec 1992 */
+#ifndef ANSI_C
 VEC *QRTsolve(A,diag,c,sc)
 MAT *A;
 VEC *diag, *c, *sc;
+#else
+VEC *QRTsolve(const MAT *A, const VEC *diag, const VEC *c, VEC *sc)
+#endif
 {
     int		i, j, k, n, p;
     Real	beta, r_ii, s, tmp_val;
@@ -446,10 +505,14 @@ VEC *diag, *c, *sc;
 	-- if the matrix is exactly singular, HUGE_VAL is returned
 	-- note that QRcondest() is likely to be more reliable for
 		matrices factored using QRCPfactor() */
+#ifndef ANSI_C
 double	QRcondest(QR)
 MAT	*QR;
+#else
+double	QRcondest(const MAT *QR)
+#endif
 {
-    static	VEC	*y=VNULL;
+    STATIC	VEC	*y=VNULL;
     Real	norm1, norm2, sum, tmp1, tmp2;
     int		i, j, limit;
 
@@ -511,6 +574,10 @@ MAT	*QR;
     norm2 = sqrt(tmp1)*sqrt(tmp2);
 
     /* printf("QRcondest: norm1 = %g, norm2 = %g\n",norm1,norm2); */
+
+#ifdef THREADSAFE
+    V_FREE(y);
+#endif
 
     return norm1*norm2;
 }

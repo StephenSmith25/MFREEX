@@ -16,7 +16,7 @@
  * =====================================================================================
  */
 #include "Material/Buckley/buckleyBond.h"
-
+#include <math.h>
 int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para, double dt)
 {
 
@@ -33,7 +33,6 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	double vogel_T = para->ve[3];
 	double Cv = para->ve[6];
 
-
 	MAT * Sb_n = stateOld->Sb;
 	MAT * Sb_n_1 = stateNew->Sb;
 
@@ -45,7 +44,7 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	double sigma_m = stateOld->mSigma;
 
 
-		 if (sigma_m < 0)
+	if (sigma_m < 0)
 	 {
 	 	sigma_m = 0;
  	}
@@ -60,6 +59,7 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	double alpha_s = exp ( Cv / ( temperature - vogel_T) - Cv / ( star_T - vogel_T) );	
 	// alpha_T
 	double alpha_T = exp ( (H0/R) * ( 1/temperature - 1/star_T) );
+
 
 
 	// tau = tau_s * alpha_s * alpha_T * alpha_sig ;
@@ -78,8 +78,7 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 
 
 	// mat1 = 2Gb*D*tau
-	sm_mlt(2*Gb*tau,stateOld->Dbar,mat1);
-
+	sm_mlt(2*Gb*tau,stateNew->Dbar,mat1);
 
 	// 2Gb*D*tau - Sb_n
 	m_sub(mat1,stateOld->Sb,deltaSb);
@@ -93,9 +92,9 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	// Spin component of stress
 	// (WSb_n - Sb_n W)dt
 	// W*s
-	m_mlt(stateOld->Wbar,stateOld->Sb,mat1);
+	m_mlt(stateNew->Wbar,stateOld->Sb,mat1);
 	// s*l
-	m_mlt(stateOld->Sb,stateOld->Wbar,mat2);
+	m_mlt(stateOld->Sb,stateNew->Wbar,mat2);
 	m_sub(mat1,mat2,mat1);	
 	sm_mlt(dt,mat1,mat1);
 

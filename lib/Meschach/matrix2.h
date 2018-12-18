@@ -56,7 +56,7 @@ extern  VEC     *bdLUsolve(), *bdLDLsolve();
 extern	VEC	*hhvec();
 extern	VEC	*hhtrvec();
 extern	MAT	*hhtrrows();
-extern	MAT	*hhtrcols();
+extern	MAT	*hhtrcols(), *_hhtrcols();
 
 extern	void	givens();
 extern	VEC	*rot_vec();	/* in situ */
@@ -106,25 +106,25 @@ extern	MAT	*BKPfactor(MAT *A,PERM *pivot,PERM *blocks),
                         actually factors A+D, D diagonal with no
                         diagonal entry in the factor < sqrt(tol) */
                 *MCHfactor(MAT *A,double tol),
-		*m_inverse(MAT *A,MAT *out);
+		*m_inverse(const MAT *A,MAT *out);
 
                 /* returns condition estimate for A after LUfactor() */
-extern	double	LUcondest(MAT *A,PERM *pivot),
+extern	double	LUcondest(const MAT *A, PERM *pivot),
                 /* returns condition estimate for Q after QRfactor() */
-                QRcondest(MAT *A);
+                QRcondest(const MAT *A);
 
 /* Note: The make..() and ..update() routines assume that the factorisation
         has already been carried out */
 
      /* Qout is the "Q" (orthongonal) matrix from QR factorisation */
-extern	MAT	*makeQ(MAT *A,VEC *diag,MAT *Qout),
+extern	MAT	*makeQ(const MAT *QR,const VEC *diag,MAT *Qout),
                 /* Rout is the "R" (upper triangular) matrix
                         from QR factorisation */
-		*makeR(MAT *A,MAT *Rout),
+		*makeR(const MAT *A,MAT *Rout),
                 /* Qout is orthogonal matrix in Hessenberg factorisation */
 		*makeHQ(MAT *A,VEC *diag1,VEC *diag2,MAT *Qout),
                 /* Hout is the Hessenberg matrix in Hessenberg factorisation */
-		*makeH(MAT *A,MAT *Hout);
+		*makeH(const MAT *A,MAT *Hout);
 
                 /* updates L.D.L^T factorisation for A <- A + alpha.u.u^T */
 extern	MAT	*LDLupdate(MAT *A,VEC *u,double alpha),
@@ -143,43 +143,50 @@ extern	MAT	*LDLupdate(MAT *A,VEC *u,double alpha),
         If x is NULL on entry, then it is created.
 */
 
-extern	VEC	*BKPsolve(MAT *A,PERM *pivot,PERM *blocks,VEC *b,VEC *x),
-		*CHsolve(MAT *A,VEC *b,VEC *x),
-		*LDLsolve(MAT *A,VEC *b,VEC *x),
-		*LUsolve(MAT *A,PERM *pivot,VEC *b,VEC *x),
-		*_Qsolve(MAT *A,VEC *,VEC *,VEC *, VEC *),
-		*QRsolve(MAT *A,VEC *,VEC *b,VEC *x),
-    		*QRTsolve(MAT *A,VEC *,VEC *b,VEC *x),
+extern	VEC	*BKPsolve(const MAT *A,PERM *pivot,const PERM *blocks,
+			  const VEC *b,VEC *x),
+		*CHsolve(const MAT *A,const VEC *b,VEC *x),
+		*LDLsolve(const MAT *A,const VEC *b,VEC *x),
+		*LUsolve(const MAT *A, PERM *pivot, const VEC *b,VEC *x),
+		*_Qsolve(const MAT *A, const VEC *diag, const VEC *b, 
+			 VEC *x, VEC *tmp),
+		*QRsolve(const MAT *A, const VEC *diag, const VEC *b,VEC *x),
+    		*QRTsolve(const MAT *A,const VEC *,const VEC *b,VEC *x),
 
 
      /* Triangular equations solve routines;
         U for upper triangular, L for lower traingular, D for diagonal
         if diag_val == 0.0 use that values in the matrix */
 
-		*Usolve(MAT *A,VEC *b,VEC *x,double diag_val),
-		*Lsolve(MAT *A,VEC *b,VEC *x,double diag_val),
-		*Dsolve(MAT *A,VEC *b,VEC *x),
-		*LTsolve(MAT *A,VEC *b,VEC *x,double diag_val),
-		*UTsolve(MAT *A,VEC *b,VEC *x,double diag_val),
-                *LUTsolve(MAT *A,PERM *,VEC *,VEC *),
-                *QRCPsolve(MAT *QR,VEC *diag,PERM *pivot,VEC *b,VEC *x);
+		*Usolve(const MAT *A,const VEC *b,VEC *x,double diag_val),
+		*Lsolve(const MAT *A,const VEC *b,VEC *x,double diag_val),
+		*Dsolve(const MAT *A,const VEC *b,VEC *x),
+		*LTsolve(const MAT *A,const VEC *b,VEC *x,double diag_val),
+		*UTsolve(const MAT *A,const VEC *b,VEC *x,double diag_val),
+                *LUTsolve(const MAT *A,PERM *pivot,const VEC *b, VEC *x),
+                *QRCPsolve(const MAT *QR,const VEC *diag,PERM *pivot,
+			   const VEC *b,VEC *x);
 
 extern  BAND    *bdLUfactor(BAND *A,PERM *pivot),
                 *bdLDLfactor(BAND *A);
-extern  VEC     *bdLUsolve(BAND *A,PERM *pivot,VEC *b,VEC *x),
-                *bdLDLsolve(BAND *A,VEC *b,VEC *x);
+extern  VEC     *bdLUsolve(const BAND *A,PERM *pivot,const VEC *b,VEC *x),
+                *bdLDLsolve(const BAND *A,const VEC *b,VEC *x);
 
 
 
-extern	VEC	*hhvec(VEC *,u_int,Real *,VEC *,Real *);
-extern	VEC	*hhtrvec(VEC *,double,u_int,VEC *,VEC *);
-extern	MAT	*hhtrrows(MAT *,u_int,u_int,VEC *,double);
-extern	MAT	*hhtrcols(MAT *,u_int,u_int,VEC *,double);
+extern	VEC	*hhvec(const VEC *,unsigned int,Real *,VEC *,Real *);
+extern	VEC	*hhtrvec(const VEC *,double,unsigned int,const VEC *,VEC *);
+extern	MAT	*hhtrrows(MAT *,unsigned int,unsigned int,const VEC *,double);
+extern	MAT	*hhtrcols(MAT *,unsigned int,unsigned int,const VEC *,double);
+extern	MAT	*_hhtrcols(MAT *,unsigned int,unsigned int,const VEC *,double,VEC *);
 
 extern	void	givens(double,double,Real *,Real *);
-extern	VEC	*rot_vec(VEC *,u_int,u_int,double,double,VEC *); /* in situ */
-extern	MAT	*rot_rows(MAT *,u_int,u_int,double,double,MAT *); /* in situ */
-extern	MAT	*rot_cols(MAT *,u_int,u_int,double,double,MAT *); /* in situ */
+extern	VEC	*rot_vec(const VEC *,unsigned int,unsigned int,
+			 double,double,VEC *); /* in situ */
+extern	MAT	*rot_rows(const MAT *,unsigned int,unsigned int,
+			  double,double,MAT *); /* in situ */
+extern	MAT	*rot_cols(const MAT *,unsigned int,unsigned int,
+			  double,double,MAT *); /* in situ */
 
 
 /* eigenvalue routines */
@@ -190,7 +197,7 @@ extern	MAT	*rot_cols(MAT *,u_int,u_int,double,double,MAT *); /* in situ */
 extern	VEC	*trieig(VEC *a,VEC *b,MAT *Q),
                  /* sets out to be vector of eigenvectors; eigenvectors
                    stored in Q (if not NULL). A is unchanged */
-		*symmeig(MAT *A,MAT *Q,VEC *out);
+		*symmeig(const MAT *A,MAT *Q,VEC *out);
 
                /* computes real Schur form = Q^T.A.Q */
 extern	MAT	*schur(MAT *A,MAT *Q);
@@ -208,16 +215,16 @@ extern	MAT	*schur_vecs(MAT *T,MAT *Q,MAT *X_re,MAT *X_im);
                    diagonal entries a[i] and superdiagonal entries b[i];
                    singular vectors stored in U and V (if not NULL) */
 VEC	*bisvd(VEC *a,VEC *b,MAT *U,MAT *V),
-               /* sets out to be vector of singular values;
+               /* sets "out" to be vector of singular values;
                    singular vectors stored in U and V */
 	*svd(MAT *A,MAT *U,MAT *V,VEC *out);
 
 /* matrix powers and exponent */
-MAT  *_m_pow(MAT *,int,MAT *,MAT *);
-MAT  *m_pow(MAT *,int, MAT *);
+MAT  *_m_pow(const MAT *A, int p, MAT *tmp,MAT *out);
+MAT  *m_pow(const MAT *A, int p, MAT *out);
 MAT  *m_exp(MAT *,double,MAT *);
-MAT  *_m_exp(MAT *,double,MAT *,int *,int *);
-MAT  *m_poly(MAT *,VEC *,MAT *);
+MAT  *_m_exp(MAT *A, double eps, MAT *out, int *q_out, int *j_out);
+MAT  *m_poly(const MAT *,const VEC *,MAT *);
 
 /* FFT */
 void fft(VEC *,VEC *);

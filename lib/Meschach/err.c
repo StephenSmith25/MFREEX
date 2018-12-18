@@ -26,10 +26,7 @@
 
 /*
   File with basic error-handling operations
-  Based on previous version on Zilog
-  System 8000 setret() etc.
-  Ported to Pyramid 9810 late 1987
-  */
+*/
 
 static	char	rcsid[] = "$Id: err.c,v 1.6 1995/01/30 14:49:14 des Exp $";
 
@@ -130,9 +127,13 @@ static int err_list_end = 2;   /* number of elements in err_list */
    Note: lists numbered 0 and 1 are attached automatically,
    you do not need to do it
    */
+#ifndef ANSI_C
 int err_list_attach(list_num, list_len,err_ptr,warn)
 int list_num, list_len, warn;
 char **err_ptr;
+#else
+int err_list_attach(int list_num, int list_len, char **err_ptr, int warn)
+#endif
 {
    if (list_num < 0 || list_len <= 0 ||
        err_ptr == (char **)NULL) 
@@ -163,8 +164,12 @@ char **err_ptr;
 
 
 /* release the error list numbered list_num */
+#ifndef ANSI_C
 int err_list_free(list_num)
 int list_num;
+#else
+int err_list_free(int list_num)
+#endif
 {
    if (list_num < 0 || list_num >= err_list_end) return -1;
    if (err_list[list_num].listp != (char **)NULL) {
@@ -180,8 +185,12 @@ int list_num;
    return FALSE if not;
    return TRUE if yes
    */
+#ifndef ANSI_C
 int err_is_list_attached(list_num)
 int list_num;
+#else
+int err_is_list_attached(int list_num)
+#endif
 {
    if (list_num < 0 || list_num >= err_list_end)
      return FALSE;
@@ -197,8 +206,12 @@ int list_num;
 static	int	err_flag = EF_EXIT, num_errs = 0, cnt_errs = 1;
 
 /* set_err_flag -- sets err_flag -- returns old err_flag */
+#ifndef ANSI_C
 int	set_err_flag(flag)
 int	flag;
+#else
+int	set_err_flag(int flag)
+#endif
 {
    int	tmp;
    
@@ -208,8 +221,12 @@ int	flag;
 }
 
 /* count_errs -- sets cnt_errs (TRUE/FALSE) & returns old value */
+#ifndef ANSI_C
 int	count_errs(flag)
 int	flag;
+#else
+int	count_errs(int flag)
+#endif
 {
    int	tmp;
    
@@ -223,9 +240,14 @@ int	flag;
    list_num is an error list number (0 is the basic list 
    pointed by err_mesg, 1 is the basic list of warnings)
  */
+#ifndef ANSI_C
 int	ev_err(file,err_num,line_num,fn_name,list_num)
 char	*file, *fn_name;
 int	err_num, line_num,list_num;
+#else
+int	ev_err(const char *file, int err_num, int line_num,
+	       const char *fn_name, int list_num)
+#endif
 {
    int	num;
    
@@ -322,8 +344,12 @@ int	err_num, line_num,list_num;
 }
 
 /* float_error -- catches floating arithmetic signals */
+#ifndef ANSI_C
 static void	float_error(num)
 int	num;
+#else
+static void	float_error(int num)
+#endif
 {
    signal(SIGFPE,float_error);
    /* fprintf(stderr,"SIGFPE: signal #%d\n",num); */

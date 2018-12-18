@@ -4,7 +4,8 @@
 static int call_count;
 
 double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC * velocity,
-	VEC * matParams, state_Buckley ** stateNew, state_Buckley ** stateOld, int is_axi, int dim, double deltat)
+	VEC * matParams,VEC * critLambdaParams, state_Buckley ** stateNew, state_Buckley ** stateOld,
+	 int is_axi, int dim, double deltat)
 {
 
 
@@ -38,7 +39,6 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	double delta_t_min = 1000;
 
 
-	double Kb = matParams->ve[9];
 
 	// set number of threads
 	omp_set_num_threads(8);
@@ -47,26 +47,17 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 #pragma omp parallel 
 {
 
-		MAT * deltaF = m_get(dim_strain,dim_strain);
-		MAT * invF_n_1 = m_get(dim_strain,dim_strain);
-		MAT * invF_n_1_bar = m_get(dim_strain,dim_strain);
-		MAT * Fdot = m_get(dim_strain,dim_strain);
-		MAT * Fdot_bar = m_get(dim_strain,dim_strain);
-		MAT * delta_R = m_get(dim_strain,dim_strain);
-		MAT * delta_U = m_get(dim_strain,dim_strain);
-		MAT * delta_V = m_get(dim_strain,dim_strain);
-		MAT * delta_ep_true = m_get(dim_strain,dim_strain);
-		MAT * temp = m_get(dim_strain,dim_strain);
 
 		// Internal force varaibles
 		VEC * stressVoigt = v_get(dim_piola);
 		VEC * sigma = v_get(dim_cauchy);
 		VEC * fIntTemp = v_get(Fint->max_dim);
 
-		double delta_t_min_i = 1000;
-
 		// Gmat matrix
 		MAT * G = m_get(dim_piola,dim_cauchy);
+
+		// Time step
+		double delta_t_min_i = 1000;
 
 		double Jacobian_n;
 		double Jacobian_n_1;
@@ -76,7 +67,8 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		MAT * B;
 		IVEC * neighbours;
 		MAT * F_r;
-
+		MAT * Sc_n_1;
+		MAT * Sb_n_1;
 
 
 #pragma omp for nowait schedule(dynamic,4) 
@@ -88,12 +80,10 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			/* -----------------Deformation--------------*/
 			/* ------------------------------------------*/
 
-			// update material parameters
-			// update materil parameters
+			// Temperatures could be found from a coupled heat transfer simulation
 			matParams->ve[11] = stateOld[i]->temperature+273.15;
 			matParams->ve[12] = stateOld[i]->temperature+273.15;
 			critLambdaParams->ve[5] = stateOld[i]->temperature + 273.15;		
-
 
 			//------------------------//
 			//        Def Grad        //
@@ -108,109 +98,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			/*  Find deformation gradient */
 			get_defgrad(stateNew[i]->F, B, neighbours,F_r,disp);
 
-			/* Find Fdot and Fbar dot */
-			m_sub(stateNew[i]->F, stateOld[i]->F, delta_F);
-			__smlt__(delta_F->base, 1.00/deltat, Fdot->base, dim_strain*dim_strain);
-
-			// inverse deformation gradient
-			m_inverse(F_n_1,invF_n_1);
-
-			// polar decomposition to find delta R
-			poldec(delta_F, delta_R, delta_U, delta_V);
-
-			//------------------------//
-			//      Velocity grad     //
-			//------------------------//
-			// Find velocity gradient 
-			velocity_grad(stateNew[i]->L, stateNew[i]->D, stateNew[i]->W,Fdot,invF_n_1);
-			// div_v
-			if ( dim_strain == 2)
-			{
-				div_v = stateOld[i]->L->me[0][0] + stateOld[i]->L->me[1][1];
-
-			}else if ( dim_strain == 3)
-			{
-				div_v = stateOld[i]->L->me[0][0] + stateOld[i]->L->me[1][1] + stateOld[i]->L->me[2][2];
-
-			}
-
-
-			// Get eigen values of polar decomposition
-			tracecatch(
-			symmeig(V,eigVecV,eigValV);,
-			"internalForce");
-
-
-
-			//------------------------//
-			//   Strain increment     //
-			//------------------------//
-
-
-			// sm_mlt(deltat, stateOld[i]->D, delta_ep_true);
-			// // update total strain
-			// m_mlt(R, stateOld[i]->ep_true, temp);
-			// mmtr_mlt(temp, R, stateOld[i]->ep_true);
-			// m_add(stateOld[i]->ep_true, delta_ep_true, stateNew[i]->ep_true);
-
-
-			// double delta_ep_vol = 0;
-
-			// if ( dim == 2)
-			// {
-			// 	delta_ep_vol = (1.00/3.00)*(delta_ep_true->me[0][0] +delta_ep_true->me[1][1]);
-			// 	delta_ep_true_vol->me[0][0] = delta_ep_vol;
-			// 	delta_ep_true_vol->me[1][1] = delta_ep_vol;
-
-			// }else if ( dim == 3)
-			// {
-			// 	delta_ep_vol = (1.00/3.00)*(delta_ep_true->me[0][0] +delta_ep_true->me[1][1] +delta_ep_true->me[2][2] );
-			// 	delta_ep_true_vol->me[0][0] = delta_ep_vol;
-			// 	delta_ep_true_vol->me[1][1] = delta_ep_vol;
-			// 	delta_ep_true_vol->me[2][2] = delta_ep_vol;
-			// }
-
-			// m_sub(delta_ep_true,delta_ep_true_vol,delta_ep_true_iso);
-
-
-
-			// Update Jacobian
-			Jacobian_n = stateOld[i]->Jacobian;
-			Jacobian_n_1 = Jacobian_n + Jacobian_n*div_v*deltat;
-
-			/* ------------------------------------------*/
-			/* ---------Isochoric   Deformation---------*/
-			/* ------------------------------------------*/
-
-			/* Distortional deformation */
-			__smlt__(F_n_1->base, pow(Jacobian_n_1,-1.00/3.00), F_n_1_bar->base, dim_strain*dim_strain);
-			// inv Fbar_n_1
-			__smlt__(invF_n_1->base,pow(Jacobian_n_1,1.00/3.00), invF_n_1_bar->base, dim_strain*dim_strain);
-
-			// F bar dot
-			m_sub(F_n_1_bar, stateOld[i]->Fbar, Fdot_bar);
-			__smlt__(Fdot->base, 1.00/deltat, Fdot_bar->base, dim_strain*dim_strain);
-
-			velocity_grad(stateOld[i]->Lbar, stateOld[i]->Dbar, stateOld[i]->Wbar, Fdot_bar, invF_n_1_bar);
-
-			// find eigen values of deviatoric deformation rate tensor
-			symmeig(stateOld[i]->Dbar,eigVecD,eigValD);
-
-			// update critical network stretch 
-			stateOld[i]->critLambdaBar =lambdaCrit(stateOld[i]->critLambdaBar,eigValV, eigValD, critLambdaParams);
-
-
-			/* ------------------------------------------*/
-			/* ------------- --Find Stress--------------*/
-			/* ------------------------------------------*/
-			/*  Obtain stresses using explicit integration of stress rate */
-			buckleyBond(stateNew[i],stateOld[i],matParams,deltat);
-			// Conformational stress
-			buckleyConf(stateNew[i],matParams,deltat);
-			mSigma = log(Jacobian_n_1)*Kb;
-			stateNew[i]->mSigma = mSigma;
-
-
+			buckleyStress(stateNew[i],stateOld[i],matParams,critLambdaParams,deltat);
 
 			/* ------------------------------------------*/
 			/* --------------New time increment----------*/
@@ -253,10 +141,10 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 			double b1 = 0.06;
 			double b2 = 1.44;
-			double Le = 1.6;
+			double Le = 1.6e-3;
 			double rho = 1380;
 			//double c = sqrt(((lambda+2*mu)/rho));
-			c = 1400;
+			double c = 1400;
 			double P_b1 = b1*div_v*rho*Le*c;
 			double eta = b1;
 			double P_b2 = 0;
@@ -266,13 +154,11 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			}
 
 
-			double delta_t = (2.00/sqrt(((lambda + 2*mu)*MaxB)))*(sqrt(1+eta*eta)-eta);
-			if ( delta_t <delta_t_min_i )
-			{
-				delta_t_min_i = delta_t;
-			}
-
-
+			// double delta_t = (2.00/sqrt(((lambda + 2*mu)*MaxB)))*(sqrt(1+eta*eta)-eta);
+			// if ( delta_t <delta_t_min_i )
+			// {
+			// 	delta_t_min_i = delta_t;
+			// }
 
 
 			/* ------------------------------------------*/
@@ -287,18 +173,20 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 				intFactor = intFactor * 2*PI*scni[i]->r;
 			}
 
+			Sc_n_1 = stateNew[i]->Sc;
+			Sb_n_1 = stateNew[i]->Sb;
 
 			/* Cauchy stress */
-			sigma->ve[0] = (Sc_n_1->me[0][0] + Sb_n_1->me[0][0] + mSigma)/1e6 + qv;
-			sigma->ve[1] = (Sc_n_1->me[1][1] + Sb_n_1->me[1][1] + mSigma)/1e6 + qv;
+			sigma->ve[0] = (Sc_n_1->me[0][0] + Sb_n_1->me[0][0] + mSigma + (P_b1+P_b2) )/1e6 ;
+			sigma->ve[1] = (Sc_n_1->me[1][1] + Sb_n_1->me[1][1] + mSigma + (P_b1+P_b2))/1e6 ;
 			sigma->ve[2] = (Sc_n_1->me[0][1] + Sb_n_1->me[0][1] )/1e6;
-			sigma->ve[3] = (Sb_n_1->me[2][2] + Sb_n_1->me[2][2] + mSigma)/1e6 + qv;
+			sigma->ve[3] = (Sb_n_1->me[2][2] + Sb_n_1->me[2][2] + mSigma + (P_b1+P_b2))/1e6 ;
 			
 
 			/*  Internal force vectors */
-			gMat(G,invDefGrad);
+			gMat(G,stateNew[i]->invF,is_axi);
 			mv_mlt(G,sigma,stressVoigt);
-			sv_mlt(Jacobian,stressVoigt,stressVoigt);
+			sv_mlt(Jacobian_n_1,stressVoigt,stressVoigt);
 
 			vm_mlt(scni[i]->B,stressVoigt,scni[i]->fInt);
 
@@ -306,6 +194,10 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 				fIntTemp->ve[2*scni[i]->sfIndex->ive[k]] += intFactor * scni[i]->fInt->ve[2*k];
 				fIntTemp->ve[2*scni[i]->sfIndex->ive[k]+1] += intFactor * scni[i]->fInt->ve[2*k+1];
 			}
+		
+
+
+
 		}
 
 	/*  Make this atomic or mutex so it is only done by one thread */

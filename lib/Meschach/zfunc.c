@@ -28,10 +28,10 @@
 	-- if not already defined
 */
 
-#include	"zmatrix.h"
 #include	<math.h>
+#include	"zmatrix.h"
 
-static char rcsid[] = "$Id: zfunc.c,v 1.1 1994/01/13 04:28:29 des Exp $";
+static char rcsid[] = "$Id: zfunc.c,v 1.3 1995/04/07 16:27:25 des Exp $";
 
 #ifndef COMPLEX_H
 
@@ -176,18 +176,23 @@ complex	z;
 {
     complex	w;	/* == sqrt(z) at end */
     Real	alpha;
-
+    
     alpha = sqrt(0.5*(fabs(z.re) + zabs(z)));
-    if ( z.re >= 0.0 )
-    {
-	w.re = alpha;
-	w.im = z.im / (2.0*alpha);
-    }
+    if (alpha!=0) 
+      {
+    	if (z.re>=0.0)
+	  {
+	    w.re = alpha;
+	    w.im = z.im / (2.0*alpha);
+	  }
+    	else
+	  {
+	    w.re = fabs(z.im)/(2.0*alpha);
+	    w.im = ( z.im >= 0 ) ? alpha : - alpha;
+	  }
+      }
     else
-    {
-	w.re = fabs(z.im)/(2.0*alpha);
-	w.im = ( z.im >= 0 ) ? alpha : - alpha;
-    }
+      w.re = w.im = 0.0;
 
     return w;
 }
@@ -236,3 +241,4 @@ complex	z;
 #endif
 
 #endif
+

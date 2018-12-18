@@ -34,7 +34,7 @@
 #include	"sparse2.h"
 #include        "iter.h"
 
-#define	errmesg(mesg)	{printf("Error: %s error: line %d\n",mesg,__LINE__); return 1;}
+#define	errmesg(mesg)	printf("Error: %s error: line %d\n",mesg,__LINE__)
 #define notice(mesg)	printf("# Testing %s...\n",mesg);
 
 /* for iterative methods */
@@ -45,7 +45,7 @@
 #define EPS   1e-3
 #endif
 
-int	chk_col_access(A)
+int	chk_col_accessSPT(A)
 SPMAT	*A;
 {
     int		i, j, nxt_idx, nxt_row, scan_cnt, total_cnt;
@@ -53,7 +53,7 @@ SPMAT	*A;
     row_elt	*e;
 
     if ( ! A )
-	error(E_NULL,"chk_col_access");
+	error(E_NULL,"chk_col_accessSPT");
     if ( ! A->flag_col )
 	return FALSE;
 
@@ -85,7 +85,7 @@ SPMAT	*A;
 }
 
 
-int	main(argc, argv)
+void	main(argc, argv)
 int	argc;
 char	*argv[];
 {
@@ -232,7 +232,7 @@ char	*argv[];
     if ( k < 20 )
 	errmesg("sp_resize()");
     sp_col_access(A);
-    if ( ! chk_col_access(A) )
+    if ( ! chk_col_accessSPT(A) )
     {
 	errmesg("sp_col_access()");
     }
@@ -477,8 +477,6 @@ char	*argv[];
 
     printf("# Done testing (%s)\n",argv[0]);
     mem_info();
-
-    return 0;
 }
     
 

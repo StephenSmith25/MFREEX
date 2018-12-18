@@ -30,7 +30,7 @@
 #include	<stdio.h>
 #include	"matrix.h"
 
-static	char	rcsid[] = "$Id: pxop.c,v 1.5 1994/03/23 23:58:50 des Exp $";
+static	char	rcsid[] = "$Id: pxop.c,v 1.6 1995/06/08 14:57:11 des Exp $";
 
 /**********************************************************************
 Note: A permutation is often interpreted as a matrix
@@ -42,8 +42,12 @@ Note: A permutation is often interpreted as a matrix
 
 /* px_inv -- invert permutation -- in situ
 	-- taken from ACM Collected Algorithms #250 */
+#ifndef ANSI_C
 PERM	*px_inv(px,out)
 PERM	*px, *out;
+#else
+PERM	*px_inv(const PERM *px, PERM *out)
+#endif
 {
     int	i, j, k, n, *p;
     
@@ -72,10 +76,14 @@ PERM	*px, *out;
 }
 
 /* px_mlt -- permutation multiplication (composition) */
+#ifndef ANSI_C
 PERM	*px_mlt(px1,px2,out)
 PERM	*px1,*px2,*out;
+#else
+PERM	*px_mlt(const PERM *px1, const PERM *px2, PERM *out)
+#endif
 {
-    u_int	i,size;
+    unsigned int	i,size;
     
     if ( px1==(PERM *)NULL || px2==(PERM *)NULL )
 	error(E_NULL,"px_mlt");
@@ -97,18 +105,22 @@ PERM	*px1,*px2,*out;
 }
 
 /* px_vec -- permute vector */
+#ifndef ANSI_C
 VEC	*px_vec(px,vector,out)
 PERM	*px;
 VEC	*vector,*out;
+#else
+VEC	*px_vec(PERM *px, const VEC *vector, VEC *out)
+#endif
 {
-    u_int	old_i, i, size, start;
+    unsigned int	old_i, i, size, start;
     Real	tmp;
     
-    if ( px==(PERM *)NULL || vector==(VEC *)NULL )
+    if ( px==PNULL || vector==VNULL )
 	error(E_NULL,"px_vec");
     if ( px->size > vector->dim )
 	error(E_SIZES,"px_vec");
-    if ( out==(VEC *)NULL || out->dim < vector->dim )
+    if ( out==VNULL || out->dim < vector->dim )
 	out = v_resize(out,vector->dim);
     
     size = px->size;
@@ -164,11 +176,15 @@ VEC	*vector,*out;
 }
 
 /* pxinv_vec -- apply the inverse of px to x, returning the result in out */
+#ifndef ANSI_C
 VEC	*pxinv_vec(px,x,out)
 PERM	*px;
 VEC	*x, *out;
+#else
+VEC	*pxinv_vec(PERM *px, const VEC *x, VEC *out)
+#endif
 {
-    u_int	i, size;
+    unsigned int	i, size;
     
     if ( ! px || ! x )
 	error(E_NULL,"pxinv_vec");
@@ -204,11 +220,15 @@ VEC	*x, *out;
 
 /* px_transp -- transpose elements of permutation
 		-- Really multiplying a permutation by a transposition */
+#ifndef ANSI_C
 PERM	*px_transp(px,i1,i2)
 PERM	*px;		/* permutation to transpose */
-u_int	i1,i2;		/* elements to transpose */
+unsigned int	i1,i2;		/* elements to transpose */
+#else
+PERM	*px_transp(PERM *px, unsigned int i1, unsigned int i2)
+#endif
 {
-	u_int	temp;
+	unsigned int	temp;
 
 	if ( px==(PERM *)NULL )
 		error(E_NULL,"px_transp");
@@ -225,8 +245,12 @@ u_int	i1,i2;		/* elements to transpose */
 
 /* myqsort -- a cheap implementation of Quicksort on integers
 		-- returns number of swaps */
+#ifndef ANSI_C
 static int myqsort(a,num)
 int	*a, num;
+#else
+static int myqsort(int *a, int num)
+#endif
 {
 	int	i, j, tmp, v;
 	int	numswaps;
@@ -265,8 +289,12 @@ int	*a, num;
 
 /* px_sign -- compute the ``sign'' of a permutation = +/-1 where
 		px is the product of an even/odd # transpositions */
+#ifndef ANSI_C
 int	px_sign(px)
 PERM	*px;
+#else
+int	px_sign(const PERM *px)
+#endif
 {
 	int	numtransp;
 	PERM	*px2;
@@ -274,7 +302,7 @@ PERM	*px;
 	if ( px==(PERM *)NULL )
 		error(E_NULL,"px_sign");
 	px2 = px_copy(px,PNULL);
-	numtransp = myqsort(px2->pe,px2->size);
+	numtransp = myqsort((int *)px2->pe,px2->size);
 	px_free(px2);
 
 	return ( numtransp % 2 ) ? -1 : 1;
@@ -283,9 +311,13 @@ PERM	*px;
 
 /* px_cols -- permute columns of matrix A; out = A.px'
 	-- May NOT be in situ */
+#ifndef ANSI_C
 MAT	*px_cols(px,A,out)
 PERM	*px;
 MAT	*A, *out;
+#else
+MAT	*px_cols(const PERM *px, const MAT *A, MAT *out)
+#endif
 {
 	int	i, j, m, n, px_j;
 	Real	**A_me, **out_me;
@@ -320,9 +352,13 @@ MAT	*A, *out;
 
 /* px_rows -- permute columns of matrix A; out = px.A
 	-- May NOT be in situ */
+#ifndef ANSI_C
 MAT	*px_rows(px,A,out)
 PERM	*px;
 MAT	*A, *out;
+#else
+MAT	*px_rows(const PERM *px, const MAT *A, MAT *out)
+#endif
 {
 	int	i, j, m, n, px_i;
 	Real	**A_me, **out_me;

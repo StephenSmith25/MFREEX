@@ -46,6 +46,7 @@ void	m_version()
 	printf("\t Fixed some installation bugs\n");
 	printf("\t Fixed bugs & improved efficiency in spILUfactor()\n");
 	printf("\t px_inv() doesn't crash inverting non-permutations\n");
+	printf("\t Fixed bug in ifft()\n");
 	/**** List of modifications ****/
 	/* Example below is for illustration only */
 	/* printf("Modified by %s, routine(s) %s, file %s on date %s\n",

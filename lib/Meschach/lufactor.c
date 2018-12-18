@@ -29,13 +29,12 @@
 */
 
 /* LUfactor.c 1.5 11/25/87 */
-static	char	rcsid[] = "$Id: lufactor.c,v 1.7 1994/03/13 23:08:25 des Exp $";
+static	char	rcsid[] = "$Id: lufactor.c,v 1.10 1995/05/16 17:26:44 des Exp $";
 
 #include	<stdio.h>
 #include	<math.h>
 #include	"matrix.h"
 #include        "matrix2.h"
-#include	<math.h>
 
 
 
@@ -43,15 +42,19 @@ static	char	rcsid[] = "$Id: lufactor.c,v 1.7 1994/03/13 23:08:25 des Exp $";
 
 /* LUfactor -- gaussian elimination with scaled partial pivoting
 		-- Note: returns LU matrix which is A */
+#ifndef ANSI_C
 MAT	*LUfactor(A,pivot)
 MAT	*A;
 PERM	*pivot;
+#else
+MAT	*LUfactor(MAT *A, PERM *pivot)
+#endif
 {
-	u_int	i, j, k, k_max, m, n;
-	int	i_max;
+	unsigned int	i, j, m, n;
+	int	i_max, k, k_max;
 	Real	**A_v, *A_piv, *A_row;
 	Real	max1, temp, tiny;
-	static	VEC	*scale = VNULL;
+	STATIC	VEC	*scale = VNULL;
 
 	if ( A==(MAT *)NULL || pivot==(PERM *)NULL )
 		error(E_NULL,"LUfactor");
@@ -132,34 +135,46 @@ PERM	*pivot;
 	    
 	}
 
+#ifdef	THREADSAFE
+	V_FREE(scale);
+#endif
+
 	return A;
 }
 
 
 /* LUsolve -- given an LU factorisation in A, solve Ax=b */
-VEC	*LUsolve(A,pivot,b,x)
-MAT	*A;
+#ifndef ANSI_C
+VEC	*LUsolve(LU,pivot,b,x)
+MAT	*LU;
 PERM	*pivot;
 VEC	*b,*x;
+#else
+VEC	*LUsolve(const MAT *LU, PERM *pivot, const VEC *b, VEC *x)
+#endif
 {
-	if ( A==(MAT *)NULL || b==(VEC *)NULL || pivot==(PERM *)NULL )
+	if ( ! LU || ! b || ! pivot )
 		error(E_NULL,"LUsolve");
-	if ( A->m != A->n || A->n != b->dim )
+	if ( LU->m != LU->n || LU->n != b->dim )
 		error(E_SIZES,"LUsolve");
 
 	x = v_resize(x,b->dim);
 	px_vec(pivot,b,x);	/* x := P.b */
-	Lsolve(A,x,x,1.0);	/* implicit diagonal = 1 */
-	Usolve(A,x,x,0.0);	/* explicit diagonal */
+	Lsolve(LU,x,x,1.0);	/* implicit diagonal = 1 */
+	Usolve(LU,x,x,0.0);	/* explicit diagonal */
 
 	return (x);
 }
 
 /* LUTsolve -- given an LU factorisation in A, solve A^T.x=b */
+#ifndef ANSI_C
 VEC	*LUTsolve(LU,pivot,b,x)
 MAT	*LU;
 PERM	*pivot;
 VEC	*b,*x;
+#else
+VEC	*LUTsolve(const MAT *LU, PERM *pivot, const VEC *b, VEC *x)
+#endif
 {
 	if ( ! LU || ! b || ! pivot )
 		error(E_NULL,"LUTsolve");
@@ -176,13 +191,17 @@ VEC	*b,*x;
 
 /* m_inverse -- returns inverse of A, provided A is not too rank deficient
 	-- uses LU factorisation */
+#ifndef ANSI_C
 MAT	*m_inverse(A,out)
 MAT	*A, *out;
+#else
+MAT	*m_inverse(const MAT *A, MAT *out)
+#endif
 {
 	int	i;
-	static VEC	*tmp = VNULL, *tmp2 = VNULL;
-	static MAT	*A_cp = MNULL;
-	static PERM	*pivot = PNULL;
+	STATIC VEC	*tmp = VNULL, *tmp2 = VNULL;
+	STATIC MAT	*A_cp = MNULL;
+	STATIC PERM	*pivot = PNULL;
 
 	if ( ! A )
 	    error(E_NULL,"m_inverse");
@@ -191,7 +210,8 @@ MAT	*A, *out;
 	if ( ! out || out->m < A->m || out->n < A->n )
 	    out = m_resize(out,A->m,A->n);
 
-	A_cp = m_copy(A,MNULL);
+	A_cp = m_resize(A_cp,A->m,A->n);
+	A_cp = m_copy(A,A_cp);
 	tmp = v_resize(tmp,A->m);
 	tmp2 = v_resize(tmp2,A->m);
 	pivot = px_resize(pivot,A->m);
@@ -208,16 +228,25 @@ MAT	*A, *out;
 	    set_col(out,i,tmp2);
 	}
 
+#ifdef	THREADSAFE
+	V_FREE(tmp);	V_FREE(tmp2);
+	M_FREE(A_cp);	PX_FREE(pivot);
+#endif
+
 	return out;
 }
 
 /* LUcondest -- returns an estimate of the condition number of LU given the
 	LU factorisation in compact form */
+#ifndef ANSI_C
 double	LUcondest(LU,pivot)
 MAT	*LU;
 PERM	*pivot;
+#else
+double	LUcondest(const MAT *LU, PERM *pivot)
+#endif
 {
-    static	VEC	*y = VNULL, *z = VNULL;
+    STATIC	VEC	*y = VNULL, *z = VNULL;
     Real	cond_est, L_norm, U_norm, sum, tiny;
     int		i, j, n;
 
@@ -276,6 +305,10 @@ PERM	*pivot;
 
     tracecatch(cond_est = U_norm*L_norm*v_norm_inf(z)/v_norm_inf(y),
 	       "LUcondest");
+
+#ifdef	THREADSAFE
+    V_FREE(y);    V_FREE(z);
+#endif
 
     return cond_est;
 }

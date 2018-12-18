@@ -31,9 +31,9 @@
 */
 
 #include	<stdio.h>
+#include	<math.h>
 #include	"matrix.h"
 #include        "matrix2.h"
-#include	<math.h>
 
 
 static char rcsid[] = "$Id: schur.c,v 1.7 1994/03/17 05:36:53 des Exp $";
@@ -151,14 +151,18 @@ static	void	hhldr3rows(MAT *A, int k, int i0, double beta,
 /* schur -- computes the Schur decomposition of the matrix A in situ
 	-- optionally, gives Q matrix such that Q^T.A.Q is upper triangular
 	-- returns upper triangular Schur matrix */
+#ifndef ANSI_C
 MAT	*schur(A,Q)
 MAT	*A, *Q;
+#else
+MAT	*schur(MAT *A, MAT *Q)
+#endif
 {
     int		i, j, iter, k, k_min, k_max, k_tmp, n, split;
     Real	beta2, c, discrim, dummy, nu1, s, t, tmp, x, y, z;
     Real	**A_me;
     Real	sqrt_macheps;
-    static	VEC	*diag=VNULL, *beta=VNULL;
+    STATIC	VEC	*diag=VNULL, *beta=VNULL;
     
     if ( ! A )
 	error(E_NULL,"schur");
@@ -214,8 +218,7 @@ MAT	*A, *Q;
 	    tmp = a00 - a11;
 	    /* discrim = tmp*tmp +
 		4*A_me[k_min][k_max]*A_me[k_max][k_min]; */
-	    discrim = tmp*tmp +
-		4*a01*a10;
+	    discrim = tmp*tmp + 4*a01*a10;
 	    if ( discrim < 0.0 )
 	    {	/* yes -- e-vals are complex
 		   -- put 2 x 2 block in form [a b; c a];
@@ -296,6 +299,10 @@ MAT	*A, *Q;
 	       -- if there are still no splits after five iterations
 	          and the bottom 2 x 2 looks degenerate, force it to
 		  split */
+#ifdef DEBUG
+	    printf("# schur: bottom 2 x 2 = [%lg, %lg; %lg, %lg]\n",
+		   a00, a01, a10, a11);
+#endif
 	    if ( iter >= 5 &&
 		 fabs(a00-a11) < sqrt_macheps*(fabs(a00)+fabs(a11)) &&
 		 (fabs(a01) < sqrt_macheps*(fabs(a00)+fabs(a11)) ||
@@ -421,6 +428,10 @@ MAT	*A, *Q;
 	    (fabs(A_me[i][i])+fabs(A_me[i+1][i+1])) )
 	    A_me[i+1][i] = 0.0;
 
+#ifdef	THREADSAFE
+    V_FREE(diag);	V_FREE(beta);
+#endif
+
     return A;
 }
 
@@ -428,9 +439,13 @@ MAT	*A, *Q;
 	-- assumes T contains a block upper triangular matrix
 		as produced by schur()
 	-- real parts stored in real_pt, imaginary parts in imag_pt */
+#ifndef ANSI_C
 void	schur_evals(T,real_pt,imag_pt)
 MAT	*T;
 VEC	*real_pt, *imag_pt;
+#else
+void	schur_evals(MAT *T, VEC *real_pt, VEC *imag_pt)
+#endif
 {
 	int	i, n;
 	Real	discrim, **T_me;
@@ -441,8 +456,8 @@ VEC	*real_pt, *imag_pt;
 	if ( T->m != T->n )
 		error(E_SQUARE,"schur_evals");
 	n = T->n;	T_me = T->me;
-	real_pt = v_resize(real_pt,(u_int)n);
-	imag_pt = v_resize(imag_pt,(u_int)n);
+	real_pt = v_resize(real_pt,(unsigned int)n);
+	imag_pt = v_resize(imag_pt,(unsigned int)n);
 
 	i = 0;
 	while ( i < n )
@@ -484,8 +499,12 @@ VEC	*real_pt, *imag_pt;
 	-- X_re is the real part of the matrix of eigenvectors,
 		and X_im is the imaginary part of the matrix.
 	-- X_re is returned */
+#ifndef ANSI_C
 MAT	*schur_vecs(T,Q,X_re,X_im)
 MAT	*T, *Q, *X_re, *X_im;
+#else
+MAT	*schur_vecs(MAT *T, MAT *Q, MAT *X_re, MAT *X_im)
+#endif
 {
 	int	i, j, limit;
 	Real	t11_re, t11_im, t12, t21, t22_re, t22_im;
@@ -493,7 +512,7 @@ MAT	*T, *Q, *X_re, *X_im;
 		val1_re, val1_im, val2_re, val2_im,
 		tmp_val1_re, tmp_val1_im, tmp_val2_re, tmp_val2_im, **T_me;
 	Real	sum, diff, discrim, magdet, norm, scale;
-	static VEC	*tmp1_re=VNULL, *tmp1_im=VNULL,
+	STATIC VEC	*tmp1_re=VNULL, *tmp1_im=VNULL,
 			*tmp2_re=VNULL, *tmp2_im=VNULL;
 
 	if ( ! T || ! X_re )
@@ -662,6 +681,11 @@ MAT	*T, *Q, *X_re, *X_im;
 		i += 1;
 	    }
 	}
+
+#ifdef	THREADSAFE
+	V_FREE(tmp1_re);	V_FREE(tmp1_im);
+	V_FREE(tmp2_re);	V_FREE(tmp2_im);
+#endif
 
 	return X_re;
 }

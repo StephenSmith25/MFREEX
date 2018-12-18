@@ -29,12 +29,12 @@
 */
 
 #include	<stdio.h>
+#include	<math.h>
 #include	"matrix.h"
 #include        "matrix2.h"
-#include	<math.h>
 
 
-static char rcsid[] = "$Id: symmeig.c,v 1.5 1994/02/16 03:23:39 des Exp $";
+static char rcsid[] = "$Id: symmeig.c,v 1.6 1995/03/27 15:45:55 des Exp $";
 
 
 
@@ -45,9 +45,13 @@ static char rcsid[] = "$Id: symmeig.c,v 1.5 1994/02/16 03:23:39 des Exp $";
 	-- matrix represented by a pair of vectors a (diag entries)
 		and b (sub- & super-diag entries)
 	-- eigenvalues in a on return */
+#ifndef ANSI_C
 VEC	*trieig(a,b,Q)
 VEC	*a, *b;
 MAT	*Q;
+#else
+VEC	*trieig(VEC *a, VEC *b, MAT *Q)
+#endif
 {
 	int	i, i_min, i_max, n, split;
 	Real	*a_ve, *b_ve;
@@ -170,13 +174,17 @@ MAT	*Q;
 	-- eigenvalues stored in out
 	-- Q contains orthogonal matrix of eigenvectors
 	-- returns vector of eigenvalues */
+#ifndef ANSI_C
 VEC	*symmeig(A,Q,out)
 MAT	*A, *Q;
 VEC	*out;
+#else
+VEC	*symmeig(const MAT *A, MAT *Q, VEC *out)
+#endif
 {
 	int	i;
-	static MAT	*tmp = MNULL;
-	static VEC	*b   = VNULL, *diag = VNULL, *beta = VNULL;
+	STATIC MAT	*tmp = MNULL;
+	STATIC VEC	*b   = VNULL, *diag = VNULL, *beta = VNULL;
 
 	if ( ! A )
 		error(E_NULL,"symmeig");
@@ -185,10 +193,11 @@ VEC	*out;
 	if ( ! out || out->dim != A->m )
 		out = v_resize(out,A->m);
 
+	tmp  = m_resize(tmp,A->m,A->n);
 	tmp  = m_copy(A,tmp);
 	b    = v_resize(b,A->m - 1);
-	diag = v_resize(diag,(u_int)A->m);
-	beta = v_resize(beta,(u_int)A->m);
+	diag = v_resize(diag,(unsigned int)A->m);
+	beta = v_resize(beta,(unsigned int)A->m);
 	MEM_STAT_REG(tmp,TYPE_MAT);
 	MEM_STAT_REG(b,TYPE_VEC);
 	MEM_STAT_REG(diag,TYPE_VEC);
@@ -206,6 +215,9 @@ VEC	*out;
 	out->ve[i] = tmp->me[i][i];
 	trieig(out,b,Q);
 
+#ifdef	THREADSAFE
+	M_FREE(tmp);	V_FREE(b);	V_FREE(diag);	V_FREE(beta);
+#endif
 	return out;
 }
 

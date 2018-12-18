@@ -45,9 +45,13 @@ static	int	y_n_dflt = TRUE;
 /* fy_or_n -- yes-or-no to question is string s
 	-- question written to stderr, input from fp 
 	-- if fp is NOT a tty then return y_n_dflt */
+#ifndef ANSI_C
 int	fy_or_n(fp,s)
 FILE	*fp;
 char	*s;
+#else
+int	fy_or_n(FILE *fp, const char *s)
+#endif
 {
 	char	*cp;
 
@@ -72,8 +76,12 @@ char	*s;
 }
 
 /* yn_dflt -- sets the value of y_n_dflt to val */
+#ifndef ANSI_C
 int	yn_dflt(val)
 int	val;
+#else
+int	yn_dflt(int val)
+#endif
 {	return y_n_dflt = val;		}
 
 /* fin_int -- return integer read from file/stream fp
@@ -81,10 +89,14 @@ int	val;
 	-- check that x lies between low and high: re-prompt if
 		fp is a tty, error exit otherwise
 	-- ignore check if low > high		*/
+#ifndef ANSI_C
 int	fin_int(fp,s,low,high)
 FILE	*fp;
 char	*s;
 int	low, high;
+#else
+int	fin_int(FILE *fp, const char *s, int low, int high)
+#endif
 {
 	int	retcode, x;
 
@@ -120,10 +132,14 @@ int	low, high;
 	-- check that x lies between low and high: re-prompt if
 		fp is a tty, error exit otherwise
 	-- ignore check if low > high		*/
+#ifndef ANSI_C
 double	fin_double(fp,s,low,high)
 FILE	*fp;
 char	*s;
 double	low, high;
+#else
+double	fin_double(FILE *fp, const char *s, double low, double high)
+#endif
 {
 	Real	retcode, x;
 

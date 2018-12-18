@@ -37,9 +37,9 @@
 static	char	rcsid[] = "$Id: zhsehldr.c,v 1.2 1994/04/07 01:43:47 des Exp $";
 
 #include	<stdio.h>
+#include	<math.h>
 #include	"zmatrix.h"
 #include        "zmatrix2.h"
-#include	<math.h>
 
 #define	is_zero(z)	((z).re == 0.0 && (z).im == 0.0)
 
@@ -91,7 +91,7 @@ int	i0;
 double	beta;
 {
 	complex	scale, tmp;
-	/* u_int	i; */
+	/* unsigned int	i; */
 
 	if ( hh==ZVNULL || in==ZVNULL )
 		error(E_NULL,"zhhtrvec");
@@ -115,7 +115,9 @@ double	beta;
 }
 
 /* zhhtrrows -- transform a matrix by a Householder vector by rows
-	starting at row i0 from column j0 -- in-situ */
+	starting at row i0 from column j0 
+	-- in-situ
+	-- that is, M(i0:m,j0:n) <- M(i0:m,j0:n)(I-beta.hh(j0:n).hh(j0:n)^T) */
 ZMAT	*zhhtrrows(M,i0,j0,hh,beta)
 ZMAT	*M;
 int	i0, j0;
@@ -162,9 +164,14 @@ double	beta;
 	return (M);
 }
 
-
 /* zhhtrcols -- transform a matrix by a Householder vector by columns
-	starting at row i0 from column j0 -- in-situ */
+	starting at row i0 from column j0 
+	-- that is, M(i0:m,j0:n) <- (I-beta.hh(i0:m).hh(i0:m)^T)M(i0:m,j0:n)
+	-- in-situ
+	-- calls _zhhtrcols() with the scratch vector w
+	-- Meschach internal routines should call _zhhtrcols() to
+	avoid excessive memory allocation/de-allocation
+*/
 ZMAT	*zhhtrcols(M,i0,j0,hh,beta)
 ZMAT	*M;
 int	i0, j0;
@@ -174,7 +181,7 @@ double	beta;
 	/* Real	ip, scale; */
 	complex	scale;
 	int	i /*, k */;
-	static	ZVEC	*w = ZVNULL;
+	STATIC	ZVEC	*w = ZVNULL;
 
 	if ( M==ZMNULL || hh==ZVNULL )
 		error(E_NULL,"zhhtrcols");
@@ -185,8 +192,47 @@ double	beta;
 
 	if ( beta == 0.0 )	return (M);
 
-	w = zv_resize(w,M->n);
+	if ( ! w || w->dim < M->n )
+	  w = zv_resize(w,M->n);
 	MEM_STAT_REG(w,TYPE_ZVEC);
+
+	M = _zhhtrcols(M,i0,j0,hh,beta,w);
+
+#ifdef THREADSAFE
+	ZV_FREE(w);
+#endif
+
+	return M;
+}
+
+/* _zhhtrcols -- transform a matrix by a Householder vector by columns
+	starting at row i0 from column j0 
+	-- that is, M(i0:m,j0:n) <- (I-beta.hh(i0:m).hh(i0:m)^T)M(i0:m,j0:n)
+	-- in-situ
+	-- scratch vector w passed as argument
+	-- raises error if w == NULL */
+ZMAT	*_zhhtrcols(M,i0,j0,hh,beta,w)
+ZMAT	*M;
+int	i0, j0;
+ZVEC	*hh;
+double	beta;
+ZVEC	*w;
+{
+	/* Real	ip, scale; */
+	complex	scale;
+	int	i /*, k */;
+
+	if ( M==ZMNULL || hh==ZVNULL )
+		error(E_NULL,"zhhtrcols");
+	if ( M->m != hh->dim )
+		error(E_SIZES,"zhhtrcols");
+	if ( i0 < 0 || i0 > M->m || j0 < 0 || j0 > M->n )
+		error(E_BOUNDS,"zhhtrcols");
+
+	if ( beta == 0.0 )	return (M);
+
+	if ( w->dim < M->n )
+	  w = zv_resize(w,M->n);
 	zv_zero(w);
 
 	for ( i = i0; i < M->m; i++ )
@@ -203,6 +249,7 @@ double	beta;
 		__zmltadd__(&(M->me[i][j0]),&(w->ve[j0]),scale,
 			    (int)(M->n-j0),Z_CONJ);
 	    }
+
 	return (M);
 }
 

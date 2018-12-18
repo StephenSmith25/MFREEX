@@ -29,12 +29,12 @@
 */
 
 #include	<stdio.h>
+#include	<math.h>
 #include	"matrix.h"
 #include        "matrix2.h"
-#include	<math.h>
 
 
-static char rcsid[] = "$Id: svd.c,v 1.6 1994/01/13 05:44:16 des Exp $";
+static char rcsid[] = "$Id: svd.c,v 1.7 1995/09/08 14:45:43 des Exp $";
 
 
 
@@ -46,9 +46,13 @@ static char rcsid[] = "$Id: svd.c,v 1.6 1994/01/13 05:44:16 des Exp $";
 	-- sort singular values in decreasing order
 	-- variables as for bisvd()
 	-- no argument checking */
+#ifndef ANSI_C
 static void	fixsvd(d,U,V)
 VEC	*d;
 MAT	*U, *V;
+#else
+static void	fixsvd(VEC *d, MAT *U, MAT *V)
+#endif
 {
     int		i, j, k, l, r, stack[MAX_STACK], sp;
     Real	tmp, v;
@@ -137,9 +141,13 @@ MAT	*U, *V;
 		in U, V; if U, V == I on entry, then SVD == U^T.A.V
 		where A is initial matrix
 	-- returns d on exit */
+#ifndef ANSI_C
 VEC	*bisvd(d,f,U,V)
 VEC	*d, *f;
 MAT	*U, *V;
+#else
+VEC	*bisvd(VEC *d, VEC *f, MAT *U, MAT *V)
+#endif
 {
 	int	i, j, n;
 	int	i_min, i_max, split;
@@ -158,7 +166,15 @@ MAT	*U, *V;
 
 
 	if ( n == 1 )
-		return d;
+	  {
+	    if ( d->ve[0] < 0.0 )
+	      {
+		d->ve[0] = - d->ve[0];
+		if ( U != MNULL )
+		  sm_mlt(-1.0,U,U);
+	      }
+	    return d;
+	  }
 	d_ve = d->ve;	f_ve = f->ve;
 
 	size = v_norm_inf(d) + v_norm_inf(f);
@@ -289,11 +305,15 @@ MAT	*U, *V;
 
 /* bifactor -- perform preliminary factorisation for bisvd
 	-- updates U and/or V, which ever is not NULL */
+#ifndef ANSI_C
 MAT	*bifactor(A,U,V)
 MAT	*A, *U, *V;
+#else
+MAT	*bifactor(MAT *A, MAT *U, MAT *V)
+#endif
 {
 	int	k;
-	static VEC	*tmp1=VNULL, *tmp2=VNULL;
+	STATIC VEC	*tmp1=VNULL, *tmp2=VNULL, *w=VNULL;
 	Real	beta;
 
 	if ( ! A )
@@ -304,24 +324,26 @@ MAT	*A, *U, *V;
 		error(E_SIZES,"bifactor");
 	tmp1 = v_resize(tmp1,A->m);
 	tmp2 = v_resize(tmp2,A->n);
+	w    = v_resize(w,   max(A->m,A->n));
 	MEM_STAT_REG(tmp1,TYPE_VEC);
 	MEM_STAT_REG(tmp2,TYPE_VEC);
+	MEM_STAT_REG(w,   TYPE_VEC);
 
 	if ( A->m >= A->n )
 	    for ( k = 0; k < A->n; k++ )
 	    {
 		get_col(A,k,tmp1);
 		hhvec(tmp1,k,&beta,tmp1,&(A->me[k][k]));
-		hhtrcols(A,k,k+1,tmp1,beta);
+		_hhtrcols(A,k,k+1,tmp1,beta,w);
 		if ( U )
-		    hhtrcols(U,k,0,tmp1,beta);
+		    _hhtrcols(U,k,0,tmp1,beta,w);
 		if ( k+1 >= A->n )
 		    continue;
 		get_row(A,k,tmp2);
 		hhvec(tmp2,k+1,&beta,tmp2,&(A->me[k][k+1]));
 		hhtrrows(A,k+1,k+1,tmp2,beta);
 		if ( V )
-		    hhtrcols(V,k+1,0,tmp2,beta);
+		    _hhtrcols(V,k+1,0,tmp2,beta,w);
 	    }
 	else
 	    for ( k = 0; k < A->m; k++ )
@@ -330,15 +352,19 @@ MAT	*A, *U, *V;
 		hhvec(tmp2,k,&beta,tmp2,&(A->me[k][k]));
 		hhtrrows(A,k+1,k,tmp2,beta);
 		if ( V )
-		    hhtrcols(V,k,0,tmp2,beta);
+		    _hhtrcols(V,k,0,tmp2,beta,w);
 		if ( k+1 >= A->m )
 		    continue;
 		get_col(A,k,tmp1);
 		hhvec(tmp1,k+1,&beta,tmp1,&(A->me[k+1][k]));
-		hhtrcols(A,k+1,k+1,tmp1,beta);
+		_hhtrcols(A,k+1,k+1,tmp1,beta,w);
 		if ( U )
-		    hhtrcols(U,k+1,0,tmp1,beta);
+		    _hhtrcols(U,k+1,0,tmp1,beta,w);
 	    }
+
+#ifdef	THREADSAFE
+	V_FREE(tmp1);	V_FREE(tmp2);
+#endif
 
 	return A;
 }
@@ -346,11 +372,15 @@ MAT	*A, *U, *V;
 /* svd -- returns vector of singular values in d
 	-- also updates U and/or V, if one or the other is non-NULL
 	-- destroys A */
+#ifndef ANSI_C
 VEC	*svd(A,U,V,d)
 MAT	*A, *U, *V;
 VEC	*d;
+#else
+VEC	*svd(MAT *A, MAT *U, MAT *V, VEC *d)
+#endif
 {
-	static VEC	*f=VNULL;
+	STATIC VEC	*f=VNULL;
 	int	i, limit;
 	MAT	*A_tmp;
 
@@ -394,6 +424,9 @@ VEC	*d;
 	    bisvd(d,f,V,U);
 
 	M_FREE(A_tmp);
+#ifdef	THREADSAFE
+	V_FREE(f);
+#endif
 
 	return d;
 }

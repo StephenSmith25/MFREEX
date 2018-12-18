@@ -4,7 +4,7 @@
 #include "Material/material.h"
 
 
-state_Buckley ** new_Buckley_state(int num_Points, double * Temperatures, int is_AXI, int dim);
+state_Buckley ** new_Buckley_State(int num_Points, double * Temperatures, int is_AXI, int dim);
 
 
 

@@ -64,7 +64,7 @@ typedef struct {
 #define MACH_ID         MOTOROLA
 #endif
 
-#define ORDER           ROW_ORDER
+#define ORDER           COL_ORDER
 
 #if REAL == DOUBLE
 #define PRECISION       DOUBLE_PREC
@@ -77,10 +77,10 @@ typedef struct {
 
 #ifdef ANSI_C
 
-MAT *m_save(FILE *,MAT *,char *);
+MAT *m_save(FILE *,MAT *,const char *);
 MAT *m_load(FILE *,char **);
-VEC *v_save(FILE *,VEC *,char *);
-double d_save(FILE *,double,char *);
+VEC *v_save(FILE *,VEC *,const char *);
+double d_save(FILE *,double,const char *);
 
 #else
 

@@ -39,11 +39,15 @@ static char	rcsid[] = "$Id: sprow.c,v 1.1 1994/01/13 05:35:36 des Exp $";
 #define	MINROWLEN	10
 
 
+#ifndef MEX
 /* sprow_dump - prints relevant information about the sparse row r */
-
+#ifndef ANSI_C
 void sprow_dump(fp,r)
 FILE *fp;
 SPROW *r;
+#else
+void sprow_dump(FILE *fp, const SPROW *r)
+#endif
 {
    int  j_idx;
    row_elt *elts;
@@ -66,14 +70,18 @@ SPROW *r;
 	     elts->col,elts->val,elts->nxt_row,elts->nxt_idx);
    fprintf(fp,"\n");
 }
-
+#endif /* MEX */
 
 /* sprow_idx -- get index into row for a given column in a given row
    -- return -1 on error
    -- return -(idx+2) where idx is index to insertion point */
+#ifndef ANSI_C
 int	sprow_idx(r,col)
 SPROW	*r;
 int	col;
+#else
+int	sprow_idx(const SPROW *r, int col)
+#endif
 {
    register int		lo, hi, mid;
    int			tmp;
@@ -118,8 +126,12 @@ int	col;
 
 /* sprow_get -- gets, initialises and returns a SPROW structure
    -- max. length is maxlen */
+#ifndef ANSI_C
 SPROW	*sprow_get(maxlen)
 int	maxlen;
+#else
+SPROW	*sprow_get(int maxlen)
+#endif
 {
    SPROW	*r;
    
@@ -151,9 +163,13 @@ int	maxlen;
    -- type must be TYPE_SPMAT if r is a row of a SPMAT structure,
       otherwise it must be TYPE_SPROW
    -- returns r */
+#ifndef ANSI_C
 SPROW	*sprow_xpd(r,n,type)
 SPROW	*r;
 int	n,type;
+#else
+SPROW	*sprow_xpd(SPROW *r, int n, int type)
+#endif
 {
    int	newlen;
    
@@ -211,9 +227,13 @@ int	n,type;
 /* sprow_resize -- resize a SPROW variable by means of realloc()
    -- n is a new size
    -- returns r */
+#ifndef ANSI_C
 SPROW	*sprow_resize(r,n,type)
 SPROW	*r;
 int	n,type;
+#else
+SPROW	*sprow_resize(SPROW *r, int n, int type)
+#endif
 {
    if (n < 0)
      error(E_NEG,"sprow_resize");
@@ -255,8 +275,12 @@ int	n,type;
 
 
 /* release a row of a matrix */
+#ifndef ANSI_C
 int sprow_free(r)
 SPROW	*r;
+#else
+int sprow_free(SPROW *r)
+#endif
 {
    if ( ! r )
      return -1;
@@ -280,13 +304,17 @@ SPROW	*r;
 
 /* sprow_merge -- merges r1 and r2 into r_out
    -- cannot be done in-situ
-   -- type must be SPMAT or SPROW depending on
+   -- type must be TYPE_SPMAT or TYPE_SPROW depending on
       whether r_out is a row of a SPMAT structure
       or a SPROW variable
    -- returns r_out */
+#ifndef ANSI_C
 SPROW	*sprow_merge(r1,r2,r_out,type)
 SPROW	*r1, *r2, *r_out;
 int type;
+#else
+SPROW	*sprow_merge(const SPROW *r1, const SPROW *r2, SPROW *r_out, int type)
+#endif
 {
    int	idx1, idx2, idx_out, len1, len2, len_out;
    row_elt	*elt1, *elt2, *elt_out;
@@ -335,13 +363,17 @@ int type;
 
 /* sprow_copy -- copies r1 and r2 into r_out
    -- cannot be done in-situ
-   -- type must be SPMAT or SPROW depending on
+   -- type must be TYPE_SPMAT or TYPE_SPROW depending on
       whether r_out is a row of a SPMAT structure
       or a SPROW variable
    -- returns r_out */
+#ifndef ANSI_C
 SPROW	*sprow_copy(r1,r2,r_out,type)
 SPROW	*r1, *r2, *r_out;
 int type;
+#else
+SPROW	*sprow_copy(const SPROW *r1, const SPROW *r2, SPROW *r_out, int type)
+#endif
 {
    int	idx1, idx2, idx_out, len1, len2, len_out;
    row_elt	*elt1, *elt2, *elt_out;
@@ -391,14 +423,19 @@ int type;
 /* sprow_mltadd -- sets r_out <- r1 + alpha.r2
    -- cannot be in situ
    -- only for columns j0, j0+1, ...
-   -- type must be SPMAT or SPROW depending on
+   -- type must be TYPE_SPMAT or TYPE_SPROW depending on
       whether r_out is a row of a SPMAT structure
       or a SPROW variable
    -- returns r_out */
+#ifndef ANSI_C
 SPROW	*sprow_mltadd(r1,r2,alpha,j0,r_out,type)
 SPROW	*r1, *r2, *r_out;
 double	alpha;
 int	j0, type;
+#else
+SPROW	*sprow_mltadd(const SPROW *r1,const SPROW *r2, double alpha,
+		      int j0, SPROW *r_out, int type)
+#endif
 {
    int	idx1, idx2, idx_out, len1, len2, len_out;
    row_elt	*elt1, *elt2, *elt_out;
@@ -461,13 +498,18 @@ int	j0, type;
 /* sprow_add -- sets r_out <- r1 + r2
    -- cannot be in situ
    -- only for columns j0, j0+1, ...
-   -- type must be SPMAT or SPROW depending on
+   -- type must be TYPE_SPMAT or TYPE_SPROW depending on
       whether r_out is a row of a SPMAT structure
       or a SPROW variable
    -- returns r_out */
+#ifndef ANSI_C
 SPROW	*sprow_add(r1,r2,j0,r_out,type)
 SPROW	*r1, *r2, *r_out;
 int	j0, type;
+#else
+SPROW	*sprow_add(const SPROW *r1,const SPROW *r2, 
+		   int j0, SPROW *r_out, int type)
+#endif
 {
    int	idx1, idx2, idx_out, len1, len2, len_out;
    row_elt	*elt1, *elt2, *elt_out;
@@ -530,13 +572,18 @@ int	j0, type;
 /* sprow_sub -- sets r_out <- r1 - r2
    -- cannot be in situ
    -- only for columns j0, j0+1, ...
-   -- type must be SPMAT or SPROW depending on
+   -- type must be TYPE_SPMAT or TYPE_SPROW depending on
       whether r_out is a row of a SPMAT structure
       or a SPROW variable
    -- returns r_out */
+#ifndef ANSI_C
 SPROW	*sprow_sub(r1,r2,j0,r_out,type)
 SPROW	*r1, *r2, *r_out;
 int	j0, type;
+#else
+SPROW	*sprow_sub(const SPROW *r1, const SPROW *r2,
+		   int j0, SPROW *r_out, int type)
+#endif
 {
    int	idx1, idx2, idx_out, len1, len2, len_out;
    row_elt	*elt1, *elt2, *elt_out;
@@ -601,10 +648,14 @@ int	j0, type;
    -- can be in situ
    -- only for columns j0, j0+1, ...
    -- returns r_out */
+#ifndef ANSI_C
 SPROW	*sprow_smlt(r1,alpha,j0,r_out,type)
 SPROW	*r1, *r_out;
 double	alpha;
 int	j0, type;
+#else
+SPROW	*sprow_smlt(const SPROW *r1, double alpha, int j0, SPROW *r_out, int type)
+#endif
 {
    int	idx1, idx_out, len1;
    row_elt	*elt1, *elt_out;
@@ -638,11 +689,15 @@ int	j0, type;
    return r_out;
 }
 
-  
+#ifndef MEX
 /* sprow_foutput -- print a representation of r on stream fp */
+#ifndef ANSI_C
 void	sprow_foutput(fp,r)
 FILE	*fp;
 SPROW	*r;
+#else
+void	sprow_foutput(FILE *fp, const SPROW *r)
+#endif
 {
    int	i, len;
    row_elt	*e;
@@ -658,14 +713,19 @@ SPROW	*r;
      fprintf(fp,"Column %d: %g, next row: %d, next index %d\n",
 	     e->col, e->val, e->nxt_row, e->nxt_idx);
 }
+#endif
 
 
 /* sprow_set_val -- sets the j-th column entry of the sparse row r
    -- Note: destroys the usual column & row access paths */
+#ifndef ANSI_C
 double  sprow_set_val(r,j,val)
 SPROW   *r;
 int     j;
 double  val;
+#else
+double  sprow_set_val(SPROW *r, int j, double val)
+#endif
 {
    int  idx, idx2, new_len;
    

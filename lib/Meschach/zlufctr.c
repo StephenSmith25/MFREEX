@@ -28,12 +28,12 @@
 	Complex version
 */
 
-static	char	rcsid[] = "$Id: zlufctr.c,v 1.1 1994/01/13 04:26:20 des Exp $";
+static	char	rcsid[] = "$Id: zlufctr.c,v 1.3 1996/08/20 20:07:09 stewart Exp $";
 
 #include	<stdio.h>
+#include	<math.h>
 #include	"zmatrix.h"
 #include        "zmatrix2.h"
-#include	<math.h>
 
 #define	is_zero(z)	((z).re == 0.0 && (z).im == 0.0)
 
@@ -46,11 +46,11 @@ ZMAT	*zLUfactor(A,pivot)
 ZMAT	*A;
 PERM	*pivot;
 {
-	u_int	i, j, k, k_max, m, n;
-	int	i_max;
+	unsigned int	i, j, m, n;
+	int	i_max, k, k_max;
 	Real	dtemp, max1;
 	complex	**A_v, *A_piv, *A_row, temp;
-	static	VEC	*scale = VNULL;
+	STATIC	VEC	*scale = VNULL;
 
 	if ( A==ZMNULL || pivot==PNULL )
 		error(E_NULL,"zLUfactor");
@@ -125,6 +125,10 @@ PERM	*pivot;
 	    }
 	}
 
+#ifdef	THREADSAFE
+	V_FREE(scale);
+#endif
+
 	return A;
 }
 
@@ -172,9 +176,9 @@ ZMAT	*zm_inverse(A,out)
 ZMAT	*A, *out;
 {
 	int	i;
-	ZVEC	*tmp, *tmp2;
-	ZMAT	*A_cp;
-	PERM	*pivot;
+	STATIC ZVEC	*tmp=ZVNULL, *tmp2=ZVNULL;
+	STATIC ZMAT	*A_cp=ZMNULL;
+	STATIC PERM	*pivot=PNULL;
 
 	if ( ! A )
 	    error(E_NULL,"zm_inverse");
@@ -183,23 +187,29 @@ ZMAT	*A, *out;
 	if ( ! out || out->m < A->m || out->n < A->n )
 	    out = zm_resize(out,A->m,A->n);
 
-	A_cp = zm_copy(A,ZMNULL);
-	tmp = zv_get(A->m);
-	tmp2 = zv_get(A->m);
-	pivot = px_get(A->m);
+	A_cp = zm_resize(A_cp,A->m,A->n);
+	A_cp = zm_copy(A,A_cp);
+	tmp = zv_resize(tmp,A->m);
+	tmp2 = zv_resize(tmp2,A->m);
+	pivot = px_resize(pivot,A->m);
+	MEM_STAT_REG(A_cp,TYPE_ZMAT);
+	MEM_STAT_REG(tmp, TYPE_ZVEC);
+	MEM_STAT_REG(tmp2,TYPE_ZVEC);
+	MEM_STAT_REG(pivot,TYPE_PERM);
 	tracecatch(zLUfactor(A_cp,pivot),"zm_inverse");
 	for ( i = 0; i < A->n; i++ )
 	{
 	    zv_zero(tmp);
 	    tmp->ve[i].re = 1.0;
 	    tmp->ve[i].im = 0.0;
-	    tracecatch(zLUsolve(A_cp,pivot,tmp,tmp2),"m_inverse");
+	    tracecatch(zLUsolve(A_cp,pivot,tmp,tmp2),"zm_inverse");
 	    zset_col(out,i,tmp2);
 	}
 
-	ZM_FREE(A_cp);
+#ifdef	THREADSAFE
 	ZV_FREE(tmp);	ZV_FREE(tmp2);
-	PX_FREE(pivot);
+	ZM_FREE(A_cp);	PX_FREE(pivot);
+#endif
 
 	return out;
 }
@@ -210,7 +220,7 @@ double	zLUcondest(LU,pivot)
 ZMAT	*LU;
 PERM	*pivot;
 {
-    static	ZVEC	*y = ZVNULL, *z = ZVNULL;
+    STATIC	ZVEC	*y = ZVNULL, *z = ZVNULL;
     Real	cond_est, L_norm, U_norm, norm, sn_inv;
     complex	sum;
     int		i, j, n;
@@ -242,7 +252,7 @@ PERM	*pivot;
 	sum.re += sum.re * sn_inv;
 	sum.im += sum.im * sn_inv;
 	if ( is_zero(LU->me[i][i]) )
-	    return HUGE;
+	    return HUGE_VAL;
 	/* y->ve[i] = sum / LU->me[i][i]; */
 	y->ve[i] = zdiv(sum,LU->me[i][i]);
     }
@@ -272,7 +282,10 @@ PERM	*pivot;
     }
 
     tracecatch(cond_est = U_norm*L_norm*zv_norm_inf(z)/zv_norm_inf(y),
-	       "LUcondest");
+	       "zLUcondest");
+#ifdef	THREADSAFE
+    ZV_FREE(y);		ZV_FREE(z);
+#endif
 
     return cond_est;
 }

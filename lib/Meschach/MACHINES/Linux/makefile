@@ -85,15 +85,15 @@ part3: $(LIST3)
 
 $(ZLIST1): $(HBASDE) zmatrix.h
 zpart1: $(ZLIST1)
-	ar ru meschach.a $(ZLIST1); ranlib meschach.a
+	ar ru meschach.a $(ZLIST1); $(RANLIB) meschach.a
 
 $(ZLIST2): $(HBASE) zmatrix.h zmatrix2.h 
 zpart2: $(ZLIST2)
-	ar ru meschach.a $(ZLIST2); ranlib meschach.a
+	ar ru meschach.a $(ZLIST2); $(RANLIB) meschach.a
 
 $(OLDLIST): $(HBASE) sparse.h sparse2.h 
 oldpart: $(OLDLIST)
-	ar ru meschach.a $(OLDLIST); ranlib meschach.a
+	ar ru meschach.a $(OLDLIST); $(RANLIB) meschach.a
 
 
 

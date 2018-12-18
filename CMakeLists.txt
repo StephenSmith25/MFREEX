@@ -9,7 +9,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 OPTION(PROBLEM_BEAM "Compile Beam program" ON)
 OPTION(PROBLEM_BEAM_UL "Compile updated lagrangian version of Beam program" ON)
 OPTION(PROBLEM_PREFORM "Compile preform program" ON)
-
+OPTION(PROBLEM_BIAXIAL "Compile biaxial program" ON)
 
 
 
@@ -28,3 +28,7 @@ endif(PROBLEM_BEAM_UL)
 if(PROBLEM_PREFORM)
 	add_subdirectory(problems/preform)
 endif(PROBLEM_PREFORM)	
+
+if(PROBLEM_BIAXIAL)
+	add_subdirectory(problems/Biaxial)
+endif(PROBLEM_BIAXIAL)	

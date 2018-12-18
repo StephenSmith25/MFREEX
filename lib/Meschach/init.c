@@ -36,8 +36,12 @@ static	char	rcsid[] = "$Id: init.c,v 1.6 1994/01/13 05:36:58 des Exp $";
 #include	"matrix.h"
 
 /* v_zero -- zero the vector x */
+#ifndef ANSI_C
 VEC	*v_zero(x)
 VEC	*x;
+#else
+VEC	*v_zero(VEC *x)
+#endif
 {
 	if ( x == VNULL )
 		error(E_NULL,"v_zero");
@@ -51,8 +55,12 @@ VEC	*x;
 
 
 /* iv_zero -- zero the vector ix */
+#ifndef ANSI_C
 IVEC	*iv_zero(ix)
 IVEC	*ix;
+#else
+IVEC	*iv_zero(IVEC *ix)
+#endif
 {
    int i;
    
@@ -67,8 +75,12 @@ IVEC	*ix;
 
 
 /* m_zero -- zero the matrix A */
+#ifndef ANSI_C
 MAT	*m_zero(A)
 MAT	*A;
+#else
+MAT	*m_zero(MAT *A)
+#endif
 {
 	int	i, A_m, A_n;
 	Real	**A_me;
@@ -87,8 +99,12 @@ MAT	*A;
 
 /* mat_id -- set A to being closest to identity matrix as possible
 	-- i.e. A[i][j] == 1 if i == j and 0 otherwise */
+#ifndef ANSI_C
 MAT	*m_ident(A)
 MAT	*A;
+#else
+MAT	*m_ident(MAT *A)
+#endif
 {
 	int	i, size;
 
@@ -104,11 +120,15 @@ MAT	*A;
 }
 	
 /* px_ident -- set px to identity permutation */
+#ifndef ANSI_C
 PERM	*px_ident(px)
 PERM	*px;
+#else
+PERM	*px_ident(PERM *px)
+#endif
 {
 	int	i, px_size;
-	u_int	*px_pe;
+	unsigned int	*px_pe;
 
 	if ( px == PNULL )
 		error(E_NULL,"px_ident");
@@ -167,9 +187,13 @@ double mrand()
 }
 
 /* mrandlist -- fills the array a[] with len random numbers */
+#ifndef ANSI_C
 void	mrandlist(a, len)
 Real	a[];
 int	len;
+#else
+void	mrandlist(Real a[], int len)
+#endif
 {
     int		i;
     long	lval;
@@ -194,8 +218,12 @@ int	len;
 
 
 /* smrand -- set seed for mrand() */
+#ifndef ANSI_C
 void smrand(seed)
 int	seed;
+#else
+void smrand(int seed)
+#endif
 {
     int		i;
 
@@ -216,8 +244,12 @@ int	seed;
 
 /* v_rand -- initialises x to be a random vector, components
 	independently & uniformly ditributed between 0 and 1 */
+#ifndef ANSI_C
 VEC	*v_rand(x)
 VEC	*x;
+#else
+VEC	*v_rand(VEC *x)
+#endif
 {
 	/* int	i; */
 
@@ -234,8 +266,12 @@ VEC	*x;
 
 /* m_rand -- initialises A to be a random vector, components
 	independently & uniformly distributed between 0 and 1 */
+#ifndef ANSI_C
 MAT	*m_rand(A)
 MAT	*A;
+#else
+MAT	*m_rand(MAT *A)
+#endif
 {
 	int	i /* , j */;
 
@@ -252,8 +288,12 @@ MAT	*A;
 }
 
 /* v_ones -- fills x with one's */
+#ifndef ANSI_C
 VEC	*v_ones(x)
 VEC	*x;
+#else
+VEC	*v_ones(VEC *x)
+#endif
 {
 	int	i;
 
@@ -267,8 +307,12 @@ VEC	*x;
 }
 
 /* m_ones -- fills matrix with one's */
+#ifndef ANSI_C
 MAT	*m_ones(A)
 MAT	*A;
+#else
+MAT	*m_ones(MAT *A)
+#endif
 {
 	int	i, j;
 
@@ -283,8 +327,12 @@ MAT	*A;
 }
 
 /* v_count -- initialises x so that x->ve[i] == i */
+#ifndef ANSI_C
 VEC	*v_count(x)
 VEC	*x;
+#else
+VEC	*v_count(VEC *x)
+#endif
 {
 	int	i;
 

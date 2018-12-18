@@ -40,9 +40,13 @@ static char rcsid[] = "$Id: sparseio.c,v 1.4 1994/01/13 05:34:25 des Exp $";
 static char line[MAXLINE];
 
 /* sp_foutput -- output sparse matrix A to file/stream fp */
+#ifndef ANSI_C
 void    sp_foutput(fp,A)
 FILE    *fp;
 SPMAT  *A;
+#else
+void    sp_foutput(FILE *fp, const SPMAT *A)
+#endif
 {
 	int     i, j_idx, m /* , n */;
 	SPROW  *rows;
@@ -84,6 +88,7 @@ SPMAT  *A;
 
 /* sp_foutput2 -- print out sparse matrix **as a dense matrix**
 	-- see output format used in matrix.h etc */
+/******************************************************************
 void    sp_foutput2(fp,A)
 FILE    *fp;
 SPMAT  *A;
@@ -119,11 +124,16 @@ SPMAT  *A;
 		fprintf(fp,"\n");
 	}
 }
+******************************************************************/
 
 /* sp_dump -- prints ALL relevant information about the sparse matrix A */
+#ifndef ANSI_C
 void    sp_dump(fp,A)
 FILE    *fp;
 SPMAT  *A;
+#else
+void    sp_dump(FILE *fp, const SPMAT *A)
+#endif
 {
 	int     i, j, j_idx;
 	SPROW  *rows;
@@ -174,13 +184,17 @@ SPMAT  *A;
 	}
 }
 
-#define MAXSCRATCH      100
+#define MINSCRATCH      100
 
 /* sp_finput -- input sparse matrix from stream/file fp
 	-- uses friendly input routine if fp is a tty
 	-- uses format identical to output format otherwise */
+#ifndef ANSI_C
 SPMAT  *sp_finput(fp)
 FILE    *fp;
+#else
+SPMAT  *sp_finput(FILE *fp)
+#endif
 {
 	int     i, len, ret_val;
 	int     col, curr_col, m, n, tmp, tty;
@@ -188,11 +202,19 @@ FILE    *fp;
 	SPMAT  *A;
 	SPROW  *rows;
 
-	row_elt scratch[MAXSCRATCH];
-	/* cannot handle >= MAXSCRATCH elements in a row */
+	static row_elt *scratch;
+	static int	scratch_len = 0;
 
-	for ( i = 0; i < MAXSCRATCH; i++ )
-		scratch[i].nxt_row = scratch[i].nxt_idx = -1;
+	if ( ! scratch )
+	  {
+	    scratch = NEW_A(MINSCRATCH,row_elt);
+	    if ( scratch == NULL )
+	      error(E_MEM,"sp_finput");
+	    scratch_len = MINSCRATCH;
+	  }
+
+	for ( i = 0; i < scratch_len; i++ )
+	  scratch[i].nxt_row = scratch[i].nxt_idx = -1;
 
 	tty = isatty(fileno(fp));
 
@@ -209,12 +231,24 @@ FILE    *fp;
 
 		for ( i = 0; i < m; i++ )
 		{
+		    /* get a row... */
 		    fprintf(stderr,"Row %d:\n",i);
 		    fprintf(stderr,"Enter <col> <val> or 'e' to end row\n");
 		    curr_col = -1;
-		    for ( len = 0; len < MAXSCRATCH; len++ )
-		    {
-			do {
+
+		    len = 0;
+		    for ( ; ; )  /* forever do... */
+		      {
+		      /* if we need more scratch space, let's get it!
+		       -- using amortized doubling */
+		      if ( len >= scratch_len )
+			{
+			  scratch = RENEW(scratch,2*scratch_len,row_elt);
+			  if ( ! scratch )
+			    error(E_MEM,"sp_finput");
+			  scratch_len = 2*scratch_len;
+			}
+			do {  /* get an entry... */
 			    fprintf(stderr,"Entry %d: ",len);
 			    if ( ! fgets(line,MAXLINE,fp) )
 				error(E_INPUT,"sp_finput");
@@ -233,6 +267,8 @@ FILE    *fp;
 			scratch[len].col = col;
 			scratch[len].val = val;
 			curr_col = col;
+
+			len++;
 		    }
 
 		    /* Note: len = # elements in row */
@@ -278,8 +314,18 @@ FILE    *fp;
 			error((ret_val == EOF) ? E_EOF : E_FORMAT,
 			      "sp_finput");
 		    curr_col = -1;
-		    for ( len = 0; len < MAXSCRATCH; len++ )
-		    {
+		    len = 0;
+		    for ( ; ; )  /* forever do... */
+		      {
+		      /* if we need more scratch space, let's get it!
+		       -- using amortized doubling */
+		      if ( len >= scratch_len )
+			{
+			  scratch = RENEW(scratch,2*scratch_len,row_elt);
+			  if ( ! scratch )
+			    error(E_MEM,"sp_finput");
+			  scratch_len = 2*scratch_len;
+			}
 #if REAL == DOUBLE
 			if ( (ret_val=fscanf(fp,"%u : %lf",&col,&val)) != 2 )
 #elif REAL == FLOAT
@@ -290,6 +336,8 @@ FILE    *fp;
 			    error(E_FORMAT,"sp_finput");
 			scratch[len].col = col;
 			scratch[len].val = val;
+
+			len++;
 		    }
 		    if ( ret_val == EOF )
 			error(E_EOF,"sp_finput");

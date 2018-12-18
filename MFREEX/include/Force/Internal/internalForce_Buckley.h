@@ -8,19 +8,19 @@
 #include <stdio.h>
 #include <omp.h>
 #include "Integration/SCNI/generate_scni.h"
-#include "Deformation/velocity_grad.h"
 #include "Material/material.h"
 #include "Integration/defgrad.h"
-#include "Deformation/poldec.h"
-#include "Material/Buckley/buckleyBond.h"
-#include "Material/Buckley/buckleyConf.h"
+#include "Material/Buckley/buckleyStress.h"
 
+
+#include "Integration/gMat.h"
 #define PI 3.14159265359
 
 
 
 double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC * velocity,
-	VEC * matParams, state_Buckley ** stateNew, state_Buckley ** stateOld, int is_axi, int dim, double deltat);
+	VEC * matParams, VEC * critLambdaParams, state_Buckley ** stateNew, state_Buckley ** stateOld,
+	 int is_axi, int dim, double deltat);
 
 
 

@@ -31,9 +31,16 @@
 
 static	char	rcsid[] = "$Id: memory.c,v 1.13 1994/04/05 02:10:37 des Exp $";
 
-/* m_get -- gets an mxn matrix (in MAT form) by dynamic memory allocation */
+/* m_get -- gets an mxn matrix (in MAT form) by dynamic memory allocation
+	-- normally ALL matrices should be obtained this way
+	-- if either m or n is negative this will raise an error
+	-- note that 0 x n and m x 0 matrices can be created */
+#ifndef ANSI_C
 MAT	*m_get(m,n)
 int	m,n;
+#else
+MAT	*m_get(int m, int n)
+#endif
 {
    MAT	*matrix;
    int	i;
@@ -89,9 +96,14 @@ int	m,n;
 
 
 /* px_get -- gets a PERM of given 'size' by dynamic memory allocation
-   -- Note: initialized to the identity permutation */
+	-- Note: initialized to the identity permutation
+	-- the permutation is on the set {0,1,2,...,size-1} */
+#ifndef ANSI_C
 PERM	*px_get(size)
 int	size;
+#else
+PERM	*px_get(int size)
+#endif
 {
    PERM	*permute;
    int	i;
@@ -107,10 +119,10 @@ int	size;
    }
    
    permute->size = permute->max_size = size;
-   if ((permute->pe = NEW_A(size,u_int)) == (u_int *)NULL )
+   if ((permute->pe = NEW_A(size,unsigned int)) == (unsigned int *)NULL )
      error(E_MEM,"px_get");
    else if (mem_info_is_on()) {
-      mem_bytes(TYPE_PERM,0,size*sizeof(u_int));
+      mem_bytes(TYPE_PERM,0,size*sizeof(unsigned int));
    }
    
    for ( i=0; i<size; i++ )
@@ -119,10 +131,14 @@ int	size;
    return (permute);
 }
 
-/* v_get -- gets a VEC of dimension 'dim'
+/* v_get -- gets a VEC of dimension 'size'
    -- Note: initialized to zero */
+#ifndef ANSI_C
 VEC	*v_get(size)
 int	size;
+#else
+VEC	*v_get(int size)
+#endif
 {
    VEC	*vector;
    
@@ -150,8 +166,12 @@ int	size;
 }
 
 /* m_free -- returns MAT & asoociated memory back to memory heap */
+#ifndef ANSI_C
 int	m_free(mat)
 MAT	*mat;
+#else
+int	m_free(MAT *mat)
+#endif
 {
 #ifdef SEGMENTED
    int	i;
@@ -197,14 +217,18 @@ MAT	*mat;
 
 
 /* px_free -- returns PERM & asoociated memory back to memory heap */
+#ifndef ANSI_C
 int	px_free(px)
 PERM	*px;
+#else
+int	px_free(PERM *px)
+#endif
 {
    if ( px==(PERM *)NULL || (int)(px->size) < 0 )
      /* don't trust it */
      return (-1);
    
-   if ( px->pe == (u_int *)NULL ) {
+   if ( px->pe == (unsigned int *)NULL ) {
       if (mem_info_is_on()) {
 	 mem_bytes(TYPE_PERM,sizeof(PERM),0);
 	 mem_numvar(TYPE_PERM,-1);
@@ -214,7 +238,7 @@ PERM	*px;
    else
    {
       if (mem_info_is_on()) {
-	 mem_bytes(TYPE_PERM,sizeof(PERM)+px->max_size*sizeof(u_int),0);
+	 mem_bytes(TYPE_PERM,sizeof(PERM)+px->max_size*sizeof(unsigned int),0);
 	 mem_numvar(TYPE_PERM,-1);
       }
       free((char *)px->pe);
@@ -227,8 +251,12 @@ PERM	*px;
 
 
 /* v_free -- returns VEC & asoociated memory back to memory heap */
+#ifndef ANSI_C
 int	v_free(vec)
 VEC	*vec;
+#else
+int	v_free(VEC *vec)
+#endif
 {
    if ( vec==(VEC *)NULL || (int)(vec->dim) < 0 )
      /* don't trust it */
@@ -258,9 +286,13 @@ VEC	*vec;
 
 /* m_resize -- returns the matrix A of size new_m x new_n; A is zeroed
    -- if A == NULL on entry then the effect is equivalent to m_get() */
+#ifndef ANSI_C
 MAT	*m_resize(A,new_m,new_n)
 MAT	*A;
 int	new_m, new_n;
+#else
+MAT	*m_resize(MAT *A,int new_m, int new_n)
+#endif
 {
    int	i;
    int	new_max_m, new_max_n, new_size, old_m, old_n;
@@ -395,9 +427,13 @@ int	new_m, new_n;
 
 /* px_resize -- returns the permutation px with size new_size
    -- px is set to the identity permutation */
+#ifndef ANSI_C
 PERM	*px_resize(px,new_size)
 PERM	*px;
 int	new_size;
+#else
+PERM	*px_resize(PERM *px, int new_size)
+#endif
 {
    int	i;
    
@@ -414,10 +450,10 @@ int	new_size;
    if ( new_size > px->max_size )
    {
       if (mem_info_is_on()) {
-	 mem_bytes(TYPE_PERM,px->max_size*sizeof(u_int),
-		      new_size*sizeof(u_int));
+	 mem_bytes(TYPE_PERM,px->max_size*sizeof(unsigned int),
+		      new_size*sizeof(unsigned int));
       }
-      px->pe = RENEW(px->pe,new_size,u_int);
+      px->pe = RENEW(px->pe,new_size,unsigned int);
       if ( ! px->pe )
 	error(E_MEM,"px_resize");
       px->max_size = new_size;
@@ -437,9 +473,13 @@ int	new_size;
 
 /* v_resize -- returns the vector x with dim new_dim
    -- x is set to the zero vector */
+#ifndef ANSI_C
 VEC	*v_resize(x,new_dim)
 VEC	*x;
 int	new_dim;
+#else
+VEC	*v_resize(VEC *x, int new_dim)
+#endif
 {
    
    if (new_dim < 0)

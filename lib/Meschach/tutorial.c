@@ -96,7 +96,8 @@ VEC    *(*f)(), *x;
    v_resize_vars(x->dim, &v1, &v2, &v3, &v4, &temp, NULL);
 
    /* register workspace variables */
-   mem_stat_reg_vars(0, TYPE_VEC, &v1, &v2, &v3, &v4, &temp, NULL);
+   mem_stat_reg_vars(0, TYPE_VEC, __FILE__, __LINE__,
+		     &v1, &v2, &v3, &v4, &temp, NULL);
    /* end of memory allocation */
 
    (*f)(t,x,v1);             v_mltadd(x,v1,0.5*h,temp);

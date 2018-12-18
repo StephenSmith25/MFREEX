@@ -30,7 +30,6 @@
 
 /* For BSD 4.[23] environments: using bcopy() and bzero() */
 
-#include "err.h"
 #include "machine.h"
 
 #ifndef MEM_COPY
@@ -84,7 +83,7 @@ int	len;
 		A[m-1][j0], A[m-1][j0+1], ..., A[m-1][j0+n-1]
 */
 
-static char	rcsid[] = "$Id: extras.c,v 1.3 1994/01/13 05:45:36 des Exp $";
+static char	rcsid[] = "$Id: extras.c,v 1.4 1995/06/08 15:13:15 des Exp $";
 
 #include	<math.h>
 
@@ -480,10 +479,8 @@ int	Aj0, Bj0, Cj0;
 	for ( j = 0; j < n; j++ )
 	    C[i][Cj0+j] += alpha*Mdot(p,&(A[i][Aj0]),&(B[j][Bj0]));
     ****************************************/
-    /*for ( i = 0; i < m; i++ )
-	Mmv(n,p,alpha,&(A[i][Aj0]),B,Bj0,&(C[i][Cj0]));*/
-	/* The lines above do not compile with Clang */
-	error(E_INTERN, "Mmmtr");
+    for ( i = 0; i < m; i++ )
+	Mmv(n,p,alpha,B,Bj0,&(A[i][Aj0]),1.0,&(C[i][Cj0]));
 }
 
 /* Mmtrmtr -- C <- C + alpha.A^T.B^T */

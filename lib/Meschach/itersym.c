@@ -43,7 +43,7 @@ static char rcsid[] = "$Id: itersym.c,v 1.2 1995/01/30 14:55:54 des Exp $";
 
 
 #ifdef ANSI_C
-VEC	*spCHsolve(SPMAT *,VEC *,VEC *);
+VEC	*spCHsolve(const SPMAT *,VEC *,VEC *);
 VEC	*trieig(VEC *,VEC *,MAT *);
 #else
 VEC	*spCHsolve();
@@ -62,11 +62,16 @@ VEC	*trieig();
    x = iter_spcg(A,LLT,b,eps,VNULL,limit,steps);
    In the second case the solution vector is created.
    */
+#ifndef ANSI_C
 VEC  *iter_spcg(A,LLT,b,eps,x,limit,steps)
 SPMAT	*A, *LLT;
 VEC	*b, *x;
 double	eps;
 int *steps, limit;
+#else
+VEC  *iter_spcg(SPMAT *A, SPMAT *LLT, VEC *b, double eps, VEC *x,
+		int limit, int *steps)
+#endif
 {	
    ITER *ip;
    
@@ -91,10 +96,14 @@ int *steps, limit;
 /* 
   Conjugate gradients method;
   */
+#ifndef ANSI_C
 VEC  *iter_cg(ip)
 ITER *ip;
+#else
+VEC  *iter_cg(ITER *ip)
+#endif
 {
-   static VEC *r = VNULL, *p = VNULL, *q = VNULL, *z = VNULL;
+   STATIC VEC *r = VNULL, *p = VNULL, *q = VNULL, *z = VNULL;
    Real	alpha, beta, inner, old_inner, nres;
    VEC *rr;   /* rr == r or rr == z */
    
@@ -169,7 +178,11 @@ ITER *ip;
       v_mltadd(r,q,-alpha,r);
       old_inner = inner;
    }
-   
+
+#ifdef	THREADSAFE
+   V_FREE(r);   V_FREE(p);   V_FREE(q);   V_FREE(z);
+#endif
+
    return ip->x;
 }
 
@@ -179,14 +192,18 @@ ITER *ip;
    -- creates T matrix of size == m,
    but no larger than before beta_k == 0
    -- uses passed routine to do matrix-vector multiplies */
+#ifndef ANSI_C
 void	iter_lanczos(ip,a,b,beta2,Q)
 ITER    *ip;
 VEC	*a, *b;
 Real	*beta2;
 MAT	*Q;
+#else
+void	iter_lanczos(ITER *ip, VEC *a, VEC *b, Real *beta2, MAT *Q)
+#endif
 {
    int	j;
-   static VEC	*v = VNULL, *w = VNULL, *tmp = VNULL;
+   STATIC VEC	*v = VNULL, *w = VNULL, *tmp = VNULL;
    Real	alpha, beta, c;
    
    if ( ! ip )
@@ -198,8 +215,8 @@ MAT	*Q;
    if ( Q && ( Q->n < ip->x->dim || Q->m < ip->k ) )
      error(E_SIZES,"iter_lanczos");
    
-   a = v_resize(a,(u_int)ip->k);	
-   b = v_resize(b,(u_int)(ip->k-1));
+   a = v_resize(a,(unsigned int)ip->k);	
+   b = v_resize(b,(unsigned int)(ip->k-1));
    v = v_resize(v,ip->x->dim);
    w = v_resize(w,ip->x->dim);
    tmp = v_resize(tmp,ip->x->dim);
@@ -247,16 +264,24 @@ MAT	*Q;
       v_add(v,tmp,v);
    }
    *beta2 = beta;
-   
+
+#ifdef	THREADSAFE
+   V_FREE(v);   V_FREE(w);   V_FREE(tmp);
+#endif
 }
 
 /* iter_splanczos -- version that uses sparse matrix data structure */
+#ifndef ANSI_C
 void    iter_splanczos(A,m,x0,a,b,beta2,Q)
 SPMAT	*A;
 int     m;
 VEC     *x0, *a, *b;
 Real    *beta2;
 MAT     *Q;
+#else
+void    iter_splanczos(SPMAT *A, int m, VEC *x0, 
+		       VEC *a, VEC *b, Real *beta2, MAT *Q)
+#endif
 {	
    ITER *ip;
    
@@ -271,15 +296,23 @@ MAT     *Q;
 }
 
 
-
+#ifndef ANSI_C
 extern	double	frexp(), ldexp();
+#else
+extern	double	frexp(double num, int *exponent),
+  ldexp(double num, int exponent);
+#endif
 
 /* product -- returns the product of a long list of numbers
    -- answer stored in mant (mantissa) and expt (exponent) */
+#ifndef ANSI_C
 static	double	product(a,offset,expt)
 VEC	*a;
 double	offset;
 int	*expt;
+#else
+static	double	product(VEC *a, double offset, int *expt)
+#endif
 {
    Real	mant, tmp_fctr;
    int	i, tmp_expt;
@@ -321,12 +354,16 @@ int	*expt;
    return mant;
 }
 
-/* product2 -- returns the product of a long list of numbers
+/* product2 -- returns the product of a long list of numbers (except the k'th)
    -- answer stored in mant (mantissa) and expt (exponent) */
+#ifndef ANSI_C
 static	double	product2(a,k,expt)
 VEC	*a;
 int	k;	/* entry of a to leave out */
 int	*expt;
+#else
+static	double	product2(VEC *a, int k, int *expt)
+#endif
 {
    Real	mant, mu, tmp_fctr;
    int	i, tmp_expt;
@@ -360,8 +397,12 @@ int	*expt;
 }
 
 /* dbl_cmp -- comparison function to pass to qsort() */
+#ifndef ANSI_C
 static	int	dbl_cmp(x,y)
 Real	*x, *y;
+#else
+static	int	dbl_cmp(Real *x, Real *y)
+#endif
 {
    Real	tmp;
    
@@ -373,13 +414,17 @@ Real	*x, *y;
    -- uses Cullum & Willoughby approach, Sparse Matrix Proc. 1978
    -- returns multiple e-vals where multiple e-vals may not exist
    -- returns evals vector */
+#ifndef ANSI_C
 VEC	*iter_lanczos2(ip,evals,err_est)
 ITER 	*ip;            /* ITER structure */
 VEC	*evals;		/* eigenvalue vector */
 VEC	*err_est;	/* error estimates of eigenvalues */
+#else
+VEC	*iter_lanczos2(ITER *ip, VEC *evals, VEC *err_est)
+#endif
 {
    VEC		*a;
-   static	VEC	*b=VNULL, *a2=VNULL, *b2=VNULL;
+   STATIC	VEC	*b=VNULL, *a2=VNULL, *b2=VNULL;
    Real	beta, pb_mant, det_mant, det_mant1, det_mant2;
    int	i, pb_expt, det_expt, det_expt1, det_expt2;
    
@@ -391,8 +436,8 @@ VEC	*err_est;	/* error estimates of eigenvalues */
      error(E_RANGE,"iter_lanczos2");
    
    a = evals;
-   a = v_resize(a,(u_int)ip->k);
-   b = v_resize(b,(u_int)(ip->k-1));
+   a = v_resize(a,(unsigned int)ip->k);
+   b = v_resize(b,(unsigned int)(ip->k-1));
    MEM_STAT_REG(b,TYPE_VEC);
    
    iter_lanczos(ip,a,b,&beta,MNULL);
@@ -426,7 +471,7 @@ VEC	*err_est;	/* error estimates of eigenvalues */
    /* error estimates */
    if ( err_est )
    {
-      err_est = v_resize(err_est,(u_int)ip->k);
+      err_est = v_resize(err_est,(unsigned int)ip->k);
       
       trieig(a2,b2,MNULL);
       /* printf("# a =\n");	v_output(a); */
@@ -460,19 +505,26 @@ VEC	*err_est;	/* error estimates of eigenvalues */
 			       ldexp(pb_mant/det_mant,pb_expt-det_expt));
       }
    }
-   
+
+#ifdef	THREADSAFE
+   V_FREE(b);   V_FREE(a2);   V_FREE(b2);
+#endif
+
    return a;
 }
 
 /* iter_splanczos2 -- version of iter_lanczos2() that uses sparse matrix data
    structure */
-
+#ifndef ANSI_C
 VEC    *iter_splanczos2(A,m,x0,evals,err_est)
 SPMAT	*A;
 int	 m;
 VEC	*x0;		/* initial vector */
 VEC	*evals;		/* eigenvalue vector */
 VEC	*err_est;	/* error estimates of eigenvalues */
+#else
+VEC    *iter_splanczos2(SPMAT *A, int m, VEC *x0, VEC *evals, VEC *err_est)
+#endif
 {	
    ITER *ip;
    VEC *a;
@@ -495,11 +547,14 @@ VEC	*err_est;	/* error estimates of eigenvalues */
   Conjugate gradient method
   Another variant - mainly for testing
   */
-
+#ifndef ANSI_C
 VEC  *iter_cg1(ip)
 ITER *ip;
+#else
+VEC  *iter_cg1(ITER *ip)
+#endif
 {
-   static VEC *r = VNULL, *p = VNULL, *q = VNULL, *z = VNULL;
+   STATIC VEC *r = VNULL, *p = VNULL, *q = VNULL, *z = VNULL;
    Real	alpha;
    double inner,nres;
    VEC *rr;   /* rr == r or rr == z */
@@ -582,7 +637,11 @@ ITER *ip;
       v_mltadd(rr,p,alpha,p);
       
    }
-   
+
+#ifdef	THREADSAFE
+   V_FREE(r);   V_FREE(p);   V_FREE(q);   V_FREE(z);
+#endif
+
    return ip->x;
 }
 

@@ -36,17 +36,22 @@
 static	char	rcsid[] = "$Id: hsehldr.c,v 1.2 1994/01/13 05:36:29 des Exp $";
 
 #include	<stdio.h>
+#include	<math.h>
 #include	"matrix.h"
 #include        "matrix2.h"
-#include	<math.h>
 
 
 /* hhvec -- calulates Householder vector to eliminate all entries after the
 	i0 entry of the vector vec. It is returned as out. May be in-situ */
+#ifndef ANSI_C
 VEC	*hhvec(vec,i0,beta,out,newval)
 VEC	*vec,*out;
-u_int	i0;
+unsigned int	i0;
 Real	*beta,*newval;
+#else
+VEC	*hhvec(const VEC *vec, unsigned int i0, Real *beta,
+	       VEC *out, Real *newval)
+#endif
 {
 	Real	norm;
 
@@ -67,16 +72,23 @@ Real	*beta,*newval;
 	return (out);
 }
 
-/* hhtrvec -- apply Householder transformation to vector -- may be in-situ */
+/* hhtrvec -- apply Householder transformation to vector 
+	-- that is, out <- (I-beta.hh(i0:n).hh(i0:n)^T).in
+	-- may be in-situ */
+#ifndef ANSI_C
 VEC	*hhtrvec(hh,beta,i0,in,out)
 VEC	*hh,*in,*out;	/* hh = Householder vector */
-u_int	i0;
+unsigned int	i0;
 double	beta;
+#else
+VEC	*hhtrvec(const VEC *hh, double beta, unsigned int i0,
+		 const VEC *in, VEC *out)
+#endif
 {
 	Real	scale;
-	/* u_int	i; */
+	/* unsigned int	i; */
 
-	if ( hh==(VEC *)NULL || in==(VEC *)NULL )
+	if ( hh==VNULL || in==VNULL )
 		error(E_NULL,"hhtrvec");
 	if ( in->dim != hh->dim )
 		error(E_SIZES,"hhtrvec");
@@ -95,17 +107,23 @@ double	beta;
 }
 
 /* hhtrrows -- transform a matrix by a Householder vector by rows
-	starting at row i0 from column j0 -- in-situ */
+	starting at row i0 from column j0 -- in-situ
+	-- that is, M(i0:m,j0:n) <- M(i0:m,j0:n)(I-beta.hh(j0:n).hh(j0:n)^T) */
+#ifndef ANSI_C
 MAT	*hhtrrows(M,i0,j0,hh,beta)
 MAT	*M;
-u_int	i0, j0;
+unsigned int	i0, j0;
 VEC	*hh;
 double	beta;
+#else
+MAT	*hhtrrows(MAT *M, unsigned int i0, unsigned int j0,
+		  const VEC *hh, double beta)
+#endif
 {
 	Real	ip, scale;
 	int	i /*, j */;
 
-	if ( M==(MAT *)NULL || hh==(VEC *)NULL )
+	if ( M==MNULL || hh==VNULL )
 		error(E_NULL,"hhtrrows");
 	if ( M->n != hh->dim )
 		error(E_RANGE,"hhtrrows");
@@ -139,30 +157,82 @@ double	beta;
 	return (M);
 }
 
-
 /* hhtrcols -- transform a matrix by a Householder vector by columns
-	starting at row i0 from column j0 -- in-situ */
+	starting at row i0 from column j0 
+	-- that is, M(i0:m,j0:n) <- (I-beta.hh(i0:m).hh(i0:m)^T)M(i0:m,j0:n)
+	-- in-situ
+	-- calls _hhtrcols() with the scratch vector w
+	-- Meschach internal routines should call _hhtrcols() to
+	avoid excessive memory allocation/de-allocation
+*/
+#ifndef ANSI_C
 MAT	*hhtrcols(M,i0,j0,hh,beta)
 MAT	*M;
-u_int	i0, j0;
+unsigned int	i0, j0;
 VEC	*hh;
 double	beta;
+#else
+MAT	*hhtrcols(MAT *M, unsigned int i0, unsigned int j0,
+		  const VEC *hh, double beta)
+#endif
+{
+  STATIC VEC	*w = VNULL;
+
+  if ( M == MNULL || hh == VNULL || w == VNULL )
+    error(E_NULL,"hhtrcols");
+  if ( M->m != hh->dim )
+    error(E_SIZES,"hhtrcols");
+  if ( i0 > M->m || j0 > M->n )
+    error(E_BOUNDS,"hhtrcols");
+
+  if ( ! w || w->dim < M->n )
+    w = v_resize(w,M->n);
+  MEM_STAT_REG(w,TYPE_VEC);
+
+  M = _hhtrcols(M,i0,j0,hh,beta,w);
+
+#ifdef THREADSAFE
+  V_FREE(w);
+#endif
+
+  return M;
+}
+
+/* _hhtrcols -- transform a matrix by a Householder vector by columns
+	starting at row i0 from column j0 
+	-- that is, M(i0:m,j0:n) <- (I-beta.hh(i0:m).hh(i0:m)^T)M(i0:m,j0:n)
+	-- in-situ
+	-- scratch vector w passed as argument
+	-- raises error if w == NULL
+*/
+#ifndef ANSI_C
+MAT	*_hhtrcols(M,i0,j0,hh,beta,w)
+MAT	*M;
+unsigned int	i0, j0;
+VEC	*hh;
+double	beta;
+VEC	*w;
+#else
+MAT	*_hhtrcols(MAT *M, unsigned int i0, unsigned int j0,
+		   const VEC *hh, double beta, VEC *w)
+#endif
 {
 	/* Real	ip, scale; */
 	int	i /*, k */;
-	static	VEC	*w = VNULL;
+	/*  STATIC	VEC	*w = VNULL; */
 
-	if ( M==(MAT *)NULL || hh==(VEC *)NULL )
-		error(E_NULL,"hhtrcols");
+	if ( M == MNULL || hh == VNULL || w == VNULL )
+		error(E_NULL,"_hhtrcols");
 	if ( M->m != hh->dim )
-		error(E_SIZES,"hhtrcols");
+		error(E_SIZES,"_hhtrcols");
 	if ( i0 > M->m || j0 > M->n )
-		error(E_BOUNDS,"hhtrcols");
+		error(E_BOUNDS,"_hhtrcols");
 
 	if ( beta == 0.0 )	return (M);
 
-	w = v_resize(w,M->n);
-	MEM_STAT_REG(w,TYPE_VEC);
+	if ( w->dim < M->n )
+	  w = v_resize(w,M->n);
+	/*  MEM_STAT_REG(w,TYPE_VEC); */
 	v_zero(w);
 
 	for ( i = i0; i < M->m; i++ )

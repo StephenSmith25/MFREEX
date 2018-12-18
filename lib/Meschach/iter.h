@@ -75,6 +75,9 @@ typedef struct Iter_data {
    Fun_Ax  Bx; /* function computing y = B*x; B - preconditioner */
    void *B_par;         /* parameters for Bx */
 
+   Fun_Ax  BTx; /* function computing y = B^T*x; B - preconditioner */
+   void *BT_par;         /* parameters for BTx */
+
 #ifdef ANSI_C
 
 #ifdef PROTOTYPES_IN_STRUCT
@@ -143,6 +146,8 @@ typedef int (*Fun_stp_crt)();
   (ip->ATx=(Fun_Ax)(fun),ip->AT_par=(void *)(fun_par),0)
 #define iter_Bx(ip,fun,fun_par) \
   (ip->Bx=(Fun_Ax)(fun),ip->B_par=(void *)(fun_par),0)
+#define iter_BTx(ip,fun,fun_par) \
+  (ip->BTx=(Fun_Ax)(fun),ip->BT_par=(void *)(fun_par),0)
 
 /* save free macro */
 #define ITER_FREE(ip)  (iter_free(ip), (ip)=(ITER *)NULL)
@@ -152,9 +157,9 @@ typedef int (*Fun_stp_crt)();
 
 #ifdef ANSI_C
 /* standard information */
-void iter_std_info(ITER *ip,double nres,VEC *res,VEC *Bres);
+void iter_std_info(const ITER *ip,double nres,VEC *res,VEC *Bres);
 /* standard stopping criterion */
-int iter_std_stop_crit(ITER *ip, double nres, VEC *res,VEC *Bres);
+int iter_std_stop_crit(const ITER *ip, double nres, VEC *res,VEC *Bres);
 
 /* get, resize and free ITER variable */
 ITER *iter_get(int lenb, int lenx);
@@ -164,7 +169,7 @@ int iter_free(ITER *ip);
 void iter_dump(FILE *fp,ITER *ip);
 
 /* copy ip1 to ip2 copying also elements of x and b */
-ITER *iter_copy(ITER *ip1, ITER *ip2);
+ITER *iter_copy(const ITER *ip1, ITER *ip2);
 /* copy ip1 to ip2 without copying elements of x and b */
 ITER *iter_copy2(ITER *ip1,ITER *ip2);
 

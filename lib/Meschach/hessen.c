@@ -41,11 +41,15 @@ static	char	rcsid[] = "$Id: hessen.c,v 1.2 1994/01/13 05:36:24 des Exp $";
 /* Hfactor -- compute Hessenberg factorisation in compact form.
 	-- factorisation performed in situ
 	-- for details of the compact form see QRfactor.c and matrix2.doc */
+#ifndef ANSI_C
 MAT	*Hfactor(A, diag, beta)
 MAT	*A;
 VEC	*diag, *beta;
+#else
+MAT	*Hfactor(MAT *A, VEC *diag, VEC *beta)
+#endif
 {
-	static	VEC	*tmp1 = VNULL;
+	STATIC	VEC	*hh = VNULL, *w = VNULL;
 	int	k, limit;
 
 	if ( ! A || ! diag || ! beta )
@@ -56,38 +60,48 @@ VEC	*diag, *beta;
 		error(E_SQUARE,"Hfactor");
 	limit = A->m - 1;
 
-	tmp1 = v_resize(tmp1,A->m);
-	MEM_STAT_REG(tmp1,TYPE_VEC);
+	hh = v_resize(hh,A->m);
+	w  = v_resize(w,A->n);
+	MEM_STAT_REG(hh,TYPE_VEC);
+	MEM_STAT_REG(w, TYPE_VEC);
 
 	for ( k = 0; k < limit; k++ )
-	{
-		get_col(A,(u_int)k,tmp1);
-		/* printf("the %d'th column = ");	v_output(tmp1); */
-		hhvec(tmp1,k+1,&beta->ve[k],tmp1,&A->me[k+1][k]);
-		/* diag->ve[k] = tmp1->ve[k+1]; */
-		v_set_val(diag,k,v_entry(tmp1,k+1));
-		/* printf("H/h vector = ");	v_output(tmp1); */
-		/* printf("from the %d'th entry\n",k+1); */
-		/* printf("beta = %g\n",beta->ve[k]); */
+	  {
+	    /* compute the Householder vector hh */
+	    get_col(A,(unsigned int)k,hh);
+	    /* printf("the %d'th column = ");	v_output(hh); */
+	    hhvec(hh,k+1,&beta->ve[k],hh,&A->me[k+1][k]);
+	    /* diag->ve[k] = hh->ve[k+1]; */
+	    v_set_val(diag,k,v_entry(hh,k+1));
+	    /* printf("H/h vector = ");	v_output(hh); */
+	    /* printf("from the %d'th entry\n",k+1); */
+	    /* printf("beta = %g\n",beta->ve[k]); */
 
-		/* hhtrcols(A,k+1,k+1,tmp1,beta->ve[k]); */
-		/* hhtrrows(A,0  ,k+1,tmp1,beta->ve[k]); */
-		hhtrcols(A,k+1,k+1,tmp1,v_entry(beta,k));
-		hhtrrows(A,0  ,k+1,tmp1,v_entry(beta,k));
-		/* printf("A = ");		m_output(A); */
-	}
+	    /* apply Householder operation symmetrically to A */
+	    _hhtrcols(A,k+1,k+1,hh,v_entry(beta,k),w);
+	    hhtrrows(A,0  ,k+1,hh,v_entry(beta,k));
+	    /* printf("A = ");		m_output(A); */
+	  }
+
+#ifdef THREADSAFE
+	V_FREE(hh);	V_FREE(w);
+#endif
 
 	return (A);
 }
 
 /* makeHQ -- construct the Hessenberg orthogonalising matrix Q;
 	-- i.e. Hess M = Q.M.Q'	*/
+#ifndef ANSI_C
 MAT	*makeHQ(H, diag, beta, Qout)
 MAT	*H, *Qout;
 VEC	*diag, *beta;
+#else
+MAT	*makeHQ(MAT *H, VEC *diag, VEC *beta, MAT *Qout)
+#endif
 {
 	int	i, j, limit;
-	static	VEC	*tmp1 = VNULL, *tmp2 = VNULL;
+	STATIC	VEC	*tmp1 = VNULL, *tmp2 = VNULL;
 
 	if ( H==(MAT *)NULL || diag==(VEC *)NULL || beta==(VEC *)NULL )
 		error(E_NULL,"makeHQ");
@@ -115,22 +129,30 @@ VEC	*diag, *beta;
 		/* apply H/h transforms in reverse order */
 		for ( j = limit-1; j >= 0; j-- )
 		{
-			get_col(H,(u_int)j,tmp2);
+			get_col(H,(unsigned int)j,tmp2);
 			/* tmp2->ve[j+1] = diag->ve[j]; */
 			v_set_val(tmp2,j+1,v_entry(diag,j));
 			hhtrvec(tmp2,beta->ve[j],j+1,tmp1,tmp1);
 		}
 
 		/* insert into Qout */
-		set_col(Qout,(u_int)i,tmp1);
+		set_col(Qout,(unsigned int)i,tmp1);
 	}
+
+#ifdef THREADSAFE
+	V_FREE(tmp1);	V_FREE(tmp2);
+#endif
 
 	return (Qout);
 }
 
 /* makeH -- construct actual Hessenberg matrix */
+#ifndef ANSI_C
 MAT	*makeH(H,Hout)
 MAT	*H, *Hout;
+#else
+MAT	*makeH(const MAT *H, MAT *Hout)
+#endif
 {
 	int	i, j, limit;
 

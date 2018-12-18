@@ -22,7 +22,7 @@
 
 static int call_count_2 = 0;
 
-int buckleyConf(state_Buckley * stateNew, VEC * para, double deltaT)
+int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, double deltaT)
 {
 
 
@@ -49,34 +49,35 @@ int buckleyConf(state_Buckley * stateNew, VEC * para, double deltaT)
 	// conformational stress
 
 	//if ( stateNew->eigValDBar->ve[1] > 0 ){
-	if (stateNew->div_v > 0 ){ 
 
-	if ( stateNew->lambdaNMax < stateNew->critLambdaBar){
-		double gamma_n_1 = gammaV(stateNew->lambdaBar,stateNew->lambdaNMax,stateNew->critLambdaBar,stateNew->eigValDBar,para);
-		sm_mlt(1.0000/gamma_n_1,stateNew->Sc,Ds);
+	if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
+		double gamma_n_1 = gammaV(stateNew->eigValVBar,stateOld->lambdaNMax,
+		stateNew->critLambdaBar,stateNew->eigValDBar,para);
+		sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
+
 
 		//m_foutput(stdout,stateNew->Sc);
 	}else{
 		m_zero(Ds);
 	}
-	}
+	//}
 
 
 	// network rate of deformation tensor 
 	m_sub(stateNew->Dbar,Ds,Dn);
 	// BnCr = Dn_n*Bn_n + Bn_n*Dn_n; 
-	m_mlt(Dn,stateNew->Bbar,intermediate1);
-	m_mlt(stateNew->Bbar,Dn,intermediate2);
+	m_mlt(Dn,stateOld->Bbar,intermediate1);
+	m_mlt(stateOld->Bbar,Dn,intermediate2);
 	m_add(intermediate1,intermediate2,BnCr);
 	// Bndot = BnCr + W*B - B*W; 
-	m_mlt(stateNew->Wbar,stateNew->Bbar,intermediate1);
-	m_mlt(stateNew->Bbar,stateNew->Wbar,intermediate2);
+	m_mlt(stateNew->Wbar,stateOld->Bbar,intermediate1);
+	m_mlt(stateOld->Bbar,stateNew->Wbar,intermediate2);
 	m_add(BnCr,intermediate1,BnDot);
 	m_sub(BnDot,intermediate2,BnDot);
 	// deltaB = deltaT * BnDot
 	sm_mlt(deltaT,BnDot,deltaB);
 	// Bn_n_1 = Bn_n + deltaB;
-	m_add(stateNew->Bbar,deltaB,stateNew->Bbar);
+	m_add(stateOld->Bbar,deltaB,stateNew->Bbar);
 	symmeig(stateNew->Bbar,eigVecB,eigValB);	
 	// find edwards vilgis stress
 	edwardsVilgis(Sc_n_1p,eigValB,para, Jacobian);
@@ -96,7 +97,8 @@ int buckleyConf(state_Buckley * stateNew, VEC * para, double deltaT)
 	// update maximum network stre
 
 	stateNew->lambdaNMax = sqrt(v_max(eigValB,&index));
-
+	m_copy(stateNew->Bbar,stateOld->Bbar);
+	stateOld->lambdaNMax = stateNew->lambdaNMax;
 
 
 	M_FREE(intermediate1);
