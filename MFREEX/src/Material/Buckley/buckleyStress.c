@@ -106,7 +106,7 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 
 			// update critical network stretch 
 			stateNew->critLambdaBar =lambdaCrit(stateOld->critLambdaBar,stateNew->eigValVBar, 
-				stateNew->eigValDBar, critLambdaParams);
+				stateNew->eigValDBar, critLambdaParams, stateNew->temperature);
 
 
 			/* ------------------------------------------*/

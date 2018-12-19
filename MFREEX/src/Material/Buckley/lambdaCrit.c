@@ -18,7 +18,7 @@
 
 #include "Material/Buckley/lambdaCrit.h"
 
-double lambdaCrit(double critLambda_n, VEC * lambda, VEC * eigD, VEC * para){
+double lambdaCrit(double critLambda_n, VEC * lambda, VEC * eigD, VEC * para, double temperature){
 
 	double critLambda = 1;
 	VEC * strainRate = v_get(3);
@@ -61,7 +61,6 @@ double lambdaCrit(double critLambda_n, VEC * lambda, VEC * eigD, VEC * para){
 	double beta = para->ve[2];
 	double k =  para->ve[3];
 	double b = para->ve[4];
-	double temperature = para->ve[5];
 
 
 	double shift_factor = pow(10,(C1*(maxSr-1)/(C2 + maxSr -1))*pow(beta,2-2*xi));

@@ -18,13 +18,12 @@
 
 #include "Material/Buckley/edwardsVilgis.h"
 
-int edwardsVilgis(VEC * stress, VEC * lambda, VEC * para, double Jacobian){
+int edwardsVilgis(VEC * stress, VEC * lambda, VEC * para, double Jacobian, double temperature){
 
 
 	double alpha = para->ve[13];
 	double Ns = para->ve[15];
 	double eta = para->ve[14];
-	double temperature = para->ve[11];
 	double kB = para->ve[16];
 
 

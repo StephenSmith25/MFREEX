@@ -1,7 +1,7 @@
 
 
 
-M = csvread('./BiaxialData/simul_sr16_t85_3.5x3.5.csv');
+M = csvread('./BiaxialData/simul_sr4_t85_3.5x3.5.csv');
 N = csvread('./../../build/bin/biaxial/Stress_11_nominal.txt');
 
 

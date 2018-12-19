@@ -19,19 +19,24 @@
 
 #include "Material/Buckley/gamma.h"
 
-double gammaV(VEC * lambda, double maxLambdaN,double critLambda,VEC * eigD,VEC * para){
+double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,VEC * para){
 
 
 	double starT = para->ve[18];
 	double refGamma = para->ve[19];
 	double Cs = para->ve[20];
 	double Tinf = para->ve[21];
-	double temperature = para->ve[11];
 	double shiftTSlope = para->ve[22];
 	double shiftTIntercept = para->ve[23];
 	double expFactor = para->ve[24];
 	double gamma0 = 0;
-	
+	VEC * lambda = state->eigValVBar;
+	VEC * eigD = state->eigValDBar;
+
+
+
+	double temperature = state->temperature;
+
 
 	// initialise gamma 
 	double gamma_n_1 = 0; 

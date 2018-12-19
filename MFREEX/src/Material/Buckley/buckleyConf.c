@@ -51,8 +51,8 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	//if ( stateNew->eigValDBar->ve[1] > 0 ){
 
 	if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
-		double gamma_n_1 = gammaV(stateNew->eigValVBar,stateOld->lambdaNMax,
-		stateNew->critLambdaBar,stateNew->eigValDBar,para);
+		double gamma_n_1 = gammaV(stateNew,stateOld->lambdaNMax,
+		stateNew->critLambdaBar,para);
 		sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
 
 
@@ -80,7 +80,7 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	m_add(stateOld->Bbar,deltaB,stateNew->Bbar);
 	symmeig(stateNew->Bbar,eigVecB,eigValB);	
 	// find edwards vilgis stress
-	edwardsVilgis(Sc_n_1p,eigValB,para, Jacobian);
+	edwardsVilgis(Sc_n_1p,eigValB,para, Jacobian, stateNew->temperature);
 	// Find /\, such that /\ = Q^T * A * Q;
 
 	for ( int i = 0 ; i < Sc_n_1p->max_dim ; i++)

@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <math.h>
 
-int edwardsVilgis(VEC * stress, VEC* lambda, VEC* para, double Jacobian);
+int edwardsVilgis(VEC * stress, VEC* lambda, VEC* para, double Jacobian, double temperature);
 
 
 

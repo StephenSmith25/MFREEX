@@ -26,7 +26,7 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	double H0 = para->ve[7];
 	double R = para->ve[8];
 	double star_T = para->ve[4];
-	double temperature = para->ve[11];
+	double temperature = stateNew->temperature;
 	double Vs = para->ve[0];
 	double Vp = para->ve[1];
 	double star_mu0 = para->ve[2];

@@ -6,13 +6,13 @@
 #include "Material/Buckley/new_Buckley_State.h"
 #include "Material/Buckley/buckleyStress.h"
 #include "Material/material.h"
-
+#include <sys/time.h>
 
 int main(void)
 {
 
 	double temperature = 85+273.15;
-	double sr = 16;
+	double sr = 4;
 	double peakStrain = 2.5;
 
 	double dim = 3;
@@ -32,9 +32,7 @@ int main(void)
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
 	matParams->ve[9] = 1.8e9; // Kb
-	matParams->ve[10] = 2e7;// Gb
-	matParams->ve[11] = temperature;// temperature
-	matParams->ve[12] = matParams->ve[11];// Tf
+	matParams->ve[10] = 1e7;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
 	matParams->ve[14] = 0.001;// eta_c
@@ -56,13 +54,12 @@ int main(void)
 	critLambdaParams->ve[2] = 0.9856; // BETA
 	critLambdaParams->ve[3] = -0.0356; // k
 	critLambdaParams->ve[4] = 15.393; // b 
-	critLambdaParams->ve[5] = matParams->ve[11]; // temperature 
 
 
 
 	double dt = 1e-4;
 
-	double tmax = 0.6;
+	double tmax = 5;
 	double t_n_1 = 0;
 	double t_n = 0;
 
@@ -95,6 +92,7 @@ int main(void)
 		stateNew[0]->F->me[1][1] = 1.00+t_n_1*sr;
 		stateNew[0]->F->me[2][2] = 1.00/pow(1.00+t_n_1*sr,2);
 		buckleyStress(stateNew[0], stateOld[0], matParams,critLambdaParams,dt);
+
 
 
 		double sig11 = stateNew[0]->Sc->me[0][0] - stateNew[0]->Sc->me[2][2]+stateNew[0]->Sb->me[0][0] - stateNew[0]->Sb->me[2][2];

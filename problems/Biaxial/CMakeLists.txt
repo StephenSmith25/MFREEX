@@ -26,7 +26,7 @@ if (OPENMP_FOUND)
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
-SET(GCC_COVERAGE_COMPILE_FLAGS "-O2")
+SET(GCC_COVERAGE_COMPILE_FLAGS "-O2 -g")
 add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
 add_executable(biaxial biaxial.c)
