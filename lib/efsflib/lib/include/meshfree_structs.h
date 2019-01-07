@@ -10,6 +10,7 @@ typedef struct meshfreeDomain
 	VEC * di;
 	int num_nodes;
 	int dim;
+	int IS_AXI;
 } meshfreeDomain;
 
 typedef struct shape_function{

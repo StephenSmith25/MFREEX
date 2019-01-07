@@ -337,9 +337,6 @@ int main(void )
 	double t_n = 0;
 	double t_n_1 = 0;
 
-
-
-
 	// External Forces
 	VEC * Fext_n_1 = v_get(dim*mfree.num_nodes);
 	VEC * Fext_n = v_get(dim*mfree.num_nodes);
@@ -529,7 +526,7 @@ int main(void )
 		v_copy(Fint_n_1,Fint_n);
 		v_copy(Fext_n_1,Fext_n);
 		// v_copy(v_n_h,v_n_mh);
-		// v_copy(d_n_1,d_n);
+		v_copy(d_n_1,d_n);
 		v_copy(v_n_1,v_n);
 		v_copy(a_n_1,a_n);
 
