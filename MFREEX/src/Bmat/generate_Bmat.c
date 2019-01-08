@@ -24,16 +24,15 @@ MAT * generate_Bmat(MAT * phi_der, int dim, int is_axi, double r )
 
 		if ( dim == 2){
 		
-		Bmat->me[0][2*i] += phi_der->me[i][0];
-		Bmat->me[1][2*i+1] += phi_der->me[i][1];
-		Bmat->me[2][2*i] += phi_der->me[i][1];
-		Bmat->me[3][2*i+1] += phi_der->me[i][0];
+			Bmat->me[0][2*i] += phi_der->me[i][0];
+			Bmat->me[1][2*i+1] += phi_der->me[i][1];
+			Bmat->me[2][2*i] += phi_der->me[i][1];
+			Bmat->me[3][2*i+1] += phi_der->me[i][0];
 
-		if ( is_axi == 1)
-		{
-			Bmat->me[4][2*i] = phi_der->me[3][i]/r;
-		}
-
+			if ( is_axi == 1)
+			{
+				Bmat->me[4][2*i] += phi_der->me[i][2];
+			}
 
 		}else if ( dim == 3){
 

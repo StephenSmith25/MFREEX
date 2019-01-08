@@ -12,15 +12,15 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 
 
 			/* Find Fdot */
-			m_sub(stateNew->F, stateOld->F, stateNew->delta_F);
+			m_add(stateNew->F, stateOld->F, stateNew->delta_F);
+
 			sm_mlt(1.000/dt,stateNew->delta_F,stateNew->Fdot);
-			// inverse deformation gradient
 			
 
+			// inverse deformation gradient
 			m_inverse(stateNew->F,stateNew->invF);
-
-
 			poldec(stateNew->delta_F, stateNew->delta_R, stateNew->delta_U, stateNew->delta_V);
+
 
 
 			//------------------------//

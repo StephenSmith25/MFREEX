@@ -87,6 +87,7 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 		// size of sfIndex
 	MAT * bI = m_get(Mfree->num_nodes,dim_B);
 
+
 	for ( i = 0 ; i < num_cells; i++)
 	{
 		scni_[i] = malloc(1*sizeof(SCNI));
@@ -218,6 +219,7 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 
 		}
 		sm_mlt(1.000/area, bI_n, bI_n);
+
 		if ( is_AXI == 1)
 		{
 			neighbours = sf_nodes->sf_list[i]->neighbours;

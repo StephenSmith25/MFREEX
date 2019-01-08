@@ -3,7 +3,7 @@
 
 static int call_count;
 
-double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC * velocity,
+double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC * velocity,
 	VEC * matParams,VEC * critLambdaParams, state_Buckley ** stateNew, state_Buckley ** stateOld,
 	 int is_axi, int dim, double deltat)
 {
@@ -41,7 +41,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 
 	// set number of threads
-	omp_set_num_threads(8);
+	omp_set_num_threads(1);
 
 
 #pragma omp parallel 
@@ -79,11 +79,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			/* ------------------------------------------*/
 			/* -----------------Deformation--------------*/
 			/* ------------------------------------------*/
-
-			// Temperatures could be found from a coupled heat transfer simulation
-			matParams->ve[11] = stateOld[i]->temperature+273.15;
-			matParams->ve[12] = stateOld[i]->temperature+273.15;
-			critLambdaParams->ve[5] = stateOld[i]->temperature + 273.15;		
+		
 
 			//------------------------//
 			//        Def Grad        //
@@ -97,7 +93,6 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			
 			/*  Find deformation gradient */
 			get_defgrad(stateNew[i]->F, B, neighbours,F_r,disp);
-
 			buckleyStress(stateNew[i],stateOld[i],matParams,critLambdaParams,deltat);
 
 			/* ------------------------------------------*/

@@ -23,6 +23,9 @@ pressure_boundary * new_pressure_boundary(IVEC * points,  meshfreeDomain * mFree
 	}
 
 
+
+
+
 	// integration will be performed using a trapzoidal rule
 	pB->sf_traction = mls_shapefunction(pB->coords, "linear", "cubic", 2, 1, mFree);
 
@@ -73,19 +76,19 @@ int update_pressure_boundary(pressure_boundary *pB, MAT * coords)
 
 
 	// find segment weights and normals
-	double x1 = pB->coords->me[0][0], y1 = pB->coords->me[0][0];
+	double x1 = pB->coords->me[0][0], y1 = pB->coords->me[0][1];
 	double x2, y2;
 	double seg_length;
 	for ( int i = 0 ; i < num_points -1  ; i++)
 	{
 
-		x2 = pB->coords->me[i+1][0], y2 = pB->coords->me[i+1][0];
+		x2 = pB->coords->me[i+1][0], y2 = pB->coords->me[i+1][1];
 
 
 		// length of segment
 		seg_length =  sqrt(pow(x2-x1,2) + pow(y2-y1,2));
 
-		pB->segment_weights[i] = 2*M_PI*((x1+x2)/2.00);
+		pB->segment_weights[i] = M_PI*((x1+x2))*seg_length;
 
 		// normal
 		pB->segment_normals->me[i][0] = -(y2-y1)/seg_length;
@@ -115,9 +118,11 @@ int assemble_pressure_load(VEC * Fext, double Pressure, pressure_boundary * pB)
 	int num_neighbours_n2;
 
 	double intFactor = 0;
+	//double area_sum = 0;
+
 
 	for ( int i = 0 ; i < numPoints - 1; i++ )
-	{	
+	{			
 
 			phi_n1 = pB->sf_traction->sf_list[i]->phi;
 			neighbours_n1 = pB->sf_traction->sf_list[i]->neighbours;
@@ -153,11 +158,17 @@ int assemble_pressure_load(VEC * Fext, double Pressure, pressure_boundary * pB)
 			}
 
 
+			//area_sum +=  pB->segment_weights[i];
+
+	
 
 
 
 
 	}
+
+	// internal area 
+	//printf("internal area = %lf \n", area_sum);
 
 
 	return 0;

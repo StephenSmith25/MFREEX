@@ -28,22 +28,35 @@ void get_defgrad(MAT * f, MAT * B, IVEC * neighbours, MAT * F_r, VEC * disp){
 
 		if ( B->m == 5)
 		{
-			f->me[0][0] += B->me[0][2*i]*disp->ve[2*indx];
-			f->me[1][1] +=  B->me[1][2*i+1]*disp->ve[2*indx+1];
-			f->me[0][1] +=  B->me[2][2*i]*disp->ve[2*indx];
-			f->me[1][0] += B->me[3][2*i+1]*disp->ve[2*indx+1];
-			f->me[2][2] += B->me[4][2*i]*disp->ve[2*indx];
+			f11+= B->me[0][2*i]*disp->ve[2*indx];
+			f22+= B->me[1][2*i+1]*disp->ve[2*indx+1];
+			f12+= B->me[2][2*i]*disp->ve[2*indx];
+			f21+= B->me[3][2*i+1]*disp->ve[2*indx+1];
+			f33+= B->me[4][2*i]*disp->ve[2*indx];
 
 		}
 
 
 	}
 
-	f->me[0][0] = f11*F_r->me[0][0] + f12*F_r->me[1][0];
-	f->me[1][1] = f21*F_r->me[0][1] + f22*F_r->me[1][1];
-	f->me[0][1] = f11*F_r->me[0][1] + f12*F_r->me[1][1];
-	f->me[1][0] = f21*F_r->me[0][0] + f22*F_r->me[1][0];
+	if (B->m == 4){
 
+		f->me[0][0] = f11*F_r->me[0][0] + f12*F_r->me[1][0];
+		f->me[1][1] = f21*F_r->me[0][1] + f22*F_r->me[1][1];
+		f->me[0][1] = f11*F_r->me[0][1] + f12*F_r->me[1][1];
+		f->me[1][0] = f21*F_r->me[0][0] + f22*F_r->me[1][0];
+	} else if ( B->m == 5)
+	{
+		f->me[0][0] = f11;
+		f->me[1][1] = f22;
+		f->me[0][1] = f12;
+		f->me[1][0] = f21;
+		f->me[2][2] = f33;
+	}
+
+
+
+	return;
 
 
 }

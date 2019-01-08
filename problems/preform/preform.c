@@ -12,8 +12,7 @@
 #include "mls_shapefunction.h"
 #include "setDomain.h"
 #include "smoothstep.h"
-#include "Force/Internal/internalForce_hyperelastic.h"
-#include "Force/Internal/internalForce_hyperelastic_S.h"
+#include "Force/Internal/internalForce_Buckley.h"
 #include "mat2csv.h"
 #include "trigen.h"
 #include "Boundary/getBoundary.h"
@@ -146,7 +145,7 @@ int main(int argc, char** argv) {
 	double tStop = 0.5;
 	double tRampRod = 1e-9;
 	double vRod = 0;
-	const double DISP_ROD_MAX = 132;
+	const double DISP_ROD_MAX = -1;
 
 	/*////////////////////////////////////////////////////////// */
 	/*////////////////////////////////////////////////////////// */
@@ -249,7 +248,6 @@ int main(int argc, char** argv) {
 	int numB3 = 15;
 	IVEC * eb3_nodes = iv_get(numB3);
 	MAT * contact_nodes_coords = m_get(numB3,dim);
-		printf("Contact nodes (a)\n");
 
 	for ( int i = 0 ; i < numB3 ; i++){
 		eb3_nodes->ive[i] = traction_nodes->ive[traction_nodes->max_dim -1 - i];
@@ -261,7 +259,6 @@ int main(int argc, char** argv) {
 		// get shape function and contact nodes
 	shape_function_container * phi_contact = mls_shapefunction(contact_nodes_coords, 
 		"linear", "quartic", 2, 1, &mfree);
-	printf("contact nodes = \n");
 	m_foutput(stdout,contact_nodes_coords);
 
 	
@@ -316,6 +313,10 @@ int main(int argc, char** argv) {
 		}
 	}
 	m_foutput(stdout, check_B);
+
+
+	m_foutput(stdout,_scni_obj->scni[checkPoint]->B);
+	iv_foutput(stdout, _scni_obj->scni[checkPoint]->sfIndex);
 	
 
 
@@ -339,6 +340,8 @@ int main(int argc, char** argv) {
 
 	}
 
+	printf("total mass = %lf (g) \n", v_sum(nodal_mass)*1000);
+	v_foutput(stdout,inv_nodal_mass);
 	
 
 	/* ------------------------------------------*/
@@ -416,6 +419,8 @@ int main(int argc, char** argv) {
 	state_Buckley ** state_n_1 = new_Buckley_State(mfree.num_nodes,temperatures,is_AXI,dim);
 
 
+
+
 	// ///////////////////////////////////////////////////////////////
 
 	// /*////////////////////////////////////////////////////////// */
@@ -426,7 +431,7 @@ int main(int argc, char** argv) {
 	
 	// time parameters
 	double t_max = 0.5; // 1s
-	double delta_t = 1.55e-6;
+	double delta_t = 2e-7;
 	double t_n = 0;
 	double t_n_1 = 0;
 	double t_n_h =  0; 
@@ -534,47 +539,47 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 		/* -----------Contact Conditions-------------*/
 		/* ------------------------------------------*/
-		// __zero__(Fcont_n_1->ve, num_dof);
+		__zero__(Fcont_n_1->ve, num_dof);
 
-		// if ( disp_rod < DISP_ROD_MAX){
-		// /*  Update stretch rod */
-		// 	disp_rod = a0*pow(t_n_1,7) + a1*pow(t_n_1,6) + a2*pow(t_n_1,5) + a3*pow(t_n_1,4) + a4*pow(t_n_1,3) + a5*pow(t_n_1,2) +
-		// 	a6*pow(t_n_1,1) + a7;
-		// 	//disp_rod = vRod*t_n_1;
+		if ( disp_rod < DISP_ROD_MAX){
+		/*  Update stretch rod */
+			disp_rod = a0*pow(t_n_1,7) + a1*pow(t_n_1,6) + a2*pow(t_n_1,5) + a3*pow(t_n_1,4) + a4*pow(t_n_1,3) + a5*pow(t_n_1,2) +
+			a6*pow(t_n_1,1) + a7;
+			//disp_rod = vRod*t_n_1;
 
-		// 	for ( int i = 0 ; i < srNodes->m ; i++){
+			for ( int i = 0 ; i < srNodes->m ; i++){
 	
-		// 		srNodes->me[i][1] = srNodes_O->me[i][1] - disp_rod;
+				srNodes->me[i][1] = srNodes_O->me[i][1] - disp_rod;
 
-		// 	}
-		// }
-
-
-		// for ( int i = 0 ; i < eb3_nodes->max_dim ; i++){
-
-		// 	neighbours = phi_contact->sf_list[i]->neighbours;
-		// 	phi = phi_contact->sf_list[i]->phi;
-		// 	testPoint->me[0][0] = updatedNodes->me[eb3_nodes->ive[i]][0];
-		// 	testPoint->me[0][1] = updatedNodes->me[eb3_nodes->ive[i]][1];
-
-		// 	distanceProj = contactDetection(testPoint,srNodes,msNormal);
-
-		// 	if (distanceProj > 0){
-
-		// 		f1Cor = 1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(deltaT,2);
-		// 		f2Cor = 1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(deltaT,2);
+			}
+		}
 
 
+		for ( int i = 0 ; i < eb3_nodes->max_dim ; i++){
 
-		// 		for ( int k = 0 ; k < neighbours->max_dim ; k++){
-		// 			Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
-		// 			Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
-		// 		}
+			neighbours = phi_contact->sf_list[i]->neighbours;
+			phi = phi_contact->sf_list[i]->phi;
+			testPoint->me[0][0] = updatedNodes->me[eb3_nodes->ive[i]][0];
+			testPoint->me[0][1] = updatedNodes->me[eb3_nodes->ive[i]][1];
 
-		// 	}
+			distanceProj = contactDetection(testPoint,srNodes,msNormal);
+
+			if (distanceProj > 0){
+
+				f1Cor = 1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(deltaT,2);
+				f2Cor = 1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(deltaT,2);
 
 
-		// }
+
+				for ( int k = 0 ; k < neighbours->max_dim ; k++){
+					Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
+					Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
+				}
+
+			}
+
+
+		}
 
 
 		/*  Find a corrective acceleration - method in pronto 3D manual*/
@@ -646,6 +651,7 @@ int main(int argc, char** argv) {
 		volume = cavityVolume(traction_nodes,updatedNodes);
 
 
+
 		/*  Find Cavity pressure */
 		pRatio = pre_n/pLine;
 		if ( pRatio <= 0.528){
@@ -656,10 +662,13 @@ int main(int argc, char** argv) {
 		pre_n_1 = ((P0*(volume - volumeInitial) + 1000*massAir*rLine*tLine)/(volume+vDead));
 
 
-
+		printf("pre_n_1 = %lf \n", pre_n_1);
 		/*  Update pressure load */
-		//update_pressure_boundary(pB, updatedNodes);
-		//assemble_pressure_load(Fext_n_1, pre_n_1, pB);
+		update_pressure_boundary(pB, updatedNodes);
+		assemble_pressure_load(Fext_n_1, -pre_n_1, pB);
+
+		pre_n_1 = 0;
+
 
 		/* ------------------------------------------*/
 		/* ------------Find Internal Force-----------*/
@@ -668,7 +677,10 @@ int main(int argc, char** argv) {
 		/*  Internal force */
 		//internalForce(Fint_n_1,&scni,d_n_1,matParams,efgBlock->numnode);
 		//internalForceBuckley(Fint_n_1,scni,d_n_1,matParams,critLambdaParams,state_n,deltaT,efgBlock->numnode,t_n_1);
-		
+		internalForce_ForceBuckley(Fint_n_1, _scni_obj, d_n_1, v_n_h,
+		matParams,critLambdaParams, state_n_1, state_n,
+		 mfree.IS_AXI, dim,delta_t);
+		v_foutput(stdout, d_n_1);
 
 
 		/* ------------------------------------------*/
@@ -684,7 +696,6 @@ int main(int argc, char** argv) {
 			a_n_1->ve[2*i] = Fnet_n_1->ve[2*i]*inv_nodal_mass->ve[i];
 			a_n_1->ve[2*i+1] = Fnet_n_1->ve[2*i+1]*inv_nodal_mass->ve[i];
 		}
-
 
 		/*  Integer time step velocity */
 		v_mltadd(v_n_h,a_n_1,0.5*delta_t,v_n_1);	
@@ -707,21 +718,21 @@ int main(int argc, char** argv) {
 		/* --------------Write outputs---------------*/
 		/* ------------------------------------------*/
 
-		// // update nodal positions
-		// if ( n % writeFreq == 0 ){
-		// 	char filename[50];
-		// 	snprintf(filename, 50, "displacement_%d%s",fileCounter,".txt");
-		// 	mat2csv(updatedNodes,"./Displacement",filename);
+		// update nodal positions
+		if ( n % writeFreq == 0 ){
+			char filename[50];
+			snprintf(filename, 50, "displacement_%d%s",fileCounter,".txt");
+			mat2csv(updatedNodes,"./Displacement",filename);
 
-		// 	snprintf(filename, 50, "srRod_%d%s",fileCounter,".txt");
-		// 	mat2csv(srNodes,"./srRod",filename);
+			snprintf(filename, 50, "srRod_%d%s",fileCounter,".txt");
+			mat2csv(srNodes,"./srRod",filename);
 
-		// 	fp = fopen("pressureTime.txt","a");
-		// 	fprintf(fp,"%lf %lf\n",t_n_1,pre_n_1);
-		// 	fclose(fp);
+			fp = fopen("pressureTime.txt","a");
+			fprintf(fp,"%lf %lf\n",t_n_1,pre_n_1);
+			fclose(fp);
 
-		// 	fileCounter++;
-		// }
+			fileCounter++;
+		}
 
 
 		/* ------------------------------------------*/
