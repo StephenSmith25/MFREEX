@@ -43,7 +43,7 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	// set number of threads
 	omp_set_num_threads(1);
 
-
+	int i;
 #pragma omp parallel 
 {
 
@@ -59,11 +59,7 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		// Time step
 		double delta_t_min_i = 1000;
 
-		double Jacobian_n;
-		double Jacobian_n_1;
-		double mSigma;
-		double div_v;
-
+	
 		MAT * B;
 		IVEC * neighbours;
 		MAT * F_r;
@@ -72,7 +68,7 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 
 #pragma omp for nowait schedule(dynamic,4) 
-		for(int i = 0 ; i < num_int_points ; i++){
+		for(i = 0 ; i < num_int_points ; i++){
 
 
 
@@ -89,10 +85,13 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			B = scni[i]->B;
 			neighbours = scni[i]->sfIndex;
 			F_r = scni[i]->F_r;
+
 			int num_neighbours = neighbours->max_dim;
 			
 			/*  Find deformation gradient */
 			get_defgrad(stateNew[i]->F, B, neighbours,F_r,disp);
+
+			m_foutput(stdout,stateNew[i]->F);
 			buckleyStress(stateNew[i],stateOld[i],matParams,critLambdaParams,deltat);
 
 			/* ------------------------------------------*/
@@ -134,6 +133,14 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			/* ---------------Bulk Damping---------------*/
 			/* ------------------------------------------*/
 
+			double div_v = stateNew[i]->div_v;
+			double mSigma = stateNew[i]->mSigma;
+			double Jacobian = stateNew[i]->Jacobian;
+
+
+			printf("Jacobian = %lf \n ",Jacobian);
+
+
 			double b1 = 0.06;
 			double b2 = 1.44;
 			double Le = 1.6e-3;
@@ -147,6 +154,9 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 				P_b2 = Le*rho*(b2*b2*Le*div_v*div_v);
 				eta -= b2*b2*Le*(1/c)*div_v;
 			}
+
+			P_b2 = 0;
+			P_b1 = 0;
 
 
 			// double delta_t = (2.00/sqrt(((lambda + 2*mu)*MaxB)))*(sqrt(1+eta*eta)-eta);
@@ -168,20 +178,24 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 				intFactor = intFactor * 2*PI*scni[i]->r;
 			}
 
-			Sc_n_1 = stateNew[i]->Sc;
-			Sb_n_1 = stateNew[i]->Sb;
-
 			/* Cauchy stress */
-			sigma->ve[0] = (Sc_n_1->me[0][0] + Sb_n_1->me[0][0] + mSigma + (P_b1+P_b2) )/1e6 ;
-			sigma->ve[1] = (Sc_n_1->me[1][1] + Sb_n_1->me[1][1] + mSigma + (P_b1+P_b2))/1e6 ;
-			sigma->ve[2] = (Sc_n_1->me[0][1] + Sb_n_1->me[0][1] )/1e6;
-			sigma->ve[3] = (Sb_n_1->me[2][2] + Sb_n_1->me[2][2] + mSigma + (P_b1+P_b2))/1e6 ;
-			
+			// sigma->ve[0] = (Sc_n_1->me[0][0] + Sb_n_1->me[0][0] + mSigma + (P_b1+P_b2) )/1e6 ;
+			// sigma->ve[1] = (Sc_n_1->me[1][1] + Sb_n_1->me[1][1] + mSigma + (P_b1+P_b2))/1e6 ;
+			// sigma->ve[2] = (Sc_n_1->me[0][1] + Sb_n_1->me[0][1] )/1e6;
+			// sigma->ve[3] = (Sb_n_1->me[2][2] + Sb_n_1->me[2][2] + mSigma + (P_b1+P_b2))/1e6 ;
+
+			sigma->ve[0] = stateNew[i]->sigma->me[0][0]/1e6;
+			sigma->ve[1] = stateNew[i]->sigma->me[1][1]/1e6;
+			sigma->ve[2] = stateNew[i]->sigma->me[0][1]/1e6;
+			sigma->ve[3] = stateNew[i]->sigma->me[2][2]/1e6;
+
+
+			v_foutput(stdout,sigma);
 
 			/*  Internal force vectors */
 			gMat(G,stateNew[i]->invF,is_axi);
 			mv_mlt(G,sigma,stressVoigt);
-			sv_mlt(Jacobian_n_1,stressVoigt,stressVoigt);
+			sv_mlt(stateNew[i]->Jacobian,stressVoigt,stressVoigt);
 
 			vm_mlt(scni[i]->B,stressVoigt,scni[i]->fInt);
 
@@ -199,16 +213,19 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	#pragma omp critical
 		{
 			__add__(fIntTemp->ve, Fint->ve, Fint->ve, Fint->max_dim);
-			if ( delta_t_min_i < delta_t_min)
-			{
-				delta_t_min = delta_t_min_i;
-			}
+			// if ( delta_t_min_i < delta_t_min)
+			// {
+			// 	delta_t_min = delta_t_min_i;
+			// }
 		}
 
 	// /*  Free allocated memory */
 	// 	v_free(stressVoigt);
-	// 	v_free(fIntTemp);
-	// 	M_FREE(F);
+			V_FREE(fIntTemp);
+			M_FREE(G);
+			V_FREE(sigma);
+			V_FREE(stressVoigt);
+
 	// 	M_FREE(Fdot);
 
 	}

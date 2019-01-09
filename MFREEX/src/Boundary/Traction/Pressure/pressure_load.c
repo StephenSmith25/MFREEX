@@ -34,23 +34,23 @@ pressure_boundary * new_pressure_boundary(IVEC * points,  meshfreeDomain * mFree
 
 
 	// find segment weights and normals
-	double x1 = pB->coords->me[0][0], y1 = pB->coords->me[0][0];
+	double x1 = pB->coords->me[0][0], y1 = pB->coords->me[0][1];
 	double x2, y2;
 	double seg_length;
 	for ( int i = 0 ; i < num_points -1  ; i++)
 	{
 
-		x2 = pB->coords->me[i+1][0], y2 = pB->coords->me[i+1][0];
+		x2 = pB->coords->me[i+1][0], y2 = pB->coords->me[i+1][1];
 
 
 		// length of segment
 		seg_length =  sqrt(pow(x2-x1,2) + pow(y2-y1,2));
 
-		pB->segment_weights[i] = 2*M_PI*((x1+x2)/2.00);
+		pB->segment_weights[i] = seg_length*2*M_PI*((x1+x2)/2.00);
 
 		// normal
-		pB->segment_normals->me[i][0] = -(y2-y1)/seg_length;
-		pB->segment_normals->me[i][1] = (x2-x1)/seg_length;
+		pB->segment_normals->me[i][0] = (y2-y1)/seg_length;
+		pB->segment_normals->me[i][1] = -(x2-x1)/seg_length;
 
 		x1 = x2;
 		y1 = y2;
@@ -91,8 +91,8 @@ int update_pressure_boundary(pressure_boundary *pB, MAT * coords)
 		pB->segment_weights[i] = M_PI*((x1+x2))*seg_length;
 
 		// normal
-		pB->segment_normals->me[i][0] = -(y2-y1)/seg_length;
-		pB->segment_normals->me[i][1] = (x2-x1)/seg_length;
+		pB->segment_normals->me[i][0] = (y2-y1)/seg_length;
+		pB->segment_normals->me[i][1] = -(x2-x1)/seg_length;
 
 		x1 = x2;
 		y1 = y2;
@@ -105,7 +105,7 @@ int assemble_pressure_load(VEC * Fext, double Pressure, pressure_boundary * pB)
 {
 	double weight = 0;	
 	int numPoints = pB->points->max_dim;
-	double suface_traction[2];
+	double surface_traction[2];
 	double * segment_normal;
 
 	IVEC * neighbours_n1;
@@ -133,29 +133,39 @@ int assemble_pressure_load(VEC * Fext, double Pressure, pressure_boundary * pB)
 
 			segment_normal = pB->segment_normals->me[i];
 			// x component of traction
-			suface_traction[0] = Pressure*segment_normal[0];
+			surface_traction[0] = Pressure*segment_normal[0];
 			// y component of traction
-			suface_traction[1] = Pressure*segment_normal[1];
-
+			surface_traction[1] = Pressure*segment_normal[1];
+			int MAX_NEIGHBOURS = max(num_neighbours_n1,num_neighbours_n2);
 			intFactor = pB->segment_weights[i];
 
-			for ( int k = 0 ; k < max(num_neighbours_n1,num_neighbours_n2); k++)
+			for ( int k = 0 ; k < MAX_NEIGHBOURS; k++)
 			{
 
 				if ( k < num_neighbours_n1)
 				{
-					Fext->ve[2*neighbours_n1->ive[k]] += intFactor*suface_traction[0]*phi_n1->ve[k] ;
-					Fext->ve[2*neighbours_n2->ive[k]+1] += intFactor*suface_traction[1]*phi_n1->ve[k]  ;
+					Fext->ve[2*neighbours_n1->ive[k]] += 0.5*intFactor*surface_traction[0]*phi_n1->ve[k] ;
+					Fext->ve[2*neighbours_n2->ive[k]+1] += 0.5*intFactor*surface_traction[1]*phi_n1->ve[k]  ;
 
 				}
 				if ( k < num_neighbours_n2)
 				{
-					Fext->ve[2*neighbours_n2->ive[k]] += intFactor*suface_traction[0]*phi_n2->ve[k] ;
-					Fext->ve[2*neighbours_n2->ive[k]+1] += intFactor*suface_traction[1]*phi_n2->ve[k] ;
+					Fext->ve[2*neighbours_n2->ive[k]] += 0.5*intFactor*surface_traction[0]*phi_n2->ve[k] ;
+					Fext->ve[2*neighbours_n2->ive[k]+1] += 0.5*intFactor*surface_traction[1]*phi_n2->ve[k] ;
 
 				}
 
 			}
+
+			// if ( i > 55)
+			// {
+			// 	//v_foutput(stdout,phi_n1);
+			// 	//v_foutput(stdout,phi_n2);
+			// 	iv_foutput(stdout,neighbours_n1);
+			// 	iv_foutput(stdout, neighbours_n2);
+			// 	printf("surface_traction = %lf,%lf \n", surface_traction[0],surface_traction[1]);
+
+			// }
 
 
 			//area_sum +=  pB->segment_weights[i];

@@ -86,7 +86,7 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 	double area = 0;
 		// size of sfIndex
 	MAT * bI = m_get(Mfree->num_nodes,dim_B);
-
+	double area_sum = 0;
 
 	for ( i = 0 ; i < num_cells; i++)
 	{
@@ -220,6 +220,8 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 		}
 		sm_mlt(1.000/area, bI_n, bI_n);
 
+		area_sum += area;
+
 		if ( is_AXI == 1)
 		{
 			neighbours = sf_nodes->sf_list[i]->neighbours;
@@ -268,16 +270,21 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 	M_FREE(bI);
 
 
-	printf("Finished looping over cells and constructing B \n ");
 
 
 	free_shapefunction_container(sf_verticies);
+
+	if ( is_AXI == 1)
+	{
+		free_shapefunction_container(sf_nodes);
+
+	}
 
 
 	SCNI_OBJ * scni_obj = malloc(1*sizeof(SCNI_OBJ));
 	scni_obj->scni = scni_;
 	scni_obj->num_points = num_cells;
-
+	printf("area = %lf \n",area_sum);
 	return scni_obj;
 }
 

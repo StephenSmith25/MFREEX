@@ -92,9 +92,9 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	// Spin component of stress
 	// (WSb_n - Sb_n W)dt
 	// W*s
-	m_mlt(stateNew->Wbar,stateOld->Sb,mat1);
+	m_mlt(stateNew->W,stateOld->Sb,mat1);
 	// s*l
-	m_mlt(stateOld->Sb,stateNew->Wbar,mat2);
+	m_mlt(stateOld->Sb,stateNew->W,mat2);
 	m_sub(mat1,mat2,mat1);	
 	sm_mlt(dt,mat1,mat1);
 

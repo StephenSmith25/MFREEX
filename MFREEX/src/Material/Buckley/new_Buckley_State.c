@@ -21,6 +21,7 @@ state_Buckley ** new_Buckley_State(int num_Points, double * temperatures, int is
 		m_ident(state[i]->F);
 		state[i]->Fdot = m_get(dim_s,dim_s);
 		state[i]->invF = m_get(dim_s,dim_s);
+		m_ident(state[i]->invF);
 
 		state[i]->delta_F = m_get(dim_s,dim_s);
 		state[i]->delta_R = m_get(dim_s,dim_s);

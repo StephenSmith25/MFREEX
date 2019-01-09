@@ -13,6 +13,8 @@
 #include "setDomain.h"
 #include "smoothstep.h"
 #include "Force/Internal/internalForce_Buckley.h"
+#include "Force/Internal/internalForce_hyperelastic.h"
+
 #include "mat2csv.h"
 #include "trigen.h"
 #include "Boundary/getBoundary.h"
@@ -43,6 +45,16 @@ int main(int argc, char** argv) {
 
 	/*  Material parameters */
 	const double rho = 1380e-9;
+
+
+	double nu = 0.4;
+	double E = 10;
+	char * material = "SVK";
+	VEC * materialParameters = v_get(2);
+	materialParameters->ve[0] = (E*nu)/((1+nu)*(1-2*nu));
+	materialParameters->ve[1] =E/(2*(1+nu));
+
+
 
 	/*  Material struct */
 	VEC * matParams = v_get(26);
@@ -84,7 +96,6 @@ int main(int argc, char** argv) {
 
 	/*  Time step variables */
 
-	double deltaT = 2e-7;
 	double tMax = 0.8;
 
 
@@ -145,7 +156,7 @@ int main(int argc, char** argv) {
 	double tStop = 0.5;
 	double tRampRod = 1e-9;
 	double vRod = 0;
-	const double DISP_ROD_MAX = -1;
+	const double DISP_ROD_MAX = -1 ; // 132;
 
 	/*////////////////////////////////////////////////////////// */
 	/*////////////////////////////////////////////////////////// */
@@ -229,7 +240,7 @@ int main(int argc, char** argv) {
 	IVEC * traction_nodes ;
 	getBoundary(&traction_nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,2);
 	pressure_boundary * pB = new_pressure_boundary(traction_nodes, &mfree);
-
+	m_foutput(stdout,pB->coords);
 
 	// /*  EB1  */
 	IVEC * eb1_nodes;
@@ -312,11 +323,11 @@ int main(int argc, char** argv) {
 			}
 		}
 	}
-	m_foutput(stdout, check_B);
+	// m_foutput(stdout, check_B);
 
 
-	m_foutput(stdout,_scni_obj->scni[checkPoint]->B);
-	iv_foutput(stdout, _scni_obj->scni[checkPoint]->sfIndex);
+	// m_foutput(stdout,_scni_obj->scni[checkPoint]->B);
+	// iv_foutput(stdout, _scni_obj->scni[checkPoint]->sfIndex);
 	
 
 
@@ -341,7 +352,7 @@ int main(int argc, char** argv) {
 	}
 
 	printf("total mass = %lf (g) \n", v_sum(nodal_mass)*1000);
-	v_foutput(stdout,inv_nodal_mass);
+	//v_foutput(stdout,nodal_mass);
 	
 
 	/* ------------------------------------------*/
@@ -523,11 +534,11 @@ int main(int argc, char** argv) {
 
 	/*  Explicit Loop */
 	//while ( t_n < tMax)
-	while ( n < 2 )
+	while ( n < 5 )
 	{
 
 		/*  Update time step */
-		t_n_1 = t_n + deltaT;
+		t_n_1 = t_n + delta_t;
 		t_n_h = (1.00/2.00)*(t_n + t_n_1);
 
 		/*  Make a time step  */ 
@@ -566,8 +577,8 @@ int main(int argc, char** argv) {
 
 			if (distanceProj > 0){
 
-				f1Cor = 1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(deltaT,2);
-				f2Cor = 1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(deltaT,2);
+				f1Cor = 1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+				f2Cor = 1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
 
 
 
@@ -646,28 +657,24 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 		/* ------------Find External Force-----------*/
 		/* ------------------------------------------*/
-
+		__zero__(Fext_n_1->ve,num_dof);
 		/*  Find Cavity volume */
 		volume = cavityVolume(traction_nodes,updatedNodes);
-
 
 
 		/*  Find Cavity pressure */
 		pRatio = pre_n/pLine;
 		if ( pRatio <= 0.528){
-			massAir += chokedMassRate*deltaT;
+			massAir += chokedMassRate*delta_t;
 		}else{
-			massAir += flowRate(pRatio,tLine,pLine*1e6, rLine, aReduced,gammaLine)*deltaT;
+			massAir += flowRate(pRatio,tLine,pLine*1e6, rLine, aReduced,gammaLine)*delta_t;
 		}
 		pre_n_1 = ((P0*(volume - volumeInitial) + 1000*massAir*rLine*tLine)/(volume+vDead));
 
-
-		printf("pre_n_1 = %lf \n", pre_n_1);
 		/*  Update pressure load */
 		update_pressure_boundary(pB, updatedNodes);
 		assemble_pressure_load(Fext_n_1, -pre_n_1, pB);
 
-		pre_n_1 = 0;
 
 
 		/* ------------------------------------------*/
@@ -679,9 +686,7 @@ int main(int argc, char** argv) {
 		//internalForceBuckley(Fint_n_1,scni,d_n_1,matParams,critLambdaParams,state_n,deltaT,efgBlock->numnode,t_n_1);
 		internalForce_ForceBuckley(Fint_n_1, _scni_obj, d_n_1, v_n_h,
 		matParams,critLambdaParams, state_n_1, state_n,
-		 mfree.IS_AXI, dim,delta_t);
-		v_foutput(stdout, d_n_1);
-
+		mfree.IS_AXI, dim,delta_t);
 
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/
@@ -719,6 +724,7 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 
 		// update nodal positions
+		writeFreq = 100;
 		if ( n % writeFreq == 0 ){
 			char filename[50];
 			snprintf(filename, 50, "displacement_%d%s",fileCounter,".txt");
@@ -813,7 +819,7 @@ int main(int argc, char** argv) {
 
 
 	// /*  Program exit */
-	return 0;
+	exit(0);
 }
 
 

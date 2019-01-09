@@ -11,7 +11,7 @@
 int main(void)
 {
 
-	double temperature = 85+273.15;
+	double temperature = 85;
 	double sr = 4;
 	double peakStrain = 2.5;
 
@@ -91,6 +91,7 @@ int main(void)
 		stateNew[0]->F->me[0][0] = 1.00+t_n_1*sr;
 		stateNew[0]->F->me[1][1] = 1.00+t_n_1*sr;
 		stateNew[0]->F->me[2][2] = 1.00/pow(1.00+t_n_1*sr,2);
+
 		buckleyStress(stateNew[0], stateOld[0], matParams,critLambdaParams,dt);
 
 

@@ -23,6 +23,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	// check if problem is axisymmetric
 	if ( is_axi == 1){
 		dim_v = 5;
+		dim = 3;
 	}else{
 		dim_v = dim*dim;
 	}
@@ -186,7 +187,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		{
 			S11 = stressVoigt->ve[0]; S12 = stressVoigt->ve[2];
 			S21 = stressVoigt->ve[3]; S22 = stressVoigt->ve[1];
-			S33 = stressVoigt->ve[5];
+			S33 = stressVoigt->ve[4];
 
 			F11 = scni[i]->F_r->me[0][0]; F12 = scni[i]->F_r->me[0][1];
 			F21 = scni[i]->F_r->me[1][0]; F22 = scni[i]->F_r->me[1][1];

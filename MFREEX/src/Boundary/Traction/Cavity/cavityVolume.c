@@ -15,7 +15,7 @@ double cavityVolume(IVEC * nodes, MAT * coords){
 		//  second point on segment
 		double x2 = coords->me[nodes->ive[i+1]][0];
 		double y2 = coords->me[nodes->ive[i+1]][1];
-		volume += fabs(PI*(1.000/3.000)*(x1*x1 + x1*x2 + x2*x2)*(y2-y1));
+		volume += M_PI*((double)(1.000/3.000))*(x1*x1 + x1*x2 + x2*x2)*fabs(y2-y1);
 	}
 
 

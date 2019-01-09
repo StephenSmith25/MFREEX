@@ -12,7 +12,8 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 
 
 			/* Find Fdot */
-			m_add(stateNew->F, stateOld->F, stateNew->delta_F);
+			m_mlt(stateNew->F, stateOld->invF, stateNew->delta_F);
+			m_sub(stateNew->F, stateOld->F, stateNew->delta_F);
 
 			sm_mlt(1.000/dt,stateNew->delta_F,stateNew->Fdot);
 			
@@ -22,13 +23,11 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			poldec(stateNew->delta_F, stateNew->delta_R, stateNew->delta_U, stateNew->delta_V);
 
 
-
 			//------------------------//
 			//      Velocity grad     //
 			//------------------------//
 			// Find velocity gradient 
 			velocity_grad(stateNew->L, stateNew->D, stateNew->W,stateNew->Fdot,stateNew->invF);
-			
 
 			// div_v
 			if ( dim == 2)
@@ -72,24 +71,29 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			// m_sub(delta_ep_true,delta_ep_true_vol,delta_ep_true_iso);
 
 
-
 			// Update Jacobian
 			stateNew->Jacobian = stateOld->Jacobian + stateOld->Jacobian*stateNew->div_v*dt;
+
 
 			/* ------------------------------------------*/
 			/* ---------Isochoric   Deformation---------*/
 			/* ------------------------------------------*/
 
-			/* Distortional deformation */
+			/* Distortional deformation gradient */
 			__smlt__(stateNew->F->base, pow(stateNew->Jacobian, -1.00/3.00), stateNew->Fbar->base, dim*dim);
-			// inv Fbar_n_1
-			__smlt__(stateNew->invF->base,pow(stateNew->Jacobian ,1.00/3.00), stateNew->invFbar->base, dim*dim);
+			
+			m_copy(stateNew->D,stateNew->Dbar);
+			if ( dim == 2)
+			{
+				stateNew->Dbar->me[0][0] -= (1.00/3.00)*stateNew->div_v;
+				stateNew->Dbar->me[1][1] -= (1.00/3.00)*stateNew->div_v;
 
-			// F bar dot
-			m_sub(stateNew->Fbar, stateOld->Fbar, stateNew->Fbardot);
-			__smlt__(stateNew->Fbardot->base, 1.00/dt, stateNew->Fbardot->base, dim*dim);
+			}else {
+				stateNew->Dbar->me[0][0] -= (1.00/3.00)*stateNew->div_v;
+				stateNew->Dbar->me[1][1] -= (1.00/3.00)*stateNew->div_v;
+				stateNew->Dbar->me[2][2] -= (1.00/3.00)*stateNew->div_v;
 
-			velocity_grad(stateNew->Lbar, stateNew->Dbar, stateNew->Wbar, stateNew->Fbardot, stateNew->invFbar);
+			}
 
 			// Polar Decomposition
 			poldec(stateNew->Fbar, stateNew->R, stateNew->U, stateNew->V);
@@ -125,6 +129,8 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 				stateNew->sigma->me[0][0] += stateNew->mSigma;
 				stateNew->sigma->me[1][1] += stateNew->mSigma;
 
+
+
 			}else{
 				stateNew->sigma->me[0][0] += stateNew->mSigma;
 				stateNew->sigma->me[1][1] += stateNew->mSigma;	
@@ -134,7 +140,8 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 
 
 
-			m_copy(stateNew->F,stateOld->F);			
+			m_copy(stateNew->F,stateOld->F);
+			m_copy(stateNew->invF,stateOld->invF);			
 			m_copy(stateNew->Fbar,stateOld->Fbar);			
 			m_copy(stateNew->Sb,stateOld->Sb);			
 			m_copy(stateNew->Sc,stateOld->Sc);			

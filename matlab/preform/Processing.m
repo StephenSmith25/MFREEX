@@ -1,7 +1,7 @@
 clear all
 close all
 
-path = './../../build/bin/beamUL/Displacement';
+path = './../../build/bin/preform/Displacement';
 
 addpath(path)
 displacementdir = path ;
@@ -65,32 +65,5 @@ disp = csvread(filename);
 subplot(2,3,6)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 axis equal
-%plot(d_nodes1(:,1),d_nodes1(:,2),'g+','markersize',8);
-%plot(d_nodes2(:,1),d_nodes2(:,2),'y+','markersize',8);
-%plot(p_nodes(:,1),p_nodes(:,2),'b+','markersize',8);
-%axis off
-
-%legend('nodes','ux = 0', 'uy = 0','Prescribed Displacement')
 
 
-
-sizeA = [2 inf];
-formatSpec = '%f %f';
-fileID = fopen('./../../build/bin/beamUL/loadDisp.txt','r');
-A = fscanf(fileID,formatSpec,sizeA);
-
-A = A'
-
-figure
-
-plot(A(:,1),A(:,2),'k-');
-
-sizeA = [2 inf];
-formatSpec = '%f %f';
-fileID = fopen('./exactSol.txt','r');
-B = fscanf(fileID,formatSpec,sizeA);
-
-B = B'
-
-hold on 
-plot(B(:,1),B(:,2),'r.');
