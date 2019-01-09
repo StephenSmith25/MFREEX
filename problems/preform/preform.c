@@ -534,7 +534,7 @@ int main(int argc, char** argv) {
 
 	/*  Explicit Loop */
 	//while ( t_n < tMax)
-	while ( n < 5 )
+	while ( n < 50000 )
 	{
 
 		/*  Update time step */

@@ -91,7 +91,6 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			/*  Find deformation gradient */
 			get_defgrad(stateNew[i]->F, B, neighbours,F_r,disp);
 
-			m_foutput(stdout,stateNew[i]->F);
 			buckleyStress(stateNew[i],stateOld[i],matParams,critLambdaParams,deltat);
 
 			/* ------------------------------------------*/
@@ -136,9 +135,6 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			double div_v = stateNew[i]->div_v;
 			double mSigma = stateNew[i]->mSigma;
 			double Jacobian = stateNew[i]->Jacobian;
-
-
-			printf("Jacobian = %lf \n ",Jacobian);
 
 
 			double b1 = 0.06;
@@ -190,7 +186,6 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			sigma->ve[3] = stateNew[i]->sigma->me[2][2]/1e6;
 
 
-			v_foutput(stdout,sigma);
 
 			/*  Internal force vectors */
 			gMat(G,stateNew[i]->invF,is_axi);

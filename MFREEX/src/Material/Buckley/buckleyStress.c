@@ -2,7 +2,6 @@
 #include "Material/Buckley/buckleyStress.h"
 
 
-
 int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matParams, VEC * critLambdaParams, double dt)
 {
 
@@ -12,7 +11,6 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 
 
 			/* Find Fdot */
-			m_mlt(stateNew->F, stateOld->invF, stateNew->delta_F);
 			m_sub(stateNew->F, stateOld->F, stateNew->delta_F);
 
 			sm_mlt(1.000/dt,stateNew->delta_F,stateNew->Fdot);
@@ -20,7 +18,10 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 
 			// inverse deformation gradient
 			m_inverse(stateNew->F,stateNew->invF);
-			poldec(stateNew->delta_F, stateNew->delta_R, stateNew->delta_U, stateNew->delta_V);
+			// if ( stateNew->delta_F->me[0][0] != 0)
+			// {
+			// 	poldec(stateNew->delta_F, stateNew->delta_R, stateNew->delta_U, stateNew->delta_V);
+			// }
 
 
 			//------------------------//
@@ -148,7 +149,6 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			m_copy(stateNew->sigma,stateOld->sigma);
 			stateOld->mSigma = stateNew->mSigma;			
 			stateOld->critLambdaBar = stateNew->critLambdaBar;			
-
 
 
 

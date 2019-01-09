@@ -6,7 +6,7 @@ state_Buckley ** new_Buckley_State(int num_Points, double * temperatures, int is
 	state_Buckley ** state = malloc(num_Points * sizeof(state_Buckley*));
 
 	int dim_s = dim;
-	if ( is_AXI = 1)
+	if ( is_AXI == 1)
 	{
 		dim_s = 3;
 	}
