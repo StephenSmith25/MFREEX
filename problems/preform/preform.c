@@ -14,7 +14,7 @@
 #include "smoothstep.h"
 #include "Force/Internal/internalForce_Buckley.h"
 #include "Force/Internal/internalForce_hyperelastic.h"
-
+#include "Boundary/Displacement/essential_boundary.h"
 #include "mat2csv.h"
 #include "trigen.h"
 #include "Boundary/getBoundary.h"
@@ -26,6 +26,8 @@
 #include "Deformation/poldec.h"
 #include "Material/Buckley/new_Buckley_State.h"
 #include "Boundary/Contact/contactDetection.h"
+#include "Boundary/Displacement/setUpBC.h"
+#include "Boundary/Displacement/enforceBC.h"
 
 
 
@@ -47,12 +49,7 @@ int main(int argc, char** argv) {
 	const double rho = 1380e-9;
 
 
-	double nu = 0.4;
-	double E = 10;
-	char * material = "SVK";
-	VEC * materialParameters = v_get(2);
-	materialParameters->ve[0] = (E*nu)/((1+nu)*(1-2*nu));
-	materialParameters->ve[1] =E/(2*(1+nu));
+
 
 
 
@@ -156,7 +153,7 @@ int main(int argc, char** argv) {
 	double tStop = 0.5;
 	double tRampRod = 1e-9;
 	double vRod = 0;
-	const double DISP_ROD_MAX = -1 ; // 132;
+	const double DISP_ROD_MAX =  132 ; // 132;
 
 	/*////////////////////////////////////////////////////////// */
 	/*////////////////////////////////////////////////////////// */
@@ -222,7 +219,7 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 
 	// shape function parameters
-	double dmax = 2;
+	double dmax = 2.5;
 	int constant_support_size = 1;
 	VEC * dI = v_get(xI->m);
 
@@ -230,47 +227,6 @@ int main(int argc, char** argv) {
 	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI};
 	setDomain(&mfree,constant_support_size, dmax);
 
-
-	/* ------------------------------------------*/
-	/* ------------Boundaries--------------------*/
-	/* ------------------------------------------*/
-
-
-	// Traction
-	IVEC * traction_nodes ;
-	getBoundary(&traction_nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,2);
-	pressure_boundary * pB = new_pressure_boundary(traction_nodes, &mfree);
-	m_foutput(stdout,pB->coords);
-
-	// /*  EB1  */
-	IVEC * eb1_nodes;
-	getBoundary(&eb1_nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,5);
-	iv_addNode(eb1_nodes,traction_nodes->ive[0],'s');
-	int num_nodes_eb1 = eb1_nodes->max_dim;
-
-	// /*  EB2 */
-	IVEC * eb2_nodes;
-	getBoundary(&eb2_nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,4);
-	iv_addNode(eb2_nodes,traction_nodes->ive[traction_nodes->max_dim - 1],'e');
-	int num_nodes_eb2 = eb2_nodes->max_dim;
-
-
-	// /*  EB3 */
-	int numB3 = 15;
-	IVEC * eb3_nodes = iv_get(numB3);
-	MAT * contact_nodes_coords = m_get(numB3,dim);
-
-	for ( int i = 0 ; i < numB3 ; i++){
-		eb3_nodes->ive[i] = traction_nodes->ive[traction_nodes->max_dim -1 - i];
-		contact_nodes_coords->me[i][0] = mfree.nodes->me[eb3_nodes->ive[i]][0];
-		contact_nodes_coords->me[i][1] = mfree.nodes->me[eb3_nodes->ive[i]][1];
-
-	}
-
-		// get shape function and contact nodes
-	shape_function_container * phi_contact = mls_shapefunction(contact_nodes_coords, 
-		"linear", "quartic", 2, 1, &mfree);
-	m_foutput(stdout,contact_nodes_coords);
 
 	
 
@@ -354,7 +310,58 @@ int main(int argc, char** argv) {
 	printf("total mass = %lf (g) \n", v_sum(nodal_mass)*1000);
 	//v_foutput(stdout,nodal_mass);
 	
+	/* ------------------------------------------*/
+	/* ------------Boundaries--------------------*/
+	/* ------------------------------------------*/
 
+
+
+	// Traction
+	IVEC * traction_nodes ;
+	getBoundary(&traction_nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,2);
+	pressure_boundary * pB = new_pressure_boundary(traction_nodes, &mfree);
+	m_foutput(stdout,pB->coords);
+
+	// /*  EB1  */
+	EBC * eb1 = malloc(1*sizeof(EBC));
+	eb1->dofFixed = 3;
+	getBoundary(&eb1->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,5);
+	iv_addNode(eb1->nodes,traction_nodes->ive[0],'s');
+	int num_nodes_eb1 = eb1->nodes->max_dim;
+	setUpBC(eb1,inv_nodal_mass,&mfree);
+	
+
+	// /*  EB2 */
+	EBC * eb2 = malloc(1*sizeof(EBC));
+	eb2->dofFixed = 1;
+	getBoundary(&eb2->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,4);
+	iv_addNode(eb2->nodes,traction_nodes->ive[traction_nodes->max_dim - 1],'e');
+	int num_nodes_eb2 = eb2->nodes->max_dim;
+	setUpBC(eb2,inv_nodal_mass,&mfree);
+
+
+
+
+
+
+	// /*  EB3 */
+	int numB3 = 15;
+	IVEC * eb3_nodes = iv_get(numB3);
+	MAT * contact_nodes_coords = m_get(numB3,dim);
+
+	for ( int i = 0 ; i < numB3 ; i++){
+		eb3_nodes->ive[i] = traction_nodes->ive[traction_nodes->max_dim -1 - i];
+		contact_nodes_coords->me[i][0] = mfree.nodes->me[eb3_nodes->ive[i]][0];
+		contact_nodes_coords->me[i][1] = mfree.nodes->me[eb3_nodes->ive[i]][1];
+
+	}
+
+		// get shape function and contact nodes
+	shape_function_container * phi_contact = mls_shapefunction(contact_nodes_coords, 
+		"linear", "quartic", 2, 1, &mfree);
+	m_foutput(stdout,contact_nodes_coords);
+
+	
 	/* ------------------------------------------*/
 	/* -----------Transformation matrix----------*/
 	/* ------------------------------------------*/
@@ -442,7 +449,7 @@ int main(int argc, char** argv) {
 	
 	// time parameters
 	double t_max = 0.5; // 1s
-	double delta_t = 2e-7;
+	double delta_t = 3e-7;
 	double t_n = 0;
 	double t_n_1 = 0;
 	double t_n_h =  0; 
@@ -486,6 +493,15 @@ int main(int argc, char** argv) {
 	VEC * a_n = v_get(num_dof);
 	MAT * updatedNodes = m_get(mfree.num_nodes,2);
 
+
+	/* Boundary conditions */
+	eb1->uBar1 = v_get(eb1->nodes->max_dim);
+	eb1->uBar2 = v_get(eb1->nodes->max_dim);
+	eb2->uBar1 = v_get(eb2->nodes->max_dim);
+	eb2->uBar1 = v_get(eb2->nodes->max_dim);
+
+
+	VEC * v_correct = v_get(num_dof);
 	// How often to write outputs
 	int writeFreq = 1000;
 	int fileCounter = 0;
@@ -533,8 +549,8 @@ int main(int argc, char** argv) {
 
 
 	/*  Explicit Loop */
-	//while ( t_n < tMax)
-	while ( n < 50000 )
+	while ( t_n < tMax)
+	//while ( n < 1 )
 	{
 
 		/*  Update time step */
@@ -610,21 +626,25 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 		/* -----------Boundary Conditions------------*/
 		/* ------------------------------------------*/
-		// Fixed top boundary /
-
-		for ( int i = 0 ; i < num_nodes_eb1 ; i++)
-		{
-			d_n_1->ve[eb1_nodes->ive[i]*2] = 0;
-			d_n_1->ve[eb1_nodes->ive[i]*2 + 1] = 0;
-			v_n_h->ve[eb1_nodes->ive[i]*2] = 0;
-			v_n_h->ve[eb1_nodes->ive[i]*2 + 1] = 0;
+		/*  Implement BCs */
+		enforceBC(eb1,d_n_1); 
+		// find velocity correction
+		sv_mlt(1.00/(2*delta_t),eb1->uCorrect1,v_correct);
+		for ( int k = 0 ; k < v_correct->max_dim; k++){
+			v_n_h->ve[2*k] += v_correct->ve[k];
 		}
 
+		sv_mlt(1.000/(2*delta_t),eb1->uCorrect2,v_correct);
+		for ( int k = 0 ; k < v_correct->max_dim; k++){
+			v_n_h->ve[2*k+1] += v_correct->ve[k];
+		}
+
+
 		// Symmetry boundary /
-		for ( int i = 0 ; i < num_nodes_eb2 ; i++)
-		{
-			d_n_1->ve[eb2_nodes->ive[i]*2] = 0;
-			v_n_h->ve[eb2_nodes->ive[i]*2] = 0;
+		enforceBC(eb2,d_n_1); 
+		sv_mlt(1.00/(2*delta_t),eb2->uCorrect1,v_correct);
+		for ( int k = 0 ; k < v_correct->max_dim; k++){
+			v_n_h->ve[2*k] += v_correct->ve[k];
 		}
 
 		// find new nodal positions
@@ -676,17 +696,14 @@ int main(int argc, char** argv) {
 		assemble_pressure_load(Fext_n_1, -pre_n_1, pB);
 
 
-
 		/* ------------------------------------------*/
 		/* ------------Find Internal Force-----------*/
 		/* ------------------------------------------*/
-
 		/*  Internal force */
-		//internalForce(Fint_n_1,&scni,d_n_1,matParams,efgBlock->numnode);
 		//internalForceBuckley(Fint_n_1,scni,d_n_1,matParams,critLambdaParams,state_n,deltaT,efgBlock->numnode,t_n_1);
 		internalForce_ForceBuckley(Fint_n_1, _scni_obj, d_n_1, v_n_h,
 		matParams,critLambdaParams, state_n_1, state_n,
-		mfree.IS_AXI, dim,delta_t);
+		mfree.IS_AXI, dim,delta_t,t_n_1);
 
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/
@@ -709,13 +726,13 @@ int main(int argc, char** argv) {
 		for ( int i = 0 ; i < num_nodes_eb1 ; i++)
 		{
 
-			v_n_1->ve[eb1_nodes->ive[i]*2] = 0;
-			v_n_1->ve[eb1_nodes->ive[i]*2 + 1] = 0;
+			v_n_1->ve[eb1->nodes->ive[i]*2] = 0;
+			v_n_1->ve[eb1->nodes->ive[i]*2 + 1] = 0;
 		}
 		for ( int i = 0 ; i < num_nodes_eb2 ; i++)
 		{
 
-			v_n_1->ve[eb2_nodes->ive[i]*2] = 0;
+			v_n_1->ve[eb2->nodes->ive[i]*2] = 0;
 		}
 
 

@@ -120,7 +120,6 @@ int assemble_pressure_load(VEC * Fext, double Pressure, pressure_boundary * pB)
 	double intFactor = 0;
 	//double area_sum = 0;
 
-
 	for ( int i = 0 ; i < numPoints - 1; i++ )
 	{			
 
@@ -145,7 +144,7 @@ int assemble_pressure_load(VEC * Fext, double Pressure, pressure_boundary * pB)
 				if ( k < num_neighbours_n1)
 				{
 					Fext->ve[2*neighbours_n1->ive[k]] += 0.5*intFactor*surface_traction[0]*phi_n1->ve[k] ;
-					Fext->ve[2*neighbours_n2->ive[k]+1] += 0.5*intFactor*surface_traction[1]*phi_n1->ve[k]  ;
+					Fext->ve[2*neighbours_n1->ive[k]+1] += 0.5*intFactor*surface_traction[1]*phi_n1->ve[k]  ;
 
 				}
 				if ( k < num_neighbours_n2)
@@ -156,16 +155,6 @@ int assemble_pressure_load(VEC * Fext, double Pressure, pressure_boundary * pB)
 				}
 
 			}
-
-			// if ( i > 55)
-			// {
-			// 	//v_foutput(stdout,phi_n1);
-			// 	//v_foutput(stdout,phi_n2);
-			// 	iv_foutput(stdout,neighbours_n1);
-			// 	iv_foutput(stdout, neighbours_n2);
-			// 	printf("surface_traction = %lf,%lf \n", surface_traction[0],surface_traction[1]);
-
-			// }
 
 
 			//area_sum +=  pB->segment_weights[i];

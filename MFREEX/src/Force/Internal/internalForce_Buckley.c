@@ -2,10 +2,10 @@
 
 
 static int call_count;
-
+static int print_count = 1;
 double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC * velocity,
 	VEC * matParams,VEC * critLambdaParams, state_Buckley ** stateNew, state_Buckley ** stateOld,
-	 int is_axi, int dim, double deltat)
+	 int is_axi, int dim, double deltat, double t_n_1)
 {
 
 
@@ -34,14 +34,15 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	SCNI ** scni = scni_obj->scni;
 	int num_int_points = scni_obj->num_points;
 
-	
+	MAT * Favg = m_get(dim_strain,dim_strain);
+	double averaging = 0;
 	// time step calculation
 	double delta_t_min = 1000;
 
 
 
 	// set number of threads
-	omp_set_num_threads(1);
+	omp_set_num_threads(8);
 
 	int i;
 #pragma omp parallel 
@@ -67,7 +68,7 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		MAT * Sb_n_1;
 
 
-#pragma omp for nowait schedule(dynamic,4) 
+#pragma omp for nowait schedule(dynamic,2) 
 		for(i = 0 ; i < num_int_points ; i++){
 
 
@@ -133,7 +134,6 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			/* ------------------------------------------*/
 
 			double div_v = stateNew[i]->div_v;
-			double mSigma = stateNew[i]->mSigma;
 			double Jacobian = stateNew[i]->Jacobian;
 
 
@@ -151,8 +151,7 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 				eta -= b2*b2*Le*(1/c)*div_v;
 			}
 
-			P_b2 = 0;
-			P_b1 = 0;
+
 
 
 			// double delta_t = (2.00/sqrt(((lambda + 2*mu)*MaxB)))*(sqrt(1+eta*eta)-eta);
@@ -161,7 +160,18 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			// 	delta_t_min_i = delta_t;
 			// }
 
+			if ((i == 93) && (call_count % 1000 == 0)) {
 
+
+
+			m_add(stateNew[i]->F,Favg,Favg);
+
+			//m_add(Sb_n_1,Savg_bond,Savg_bond);
+			//m_add(Sc_n_1,Savg_conf,Savg_conf);
+
+			++averaging;
+
+		}
 			/* ------------------------------------------*/
 			/* --------------Internal Force--------------*/
 			/* ------------------------------------------*/
@@ -180,12 +190,17 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			// sigma->ve[2] = (Sc_n_1->me[0][1] + Sb_n_1->me[0][1] )/1e6;
 			// sigma->ve[3] = (Sb_n_1->me[2][2] + Sb_n_1->me[2][2] + mSigma + (P_b1+P_b2))/1e6 ;
 
-			sigma->ve[0] = stateNew[i]->sigma->me[0][0]/1e6;
-			sigma->ve[1] = stateNew[i]->sigma->me[1][1]/1e6;
+			sigma->ve[0] = (stateNew[i]->sigma->me[0][0]+(P_b1+P_b2))/1e6;
+			sigma->ve[1] = (stateNew[i]->sigma->me[1][1]+(P_b1+P_b2))/1e6;
 			sigma->ve[2] = stateNew[i]->sigma->me[0][1]/1e6;
-			sigma->ve[3] = stateNew[i]->sigma->me[2][2]/1e6;
+			sigma->ve[3] = (stateNew[i]->sigma->me[2][2]+(P_b1+P_b2))/1e6;
 
+			// if ( i == 0)
+			// {
+			// 	m_foutput(stdout, stateNew[i]->Sb);
+			// 	m_foutput(stdout, stateNew[i]->Sc);
 
+			// }
 
 			/*  Internal force vectors */
 			gMat(G,stateNew[i]->invF,is_axi);
@@ -214,16 +229,28 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			// }
 		}
 
-	// /*  Free allocated memory */
-	// 	v_free(stressVoigt);
-			V_FREE(fIntTemp);
-			M_FREE(G);
-			V_FREE(sigma);
-			V_FREE(stressVoigt);
+	/*  Free allocated memory */
+	V_FREE(fIntTemp);
+	M_FREE(G);
+	V_FREE(sigma);
+	V_FREE(stressVoigt);
 
-	// 	M_FREE(Fdot);
+	}  // end of parallel region 
 
+
+
+	// print outputs
+    if (call_count % 1000 == 0){
+		char  filename[50];
+		sm_mlt(1.00/averaging,Favg,Favg);
+		Favg->me[2][1] = t_n_1;
+		snprintf(filename, 50, "strain_%d%s",print_count,".txt");
+		mat2csv(Favg,"./History/Strain",filename);
+		++print_count;
 	}
+
+
+
 	++call_count;
 
 	return delta_t_min;

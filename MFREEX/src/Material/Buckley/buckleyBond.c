@@ -96,13 +96,19 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	// s*l
 	m_mlt(stateOld->Sb,stateNew->W,mat2);
 	m_sub(mat1,mat2,mat1);	
-	sm_mlt(dt,mat1,mat1);
+	sm_mlt(0.5*dt,mat1,mat1);
 
-	// Sb_n_1 = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
+	// Sb* = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
 	m_add(Sb_n_1,mat1,Sb_n_1);
 
+	// Sb_n_1 = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
+	m_mlt(stateNew->W,Sb_n_1,mat1);
+	m_mlt(Sb_n_1,stateNew->W,mat2);
+	m_sub(mat1,mat2,mat1);	
+	sm_mlt(0.5*dt,mat1,mat1);
 
-	
+	m_add(Sb_n_1,mat1,Sb_n_1);
+
 
 	M_FREE(deltaSb); 
 	M_FREE(mat1);

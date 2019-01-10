@@ -1,6 +1,6 @@
 
 #include "Material/Buckley/buckleyStress.h"
-
+#include "determinant.h"
 
 int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matParams, VEC * critLambdaParams, double dt)
 {
@@ -73,9 +73,9 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 
 
 			// Update Jacobian
-			stateNew->Jacobian = stateOld->Jacobian + stateOld->Jacobian*stateNew->div_v*dt;
+			//stateNew->Jacobian = stateOld->Jacobian + stateOld->Jacobian*stateNew->div_v*dt;
 
-
+			stateNew->Jacobian = determinant(stateNew->F);
 			/* ------------------------------------------*/
 			/* ---------Isochoric   Deformation---------*/
 			/* ------------------------------------------*/
@@ -121,6 +121,8 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			buckleyBond(stateNew,stateOld,matParams,dt);
 			// Conformational stress
 			buckleyConf(stateNew,stateOld, matParams,dt);
+
+			
 			stateNew->mSigma = log(stateNew->Jacobian)*Kb;
 
 			m_add(stateNew->Sb, stateNew->Sc, stateNew->sigma);
@@ -147,6 +149,7 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			m_copy(stateNew->Sb,stateOld->Sb);			
 			m_copy(stateNew->Sc,stateOld->Sc);			
 			m_copy(stateNew->sigma,stateOld->sigma);
+			stateOld->Jacobian = stateNew->Jacobian;
 			stateOld->mSigma = stateNew->mSigma;			
 			stateOld->critLambdaBar = stateNew->critLambdaBar;			
 

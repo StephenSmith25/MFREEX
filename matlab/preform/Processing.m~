@@ -1,8 +1,7 @@
+clear all
 close all
-clear all 
 
-
-path = './../../build/bin/beamUL/Displacement';
+path = './../../build/bin/preform/Displacement';
 
 addpath(path)
 displacementdir = path ;
@@ -13,18 +12,18 @@ numFiles = size(d,1) -3 ;
 plotFiles = ceil(linspace(1,numFiles,10));
 
 
-filename = strcat('displacement_',num2str(plotFiles(1)),'.txt');
+filename = strcat(path,'/displacement_',num2str(plotFiles(1)),'.txt');
 disp = csvread(filename);
 figure
-subplot(1,3,1)       % add first plot in 2 x 2 grid
+subplot(2,3,1)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 axis equal 
 
-filename = strcat('displacement_',num2str(plotFiles(5)),'.txt');
+filename = strcat(path,'/displacement_',num2str(plotFiles(2)),'.txt');
 disp = csvread(filename);
 
 
-subplot(1,3,2)       % add first plot in 2 x 2 grid
+subplot(2,3,2)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
  
 
@@ -32,42 +31,267 @@ axis equal
 
 
 
-filename = strcat('displacement_',num2str(plotFiles(10)),'.txt');
+filename = strcat(path,'/displacement_',num2str(plotFiles(4)),'.txt');
 disp = csvread(filename);
 
 
-subplot(1,3,3)       % add first plot in 2 x 2 grid
+subplot(2,3,3)       % add first plot in 2 x 2 grid
+plot(disp(:,1),disp(:,2),'k.')           % line plot
+axis equal
+
+
+filename = strcat(path,'/displacement_',num2str(plotFiles(7)),'.txt');
+disp = csvread(filename);
+
+
+subplot(2,3,4)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 axis equal
 
 
 
-%plot(d_nodes1(:,1),d_nodes1(:,2),'g+','markersize',8);
-%plot(d_nodes2(:,1),d_nodes2(:,2),'y+','markersize',8);
-%plot(p_nodes(:,1),p_nodes(:,2),'b+','markersize',8);
-%axis off
-
-%legend('nodes','ux = 0', 'uy = 0','Prescribed Displacement')
+filename = strcat(path,'/displacement_',num2str(plotFiles(8)),'.txt');
+disp = csvread(filename);
 
 
+subplot(2,3,5)       % add first plot in 2 x 2 grid
+plot(disp(:,1),disp(:,2),'k.')           % line plot
+axis equal
 
-sizeA = [2 inf];
-formatSpec = '%f %f';
-fileID = fopen('/home/stephen/Documents/Meshless/matlab/beamloadDisp.txt','r');
-A = fscanf(fileID,formatSpec,sizeA);
+filename = strcat(path,'/displacement_',num2str(plotFiles(10)),'.txt');
+disp = csvread(filename);
 
-A = A'
+
+subplot(2,3,6)       % add first plot in 2 x 2 grid
+plot(disp(:,1),disp(:,2),'k.')           % line plot
+axis equal
+
+
+m = dlmread('./../../build/bin/preform/pressureTime.txt',' ');
+%m(ceil(length(m)/4):end,:) = smoothdata(m(ceil(length(m)/4):end,:))
+figure
+plot(m(:,1),m(:,2),'k-','linewidth',3);
+xlabel('time');
+ylabel('Pressure');
+xlim([0,0.5])
+ylim([0,0.9])
+
+b = csvread("Experimental/N4T100_exp_pressure.csv");
+hold on
+plot(b(:,1),b(:,2)/1000,'b--')
+
+
+c = csvread("Experimental/N4T100_fe_pressure.csv");
+
+hold on
+plot(c(:,1),c(:,2)/1000,'r--')
+
+legend('Mesh-free','Experiemntal','FE (Abaqus)')
+ylabel('Pressure (MPa)')
+xlabel('Time (s)')
+
+
+%set axis
+set(gca, 'FontName', 'cmr12')
+% set x tics and y tics
+set(gca,...
+'Units','normalized',...
+'FontUnits','points',...
+'FontWeight','normal',...
+'FontSize',14,... % size ofiguref numbers on axis
+'FontName','cmr14') % font name
+set(gca,'TickLabelInterpreter', 'latex');
+
+% Y label
+ylabel({'Pressure (MPa) '},...
+'FontUnits','points',...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% X label
+xlabel('Time (s)',...
+'FontUnits','points',...
+'interpreter','latex',...
+'FontWeight','normal',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% legend
+
+legend({'Meshfree','Experimental','FE (Abaqus )'},... % { 'legend1', 'legend2',...}
+'FontUnits','points',...
+'interpreter','latex',...
+'FontSize',12,...
+'FontName','cmr14',...
+'Location','SouthEast')
+
+
+set(gcf, 'Color', 'w');
+
+print -depsc2 pressure.eps
+set(gcf, 'Color', 'w');
+
+path = './../../build/bin/preform/History/Strain';
+
+addpath(path)
+displacementdir = path ;
+d = dir(displacementdir);
+d1 = dir([displacementdir,'*.txt']);
+numFiles = size(d,1) -3 ;
+
+plotFiles = ceil(linspace(1,numFiles,100));
+for i = 1:length(plotFiles)
+    
+    
+
+    filename = strcat('strain_',num2str(plotFiles(i)),'.txt');
+
+    strain = csvread(filename);
+    
+ 
+    F =  [strain(1,1) strain(1,2) 0 ;
+        strain(2,1) strain(2,2) 0;
+        0 0 strain(3,3)]  ;
+    
+    
+    [R U V] = poldecomp(F);
+    
+    
+    true_strain = logm(U);
+    
+    
+    hoop_strain(i) =true_strain(3,3);
+    axial_strain(i) = true_strain(2,2);
+    radial_strain(i) = true_strain(1,1);
+    shear_strain(i) = true_strain(1,2);
+    jacobian(i) = det(F);
+
+    time(i) = strain(3,2);
+  
+    
+end
+
+
 
 figure
+subplot(1,2,1)
+plot(time,(axial_strain),'k','linewidth',2);
+% hold on
+% plot(time,log(1+shear_strain),'k');
+xlim([0,0.5])
 
-plot(A(:,1),A(:,2),'k-');
+c = csvread("ExperimentalN4100_exp_strain_axial.csv");
 
-sizeA = [2 inf];
-formatSpec = '%f %f';
-fileID = fopen('./exactSol.txt','r');
-B = fscanf(fileID,formatSpec,sizeA);
+hold on
+plot(c(:,1),c(:,2),'b--')
 
-B = B'
+c = csvread("N4100_fe_strain_axial.csv");
 
-hold on 
-plot(B(:,1),B(:,2),'r.');
+hold on
+plot(c(:,1),c(:,2),'r--')
+
+
+hold on
+plot(time,jacobian,'g--')
+
+hold on
+plot(time,(shear_strain),'g','linewidth',2);
+
+
+%set axis
+set(gca, 'FontName', 'cmr12')
+% set x tics and y tics
+set(gca,...
+'Units','normalized',...
+'FontUnits','points',...
+'FontWeight','normal',...
+'FontSize',14,... % size ofiguref numbers on axis
+'FontName','cmr14') % font name
+set(gca,'TickLabelInterpreter', 'latex');
+
+% Y label
+ylabel({'True Strain '},...
+'FontUnits','points',...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% X label
+xlabel('Time',...
+'FontUnits','points',...
+'interpreter','latex',...
+'FontWeight','normal',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% legend
+
+legend({'Axial (Meshfree)', 'Axial (exp)','Axial (FE)', 'Jacobian', 'Shear' },... % { 'legend1', 'legend2',...}
+'FontUnits','points',...
+'interpreter','latex',...
+'FontSize',12,...
+'FontName','cmr14',...
+'Location','SouthEast')
+
+grid on 
+
+
+
+print -depsc2 strain_axial.eps
+
+subplot(1,2,2)
+plot(time,(hoop_strain),'k','linewidth',2);
+
+
+c = csvread("N4100_exp_strain_hoop.csv");
+
+hold on
+plot(c(:,1),c(:,2),'b--')
+
+
+c = csvread("N4100_fe_strain_hoop.csv");
+
+hold on
+plot(c(:,1),c(:,2),'r--')
+
+xlim([0,0.5])
+
+
+%set axis
+set(gca, 'FontName', 'cmr12')
+% set x tics and y tics
+set(gca,...
+'Units','normalized',...
+'FontUnits','points',...
+'FontWeight','normal',...
+'FontSize',14,... % size ofiguref numbers on axis
+'FontName','cmr14') % font name
+set(gca,'TickLabelInterpreter', 'latex');
+
+% Y label
+ylabel({'True Strain '},...
+'FontUnits','points',...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% X label
+xlabel('Time',...
+'FontUnits','points',...
+'interpreter','latex',...
+'FontWeight','normal',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% legend
+
+legend({'Hoop (Meshfree)','Hoop (exp)','Hoop (FE)' },... % { 'legend1', 'legend2',...}
+'FontUnits','points',...
+'interpreter','latex',...
+'FontSize',12,...
+'FontName','cmr14',...
+'Location','SouthEast')
+
+grid on 
+
+
+
+print -depsc2 strain_hoop.eps
+
+
+
