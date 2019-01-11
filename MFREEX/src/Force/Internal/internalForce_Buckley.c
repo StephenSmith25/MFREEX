@@ -39,6 +39,7 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	// time step calculation
 	double delta_t_min = 1000;
 
+	char  filename[50];
 
 
 	// set number of threads
@@ -137,8 +138,8 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			double Jacobian = stateNew[i]->Jacobian;
 
 
-			double b1 = 0.06;
-			double b2 = 1.44;
+			double b1 = 0.09;
+			double b2 = 1.44; 
 			double Le = 1.6e-3;
 			double rho = 1380;
 			//double c = sqrt(((lambda+2*mu)/rho));
@@ -154,6 +155,7 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 
 
+
 			// double delta_t = (2.00/sqrt(((lambda + 2*mu)*MaxB)))*(sqrt(1+eta*eta)-eta);
 			// if ( delta_t <delta_t_min_i )
 			// {
@@ -164,12 +166,20 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 
 
-			m_add(stateNew[i]->F,Favg,Favg);
-
+			m_foutput(stdout,stateNew[i]->W);
+	
+			stateNew[i]->F->me[2][1] = t_n_1;
 			//m_add(Sb_n_1,Savg_bond,Savg_bond);
-			//m_add(Sc_n_1,Savg_conf,Savg_conf);
+				//m_add(Sc_n_1,Savg_conf,Savg_conf);
+			snprintf(filename, 50, "strain_%d%s",print_count,".txt");
+			mat2csv(stateNew[i]->F,"./History/Strain",filename);
+			snprintf(filename, 50, "Bond_Stress_%d%s",print_count,".txt");
+			mat2csv(stateNew[i]->Sb,"./History/Stress",filename);
+			snprintf(filename, 50, "Conformational_Stress_%d%s",print_count,".txt");
+			mat2csv(stateNew[i]->Sc,"./History/Stress",filename);
+			stateNew[i]->F->me[2][1] = 0;
+			++print_count;
 
-			++averaging;
 
 		}
 			/* ------------------------------------------*/
@@ -238,16 +248,6 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	}  // end of parallel region 
 
 
-
-	// print outputs
-    if (call_count % 1000 == 0){
-		char  filename[50];
-		sm_mlt(1.00/averaging,Favg,Favg);
-		Favg->me[2][1] = t_n_1;
-		snprintf(filename, 50, "strain_%d%s",print_count,".txt");
-		mat2csv(Favg,"./History/Strain",filename);
-		++print_count;
-	}
 
 
 

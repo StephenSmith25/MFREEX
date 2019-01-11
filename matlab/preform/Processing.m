@@ -306,4 +306,126 @@ grid on
 print -depsc2 strain_hoop.eps
 
 
+path = './../../build/bin/preform/History/Stress';
+
+addpath(path)
+displacementdir = path ;
+d = dir(displacementdir);
+d1 = dir([displacementdir,'*.txt']);
+numFiles = size(d,1)/2 -3 ;
+
+plotFiles = ceil(linspace(1,numFiles,100)); 
+
+for i = 1:length(plotFiles)
+    
+    
+
+    filename = strcat('Bond_Stress_',num2str(plotFiles(i)),'.txt');
+
+    stress = csvread(filename);
+    hoop_stress_bond(i) = stress(3,3);
+    axial_stress_bond(i) = stress(2,2);
+    radial_stress_bond(i) = stress(1,1);
+  
+    filename = strcat('Conformational_Stress_',num2str(plotFiles(i)),'.txt');
+
+    stress = csvread(filename);
+    hoop_stress_conf(i) = stress(3,3);
+    axial_stress_conf(i) = stress(2,2);
+    radial_stress_conf(i) = stress(1,1);
+    
+  
+end
+
+figure
+
+subplot(1,2,1)
+hold on 
+plot(time,hoop_stress_conf,'r');
+hold on
+plot(time,hoop_stress_bond,'b');
+%hold on
+%plot(time,log(jacobian)*1.8e9,'m')
+
+%set axis
+set(gca, 'FontName', 'cmr12')
+% set x tics and y tics
+set(gca,...
+'Units','normalized',...
+'FontUnits','points',...
+'FontWeight','normal',...
+'FontSize',14,... % size ofiguref numbers on axis
+'FontName','cmr14') % font name
+set(gca,'TickLabelInterpreter', 'latex');
+
+% Y label
+ylabel({'Cauchy Stress '},...
+'FontUnits','points',...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% X label
+xlabel('Time',...
+'FontUnits','points',...
+'interpreter','latex',...
+'FontWeight','normal',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% legend
+
+legend({ 'Hoop (Conf)','Hoop (Bond)','Volumetric' },... % { 'legend1', 'legend2',...}
+'FontUnits','points',...
+'interpreter','latex',...
+'FontSize',12,...
+'FontName','cmr14',...
+'Location','SouthEast')
+
+grid on 
+
+subplot(1,2,2)
+plot(time,axial_stress_conf,'r');
+hold on
+plot(time,axial_stress_bond,'b');
+
+%set axis
+set(gca, 'FontName', 'cmr12')
+% set x tics and y tics
+set(gca,...
+'Units','normalized',...
+'FontUnits','points',...
+'FontWeight','normal',...
+'FontSize',14,... % size ofiguref numbers on axis
+'FontName','cmr14') % font name
+set(gca,'TickLabelInterpreter', 'latex');
+
+% Y label
+ylabel({'Cauchy Stress '},...
+'FontUnits','points',...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% X label
+xlabel('Time',...
+'FontUnits','points',...
+'interpreter','latex',...
+'FontWeight','normal',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% legend
+
+legend({ 'Axial (Conf)','Axial (Bond)' },... % { 'legend1', 'legend2',...}
+'FontUnits','points',...
+'interpreter','latex',...
+'FontSize',12,...
+'FontName','cmr14',...
+'Location','SouthEast')
+
+grid on 
+
+
+
+print -depsc2 stress.eps
+
+
+
 

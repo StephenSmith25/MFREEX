@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
 	double tStop = 0.5;
 	double tRampRod = 1e-9;
 	double vRod = 0;
-	const double DISP_ROD_MAX =  132 ; // 132;
+	const double DISP_ROD_MAX = -1 ;// 132 ; // 132;
 
 	/*////////////////////////////////////////////////////////// */
 	/*////////////////////////////////////////////////////////// */
@@ -449,7 +449,7 @@ int main(int argc, char** argv) {
 	
 	// time parameters
 	double t_max = 0.5; // 1s
-	double delta_t = 3e-7;
+	double delta_t = 4e-7;
 	double t_n = 0;
 	double t_n_1 = 0;
 	double t_n_h =  0; 

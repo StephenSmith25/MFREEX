@@ -86,13 +86,13 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			m_copy(stateNew->D,stateNew->Dbar);
 			if ( dim == 2)
 			{
-				stateNew->Dbar->me[0][0] -= (1.00/3.00)*stateNew->div_v;
-				stateNew->Dbar->me[1][1] -= (1.00/3.00)*stateNew->div_v;
+				stateNew->Dbar->me[0][0] += (-1.00/3.00)*stateNew->div_v;
+				stateNew->Dbar->me[1][1] += (-1.00/3.00)*stateNew->div_v;
 
 			}else {
-				stateNew->Dbar->me[0][0] -= (1.00/3.00)*stateNew->div_v;
-				stateNew->Dbar->me[1][1] -= (1.00/3.00)*stateNew->div_v;
-				stateNew->Dbar->me[2][2] -= (1.00/3.00)*stateNew->div_v;
+				stateNew->Dbar->me[0][0] += (-1.00/3.00)*stateNew->div_v;
+				stateNew->Dbar->me[1][1] += (-1.00/3.00)*stateNew->div_v;
+				stateNew->Dbar->me[2][2] += (-1.00/3.00)*stateNew->div_v;
 
 			}
 

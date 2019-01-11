@@ -64,29 +64,21 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	// network rate of deformation tensor 
 	m_sub(stateNew->Dbar,Ds,Dn);
 
-	// BnCr = Dn_n*Bn_n + Bn_n*Dn_n; 
+	// BnCr = Dn_n*Bn_n + Bn_n*Dn_n;
 	m_mlt(Dn,stateOld->Bbar,intermediate1);
 	m_mlt(stateOld->Bbar,Dn,intermediate2);
 	m_add(intermediate1,intermediate2,BnCr);
 
-	// Material time derivative of B
-	// B* = delta_t * BnCr + 0.5*deltat * (W*B_n - B_n*W); 
+	// Material time derivative of B  ( Jaumann )
+
+
+	// B* = delta_t * BnCr + deltat * (W*B_n - B_n*W); 
 	m_mlt(stateNew->W,stateOld->Bbar,intermediate1);
 	m_mlt(stateOld->Bbar,stateNew->W,intermediate2);
-
 	m_sub(intermediate1,intermediate2,BnDot);
-	sm_mlt(deltaT,BnCr,BnCr);
-
 	m_add(BnCr,BnDot,BnDot);
-	sm_mlt(0.5*deltaT,BnDot,BnDot);
-
-	m_add(BnCr,intermediate1,BnDot);
-	m_sub(BnDot,intermediate2,BnDot);
 	// deltaB = deltaT * BnDot
 	sm_mlt(deltaT,BnDot,deltaB);
-
-	// B_n_1 = B_n* - 0.5*delta_t * (W*B* - B*W*)
-	// Bn_n_1 = Bn_n + deltaB;
 	m_add(stateOld->Bbar,deltaB,stateNew->Bbar);
 	symmeig(stateNew->Bbar,eigVecB,eigValB);	
 	// find edwards vilgis stress

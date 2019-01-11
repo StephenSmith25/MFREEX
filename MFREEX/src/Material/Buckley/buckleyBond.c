@@ -33,16 +33,17 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	double vogel_T = para->ve[3];
 	double Cv = para->ve[6];
 
+
+
 	MAT * Sb_n = stateOld->Sb;
 	MAT * Sb_n_1 = stateNew->Sb;
 
 
 
-	double tauOCT = sqrt (  (1.000/3.00) * contraction(stateOld->Sb,stateOld->Sb)  ) ;
+	double tauOCT = sqrt (  (1.000/3.00) * contraction(Sb_n,Sb_n)  ) ;
 	double alpha_sig = 1;
 	
 	double sigma_m = stateOld->mSigma;
-
 
 	if (sigma_m < 0)
 	 {
@@ -62,6 +63,8 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 
 
 
+
+
 	// tau = tau_s * alpha_s * alpha_T * alpha_sig ;
 	double tau = (star_mu0/(2*Gb))*alpha_sig*alpha_s*alpha_T;
 
@@ -71,12 +74,8 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	MAT * deltaSb = m_get(3,3);
 
 
-	double sbFactor = 1;
-
-
-	sbFactor = 1 - exp(-dt/tau);
-
-
+	double sbFactor = 1 - exp(-dt/tau);
+	m_zero(stateNew->W);
 	// mat1 = 2Gb*D*tau
 	sm_mlt(2*Gb*tau,stateNew->Dbar,mat1);
 
@@ -86,28 +85,28 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	// deltaSb = ( 1- exp(-dt/tau)) * ( 2G*D*tau - Sb_n)
 	sm_mlt(sbFactor,deltaSb, deltaSb);
 
-	// Sb_n_1 = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
-	m_add(stateOld->Sb,deltaSb,Sb_n_1);
 
+	// Sb_n_1 = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
 	// Spin component of stress
 	// (WSb_n - Sb_n W)dt
 	// W*s
-	m_mlt(stateNew->W,stateOld->Sb,mat1);
+	m_mlt(stateNew->W,Sb_n,mat1);
 	// s*l
-	m_mlt(stateOld->Sb,stateNew->W,mat2);
+	m_mlt(Sb_n,stateNew->W,mat2);
 	m_sub(mat1,mat2,mat1);	
-	sm_mlt(0.5*dt,mat1,mat1);
+	sm_mlt(1.00*dt,mat1,mat1);
+	m_add(Sb_n,mat1,mat1);
 
 	// Sb* = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
-	m_add(Sb_n_1,mat1,Sb_n_1);
+	m_add(deltaSb,mat1,Sb_n_1);
 
 	// Sb_n_1 = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
-	m_mlt(stateNew->W,Sb_n_1,mat1);
-	m_mlt(Sb_n_1,stateNew->W,mat2);
-	m_sub(mat1,mat2,mat1);	
-	sm_mlt(0.5*dt,mat1,mat1);
+	// m_mlt(stateNew->W,Sb_n_1,mat1);
+	// m_mlt(Sb_n_1,stateNew->W,mat2);
+	// m_sub(mat1,mat2,mat1);	
+	// sm_mlt(0.5*dt,mat1,mat1);
 
-	m_add(Sb_n_1,mat1,Sb_n_1);
+	// m_add(Sb_n_1,mat1,Sb_n_1);
 
 
 	M_FREE(deltaSb); 

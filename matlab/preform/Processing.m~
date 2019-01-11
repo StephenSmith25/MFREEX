@@ -11,12 +11,14 @@ numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
 
-
+plot_point = 94;
 filename = strcat(path,'/displacement_',num2str(plotFiles(1)),'.txt');
 disp = csvread(filename);
 figure
 subplot(2,3,1)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
+hold on
+plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal 
 
 filename = strcat(path,'/displacement_',num2str(plotFiles(2)),'.txt');
@@ -25,6 +27,8 @@ disp = csvread(filename);
 
 subplot(2,3,2)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
+hold on
+plot(disp(plot_point,1),disp(plot_point,2),'r*')
  
 
 axis equal 
@@ -37,6 +41,8 @@ disp = csvread(filename);
 
 subplot(2,3,3)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
+hold on
+plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
 
 
@@ -46,6 +52,8 @@ disp = csvread(filename);
 
 subplot(2,3,4)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
+hold on
+plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
 
 
@@ -56,6 +64,8 @@ disp = csvread(filename);
 
 subplot(2,3,5)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
+hold on
+plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
 
 filename = strcat(path,'/displacement_',num2str(plotFiles(10)),'.txt');
@@ -64,6 +74,8 @@ disp = csvread(filename);
 
 subplot(2,3,6)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
+hold on
+plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
 
 
@@ -179,12 +191,12 @@ plot(time,(axial_strain),'k','linewidth',2);
 % plot(time,log(1+shear_strain),'k');
 xlim([0,0.5])
 
-c = csvread("ExperimentalN4100_exp_strain_axial.csv");
+c = csvread("Experimental/N4100_exp_strain_axial.csv");
 
 hold on
 plot(c(:,1),c(:,2),'b--')
 
-c = csvread("N4100_fe_strain_axial.csv");
+c = csvread("Experimental/N4100_fe_strain_axial.csv");
 
 hold on
 plot(c(:,1),c(:,2),'r--')
@@ -240,13 +252,13 @@ subplot(1,2,2)
 plot(time,(hoop_strain),'k','linewidth',2);
 
 
-c = csvread("N4100_exp_strain_hoop.csv");
+c = csvread("Experimental/N4100_exp_strain_hoop.csv");
 
 hold on
 plot(c(:,1),c(:,2),'b--')
 
 
-c = csvread("N4100_fe_strain_hoop.csv");
+c = csvread("Experimental/N4100_fe_strain_hoop.csv");
 
 hold on
 plot(c(:,1),c(:,2),'r--')
@@ -293,5 +305,127 @@ grid on
 
 print -depsc2 strain_hoop.eps
 
+
+path = './../../build/bin/preform/History/Stress';
+
+addpath(path)
+displacementdir = path ;
+d = dir(displacementdir);
+d1 = dir([displacementdir,'*.txt']);
+numFiles = size(d,1)/2 -3 ;
+
+plotFiles = ceil(linspace(1,numFiles,100)); 
+% 
+% for i = 1:length(plotFiles)
+%     
+%     
+% 
+%     filename = strcat('stress_bond_',num2str(plotFiles(i)),'.txt');
+% 
+%     stress = csvread(filename);
+%     hoop_stress_bond(i) = stress(3,3);
+%     axial_stress_bond(i) = stress(2,2);
+%     radial_stress_bond(i) = stress(1,1);
+%   
+%     filename = strcat('stress_conf_',num2str(plotFiles(i)),'.txt');
+% 
+%     stress = csvread(filename);
+%     hoop_stress_conf(i) = stress(3,3);
+%     axial_stress_conf(i) = stress(2,2);
+%     radial_stress_conf(i) = stress(1,1);
+%     
+%   
+% end
+% 
+% figure
+% 
+% subplot(1,2,1)
+% hold on 
+% plot(time,hoop_stress_conf,'r');
+% hold on
+% plot(time,hoop_stress_bond,'b');
+% hold on
+% plot(time,log(jacobian)*1.8e9,'m')
+% 
+% %set axis
+% set(gca, 'FontName', 'cmr12')
+% % set x tics and y tics
+% set(gca,...
+% 'Units','normalized',...
+% 'FontUnits','points',...
+% 'FontWeight','normal',...
+% 'FontSize',14,... % size ofiguref numbers on axis
+% 'FontName','cmr14') % font name
+% set(gca,'TickLabelInterpreter', 'latex');
+% 
+% % Y label
+% ylabel({'Cauchy Stress '},...
+% 'FontUnits','points',...
+% 'interpreter','latex',...
+% 'FontSize',14,... % font size
+% 'FontName','cmr14')
+% % X label
+% xlabel('Time',...
+% 'FontUnits','points',...
+% 'interpreter','latex',...
+% 'FontWeight','normal',...
+% 'FontSize',14,... % font size
+% 'FontName','cmr14')
+% % legend
+% 
+% legend({ 'Hoop (Conf)','Hoop (Bond)','Volumetric' },... % { 'legend1', 'legend2',...}
+% 'FontUnits','points',...
+% 'interpreter','latex',...
+% 'FontSize',12,...
+% 'FontName','cmr14',...
+% 'Location','SouthEast')
+% 
+% grid on 
+% 
+% subplot(1,2,2)
+% plot(time,axial_stress_conf,'r');
+% hold on
+% plot(time,axial_stress_bond,'b');
+% 
+% %set axis
+% set(gca, 'FontName', 'cmr12')
+% % set x tics and y tics
+% set(gca,...
+% 'Units','normalized',...
+% 'FontUnits','points',...
+% 'FontWeight','normal',...
+% 'FontSize',14,... % size ofiguref numbers on axis
+% 'FontName','cmr14') % font name
+% set(gca,'TickLabelInterpreter', 'latex');
+% 
+% % Y label
+% ylabel({'Cauchy Stress '},...
+% 'FontUnits','points',...
+% 'interpreter','latex',...
+% 'FontSize',14,... % font size
+% 'FontName','cmr14')
+% % X label
+% xlabel('Time',...
+% 'FontUnits','points',...
+% 'interpreter','latex',...
+% 'FontWeight','normal',...
+% 'FontSize',14,... % font size
+% 'FontName','cmr14')
+% % legend
+% 
+% legend({ 'Axial (Conf)','Axial (Bond)' },... % { 'legend1', 'legend2',...}
+% 'FontUnits','points',...
+% 'interpreter','latex',...
+% 'FontSize',12,...
+% 'FontName','cmr14',...
+% 'Location','SouthEast')
+% 
+% grid on 
+% 
+% 
+% 
+% print -depsc2 stress.eps
+% 
+% 
 
 
