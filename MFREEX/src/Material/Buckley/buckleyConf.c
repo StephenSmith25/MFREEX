@@ -48,17 +48,16 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 
 	// conformational stress
 
-	//if ( stateNew->eigValDBar->ve[1] > 0 ){
-
-	if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
-		double gamma_n_1 = gammaV(stateNew,stateOld->lambdaNMax,
-		stateNew->critLambdaBar,para);
-		sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
-		//m_foutput(stdout,stateNew->Sc);
-	}else{
-		m_zero(Ds);
+	if ( stateNew->eigValDBar->ve[0] > 0 ){
+		if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
+			double gamma_n_1 = gammaV(stateNew,stateOld->lambdaNMax,
+			stateNew->critLambdaBar,para);
+			sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
+			//m_foutput(stdout,stateNew->Sc);
+		}else{
+			// Ds = zero;
+		}
 	}
-	//}
 
 
 	// network rate of deformation tensor 

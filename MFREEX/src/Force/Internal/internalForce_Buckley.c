@@ -138,7 +138,7 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			double Jacobian = stateNew[i]->Jacobian;
 
 
-			double b1 = 0.09;
+			double b1 = 0.1;
 			double b2 = 1.44; 
 			double Le = 1.6e-3;
 			double rho = 1380;

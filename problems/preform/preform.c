@@ -48,7 +48,16 @@ int main(int argc, char** argv) {
 	/*  Material parameters */
 	const double rho = 1380e-9;
 
+	// material parameters and model (St. Venant Kirchoff)
+	double nu = 0.0;
+	double E = 4.8e3;
+	char * material = "YEOH";
 
+	VEC * materialParameters = v_get(4);
+	materialParameters->ve[0] = 3.0208;
+	materialParameters->ve[1] =-0.1478;
+	materialParameters->ve[2] = 0.0042;
+	materialParameters->ve[3] =10;
 
 
 
@@ -66,8 +75,6 @@ int main(int argc, char** argv) {
 	matParams->ve[8] = 8.314; // R
 	matParams->ve[9] = 1.8e9; // Kb
 	matParams->ve[10] = 6e8;// Gb
-	matParams->ve[11] = -100000000000;// temperature
-	matParams->ve[12] = matParams->ve[11];// Tf
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
 	matParams->ve[14] = 0.001;// eta_c
@@ -89,7 +96,6 @@ int main(int argc, char** argv) {
 	critLambdaParams->ve[2] = 0.9856; // BETA
 	critLambdaParams->ve[3] = -0.0356; // k
 	critLambdaParams->ve[4] = 15.393; // b 
-	critLambdaParams->ve[5] = matParams->ve[11]; // temperature 
 
 	/*  Time step variables */
 
@@ -153,7 +159,7 @@ int main(int argc, char** argv) {
 	double tStop = 0.5;
 	double tRampRod = 1e-9;
 	double vRod = 0;
-	const double DISP_ROD_MAX = -1 ;// 132 ; // 132;
+	const double DISP_ROD_MAX = 132 ; // 132;
 
 	/*////////////////////////////////////////////////////////// */
 	/*////////////////////////////////////////////////////////// */
@@ -290,25 +296,41 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 	/* ----------------Mass Vector---------------*/
 	/* ------------------------------------------*/
-
+	VEC * phi;
+	IVEC * neighbours;
 	VEC * nodal_mass = v_get(mfree.num_nodes);
 	VEC * inv_nodal_mass = v_get(mfree.num_nodes);
+	// get shape function and contact nodes
+	shape_function_container * phi_nodes = mls_shapefunction(mfree.nodes, 
+		"linear", "cubic", 2, 1, &mfree);
 
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
+		phi = phi_nodes->sf_list[i]->phi;
+		neighbours = phi_nodes->sf_list[i]->neighbours;
+
 		double volume = _scni_obj->scni[i]->area;
 		if ( is_AXI == 1)
 		{
 			double r = _scni_obj->scni[i]->r;
 			volume = volume*r*2*PI;
 		}
-		nodal_mass->ve[i] = volume*rho;
-		inv_nodal_mass->ve[i] = 1.000/nodal_mass->ve[i];
+		for ( int k = 0 ; k < neighbours->max_dim ; k++)
+		{
+			int index = neighbours->ive[k];
+			nodal_mass->ve[index] += phi->ve[k]*rho*volume;
+		}
+
+		//nodal_mass->ve[i] = volume*rho;
+		//inv_nodal_mass->ve[i] = 1.000/nodal_mass->ve[i];
 
 	}
-
+	for ( int i = 0 ; i < mfree.num_nodes ; i++)
+	{
+		inv_nodal_mass->ve[i] = 1.00/nodal_mass->ve[i];
+	}
 	printf("total mass = %lf (g) \n", v_sum(nodal_mass)*1000);
-	//v_foutput(stdout,nodal_mass);
+	v_foutput(stdout,nodal_mass);
 	
 	/* ------------------------------------------*/
 	/* ------------Boundaries--------------------*/
@@ -449,14 +471,13 @@ int main(int argc, char** argv) {
 	
 	// time parameters
 	double t_max = 0.5; // 1s
-	double delta_t = 4e-7;
+	double delta_t = 3e-7;
 	double t_n = 0;
 	double t_n_1 = 0;
 	double t_n_h =  0; 
 
 
-	VEC * phi;
-	IVEC * neighbours;
+
 
 
 	int num_dof = dim*mfree.num_nodes;
@@ -555,7 +576,6 @@ int main(int argc, char** argv) {
 
 		/*  Update time step */
 		t_n_1 = t_n + delta_t;
-		t_n_h = (1.00/2.00)*(t_n + t_n_1);
 
 		/*  Make a time step  */ 
 		__mltadd__(v_n_h->ve, a_n->ve,delta_t,num_dof);
@@ -566,60 +586,60 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 		/* -----------Contact Conditions-------------*/
 		/* ------------------------------------------*/
-		__zero__(Fcont_n_1->ve, num_dof);
+		// __zero__(Fcont_n_1->ve, num_dof);
 
-		if ( disp_rod < DISP_ROD_MAX){
-		/*  Update stretch rod */
-			disp_rod = a0*pow(t_n_1,7) + a1*pow(t_n_1,6) + a2*pow(t_n_1,5) + a3*pow(t_n_1,4) + a4*pow(t_n_1,3) + a5*pow(t_n_1,2) +
-			a6*pow(t_n_1,1) + a7;
-			//disp_rod = vRod*t_n_1;
+		// if ( disp_rod < DISP_ROD_MAX){
+		// /*  Update stretch rod */
+		// 	disp_rod = a0*pow(t_n_1,7) + a1*pow(t_n_1,6) + a2*pow(t_n_1,5) + a3*pow(t_n_1,4) + a4*pow(t_n_1,3) + a5*pow(t_n_1,2) +
+		// 	a6*pow(t_n_1,1) + a7;
+		// 	//disp_rod = vRod*t_n_1;
 
-			for ( int i = 0 ; i < srNodes->m ; i++){
+		// 	for ( int i = 0 ; i < srNodes->m ; i++){
 	
-				srNodes->me[i][1] = srNodes_O->me[i][1] - disp_rod;
+		// 		srNodes->me[i][1] = srNodes_O->me[i][1] - disp_rod;
 
-			}
-		}
-
-
-		for ( int i = 0 ; i < eb3_nodes->max_dim ; i++){
-
-			neighbours = phi_contact->sf_list[i]->neighbours;
-			phi = phi_contact->sf_list[i]->phi;
-			testPoint->me[0][0] = updatedNodes->me[eb3_nodes->ive[i]][0];
-			testPoint->me[0][1] = updatedNodes->me[eb3_nodes->ive[i]][1];
-
-			distanceProj = contactDetection(testPoint,srNodes,msNormal);
-
-			if (distanceProj > 0){
-
-				f1Cor = 1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-				f2Cor = 1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+		// 	}
+		// }
 
 
+		// for ( int i = 0 ; i < eb3_nodes->max_dim ; i++){
 
-				for ( int k = 0 ; k < neighbours->max_dim ; k++){
-					Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
-					Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
-				}
+		// 	neighbours = phi_contact->sf_list[i]->neighbours;
+		// 	phi = phi_contact->sf_list[i]->phi;
+		// 	testPoint->me[0][0] = updatedNodes->me[eb3_nodes->ive[i]][0];
+		// 	testPoint->me[0][1] = updatedNodes->me[eb3_nodes->ive[i]][1];
 
-			}
+		// 	distanceProj = contactDetection(testPoint,srNodes,msNormal);
+
+		// 	if (distanceProj > 0){
+
+		// 		f1Cor = 1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+		// 		f2Cor = 1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
 
 
-		}
+
+		// 		for ( int k = 0 ; k < neighbours->max_dim ; k++){
+		// 			Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
+		// 			Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
+		// 		}
+
+		// 	}
 
 
-		/*  Find a corrective acceleration - method in pronto 3D manual*/
-		/*  Make a time step  */ 
-		for ( int i = 0 ; i < numnodes  ; i++ )
-		{
-			a_n->ve[2*i] = Fcont_n_1->ve[2*i]*inv_nodal_mass->ve[i];
-			a_n->ve[2*i+1] = Fcont_n_1->ve[2*i+1]*inv_nodal_mass->ve[i];
-		}
+		// }
 
-		/*  Make a time step  */ 
-		__mltadd__(v_n_h->ve, a_n->ve,delta_t,num_dof);
-		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
+
+		// /*  Find a corrective acceleration - method in pronto 3D manual*/
+		// /*  Make a time step  */ 
+		// for ( int i = 0 ; i < numnodes  ; i++ )
+		// {
+		// 	a_n->ve[2*i] = Fcont_n_1->ve[2*i]*inv_nodal_mass->ve[i];
+		// 	a_n->ve[2*i+1] = Fcont_n_1->ve[2*i+1]*inv_nodal_mass->ve[i];
+		// }
+
+		// /*  Make a time step  */ 
+		// __mltadd__(v_n_h->ve, a_n->ve,delta_t,num_dof);
+		// __mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
 
 
 
@@ -629,12 +649,12 @@ int main(int argc, char** argv) {
 		/*  Implement BCs */
 		enforceBC(eb1,d_n_1); 
 		// find velocity correction
-		sv_mlt(1.00/(2*delta_t),eb1->uCorrect1,v_correct);
+		sv_mlt(1.00/(delta_t),eb1->uCorrect1,v_correct);
 		for ( int k = 0 ; k < v_correct->max_dim; k++){
 			v_n_h->ve[2*k] += v_correct->ve[k];
 		}
 
-		sv_mlt(1.000/(2*delta_t),eb1->uCorrect2,v_correct);
+		sv_mlt(1.000/(delta_t),eb1->uCorrect2,v_correct);
 		for ( int k = 0 ; k < v_correct->max_dim; k++){
 			v_n_h->ve[2*k+1] += v_correct->ve[k];
 		}
@@ -642,7 +662,7 @@ int main(int argc, char** argv) {
 
 		// Symmetry boundary /
 		enforceBC(eb2,d_n_1); 
-		sv_mlt(1.00/(2*delta_t),eb2->uCorrect1,v_correct);
+		sv_mlt(1.00/(delta_t),eb2->uCorrect1,v_correct);
 		for ( int k = 0 ; k < v_correct->max_dim; k++){
 			v_n_h->ve[2*k] += v_correct->ve[k];
 		}
@@ -692,18 +712,20 @@ int main(int argc, char** argv) {
 		pre_n_1 = ((P0*(volume - volumeInitial) + 1000*massAir*rLine*tLine)/(volume+vDead));
 
 		/*  Update pressure load */
+
+		pre_n_1 = 1*smoothstep(t_n_1, 0.1, 0);
 		update_pressure_boundary(pB, updatedNodes);
 		assemble_pressure_load(Fext_n_1, -pre_n_1, pB);
-
 
 		/* ------------------------------------------*/
 		/* ------------Find Internal Force-----------*/
 		/* ------------------------------------------*/
 		/*  Internal force */
 		//internalForceBuckley(Fint_n_1,scni,d_n_1,matParams,critLambdaParams,state_n,deltaT,efgBlock->numnode,t_n_1);
-		internalForce_ForceBuckley(Fint_n_1, _scni_obj, d_n_1, v_n_h,
-		matParams,critLambdaParams, state_n_1, state_n,
-		mfree.IS_AXI, dim,delta_t,t_n_1);
+		// internalForce_ForceBuckley(Fint_n_1, _scni_obj, d_n_1, v_n_h,
+		// matParams,critLambdaParams, state_n_1, state_n,
+		// mfree.IS_AXI, dim,delta_t,t_n_1);
+		 internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, v_n_h, materialParameters, "YEOH", is_AXI, dim);
 
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/

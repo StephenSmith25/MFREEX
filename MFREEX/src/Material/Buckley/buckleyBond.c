@@ -75,7 +75,6 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 
 
 	double sbFactor = 1 - exp(-dt/tau);
-	m_zero(stateNew->W);
 	// mat1 = 2Gb*D*tau
 	sm_mlt(2*Gb*tau,stateNew->Dbar,mat1);
 
@@ -94,7 +93,7 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	// s*l
 	m_mlt(Sb_n,stateNew->W,mat2);
 	m_sub(mat1,mat2,mat1);	
-	sm_mlt(1.00*dt,mat1,mat1);
+	sm_mlt(dt,mat1,mat1);
 	m_add(Sb_n,mat1,mat1);
 
 	// Sb* = Sb_n + deltaSb + (WSb_n - Sb_n W)dt

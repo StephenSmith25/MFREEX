@@ -4,6 +4,7 @@
 #include "cubicRivlin.h"
 #include "mooneyRivlin.h"
 #include "SVK.h"
+#include "yeoh.h"
 
 
 

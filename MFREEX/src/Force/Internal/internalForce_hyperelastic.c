@@ -5,7 +5,6 @@ static int call_count ;
 double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC * velocity, VEC * matParams, char * Material, int is_axi, int dim){
 
 
-	v_zero(Fint);
 
 
 	__zero__(Fint->ve,Fint->max_dim);
@@ -16,6 +15,10 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	if ( strcmp (Material, "SVK") == 0 )
 	{
 		mat_func_ptr = &SVK;
+
+	}else if( strcmp(Material, "YEOH") == 0 )
+	{
+		mat_func_ptr = &yeoh;
 
 	}
 
@@ -137,8 +140,8 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 
 
-		double b1 = 0.08;
-		double b2 = 1.44;
+		double b1 = 0;
+		double b2 = 0;
 		double Le = 1.6;
 		double c = sqrt(((lambda+2*mu)/rho));
 
@@ -186,8 +189,8 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		}else if ( dim_v == 5)
 		{
 			S11 = stressVoigt->ve[0]; S12 = stressVoigt->ve[2];
-			S21 = stressVoigt->ve[3]; S22 = stressVoigt->ve[1];
-			S33 = stressVoigt->ve[4];
+			S21 = stressVoigt->ve[2]; S22 = stressVoigt->ve[1];
+			S33 = stressVoigt->ve[3];
 
 			F11 = scni[i]->F_r->me[0][0]; F12 = scni[i]->F_r->me[0][1];
 			F21 = scni[i]->F_r->me[1][0]; F22 = scni[i]->F_r->me[1][1];
