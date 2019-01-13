@@ -33,7 +33,6 @@ int yeoh (VEC * stressVoigt, MAT * defGrad, VEC * params  )
 	double jacobian = determinant(defGrad);
 
 
-
 	// Find B*, B* = 	
 	MAT * Bstar = sm_mlt(1.00/pow(jacobian,(2.00/3.00)),B,MNULL);
 
@@ -45,7 +44,7 @@ int yeoh (VEC * stressVoigt, MAT * defGrad, VEC * params  )
 
 	// Find Volumetric and deviatoric parts of Bstar
 	double traceBstar = Bstar->me[0][0] + Bstar->me[1][1] + Bstar->me[2][2] ; 
-	MAT * volBstar = sm_mlt((double) (1.0/3.0)*traceBstar,IDENT,MNULL);	
+	MAT * volBstar = sm_mlt((double) (1.0/3.000)*traceBstar,IDENT,MNULL);	
 	MAT * devBstar = m_sub(Bstar,volBstar,MNULL ) ; 
 
 	double I1star = Bstar->me[0][0] + Bstar->me[1][1] + Bstar->me[2][2];
@@ -64,13 +63,13 @@ int yeoh (VEC * stressVoigt, MAT * defGrad, VEC * params  )
 	// find Kirchkoff stress ( volumetrically scaled )
 	MAT * stressKirchkoff = sm_mlt(jacobian,stressCauchy,MNULL);
 	MAT * stress1PKF = mmtr_mlt(stressKirchkoff,invDefGrad,MNULL);
-	MAT * stress2PKF = m_mlt(invDefGrad,stress1PKF,MNULL);
 
 
-	stressVoigt->ve[0] = stress2PKF->me[0][0];
-	stressVoigt->ve[1] = stress2PKF->me[1][1];
-	stressVoigt->ve[2] = stress2PKF->me[0][1];
-	stressVoigt->ve[3] = stress2PKF->me[2][2];
+	stressVoigt->ve[0] = stress1PKF->me[0][0];
+	stressVoigt->ve[1] = stress1PKF->me[1][1];
+	stressVoigt->ve[2] = stress1PKF->me[0][1];
+	stressVoigt->ve[3] = stress1PKF->me[1][0];
+	stressVoigt->ve[4] = stress1PKF->me[2][2];
 
 
 
@@ -85,7 +84,6 @@ int yeoh (VEC * stressVoigt, MAT * defGrad, VEC * params  )
 	M_FREE(invDefGrad);
 	M_FREE(stressKirchkoff);
 	M_FREE(stress1PKF);
-	M_FREE(stress2PKF);
 
 
 	return 0;

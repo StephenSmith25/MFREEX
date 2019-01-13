@@ -62,7 +62,7 @@ void get_defgrad(MAT * f, MAT * B, IVEC * neighbours, MAT * F_r, VEC * disp){
 void get_dot_defgrad(MAT * f,MAT * B,IVEC * neighbours, MAT * F_r, VEC * velocity) {
 
 
-
+	m_zero(f);
 	double f11 = 0,f22 = 0,f33=0,f12 = 0, f13 = 0, f21 = 0, f23 = 0, f31 = 0, f32=0;
 
 
@@ -93,11 +93,13 @@ void get_dot_defgrad(MAT * f,MAT * B,IVEC * neighbours, MAT * F_r, VEC * velocit
 
 	}
 
-	f->me[0][0] = f11*F_r->me[0][0] + f12*F_r->me[1][0];
-	f->me[1][1] = f21*F_r->me[0][1] + f22*F_r->me[1][1];
-	f->me[0][1] = f11*F_r->me[0][1] + f12*F_r->me[1][1];
-	f->me[1][0] = f21*F_r->me[0][0] + f22*F_r->me[1][0];
-
+	if ( B->m == 4)
+	{
+		f->me[0][0] = f11*F_r->me[0][0] + f12*F_r->me[1][0];
+		f->me[1][1] = f21*F_r->me[0][1] + f22*F_r->me[1][1];
+		f->me[0][1] = f11*F_r->me[0][1] + f12*F_r->me[1][1];
+		f->me[1][0] = f21*F_r->me[0][0] + f22*F_r->me[1][0];
+	}
 
 
 }

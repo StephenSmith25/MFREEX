@@ -49,15 +49,13 @@ int main(int argc, char** argv) {
 	const double rho = 1380e-9;
 
 	// material parameters and model (St. Venant Kirchoff)
-	double nu = 0.0;
-	double E = 4.8e3;
 	char * material = "YEOH";
 
 	VEC * materialParameters = v_get(4);
 	materialParameters->ve[0] = 3.0208;
 	materialParameters->ve[1] =-0.1478;
 	materialParameters->ve[2] = 0.0042;
-	materialParameters->ve[3] =10;
+	materialParameters->ve[3] =100;
 
 
 
@@ -471,7 +469,7 @@ int main(int argc, char** argv) {
 	
 	// time parameters
 	double t_max = 0.5; // 1s
-	double delta_t = 3e-7;
+	double delta_t = 4e-7;
 	double t_n = 0;
 	double t_n_1 = 0;
 	double t_n_h =  0; 
@@ -566,6 +564,9 @@ int main(int argc, char** argv) {
 	// timing parameters
 	struct timeval start3, end3;
 	gettimeofday(&start3, NULL);
+
+
+
 
 
 
@@ -672,28 +673,6 @@ int main(int argc, char** argv) {
 		__add__(nodes_X->base, nodal_disp->ve, updatedNodes->base, num_dof);
 
 
-		// /*  Implement BCs */
-		// enforceBC(eb1,d_n_1); 
-		// // find velocity correction
-		// sv_mlt(1.00/(2*deltaT),eb1->uCorrect1,v_correct);
-		// for ( int k = 0 ; k < v_correct->max_dim; k++){
-		// 	v_n_h->ve[2*k] += v_correct->ve[k];
-		// }
-
-		// sv_mlt(1.000/(2*deltaT),eb1->uCorrect2,v_correct);
-		// for ( int k = 0 ; k < v_correct->max_dim; k++){
-		// 	v_n_h->ve[2*k+1] += v_correct->ve[k];
-		// }
-
-
-		// // Symmetry boundary /
-		// enforceBC(eb2,d_n_1); 
-		// sv_mlt(1.00/(2*deltaT),eb2->uCorrect1,v_correct);
-		// for ( int k = 0 ; k < v_correct->max_dim; k++){
-		// 	v_n_h->ve[2*k] += v_correct->ve[k];
-		// }
-
-
 		/* ------------------------------------------*/
 		/* ------------Find External Force-----------*/
 		/* ------------------------------------------*/
@@ -725,7 +704,8 @@ int main(int argc, char** argv) {
 		// internalForce_ForceBuckley(Fint_n_1, _scni_obj, d_n_1, v_n_h,
 		// matParams,critLambdaParams, state_n_1, state_n,
 		// mfree.IS_AXI, dim,delta_t,t_n_1);
-		 internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, v_n_h, materialParameters, "YEOH", is_AXI, dim);
+
+		double t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, v_n_h, materialParameters, "YEOH", is_AXI, dim);
 
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/
@@ -819,7 +799,7 @@ int main(int argc, char** argv) {
 		pre_n = pre_n_1;
 		// update iteration counter
 		n++	;
-		printf("%i  \t  %lf %10.2E %lf %lf %lf \n",n,t_n,Wbal,pre_n_1,disp_rod,volume/1e3);
+		printf("%i  \t  %lf %10.2E %lf %lf %lf %10.2E \n",n,t_n,Wbal,pre_n_1,disp_rod,volume/1e3,t_min);
 
 
 

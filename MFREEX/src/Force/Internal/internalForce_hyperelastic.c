@@ -9,16 +9,21 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 	__zero__(Fint->ve,Fint->max_dim);
 
+	double lambda, mu;
 	// create pointer to correct material
 	int (*mat_func_ptr)(VEC*,MAT*,VEC*) = NULL;
 
 	if ( strcmp (Material, "SVK") == 0 )
 	{
 		mat_func_ptr = &SVK;
+		lambda = matParams->ve[0];
+		mu = matParams->ve[1];
 
 	}else if( strcmp(Material, "YEOH") == 0 )
 	{
 		mat_func_ptr = &yeoh;
+		mu = 2*matParams->ve[0];
+		lambda = matParams->ve[3] - 2*mu/3.00;
 
 	}
 
@@ -41,8 +46,6 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	// 
 	double delta_t_min = 1000;
 
-	double lambda = matParams->ve[0];
-	double mu = matParams->ve[1];
 
 
 	omp_set_num_threads(3);
@@ -54,7 +57,9 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 	MAT * F = m_get(dim,dim);
 	MAT * Fdot = m_get(dim,dim);
+	MAT * L = m_get(dim,dim);
 	VEC * stressVoigt = v_get(dim_v);
+	MAT * invF = m_get(dim,dim);
 	VEC * fIntTemp = v_get(Fint->max_dim);
 	// stress tensor
 	double S11,S12,S13,S21,S22,S23,S31,S32,S33;
@@ -81,7 +86,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		get_dot_defgrad(Fdot,B, neighbours,F_r,velocity);
 
 		int num_neighbours = neighbours->max_dim;
-
+	
 
 
 
@@ -112,7 +117,22 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			L21 = Fdot->me[1][0]*invF11 + Fdot->me[1][1]*invF21; L22 = Fdot->me[1][0]*invF12 + Fdot->me[1][1]*invF22;
 
 
+
 			div_v = L11 + L22;
+		}else if ( dim == 3)
+		{
+
+			F11 = F->me[0][0]; F12 = F->me[0][1]; F12 = F->me[0][1];
+			F21 = F->me[1][0]; F22 = F->me[1][1]; F12 = F->me[0][1];
+			F21 = F->me[1][0]; F22 = F->me[1][1]; F12 = F->me[0][1];
+			m_inverse(F,invF);
+
+			m_mlt(Fdot,invF,L);
+
+			Jacobian = determinant(F);
+
+			// Find velocity gradient
+			div_v = L->me[0][0] + L->me[1][1] + L->me[2][2];	
 		}
 		/* Integration parameter */
 		double intFactor = scni[i]->area;
@@ -125,6 +145,8 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 		double B11 = 0;
 		double B22 = 0;
+		double B33 = 0;
+
 		double MaxB = -1;
 		double rho = 1000e-9;
 
@@ -134,15 +156,27 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			B11 += (num_neighbours/rho)*(B->me[0][k]*B->me[0][k]);
 			B22 += (num_neighbours/rho)*(B->me[1][k]*B->me[1][k]);
 
+			if ( is_axi == 1)
+			{
+				B33 += (num_neighbours/rho)*(B->me[4][k]*B->me[4][k]);
+
+			}
+
 		}
 
 		MaxB = max(B11,B22);
+
+		if ( is_axi == 1)
+		{
+			MaxB = max(MaxB,B33);
+
+		}
 
 
 
 		double b1 = 0;
 		double b2 = 0;
-		double Le = 1.6;
+		double Le = sqrt(scni[i]->area);
 		double c = sqrt(((lambda+2*mu)/rho));
 
 		double P_b1 = b1*div_v*rho*Le*c;
@@ -188,9 +222,13 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 		}else if ( dim_v == 5)
 		{
-			S11 = stressVoigt->ve[0]; S12 = stressVoigt->ve[2];
-			S21 = stressVoigt->ve[2]; S22 = stressVoigt->ve[1];
-			S33 = stressVoigt->ve[3];
+			double S11_hyd = (Jacobian)*(P_b1+P_b2)*invF11;
+			double S22_hyd = (Jacobian)*(P_b1+P_b2)*invF22;
+			double S33_hyd = (Jacobian)*(P_b1+P_b2)*invF33;
+
+			S11 = stressVoigt->ve[0] + S11_hyd; S12 = stressVoigt->ve[2];
+			S21 = stressVoigt->ve[3]; S22 = stressVoigt->ve[1]+S22_hyd;
+			S33 = stressVoigt->ve[4] + S33_hyd;
 
 			F11 = scni[i]->F_r->me[0][0]; F12 = scni[i]->F_r->me[0][1];
 			F21 = scni[i]->F_r->me[1][0]; F22 = scni[i]->F_r->me[1][1];
@@ -230,6 +268,8 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	v_free(fIntTemp);
 	M_FREE(F);
 	M_FREE(Fdot);
+	M_FREE(invF);
+	M_FREE(L);
 
 }
 	++call_count;

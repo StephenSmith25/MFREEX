@@ -149,7 +149,6 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 		center[1] = center[1]/num_cell_verticies;
 		area = 0.5*fabs(area);
 
-		double r = center[0];
 
 
 
@@ -226,23 +225,23 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 		{
 			neighbours = sf_nodes->sf_list[i]->neighbours;
 
-			if ( r > 0)
+			for ( int k = 0 ; k < neighbours->max_dim ; k++)
 			{
-				for ( int k = 0 ; k < neighbours->max_dim ; k++)
+				double r = nodes->me[neighbours->ive[k]][0];
+				if ( r > 0)
 				{
 					int indx = findInt(neighbours->ive[k], cell_sf_index->ive, cell_sf_index->max_dim);
 					bI_n->me[indx][2] += sf_nodes->sf_list[i]->phi->ve[k]/r;
-
-
-			}
-			}else{
-
-				for ( int k = 0 ; k < neighbours->max_dim ; k++)
-				{
+				}
+				else{
 					int indx = findInt(neighbours->ive[k], cell_sf_index->ive, cell_sf_index->max_dim);
 					bI_n->me[indx][2] += sf_nodes->sf_list[i]->dphi->me[k][0];
 				}
+
+
 			}
+			
+			
 		}
 
 

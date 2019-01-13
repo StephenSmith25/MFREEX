@@ -71,7 +71,7 @@ int main(void )
 
 
 	// Read PLSG 
-	char opt[20] = "pDq0a0.15";
+	char opt[20] = "pDq0a0.05";
 	char fileName[30] = "square";
 	double * points_out ;
 	int * boundaryNodes;
@@ -453,8 +453,8 @@ int main(void )
 		/* ------------------------------------------*/
 
 
-		double delta_t_min = internalForce_hyperelastic_S(Fint_n_1, _mscni_obj, d_n_1, v_n_h, materialParameters, "SVK", is_AXI, dim);
-		//double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, v_n_h, materialParameters, "SVK", is_AXI, dim);
+		//double delta_t_min = internalForce_hyperelastic_S(Fint_n_1, _mscni_obj, d_n_1, v_n_h, materialParameters, "SVK", is_AXI, dim);
+		double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, v_n_h, materialParameters, "SVK", is_AXI, dim);
 
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/
