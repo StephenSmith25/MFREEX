@@ -22,8 +22,8 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	}else if( strcmp(Material, "YEOH") == 0 )
 	{
 		mat_func_ptr = &yeoh;
-		mu = 2*matParams->ve[0];
-		lambda = matParams->ve[3] - 2*mu/3.00;
+		mu = 2*(matParams->ve[0]);
+		lambda = 2*matParams->ve[3] - (2/3)*mu;
 
 	}
 
@@ -91,7 +91,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 
 
-		double Jacobian = 1.00;
+		double Jacobian ;
 
 
 		if ( dim == 2)
@@ -133,6 +133,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 			// Find velocity gradient
 			div_v = L->me[0][0] + L->me[1][1] + L->me[2][2];	
+			div_v = L->me[0][0] + L->me[1][1];
 		}
 		/* Integration parameter */
 		double intFactor = scni[i]->area;
@@ -148,17 +149,27 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		double B33 = 0;
 
 		double MaxB = -1;
-		double rho = 1000e-9;
-
-
-		for ( int k = 0 ; k < (num_neighbours)*2 ; k++)
+		double rho = 1380e-9;
+		double num_neighbours_J = 0;
+		double m_j;
+		double volume_I = intFactor;
+		for ( int k = 0 ; k < (num_neighbours) ; k++)
 		{	
-			B11 += (num_neighbours/rho)*(B->me[0][k]*B->me[0][k]);
-			B22 += (num_neighbours/rho)*(B->me[1][k]*B->me[1][k]);
+			int index_J = neighbours->ive[k];
+			num_neighbours_J = scni[index_J]->sfIndex->max_dim;
+			volume_I = scni[i]->area;
+			m_j = rho * scni[index_J]->area;
+
+			// if ( is_axi == 1){
+			// 	m_j = rho * scni[index_J]->area*2*PI*scni[index_J]->r;
+			// }
+
+			B11 += (volume_I*num_neighbours_J/m_j)*(B->me[0][2*k]*B->me[0][2*k]);
+			B22 += (volume_I*num_neighbours_J/m_j)*(B->me[1][2*k+1]*B->me[1][2*k+1]);
 
 			if ( is_axi == 1)
 			{
-				B33 += (num_neighbours/rho)*(B->me[4][k]*B->me[4][k]);
+				B33 += (volume_I*num_neighbours_J/m_j)*(B->me[4][2*k]*B->me[4][2*k]);
 
 			}
 
@@ -166,20 +177,23 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 		MaxB = max(B11,B22);
 
-		if ( is_axi == 1)
-		{
-			MaxB = max(MaxB,B33);
+		// if ( is_axi == 1)
+		// {
+		// 	MaxB = max(MaxB,B33);
 
-		}
+		// }
 
 
+		double b1 = 0.06;
+		double b2 = 1.44;
 
-		double b1 = 0;
-		double b2 = 0;
 		double Le = sqrt(scni[i]->area);
+		//Le = 3.5;
 		double c = sqrt(((lambda+2*mu)/rho));
 
-		double P_b1 = b1*div_v*rho*Le*c;
+		double P_b1 = 0;
+		P_b1 = b1*div_v*rho*Le*c;
+
 		double eta = b1;
 		double P_b2 = 0;
 		if ( div_v < 0 ){
@@ -222,9 +236,21 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 		}else if ( dim_v == 5)
 		{
-			double S11_hyd = (Jacobian)*(P_b1+P_b2)*invF11;
-			double S22_hyd = (Jacobian)*(P_b1+P_b2)*invF22;
-			double S33_hyd = (Jacobian)*(P_b1+P_b2)*invF33;
+			double S11_hyd = (Jacobian)*(P_b1+P_b2)*invF->me[0][0];
+			double S22_hyd = (Jacobian)*(P_b1+P_b2)*invF->me[1][1];
+			double S33_hyd = (Jacobian)*(P_b1+P_b2)*invF->me[2][2];
+			S33_hyd = 0;
+
+			if (( i == 0) && (call_count % 1000 == 0))
+			{
+				printf("S11_HYD = %lf \n", S11_hyd);
+				printf("S22_HYD = %lf \n", S22_hyd);
+				printf("S33_HYD = %lf \n", S33_hyd);
+				printf("div_v = %lf \n", div_v);
+				printf("c = %lf \n", c);
+				printf("Le = %lf \n", Le);
+
+			}
 
 			S11 = stressVoigt->ve[0] + S11_hyd; S12 = stressVoigt->ve[2];
 			S21 = stressVoigt->ve[3]; S22 = stressVoigt->ve[1]+S22_hyd;

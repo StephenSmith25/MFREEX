@@ -72,7 +72,7 @@ int main(void )
 
 
 	// Read PLSG 
-	char opt[20] = "pDq30a0.2";
+	char opt[20] = "pDq30a0.1";
 	char fileName[30] = "square";
 	double * points_out ;
 	int * boundaryNodes;

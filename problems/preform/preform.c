@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
 	materialParameters->ve[0] = 3.0208;
 	materialParameters->ve[1] =-0.1478;
 	materialParameters->ve[2] = 0.0042;
-	materialParameters->ve[3] =100;
+	materialParameters->ve[3] =50;
 
 
 
@@ -102,7 +102,6 @@ int main(int argc, char** argv) {
 
 
 
-
 	/* ------------------------------------------*/
 	/* --------------Flow restrictor-------------*/
 	/* ------------------------------------------*/
@@ -110,7 +109,7 @@ int main(int argc, char** argv) {
 	/*  Upstream parameters */
 	double P0 = 0;
 	double tLine = 304.724;
-	double pLine = 0.8; // 0.6 Mpa;
+	double pLine = 1.1; // 0.6 Mpa;
 	double molarMass = 29;
 	double Rg = 8.314;
 	double rLine = Rg/molarMass;
@@ -178,7 +177,7 @@ int main(int argc, char** argv) {
 	 *  */
 	// Read PLSG 
 
-	char opt[20] = "pDq0a2";
+	char opt[20] = "pDq30a1.5";
 	char fileName[30] = "preform";
 	double * points_out ;
 	int * boundaryNodes;
@@ -223,7 +222,7 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 
 	// shape function parameters
-	double dmax = 2.5;
+	double dmax = 2;
 	int constant_support_size = 1;
 	VEC * dI = v_get(xI->m);
 
@@ -231,6 +230,7 @@ int main(int argc, char** argv) {
 	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI};
 	setDomain(&mfree,constant_support_size, dmax);
 
+	v_foutput(stdout,mfree.di);
 
 	
 
@@ -468,7 +468,7 @@ int main(int argc, char** argv) {
 	// /*////////////////////////////////////////////////////////// */
 	
 	// time parameters
-	double t_max = 0.5; // 1s
+	double t_max = 0.08; // 1s
 	double delta_t = 4e-7;
 	double t_n = 0;
 	double t_n_1 = 0;
@@ -551,6 +551,8 @@ int main(int argc, char** argv) {
 	double volume = 0;
 	double volume_t = 0;
 
+	double v_rod = 0;
+
 	/*  For writing to file */
 	fp = fopen("pressureTime.txt","w");
 	fprintf(fp,"%lf %lf\n",0.0,0.0);
@@ -579,7 +581,7 @@ int main(int argc, char** argv) {
 		t_n_1 = t_n + delta_t;
 
 		/*  Make a time step  */ 
-		__mltadd__(v_n_h->ve, a_n->ve,delta_t,num_dof);
+		__mltadd__(v_n_h->ve, a_n->ve,0.5*delta_t,num_dof);
 		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
 
 
@@ -587,60 +589,65 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 		/* -----------Contact Conditions-------------*/
 		/* ------------------------------------------*/
-		// __zero__(Fcont_n_1->ve, num_dof);
+		__zero__(Fcont_n_1->ve, num_dof);
 
-		// if ( disp_rod < DISP_ROD_MAX){
-		// /*  Update stretch rod */
-		// 	disp_rod = a0*pow(t_n_1,7) + a1*pow(t_n_1,6) + a2*pow(t_n_1,5) + a3*pow(t_n_1,4) + a4*pow(t_n_1,3) + a5*pow(t_n_1,2) +
-		// 	a6*pow(t_n_1,1) + a7;
-		// 	//disp_rod = vRod*t_n_1;
+		if ( disp_rod < DISP_ROD_MAX){
+		/*  Update stretch rod */
+			disp_rod = a0*pow(t_n_1,7) + a1*pow(t_n_1,6) + a2*pow(t_n_1,5) + a3*pow(t_n_1,4) + a4*pow(t_n_1,3) + a5*pow(t_n_1,2) +
+			a6*pow(t_n_1,1) + a7;
+			v_rod = 7*a0*pow(t_n_1,6) + 6*a1*pow(t_n_1,5) + 5*a2*pow(t_n_1,4) + 
+			4*a3*pow(t_n_1,3) + 3*a4*pow(t_n_1,2) + 2*a5*pow(t_n_1,1) +
+			a6;
+			//disp_rod = vRod*t_n_1;
 
-		// 	for ( int i = 0 ; i < srNodes->m ; i++){
+			for ( int i = 0 ; i < srNodes->m ; i++){
 	
-		// 		srNodes->me[i][1] = srNodes_O->me[i][1] - disp_rod;
+				srNodes->me[i][1] = srNodes_O->me[i][1] - disp_rod;
 
-		// 	}
-		// }
+			}
+		}
 
+		// find new nodal positions
+		mv_mlt(Lambda,d_n_1,nodal_disp);
+		__add__(nodes_X->base, nodal_disp->ve, updatedNodes->base, num_dof);
 
-		// for ( int i = 0 ; i < eb3_nodes->max_dim ; i++){
+		for ( int i = 0 ; i < eb3_nodes->max_dim ; i++){
 
-		// 	neighbours = phi_contact->sf_list[i]->neighbours;
-		// 	phi = phi_contact->sf_list[i]->phi;
-		// 	testPoint->me[0][0] = updatedNodes->me[eb3_nodes->ive[i]][0];
-		// 	testPoint->me[0][1] = updatedNodes->me[eb3_nodes->ive[i]][1];
+			neighbours = phi_contact->sf_list[i]->neighbours;
+			phi = phi_contact->sf_list[i]->phi;
+			testPoint->me[0][0] = updatedNodes->me[eb3_nodes->ive[i]][0];
+			testPoint->me[0][1] = updatedNodes->me[eb3_nodes->ive[i]][1];
 
-		// 	distanceProj = contactDetection(testPoint,srNodes,msNormal);
+			distanceProj = contactDetection(testPoint,srNodes,msNormal);
 
-		// 	if (distanceProj > 0){
+			if (distanceProj > 0){
 
-		// 		f1Cor = 1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-		// 		f2Cor = 1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-
-
-
-		// 		for ( int k = 0 ; k < neighbours->max_dim ; k++){
-		// 			Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
-		// 			Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
-		// 		}
-
-		// 	}
+				f1Cor = (2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+				f2Cor = (2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
 
 
-		// }
+				for ( int k = 0 ; k < neighbours->max_dim ; k++){
+					Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
+					Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
+				}
+
+			}
 
 
-		// /*  Find a corrective acceleration - method in pronto 3D manual*/
-		// /*  Make a time step  */ 
-		// for ( int i = 0 ; i < numnodes  ; i++ )
-		// {
-		// 	a_n->ve[2*i] = Fcont_n_1->ve[2*i]*inv_nodal_mass->ve[i];
-		// 	a_n->ve[2*i+1] = Fcont_n_1->ve[2*i+1]*inv_nodal_mass->ve[i];
-		// }
+		}
 
-		// /*  Make a time step  */ 
-		// __mltadd__(v_n_h->ve, a_n->ve,delta_t,num_dof);
-		// __mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
+
+		/*  Find a corrective acceleration - method in pronto 3D manual*/
+		/*  Make a time step  */ 
+		for ( int i = 0 ; i < numnodes  ; i++ )
+		{
+			a_n->ve[2*i] = Fcont_n_1->ve[2*i]*inv_nodal_mass->ve[i];
+			a_n->ve[2*i+1] = Fcont_n_1->ve[2*i+1]*inv_nodal_mass->ve[i];
+		}
+
+		/*  Make a time step  */ 
+		__mltadd__(v_n_h->ve, a_n->ve,0.5*delta_t,num_dof);
+		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
 
 
 
@@ -692,7 +699,6 @@ int main(int argc, char** argv) {
 
 		/*  Update pressure load */
 
-		pre_n_1 = 1*smoothstep(t_n_1, 0.1, 0);
 		update_pressure_boundary(pB, updatedNodes);
 		assemble_pressure_load(Fext_n_1, -pre_n_1, pB);
 
@@ -787,19 +793,20 @@ int main(int argc, char** argv) {
 
 		/*  Update counters */
 		t_n = t_n_1;
+		//delta_t = 0.7*t_min;
 		/*  Store previous volume */
 		volume_t = volume; 
 		// Store previous time step quanities for the kinematic, and force variables.
 		v_copy(Fint_n_1,Fint_n);
 		v_copy(Fext_n_1,Fext_n);
-		v_copy(v_n_h,v_n_mh);
+		v_copy(v_n_1,v_n_h);
 		v_copy(d_n_1,d_n);
-		v_copy(v_n_1,v_n);
+		//v_copy(v_n_1,v_n);
 		v_copy(a_n_1,a_n);
 		pre_n = pre_n_1;
 		// update iteration counter
 		n++	;
-		printf("%i  \t  %lf %10.2E %lf %lf %lf %10.2E \n",n,t_n,Wbal,pre_n_1,disp_rod,volume/1e3,t_min);
+		printf("%i  \t  %lf %10.2E %lf %lf %lf %lf %10.2E \n",n,t_n,Wbal,pre_n_1,disp_rod,v_rod,volume/1e3,t_min);
 
 
 

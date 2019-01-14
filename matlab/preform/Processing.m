@@ -1,7 +1,8 @@
 clear all
 close all
 
-path = './../../build/bin/preform/Displacement';
+path = './../../build/bin/preform/Displacement/';
+pathSR = './../../build/bin/preform/srRod/';
 
 addpath(path)
 displacementdir = path ;
@@ -12,7 +13,7 @@ numFiles = size(d,1) -3 ;
 plotFiles = ceil(linspace(1,numFiles,10));
 
 plot_point = 94;
-filename = strcat(path,'/displacement_',num2str(plotFiles(1)),'.txt');
+filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.txt');
 disp = csvread(filename);
 figure
 subplot(2,3,1)       % add first plot in 2 x 2 grid
@@ -21,21 +22,33 @@ hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal 
 
-filename = strcat(path,'/displacement_',num2str(plotFiles(2)),'.txt');
-disp = csvread(filename);
 
+hold on
+filename = strcat(pathSR,'srRod_',num2str(plotFiles(1)),'.txt');
+disp = csvread(filename);
+hold on
+plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
+
+
+
+
+filename= strcat(path,'displacement_',num2str(plotFiles(2)),'.txt');
+disp = csvread(filename);
 
 subplot(2,3,2)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
- 
-
 axis equal 
 
+hold on
+filename = strcat(pathSR,'srRod_',num2str(plotFiles(2)),'.txt');
+disp = csvread(filename);
+hold on
+plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 
 
-filename = strcat(path,'/displacement_',num2str(plotFiles(4)),'.txt');
+filename = strcat(path,'displacement_',num2str(plotFiles(4)),'.txt');
 disp = csvread(filename);
 
 
@@ -45,30 +58,49 @@ hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
 
-
-filename = strcat(path,'/displacement_',num2str(plotFiles(7)),'.txt');
+hold on
+filename = strcat(pathSR,'srRod_',num2str(plotFiles(4)),'.txt');
 disp = csvread(filename);
+hold on
+plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 
 
+
+
+
+filename = strcat(path,'displacement_',num2str(plotFiles(7)),'.txt');
+disp = csvread(filename);
 subplot(2,3,4)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
 
-
-
-filename = strcat(path,'/displacement_',num2str(plotFiles(8)),'.txt');
+hold on
+filename = strcat(pathSR,'srRod_',num2str(plotFiles(7)),'.txt');
 disp = csvread(filename);
+hold on
+plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 
 
+
+
+filename = strcat(path,'displacement_',num2str(plotFiles(8)),'.txt');
+disp = csvread(filename);
 subplot(2,3,5)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
 
-filename = strcat(path,'/displacement_',num2str(plotFiles(10)),'.txt');
+hold on
+filename = strcat(pathSR,'srRod_',num2str(plotFiles(8)),'.txt');
+disp = csvread(filename);
+hold on
+plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
+
+
+filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.txt');
 disp = csvread(filename);
 
 
@@ -77,6 +109,13 @@ plot(disp(:,1),disp(:,2),'k.')           % line plot
 hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
+
+hold on
+filename = strcat(pathSR,'srRod_',num2str(plotFiles(10)),'.txt');
+disp = csvread(filename);
+hold on
+plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
+
 
 
 m = dlmread('./../../build/bin/preform/pressureTime.txt',' ');

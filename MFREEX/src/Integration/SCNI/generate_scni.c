@@ -224,6 +224,7 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 		if ( is_AXI == 1)
 		{
 			neighbours = sf_nodes->sf_list[i]->neighbours;
+			//double r = nodes->me[i][0];
 
 			for ( int k = 0 ; k < neighbours->max_dim ; k++)
 			{
