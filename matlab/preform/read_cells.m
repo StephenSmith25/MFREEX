@@ -1,7 +1,7 @@
 clear all
 close all 
 
-fileID = fopen("./../../build/bin/preform/cells.txt");
+fileID = fopen("./../../build/bin/preform/cells1.txt");
 
 
 tline = fgetl(fileID);

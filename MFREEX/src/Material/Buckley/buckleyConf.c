@@ -46,9 +46,8 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	int index = 0; 
 	++call_count_2;
 
-	// conformational stress
 
-	if ( stateNew->eigValDBar->ve[0] > 0 ){
+	if ( stateNew->eigValDBar->ve[1] > 0 ){
 		if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
 			double gamma_n_1 = gammaV(stateNew,stateOld->lambdaNMax,
 			stateNew->critLambdaBar,para);
@@ -73,8 +72,8 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 
 	// B* = delta_t * BnCr + deltat * (W*B_n - B_n*W); 
 	m_mlt(stateNew->W,stateOld->Bbar,intermediate1);
-	m_mlt(stateOld->Bbar,stateNew->W,intermediate2);
-	m_sub(intermediate1,intermediate2,BnDot);
+	mmtr_mlt(stateOld->Bbar,stateNew->W,intermediate2);
+	m_add(intermediate1,intermediate2,BnDot);
 	m_add(BnCr,BnDot,BnDot);
 	// deltaB = deltaT * BnDot
 	sm_mlt(deltaT,BnDot,deltaB);

@@ -181,8 +181,8 @@ double internalForce_hyperelastic_S(VEC * Fint, MSCNI_OBJ * scni_obj, VEC * disp
 
 		// find equivalent lambda and mu
 
-		double b1 = 0.06;
-		double b2 = 1.44;
+		double b1 = 0.08;
+		double b2 = 1.5;
 
 		double Le = sqrt(scni[i]->area);
 		double c = sqrt(((lambda+2*mu)/rho));

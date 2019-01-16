@@ -2,7 +2,7 @@
 #include "Material/Buckley/buckleyStress.h"
 #include "determinant.h"
 
-int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matParams, VEC * critLambdaParams, double dt)
+int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matParams, VEC * critLambdaParams, double dt, int i )
 {
 
 
@@ -17,7 +17,19 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			
 
 			// inverse deformation gradient
-			m_inverse(stateNew->F,stateNew->invF);
+			// m_inverse(stateNew->F,stateNew->invF);
+			// catch(E_SING,m_inverse(stateNew->F,stateNew->invF),
+			// printf("Inverse of F is singular for node %d F \n = %lf %lf %lf\n %lf %lf %lf\n %lf %lf %lf\n ",i,
+			// 	stateNew->F->me[0][0], stateNew->F->me[0][1], stateNew->F->me[0][2],
+			// 	stateNew->F->me[1][0], stateNew->F->me[1][1], stateNew->F->me[1][2],
+			// 	stateNew->F->me[2][0], stateNew->F->me[2][1], stateNew->F->me[2][2]));
+			
+					catchall(m_inverse(stateNew->F,stateNew->invF),
+			printf("Inverse of F is singular for node %d F \n = %lf %lf %lf\n %lf %lf %lf\n %lf %lf %lf\n ",i,
+				stateNew->F->me[0][0], stateNew->F->me[0][1], stateNew->F->me[0][2],
+				stateNew->F->me[1][0], stateNew->F->me[1][1], stateNew->F->me[1][2],
+				stateNew->F->me[2][0], stateNew->F->me[2][1], stateNew->F->me[2][2]));
+			//m_inverse(stateNew->F,stateNew->invF);
 			// if ( stateNew->delta_F->me[0][0] != 0)
 			// {
 			// 	poldec(stateNew->delta_F, stateNew->delta_R, stateNew->delta_U, stateNew->delta_V);
@@ -73,45 +85,51 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 
 
 			// Update Jacobian
-			//stateNew->Jacobian = stateOld->Jacobian + stateOld->Jacobian*stateNew->div_v*dt;
+			stateNew->Jacobian = stateOld->Jacobian + stateOld->Jacobian*stateNew->div_v*dt;
 
-			stateNew->Jacobian = determinant(stateNew->F);
+			//stateNew->Jacobian = determinant(stateNew->F);
 			/* ------------------------------------------*/
 			/* ---------Isochoric   Deformation---------*/
 			/* ------------------------------------------*/
 
 			/* Distortional deformation gradient */
 			__smlt__(stateNew->F->base, pow(stateNew->Jacobian, -1.00/3.00), stateNew->Fbar->base, dim*dim);
-			
-			m_copy(stateNew->D,stateNew->Dbar);
-			if ( dim == 2)
-			{
-				stateNew->Dbar->me[0][0] += (-1.00/3.00)*stateNew->div_v;
-				stateNew->Dbar->me[1][1] += (-1.00/3.00)*stateNew->div_v;
+			m_inverse(stateNew->Fbar,stateNew->invFbar);
+			m_sub(stateNew->Fbar, stateOld->Fbar, stateNew->delta_F);
 
-			}else {
-				stateNew->Dbar->me[0][0] += (-1.00/3.00)*stateNew->div_v;
-				stateNew->Dbar->me[1][1] += (-1.00/3.00)*stateNew->div_v;
-				stateNew->Dbar->me[2][2] += (-1.00/3.00)*stateNew->div_v;
+			sm_mlt(1.000/dt,stateNew->delta_F,stateNew->Fbardot);
+			velocity_grad(stateNew->Lbar, stateNew->Dbar, stateNew->Wbar,stateNew->Fbardot,stateNew->invFbar);
 
-			}
+			// m_copy(stateNew->D,stateNew->Dbar);
+			// if ( dim == 2)
+			// {
+			// 	stateNew->Dbar->me[0][0] += (-1.00/3.00)*stateNew->div_v;
+			// 	stateNew->Dbar->me[1][1] += (-1.00/3.00)*stateNew->div_v;
+
+			// }else {
+			// 	stateNew->Dbar->me[0][0] += (-1.00/3.00)*stateNew->div_v;
+			// 	stateNew->Dbar->me[1][1] += (-1.00/3.00)*stateNew->div_v;
+			// 	stateNew->Dbar->me[2][2] += (-1.00/3.00)*stateNew->div_v;
+
+			// }
 
 			// Polar Decomposition
 			poldec(stateNew->Fbar, stateNew->R, stateNew->U, stateNew->V);
 
-			// Get eigen values of polar decomposition
+			//Get eigen values of polar decomposition
 			tracecatch(
 			symmeig(stateNew->V,stateNew->eigVecVBar,stateNew->eigValVBar);,
 			"Eigen values of V in internalForce");
 
 			tracecatch(
-			symmeig(stateNew->Dbar,stateNew->eigVecDBar,stateNew->eigValDBar);,
+			symmeig(stateNew->D,stateNew->eigVecDBar,stateNew->eigValDBar);,
 			"Eigen values of D in internalForce");
 			
 
 			// update critical network stretch 
 			stateNew->critLambdaBar =lambdaCrit(stateOld->critLambdaBar,stateNew->eigValVBar, 
 				stateNew->eigValDBar, critLambdaParams, stateNew->temperature);
+
 
 
 			/* ------------------------------------------*/

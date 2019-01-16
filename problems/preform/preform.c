@@ -28,8 +28,9 @@
 #include "Boundary/Contact/contactDetection.h"
 #include "Boundary/Displacement/setUpBC.h"
 #include "Boundary/Displacement/enforceBC.h"
+#include "Integration/SCNI/scni_update_B.h"
 
-
+extern double time;
 
 int main(int argc, char** argv) {
 
@@ -55,7 +56,7 @@ int main(int argc, char** argv) {
 	materialParameters->ve[0] = 3.0208;
 	materialParameters->ve[1] =-0.1478;
 	materialParameters->ve[2] = 0.0042;
-	materialParameters->ve[3] =50;
+	materialParameters->ve[3] =500;
 
 
 
@@ -97,7 +98,7 @@ int main(int argc, char** argv) {
 
 	/*  Time step variables */
 
-	double tMax = 0.8;
+	double tMax = 0.3;
 
 
 
@@ -109,7 +110,7 @@ int main(int argc, char** argv) {
 	/*  Upstream parameters */
 	double P0 = 0;
 	double tLine = 304.724;
-	double pLine = 1.1; // 0.6 Mpa;
+	double pLine = 0.8; // 0.6 Mpa;
 	double molarMass = 29;
 	double Rg = 8.314;
 	double rLine = Rg/molarMass;
@@ -133,7 +134,7 @@ int main(int argc, char** argv) {
 	double a7 = 0.2565;
 
 
-	double stretchRodRad = 5.5;
+	double stretchRodRad = 5;
 	int numPointsRod = 15;
 
 	MAT * srNodes = m_get(numPointsRod+1,2);
@@ -158,6 +159,9 @@ int main(int argc, char** argv) {
 	double vRod = 0;
 	const double DISP_ROD_MAX = 132 ; // 132;
 
+
+
+
 	/*////////////////////////////////////////////////////////// */
 	/*////////////////////////////////////////////////////////// */
 
@@ -177,7 +181,7 @@ int main(int argc, char** argv) {
 	 *  */
 	// Read PLSG 
 
-	char opt[20] = "pDq30a1.5";
+	char opt[20] = "pDq15a3";
 	char fileName[30] = "preform";
 	double * points_out ;
 	int * boundaryNodes;
@@ -196,6 +200,16 @@ int main(int argc, char** argv) {
 		xI->me[i][1] = points_out[2*i+1];
 
 	}
+
+	fp = fopen("boundary.txt","w");
+	for (int i = 0; i < numBoundary; ++i)
+	{
+		/* code */
+		fprintf(fp,"%i\n",boundaryNodes[i]+1);
+	}
+	fclose(fp);
+
+
 	
 	struct timeval start, end;
 	// generate clipped voronoi diagram
@@ -222,7 +236,7 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 
 	// shape function parameters
-	double dmax = 2;
+	double dmax = 2.5;
 	int constant_support_size = 1;
 	VEC * dI = v_get(xI->m);
 
@@ -405,6 +419,8 @@ int main(int argc, char** argv) {
 
 	}
 
+	free_shapefunction_container(sf_nodes);
+
 	/* ------------------------------------------*/
 	/* --------------Cavity pressure-------------*/
 	/* ------------------------------------------*/
@@ -469,7 +485,7 @@ int main(int argc, char** argv) {
 	
 	// time parameters
 	double t_max = 0.08; // 1s
-	double delta_t = 4e-7;
+	double delta_t = 5e-7;
 	double t_n = 0;
 	double t_n_1 = 0;
 	double t_n_h =  0; 
@@ -568,6 +584,10 @@ int main(int argc, char** argv) {
 	gettimeofday(&start3, NULL);
 
 
+	// updated variables
+
+	VEC * disp_inc = v_get(num_dof);
+	VEC * disp_r = v_get(num_dof);
 
 
 
@@ -579,7 +599,6 @@ int main(int argc, char** argv) {
 
 		/*  Update time step */
 		t_n_1 = t_n + delta_t;
-
 		/*  Make a time step  */ 
 		__mltadd__(v_n_h->ve, a_n->ve,0.5*delta_t,num_dof);
 		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
@@ -622,8 +641,8 @@ int main(int argc, char** argv) {
 
 			if (distanceProj > 0){
 
-				f1Cor = (2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-				f2Cor = (2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+				f1Cor = 1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+				f2Cor = 1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
 
 
 				for ( int k = 0 ; k < neighbours->max_dim ; k++){
@@ -637,15 +656,14 @@ int main(int argc, char** argv) {
 		}
 
 
-		/*  Find a corrective acceleration - method in pronto 3D manual*/
-		/*  Make a time step  */ 
+		// /*  Find a corrective acceleration - method in pronto 3D manual*/
+
 		for ( int i = 0 ; i < numnodes  ; i++ )
 		{
 			a_n->ve[2*i] = Fcont_n_1->ve[2*i]*inv_nodal_mass->ve[i];
 			a_n->ve[2*i+1] = Fcont_n_1->ve[2*i+1]*inv_nodal_mass->ve[i];
 		}
 
-		/*  Make a time step  */ 
 		__mltadd__(v_n_h->ve, a_n->ve,0.5*delta_t,num_dof);
 		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
 
@@ -657,20 +675,19 @@ int main(int argc, char** argv) {
 		/*  Implement BCs */
 		enforceBC(eb1,d_n_1); 
 		// find velocity correction
-		sv_mlt(1.00/(delta_t),eb1->uCorrect1,v_correct);
+		sv_mlt(1.00/(2*delta_t),eb1->uCorrect1,v_correct);
 		for ( int k = 0 ; k < v_correct->max_dim; k++){
 			v_n_h->ve[2*k] += v_correct->ve[k];
 		}
 
-		sv_mlt(1.000/(delta_t),eb1->uCorrect2,v_correct);
+		sv_mlt(1.000/(2*delta_t),eb1->uCorrect2,v_correct);
 		for ( int k = 0 ; k < v_correct->max_dim; k++){
 			v_n_h->ve[2*k+1] += v_correct->ve[k];
 		}
 
-
 		// Symmetry boundary /
 		enforceBC(eb2,d_n_1); 
-		sv_mlt(1.00/(delta_t),eb2->uCorrect1,v_correct);
+		sv_mlt(1.00/(2*delta_t),eb2->uCorrect1,v_correct);
 		for ( int k = 0 ; k < v_correct->max_dim; k++){
 			v_n_h->ve[2*k] += v_correct->ve[k];
 		}
@@ -679,6 +696,73 @@ int main(int argc, char** argv) {
 		mv_mlt(Lambda,d_n_1,nodal_disp);
 		__add__(nodes_X->base, nodal_disp->ve, updatedNodes->base, num_dof);
 
+		// if (( n % 50000000 == 0 )&& ( n < 100000))
+		// {	
+		// 	mfree.nodes = updatedNodes;
+		// 	int digits;
+		// 	if ( n < 10000){
+		// 		digits = 7;
+		// 	}else{
+		// 		digits = 7;
+		// 	}
+		// 	double fac = pow(10, digits);
+
+
+
+		// 	for ( int k = 0 ; k < num_dof ; k++)
+		// 	{
+		// 		double x = updatedNodes->base[k];
+  //   			updatedNodes->base[k] = round(x*fac)/fac;
+		// 	}
+	
+		// 	// setDomain(&mfree,constant_support_size, dmax);
+		// 	voronoi_diagram * vor_1 = generate_voronoi(updatedNodes->base, boundaryNodes, mfree.num_nodes, numBoundary, 2);
+
+		// 	//setDomain(&mfree,constant_support_size, dmax);
+
+		// 	scni_update_B(_scni_obj, disp_inc, vor_1, &mfree, is_AXI);
+
+		// 	v_copy(d_n_1,disp_r);
+
+		// 	FILE * fp;
+		// 	fp = fopen("cells1.txt","w");
+		// 	print_voronoi_diagram(fp,vor_1);
+		// 	fclose(fp);
+
+		// 	for ( int i = 0 ; i < numB3 ; i++){
+		// 	contact_nodes_coords->me[i][0] = mfree.nodes->me[eb3_nodes->ive[i]][0];
+		// 	contact_nodes_coords->me[i][1] = mfree.nodes->me[eb3_nodes->ive[i]][1];
+
+		// 	}
+
+		// 	phi_contact = mls_shapefunction(contact_nodes_coords, 
+		// 	"linear", "cubic", 2, 1, &mfree);
+
+		// 	pB->sf_traction = mls_shapefunction(pB->coords, 
+		// 	"linear", "cubic", 2, 1, &mfree);
+
+		// 	free_voronoi_diagram(vor_1);
+
+		// 	// shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes, "linear", "cubic", 2, 1, &mfree);
+		// 	// m_zero(Lambda);
+
+		// 	// // u = Lambda * u_g
+		// 	// for ( int i = 0 ; i < mfree.num_nodes ; i++)
+		// 	// {
+		// 	// 	VEC * phi = sf_nodes->sf_list[i]->phi;
+		// 	// 	IVEC * neighbours  = sf_nodes->sf_list[i]->neighbours;
+		// 	// 	for ( int k = 0 ; k < neighbours->max_dim ; k++)
+		// 	// 	{
+		// 	// 		Lambda->me[2*i][2*neighbours->ive[k]] += phi->ve[k]; 
+		// 	// 		Lambda->me[2*i+1][2*neighbours->ive[k]+1] += phi->ve[k]; 
+		// 	// 	}
+		// 	// }
+		// 	// free_shapefunction_container(sf_nodes);
+
+
+
+		// }
+		__sub__(d_n_1->ve, disp_r->ve,disp_inc->ve, num_dof);
 
 		/* ------------------------------------------*/
 		/* ------------Find External Force-----------*/
@@ -707,11 +791,12 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 		/*  Internal force */
 		//internalForceBuckley(Fint_n_1,scni,d_n_1,matParams,critLambdaParams,state_n,deltaT,efgBlock->numnode,t_n_1);
-		// internalForce_ForceBuckley(Fint_n_1, _scni_obj, d_n_1, v_n_h,
-		// matParams,critLambdaParams, state_n_1, state_n,
-		// mfree.IS_AXI, dim,delta_t,t_n_1);
+		internalForce_ForceBuckley(Fint_n_1, _scni_obj, d_n_1, v_n_h,
+		matParams,critLambdaParams, state_n_1, state_n,
+		mfree.IS_AXI, dim,delta_t,t_n_1);
 
-		double t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, v_n_h, materialParameters, "YEOH", is_AXI, dim);
+		//double t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, disp_inc, v_n_h, materialParameters, 
+		//	"YEOH", is_AXI, dim, t_n_1);
 
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/
@@ -793,7 +878,7 @@ int main(int argc, char** argv) {
 
 		/*  Update counters */
 		t_n = t_n_1;
-		//delta_t = 0.7*t_min;
+		//delta_t = t_min/10;
 		/*  Store previous volume */
 		volume_t = volume; 
 		// Store previous time step quanities for the kinematic, and force variables.
@@ -805,8 +890,9 @@ int main(int argc, char** argv) {
 		v_copy(a_n_1,a_n);
 		pre_n = pre_n_1;
 		// update iteration counter
+		double t_min = 0;
 		n++	;
-		printf("%i  \t  %lf %10.2E %lf %lf %lf %lf %10.2E \n",n,t_n,Wbal,pre_n_1,disp_rod,v_rod,volume/1e3,t_min);
+		printf("%i  \t  %lf %10.2E %lf %lf %lf %lf %10.2E %lf \n",n,t_n,Wbal,pre_n_1,disp_rod,v_rod,volume/1e3,t_min,mfree.di->ve[0]);
 
 
 

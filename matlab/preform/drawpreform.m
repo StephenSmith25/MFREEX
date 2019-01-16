@@ -23,19 +23,19 @@ L_t1 = 3;
 L_t = 37.31-19.48-L_t1;
 
 
-N1 = 30;
-N2 = 15;
+N1 = 20;
+N2 = 10;
 
 
 
 % Draw it
-ntheta = 12;
+ntheta = 8;
 % starting from 0,0
 nodes = [];
 count = 1;
 
 
-theta = linspace(-90,0,ntheta);
+theta = linspace(-90,-10,ntheta);
 
 for i = 1:length(theta)
     nodes(count,:) = [Rin_bot*cosd(theta(i)), -vDim + Rin_bot*sind(theta(i))];
@@ -43,7 +43,7 @@ for i = 1:length(theta)
     
 end
 nodes
-N3 = 3;
+N3 = 2;
 
 % Left wall
 nodes(count:1:count+N1-1,:) = [linspace(Din_b/2,Din_b/2,N1)',linspace(0,L_m-1,N1)'];
@@ -63,7 +63,7 @@ nodes(count:1:count+N1-1,:) = [linspace(Dout_b/2,Dout_b/2,N1)',linspace(L_m-1,0,
 
 count = count + N1;
 
-theta = linspace(-5,-90,ntheta);
+theta = linspace(-10,-90,ntheta);
 
 for i = 1:length(theta)
     nodes(count,:) = [Rout_bot*cosd(theta(i)), Rout_bot*sind(theta(i))];

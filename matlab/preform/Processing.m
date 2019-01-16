@@ -3,6 +3,8 @@ close all
 
 path = './../../build/bin/preform/Displacement/';
 pathSR = './../../build/bin/preform/srRod/';
+boundaryNodes = csvread('./../../build/bin/preform/boundary.txt');
+boundaryNodes = [boundaryNodes;boundaryNodes(1)];
 
 addpath(path)
 displacementdir = path ;
@@ -12,7 +14,7 @@ numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
 
-plot_point = 94;
+plot_point =33;
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.txt');
 disp = csvread(filename);
 figure
@@ -21,7 +23,8 @@ plot(disp(:,1),disp(:,2),'k.')           % line plot
 hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal 
-
+hold on
+plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(1)),'.txt');
@@ -40,7 +43,8 @@ plot(disp(:,1),disp(:,2),'k.')           % line plot
 hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal 
-
+hold on
+plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(2)),'.txt');
 disp = csvread(filename);
@@ -57,7 +61,8 @@ plot(disp(:,1),disp(:,2),'k.')           % line plot
 hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
-
+hold on
+plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(4)),'.txt');
 disp = csvread(filename);
@@ -75,7 +80,8 @@ plot(disp(:,1),disp(:,2),'k.')           % line plot
 hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
-
+hold on
+plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(7)),'.txt');
 disp = csvread(filename);
@@ -92,7 +98,8 @@ plot(disp(:,1),disp(:,2),'k.')           % line plot
 hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
-
+hold on
+plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(8)),'.txt');
 disp = csvread(filename);
@@ -109,7 +116,8 @@ plot(disp(:,1),disp(:,2),'k.')           % line plot
 hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
-
+hold on
+plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(10)),'.txt');
 disp = csvread(filename);
@@ -194,7 +202,7 @@ for i = 1:length(plotFiles)
     
     
 
-    filename = strcat('strain_',num2str(plotFiles(i)),'.txt');
+    filename = strcat('./../../build/bin/preform/History/Strain/strain_',num2str(plotFiles(i)),'.txt');
 
     strain = csvread(filename);
     
@@ -365,14 +373,16 @@ for i = 1:length(plotFiles)
     hoop_stress_bond(i) = stress(3,3);
     axial_stress_bond(i) = stress(2,2);
     radial_stress_bond(i) = stress(1,1);
-  
+    shear_stress_bond(i) = stress(1,2);
+
     filename = strcat('Conformational_Stress_',num2str(plotFiles(i)),'.txt');
 
     stress = csvread(filename);
     hoop_stress_conf(i) = stress(3,3);
     axial_stress_conf(i) = stress(2,2);
     radial_stress_conf(i) = stress(1,1);
-    
+     shear_stress_conf(i) = stress(1,2);
+
   
 end
 
@@ -383,9 +393,10 @@ hold on
 plot(time,hoop_stress_conf,'r');
 hold on
 plot(time,hoop_stress_bond,'b');
-%hold on
-%plot(time,log(jacobian)*1.8e9,'m')
-
+hold on
+plot(time,shear_stress_bond,'m')
+hold on
+plot(time,shear_stress_conf,'g')
 %set axis
 set(gca, 'FontName', 'cmr12')
 % set x tics and y tics
@@ -412,7 +423,7 @@ xlabel('Time',...
 'FontName','cmr14')
 % legend
 
-legend({ 'Hoop (Conf)','Hoop (Bond)','Volumetric' },... % { 'legend1', 'legend2',...}
+legend({ 'Hoop (Conf)','Hoop (Bond)','Shear (Bond)', 'Shear (Conf)' },... % { 'legend1', 'legend2',...}
 'FontUnits','points',...
 'interpreter','latex',...
 'FontSize',12,...

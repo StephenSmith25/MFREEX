@@ -42,10 +42,10 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 	MAT * nodes = Mfree->nodes;
 
 	int dim  = Mfree->dim;
-
+	int dim_B = dim;
 	if (is_AXI == 1)
 	{
-		dim = 3;
+		dim_B = 3;
 	}
 
 
@@ -54,7 +54,11 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 	shape_function_container * sf_verticies = mls_shapefunction(cell_verticies, "linear", "cubic", 2, 1, Mfree);
 
 	// shape_function_container * sf_nodes = mls_shapefunction(nodes, "quadratic", "quartic", 2, 3, Mfree);
+	shape_function_container * sf_nodes;
 
+	if ( is_AXI ==1){
+		sf_nodes = mls_shapefunction(nodes, "linear", "cubic", 2, 2, Mfree);
+	}
 
 
 	int num_cells = voronoi->num_cells;
@@ -88,10 +92,10 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 
 
 	// size of sfIndex
-	MAT * bI = m_get(Mfree->num_nodes,dim);
+	MAT * bI = m_get(Mfree->num_nodes,dim_B);
 
 
-	MAT  * temp_F = m_get(dim,dim);
+	MAT  * temp_F = m_get(dim_B,dim_B);
 
 
 
@@ -223,7 +227,7 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 
 
 			IVEC * cell_sf_index = iv_get(length_index); 
-			MAT * bI_n = m_get(length_index,2);
+			MAT * bI_n = m_get(length_index,dim_B);
 			length_index = 0;
 			for ( int k = 0 ; k < Mfree->num_nodes; k++)
 			{
@@ -238,8 +242,33 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 		
 
 		//generate Bmat and set up SCNI structure
-		sm_mlt(1.000/area, bI, bI);
+		sm_mlt(1.000/area, bI_n, bI_n);
 
+		// check if axi 
+		if ( is_AXI == 1)
+		{
+			neighbours = sf_nodes->sf_list[i]->neighbours;
+			double r = nodes->me[i][0];
+
+			for ( int k = 0 ; k < neighbours->max_dim ; k++)
+			{
+				//double r = nodes->me[neighbours->ive[k]][0];
+
+				if ( r > 0)
+				{
+					int indx = findInt(neighbours->ive[k], cell_sf_index->ive, cell_sf_index->max_dim);
+					bI_n->me[indx][2] += sf_nodes->sf_list[i]->phi->ve[k]/r;
+				}
+				else{
+					int indx = findInt(neighbours->ive[k], cell_sf_index->ive, cell_sf_index->max_dim);
+					bI_n->me[indx][2] += sf_nodes->sf_list[i]->dphi->me[k][0];
+				}
+
+
+			}
+			
+			
+		}
 
 		M_FREE(scni_[i]->B);
 		scni_[i]->B = generate_Bmat(bI_n,dim,is_AXI,-1);
@@ -255,6 +284,10 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 	IV_FREE(temp_vec);
 
 
+	if ( is_AXI == 1)
+	{
+		free_shapefunction_container(sf_nodes);
+	}
 
 	free_shapefunction_container(sf_verticies);
 

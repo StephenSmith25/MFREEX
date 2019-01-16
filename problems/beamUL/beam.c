@@ -157,12 +157,12 @@ int main(void )
 
 	int is_stabalised = 0;
 	int is_AXI = 0;
-	MSCNI_OBJ * _mscni_obj = NULL;
+	SCNI_OBJ * _scni_obj = NULL;
 	struct timeval start2, end2;
 	gettimeofday(&start2, NULL);
 	// set up return container
 	// generate shape functions at sample points 
-	_mscni_obj = generate_mscni(vor, NULL , is_stabalised, is_AXI, &mfree);
+	_scni_obj = generate_scni(vor, NULL , is_stabalised, is_AXI, dim, &mfree);
 	gettimeofday(&end2, NULL);
 	 delta = ((end2.tv_sec  - start2.tv_sec) * 1000000u + 
          end2.tv_usec - start2.tv_usec) / 1.e6;
@@ -267,7 +267,7 @@ int main(void )
 	VEC * inv_nodal_mass = v_get(mfree.num_nodes);
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
-		nodal_mass->ve[i] = _mscni_obj->scni[i]->area*rho;
+		nodal_mass->ve[i] = _scni_obj->scni[i]->area*rho;
 		inv_nodal_mass->ve[i] = 1.000/nodal_mass->ve[i];
 	}
 
@@ -378,7 +378,7 @@ int main(void )
 
 		// update the scni diagram based on new nodal positions and get the new Bmat
 
-		if (( n % 100 == 0)&& ( n >=  1000 ))
+		if (( n % 200 == 0)&& ( n >=  1000 ))
 		{	
 			mfree.nodes = updatedNodes;
 			int digits;
@@ -401,10 +401,10 @@ int main(void )
 			voronoi_diagram * vor_1 = generate_voronoi(updatedNodes->base, boundaryNodes, mfree.num_nodes, numBoundary, 2);
 
 
-			mscni_update_B(_mscni_obj, disp_inc, vor_1, &mfree, is_AXI);
+			scni_update_B(_scni_obj, disp_inc, vor_1, &mfree, is_AXI);
 			double area =0;
 			for ( int l = 0 ; l < numnodes ; l++){
-				area += _mscni_obj->scni[l]->area;
+				area += _scni_obj->scni[l]->area;
 			}
 
 			v_copy(d_n_1,disp_r);
@@ -451,7 +451,8 @@ int main(void )
 		/* ------------------------------------------*/
 
 		// find incremental displacement
-		double delta_t_min = internalForce_hyperelastic_S(Fint_n_1, _mscni_obj, disp_inc, v_n_h, materialParameters, "SVK", is_AXI, dim);
+		double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, disp_inc, v_n_h, materialParameters, 
+			"SVK", is_AXI, dim, t_n_1);
 
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/

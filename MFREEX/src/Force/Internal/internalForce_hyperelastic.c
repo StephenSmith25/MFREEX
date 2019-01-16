@@ -1,8 +1,11 @@
 #include "Force/Internal/internalForce_hyperelastic.h"
-
+#include "mat2csv.h"
 static int call_count ;
+static int print_count;
 
-double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC * velocity, VEC * matParams, char * Material, int is_axi, int dim){
+
+double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC * velocity, VEC * matParams, 
+	char * Material, int is_axi, int dim, double t_n_1){
 
 
 
@@ -36,6 +39,8 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		dim_v = dim*dim;
 	}
 
+
+	char filename[50];
 	// loop over all integration points
 
 	SCNI ** scni = scni_obj->scni;
@@ -133,7 +138,6 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 			// Find velocity gradient
 			div_v = L->me[0][0] + L->me[1][1] + L->me[2][2];	
-			div_v = L->me[0][0] + L->me[1][1];
 		}
 		/* Integration parameter */
 		double intFactor = scni[i]->area;
@@ -148,8 +152,10 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		double B22 = 0;
 		double B33 = 0;
 
+		double fro_b = 0;
+
 		double MaxB = -1;
-		double rho = 1380e-9;
+		double rho = 1000e-9;
 		double num_neighbours_J = 0;
 		double m_j;
 		double volume_I = intFactor;
@@ -160,22 +166,37 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			volume_I = scni[i]->area;
 			m_j = rho * scni[index_J]->area;
 
+
+			fro_b += (volume_I*num_neighbours_J/m_j)*B->me[0][2*k]*B->me[0][2*k];
+			fro_b += (volume_I*num_neighbours_J/m_j)*B->me[1][2*k+1]*B->me[1][2*k+1];
+			fro_b += (volume_I*num_neighbours_J/m_j)*B->me[2][2*k]*B->me[2][2*k];
+			fro_b += (volume_I*num_neighbours_J/m_j)*B->me[3][2*k+1]*B->me[3][2*k+1];
+
 			// if ( is_axi == 1){
 			// 	m_j = rho * scni[index_J]->area*2*PI*scni[index_J]->r;
 			// }
 
-			B11 += (volume_I*num_neighbours_J/m_j)*(B->me[0][2*k]*B->me[0][2*k]);
-			B22 += (volume_I*num_neighbours_J/m_j)*(B->me[1][2*k+1]*B->me[1][2*k+1]);
+			//B11 += (volume_I*num_neighbours_J/m_j)*(B->me[0][2*k]*B->me[0][2*k]);
+			//B22 += (volume_I*num_neighbours_J/m_j)*(B->me[1][2*k+1]*B->me[1][2*k+1]);
 
 			if ( is_axi == 1)
 			{
-				B33 += (volume_I*num_neighbours_J/m_j)*(B->me[4][2*k]*B->me[4][2*k]);
+				//B33 += (volume_I*num_neighbours_J/m_j)*(B->me[4][2*k]*B->me[4][2*k]);
+			fro_b += (volume_I*num_neighbours_J/m_j)*B->me[4][2*k]*B->me[4][2*k];
 
 			}
 
 		}
 
-		MaxB = max(B11,B22);
+
+		//MaxB = max(B11,B22);
+
+		MaxB = fro_b;
+
+		double omega_max = sqrt((lambda + 2*mu)*fro_b);
+
+
+
 
 		// if ( is_axi == 1)
 		// {
@@ -188,7 +209,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		double b2 = 1.44;
 
 		double Le = sqrt(scni[i]->area);
-		//Le = 3.5;
+		//Le = 2;
 		double c = sqrt(((lambda+2*mu)/rho));
 
 		double P_b1 = 0;
@@ -201,8 +222,8 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			eta -= b2*b2*Le*(1/c)*div_v;
 		}
 
-
-		double delta_t = (2.00/sqrt(((lambda + 2*mu)*MaxB)))*(sqrt(1+eta*eta)-eta);
+		double delta_t = (2.00/omega_max)*(sqrt(1+eta*eta)-eta); 
+		//double delta_t = (2.00/sqrt(((lambda + 2*mu)*MaxB)))*(sqrt(1+eta*eta)-eta);
 		if ( delta_t <delta_t_min_i )
 		{
 			delta_t_min_i = delta_t;
@@ -236,39 +257,70 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 		}else if ( dim_v == 5)
 		{
-			double S11_hyd = (Jacobian)*(P_b1+P_b2)*invF->me[0][0];
-			double S22_hyd = (Jacobian)*(P_b1+P_b2)*invF->me[1][1];
-			double S33_hyd = (Jacobian)*(P_b1+P_b2)*invF->me[2][2];
-			S33_hyd = 0;
+			// double S11_hyd = (Jacobian)*(P_b1+P_b2)*invF->me[0][0];
+			// double S22_hyd = (Jacobian)*(P_b1+P_b2)*invF->me[1][1];
+			// double S33_hyd = (Jacobian)*(P_b1+P_b2)*invF->me[2][2];
 
-			if (( i == 0) && (call_count % 1000 == 0))
-			{
-				printf("S11_HYD = %lf \n", S11_hyd);
-				printf("S22_HYD = %lf \n", S22_hyd);
-				printf("S33_HYD = %lf \n", S33_hyd);
-				printf("div_v = %lf \n", div_v);
-				printf("c = %lf \n", c);
-				printf("Le = %lf \n", Le);
+			// if (( i == 0) && (call_count % 1000 == 0))
+			// {
+			// 	printf("S11_HYD = %lf \n", S11_hyd);
+			// 	printf("S22_HYD = %lf \n", S22_hyd);
+			// 	printf("S33_HYD = %lf \n", S33_hyd);
+			// 	printf("div_v = %lf \n", div_v);
+			// 	printf("c = %lf \n", c);
+			// 	printf("Le = %lf \n", Le);
 
-			}
+			// }
 
-			S11 = stressVoigt->ve[0] + S11_hyd; S12 = stressVoigt->ve[2];
-			S21 = stressVoigt->ve[3]; S22 = stressVoigt->ve[1]+S22_hyd;
-			S33 = stressVoigt->ve[4] + S33_hyd;
+			// S11 = stressVoigt->ve[0] + S11_hyd; S12 = stressVoigt->ve[2];
+			// S21 = stressVoigt->ve[3]; S22 = stressVoigt->ve[1]+S22_hyd;
+			// S33 = stressVoigt->ve[4] + S33_hyd;
 
-			F11 = scni[i]->F_r->me[0][0]; F12 = scni[i]->F_r->me[0][1];
-			F21 = scni[i]->F_r->me[1][0]; F22 = scni[i]->F_r->me[1][1];
-			F33 = scni[i]->F_r->me[2][2];
+			// F11 = scni[i]->F_r->me[0][0]; F12 = scni[i]->F_r->me[0][1];
+			// F21 = scni[i]->F_r->me[1][0]; F22 = scni[i]->F_r->me[1][1];
+			// F33 = scni[i]->F_r->me[2][2];
 
-			stressVoigt->ve[0] = S11*F11 + S12*F12;
-			stressVoigt->ve[1] = S21*F21 + S22*F22; 
-			stressVoigt->ve[2] = S11*F21 + S12*F22;
-			stressVoigt->ve[3] = S21*F11 + S22*F12;
-			stressVoigt->ve[4] = S33*F33;
+
+			// stressVoigt->ve[0] = S11*F11 + S12*F12;
+			// stressVoigt->ve[1] = S21*F21 + S22*F22; 
+			// stressVoigt->ve[2] = S11*F21 + S12*F22;
+			// stressVoigt->ve[3] = S21*F11 + S22*F12;
+			// stressVoigt->ve[4] = S33*F33;
 
 		}else{
 			fprintf(stderr,"dimension not yet supported");
 		}
+
+
+		if ((i == 93) && (call_count % 1000 == 0)) {
+
+
+
+	
+			F->me[2][1] = t_n_1;
+			//m_add(Sb_n_1,Savg_bond,Savg_bond);
+				//m_add(Sc_n_1,Savg_conf,Savg_conf);
+			snprintf(filename, 50, "strain_%d%s",print_count,".txt");
+			mat2csv(F,"./History/Strain",filename);
+			// snprintf(filename, 50, "Bond_Stress_%d%s",print_count,".txt");
+			// mat2csv(stateNew[i]->Sb,"./History/Stress",filename);
+			// snprintf(filename, 50, "Conformational_Stress_%d%s",print_count,".txt");
+			// mat2csv(stateNew[i]->Sc,"./History/Stress",filename);
+			F->me[2][1] = 0;
+			++print_count;
+
+
+		}
+		
+
+
+
+
+
+
+
+
+
 
 
 		vm_mlt(scni[i]->B,stressVoigt,scni[i]->fInt);

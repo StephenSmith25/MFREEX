@@ -11,8 +11,11 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 	__zero__(Fint->ve,Fint->max_dim);
 
-
-
+	double Kb = matParams->ve[9];
+	double Gb = matParams->ve[10];
+ 
+	double mu = Gb;
+	double lambda = Kb - (2.00/3.00)*mu;
 	int dim_piola = 0;
 	int dim_strain = 0;
 	int dim_cauchy = 0;
@@ -34,7 +37,6 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	SCNI ** scni = scni_obj->scni;
 	int num_int_points = scni_obj->num_points;
 
-	MAT * Favg = m_get(dim_strain,dim_strain);
 	double averaging = 0;
 	// time step calculation
 	double delta_t_min = 1000;
@@ -93,7 +95,7 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			/*  Find deformation gradient */
 			get_defgrad(stateNew[i]->F, B, neighbours,F_r,disp);
 
-			buckleyStress(stateNew[i],stateOld[i],matParams,critLambdaParams,deltat);
+			buckleyStress(stateNew[i],stateOld[i],matParams,critLambdaParams,deltat,i);
 
 			/* ------------------------------------------*/
 			/* --------------New time increment----------*/
@@ -138,16 +140,16 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			double Jacobian = stateNew[i]->Jacobian;
 
 
-			double b1 = 0.1;
+			double b1 = 0.06;
 			double b2 = 1.44; 
-			double Le = 1.6e-3;
+			double Le = sqrt(scni[i]->area)/1000;
 			double rho = 1380;
-			//double c = sqrt(((lambda+2*mu)/rho));
-			double c = 1400;
+			double c = sqrt(((lambda+2*mu)/rho));
 			double P_b1 = b1*div_v*rho*Le*c;
 			double eta = b1;
 			double P_b2 = 0;
 			if ( div_v < 0 ){
+
 				P_b2 = Le*rho*(b2*b2*Le*div_v*div_v);
 				eta -= b2*b2*Le*(1/c)*div_v;
 			}
@@ -162,11 +164,11 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			// 	delta_t_min_i = delta_t;
 			// }
 
-			if ((i == 93) && (call_count % 1000 == 0)) {
+			if ((i == 32) && (call_count % 100 == 0)) {
 
 
 
-			m_foutput(stdout,stateNew[i]->W);
+			//m_foutput(stdout,stateNew[i]->W);
 	
 			stateNew[i]->F->me[2][1] = t_n_1;
 			//m_add(Sb_n_1,Savg_bond,Savg_bond);
@@ -246,6 +248,7 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	V_FREE(stressVoigt);
 
 	}  // end of parallel region 
+
 
 
 

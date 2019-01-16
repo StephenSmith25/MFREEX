@@ -66,7 +66,7 @@ state_Buckley ** new_Buckley_State(int num_Points, double * temperatures, int is
 		state[i]->lambdaNBar = v_get(dim_s);
 		state[i]->critLambdaBar = 100.00;
 		state[i]->mSigma = 0;
-		state[i]->temperature = 373.15 ;//temperatures[i]+273.15;
+		state[i]->temperature = temperatures[i]+273.15;
 
 		state[i]->div_v = 0;
 		state[i]->lambdaNMax = 1;

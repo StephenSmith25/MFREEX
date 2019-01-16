@@ -14,7 +14,7 @@
 #include <math.h>
 
 
-int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matParams,VEC * critLambdaParams, double dt);
+int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matParams, VEC * critLambdaParams, double dt, int i );
 
 
 

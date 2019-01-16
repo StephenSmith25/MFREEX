@@ -7,13 +7,14 @@
 #include "Material/Buckley/buckleyStress.h"
 #include "Material/material.h"
 #include <sys/time.h>
+#include "Material/Hyperelastic/yeoh.h"
 
 int main(void)
 {
 
 	double temperature = 85;
 	double sr = 4;
-	double peakStrain = 2.5;
+	double peakStrain = 3;
 
 	double dim = 3;
 	double is_axi = 0;
@@ -32,7 +33,7 @@ int main(void)
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
 	matParams->ve[9] = 1.8e9; // Kb
-	matParams->ve[10] = 1e7;// Gb
+	matParams->ve[10] = 6e7;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
 	matParams->ve[14] = 0.001;// eta_c
@@ -56,10 +57,15 @@ int main(void)
 	critLambdaParams->ve[4] = 15.393; // b 
 
 
+	VEC * materialParameters = v_get(4);
 
+	materialParameters->ve[0] = 3.0208;
+	materialParameters->ve[1] =-0.1478;
+	materialParameters->ve[2] = 0.0042;
+	materialParameters->ve[3] =100;
 	double dt = 1e-4;
 
-	double tmax = 5;
+	double tmax = 4;
 	double t_n_1 = 0;
 	double t_n = 0;
 
@@ -69,16 +75,18 @@ int main(void)
 	int n = 0;
 	state_Buckley ** stateOld = new_Buckley_State(1, &temperature, is_axi, dim);
 	state_Buckley ** stateNew = new_Buckley_State(1, &temperature, is_axi, dim);
+	VEC * stressVoigt = v_get(5);
 
-
-
+	MAT * P = m_get(3,3);
+	MAT * inter = m_get(3,3);
+	MAT * sigma = m_get(3,3);
 	FILE * fp;
 
 	fp = fopen("Stress_11_nominal.txt","w");
 	double maxStrain = 0;
 
 	fclose(fp);
-
+	MAT * invF = m_get(3,3);
 	struct timeval start, end;
 	gettimeofday(&start, NULL);
 
@@ -88,22 +96,61 @@ int main(void)
 		t_n_1  = t_n +  dt;
 
 
+		if ( maxStrain < 2)
+		{
 		stateNew[0]->F->me[0][0] = 1.00+t_n_1*sr;
 		stateNew[0]->F->me[1][1] = 1.00+t_n_1*sr;
 		stateNew[0]->F->me[2][2] = 1.00/pow(1.00+t_n_1*sr,2);
+		 }
 
-		buckleyStress(stateNew[0], stateOld[0], matParams,critLambdaParams,dt);
+
+		// if( t_n_1 < 1)
+		// {
+
+		// stateNew[0]->F->me[0][1] = sr*t_n_1; 
+		// //stateNew[0]->F->me[1][0] = t_n_1; 
+		// }
+		
+
+		buckleyStress(stateNew[0], stateOld[0], matParams,critLambdaParams,dt,0);
+
+
+
+		// m_inverse(stateNew[0]->F, invF);
+
+		// yeoh(stressVoigt,stateNew[0]->F,materialParameters);
+
+		// P->me[0][0] = stressVoigt->ve[0];
+		// P->me[1][1] = stressVoigt->ve[1];
+		// P->me[0][1] = stressVoigt->ve[2];
+		// P->me[1][0] = stressVoigt->ve[3];
+		// P->me[2][2] = stressVoigt->ve[4];
+
+		// mmtr_mlt(P, stateNew[0]->F, sigma);
+
+
+
+
 
 
 
 		double sig11 = stateNew[0]->Sc->me[0][0] - stateNew[0]->Sc->me[2][2]+stateNew[0]->Sb->me[0][0] - stateNew[0]->Sb->me[2][2];
 		sig11 = sig11/pow(10,6);
+		sig11 = stateNew[0]->Sc->me[0][0] + stateNew[0]->Sb->me[0][0];
+		sig11 = sig11/pow(10,6);
+		double sig12 = 0*stateNew[0]->Sc->me[0][1] + stateNew[0]->Sb->me[0][1] ;//+ stateNew[0]->Sc->me[0][1] ;
+		sig12 = sig12/pow(10,6);
+
+		//sig11 = sigma->me[1][1];
+
 		maxStrain = stateNew[0]->F->me[0][0]-1;
 		// write stress to file 
 		if ( n % writeFreq == 0)
 		{
 			fp = fopen("Stress_11_nominal.txt","a");
-			fprintf(fp,"%lf,%lf\n",stateNew[0]->F->me[0][0]-1, sig11);
+			fprintf(fp,"%lf,%lf\n",t_n_1, sig11);
+			//fprintf(fp,"%lf,%lf\n",stateNew[0]->F->me[0][0]-1, sig11);
+
 			fclose(fp);
 		}
 		++n;
