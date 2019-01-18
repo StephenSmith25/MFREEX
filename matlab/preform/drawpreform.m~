@@ -24,7 +24,7 @@ L_t = 37.31-19.48-L_t1;
 
 
 N1 = 24;
-N2 = 15;
+N2 = 11;
 
 
 
@@ -120,51 +120,18 @@ segments(end,3) = 4;
 
 
 % Plot it 
-% figure
-% plot(nodes(:,1),nodes(:,2),'k-');
-% axis equal 
-%     rand1 = rand(1,3);
-% hold on 
-% fill(nodes(:,1),nodes(:,2),rand1);
-% hold on 
-% plot(nodes(:,1),nodes(:,2),'k.','linewidth',3);
+figure
+plot(nodes(:,1),nodes(:,2),'k-');
+axis equal 
+    rand1 = rand(1,3);
+hold on 
+fill(nodes(:,1),nodes(:,2),rand1);
+hold on 
+plot(nodes(:,1),nodes(:,2),'k.','linewidth',3);
 
 
 %% plot segments
-figure
-for i = 1:length(segments)
-    if ( segments(i,3) == 2)
-        color = 'r';
-        hold on
-        plot(nodes(segments(i,1:2),1),nodes(segments(i,1:2),2),color);
-        
-    elseif ( segments(i,3) == 5)
-        color = 'g';
-        hold on
-        plot(nodes(segments(i,1:2),1),nodes(segments(i,1:2),2),color);
-        
-    elseif ( segments(i,3) == 0)
-        color = 'k';
-        hold on
-        plot(nodes(segments(i,1:2),1),nodes(segments(i,1:2),2),color);
-        
-    elseif ( segments(i,3) == 4)
-        color = 'g';
-        hold on
-        plot(nodes(segments(i,1:2),1),nodes(segments(i,1:2),2),color);
-        
-    else
-        hold on
-        plot(nodes(segments(i,1:2),1),nodes(segments(i,1:2),2),'m');
-        
-        
-    end
-    
-    
-end
-axis equal
-hold on
-plot(nodes(:,1),nodes(:,2),'ko','markersize',3);
+
 
 % Save files 
 % segments and nodes 

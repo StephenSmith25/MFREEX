@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
 
 	/*  Time step variables */
 
-	double tMax = 0.3;
+	double tMax = 0.4;
 
 
 
@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
 	double a7 = 0.2565;
 
 
-	double stretchRodRad = 5;
+	double stretchRodRad = 5.5;
 	int numPointsRod = 15;
 
 	MAT * srNodes = m_get(numPointsRod+1,2);
@@ -181,7 +181,7 @@ int main(int argc, char** argv) {
 	 *  */
 	// Read PLSG 
 
-	char opt[20] = "pDq15a3";
+	char opt[20] = "pYDq27a3";
 	char fileName[30] = "preform";
 	double * points_out ;
 	int * boundaryNodes;
@@ -236,7 +236,7 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 
 	// shape function parameters
-	double dmax = 2.5;
+	double dmax = 1.5;
 	int constant_support_size = 1;
 	VEC * dI = v_get(xI->m);
 
@@ -375,6 +375,7 @@ int main(int argc, char** argv) {
 
 
 
+	m_foutput(stdout,eb1->coords);
 
 
 
@@ -485,7 +486,7 @@ int main(int argc, char** argv) {
 	
 	// time parameters
 	double t_max = 0.08; // 1s
-	double delta_t = 5e-7;
+	double delta_t = 4e-7;
 	double t_n = 0;
 	double t_n_1 = 0;
 	double t_n_h =  0; 
@@ -675,19 +676,19 @@ int main(int argc, char** argv) {
 		/*  Implement BCs */
 		enforceBC(eb1,d_n_1); 
 		// find velocity correction
-		sv_mlt(1.00/(2*delta_t),eb1->uCorrect1,v_correct);
+		sv_mlt(1.00/(delta_t),eb1->uCorrect1,v_correct);
 		for ( int k = 0 ; k < v_correct->max_dim; k++){
 			v_n_h->ve[2*k] += v_correct->ve[k];
 		}
 
-		sv_mlt(1.000/(2*delta_t),eb1->uCorrect2,v_correct);
+		sv_mlt(1.000/(delta_t),eb1->uCorrect2,v_correct);
 		for ( int k = 0 ; k < v_correct->max_dim; k++){
 			v_n_h->ve[2*k+1] += v_correct->ve[k];
 		}
 
 		// Symmetry boundary /
 		enforceBC(eb2,d_n_1); 
-		sv_mlt(1.00/(2*delta_t),eb2->uCorrect1,v_correct);
+		sv_mlt(1.00/(delta_t),eb2->uCorrect1,v_correct);
 		for ( int k = 0 ; k < v_correct->max_dim; k++){
 			v_n_h->ve[2*k] += v_correct->ve[k];
 		}

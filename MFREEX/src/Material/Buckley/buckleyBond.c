@@ -55,13 +55,16 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	}else{
 		alpha_sig = ( Vs*tauOCT/(2*R*temperature) ) * exp ( -Vp * sigma_m/(R*temperature) ) / ( sinh ( Vs * tauOCT/(2*R*temperature)) ) ; 
 	}
-	alpha_sig = 1;
+	//alpha_sig = 1;
 	// alpha_s
 	double alpha_s = exp ( Cv / ( temperature - vogel_T) - Cv / ( star_T - vogel_T) );	
 	// alpha_T
 	double alpha_T = exp ( (H0/R) * ( 1/temperature - 1/star_T) );
 
-
+	if ( alpha_sig < 0.20)
+	{
+		alpha_sig = 0.20;
+	}
 
 
 	// tau = tau_s * alpha_s * alpha_T * alpha_sig ;
@@ -89,35 +92,33 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 
 
 	// Jaumann rate
-	// Sb_n_1 = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
-	// Spin component of stress
-	// (WSb_n - Sb_n W)dt
-	// W*s
-	m_mlt(stateNew->W,Sb_n,mat1);
-	// s*l
-	mmtr_mlt(Sb_n,stateNew->W,mat2);
-	m_add(mat1,mat2,mat1);	
-	sm_mlt(dt,mat1,mat1);
-	m_add(Sb_n,mat1,mat1);
+	//W*s
+	// m_mlt(stateNew->W,Sb_n,mat1);
+	// // s*W'
+	// mmtr_mlt(Sb_n,stateNew->W,mat2);
+	// m_add(mat1,mat2,mat1);	
+	// sm_mlt(dt,mat1,mat1);
+	// m_add(Sb_n,mat1,mat1);
 
-	//Sb* = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
-	m_add(deltaSb,mat1,Sb_n_1);
+	// //Sb* = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
+	// m_add(deltaSb,mat1,Sb_n_1);
 
 	
 
-	// TRUESDEL RATE
-	// m_mlt(stateNew->L,Sb_n,mat1);
-	// mmtr_mlt(Sb_n, stateNew->L, mat2);
+	//TRUESDEL RATE
+	m_mlt(stateNew->L,Sb_n,mat1);
+	mmtr_mlt(Sb_n, stateNew->L, mat2);
 
-	// m_add(mat1,mat2,mat1);
+	m_add(mat1,mat2,mat1);
 
-	// sm_mlt(stateNew->div_v, Sb_n, mat2);
+	//sm_mlt(stateNew->div_v, Sb_n, mat2);
 
-	// m_sub(mat1,mat2,Sb_n_1);
+	//m_sub(mat1,mat2,Sb_n_1);
 
-	// sm_mlt(dt,Sb_n_1,Sb_n_1);
+	sm_mlt(dt,mat1,Sb_n_1);
 
-	// m_add(deltaSb,Sb_n_1,Sb_n_1);
+	m_add(deltaSb,Sb_n_1,Sb_n_1);
+	m_add(Sb_n,Sb_n_1,Sb_n_1);
 
 
 	// Sb_n_1 = Sb_n + deltaSb + (WSb_n - Sb_n W)dt

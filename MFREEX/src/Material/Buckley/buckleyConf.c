@@ -62,22 +62,36 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	// network rate of deformation tensor 
 	m_sub(stateNew->Dbar,Ds,Dn);
 
+
+	// Fixed material frame rate of deformation
 	// BnCr = Dn_n*Bn_n + Bn_n*Dn_n;
 	m_mlt(Dn,stateOld->Bbar,intermediate1);
 	m_mlt(stateOld->Bbar,Dn,intermediate2);
 	m_add(intermediate1,intermediate2,BnCr);
 
-	// Material time derivative of B  ( Jaumann )
-
-
-	// B* = delta_t * BnCr + deltat * (W*B_n - B_n*W); 
+	//Material time derivative of B  ( Jaumann )
 	m_mlt(stateNew->W,stateOld->Bbar,intermediate1);
 	mmtr_mlt(stateOld->Bbar,stateNew->W,intermediate2);
 	m_add(intermediate1,intermediate2,BnDot);
 	m_add(BnCr,BnDot,BnDot);
-	// deltaB = deltaT * BnDot
 	sm_mlt(deltaT,BnDot,deltaB);
+
+
+
+	// Material time derivative of B  ( Truesdell )
+	// m_mlt(stateNew->L,stateOld->Bbar,intermediate1);
+	// m_mlt(stateOld->Bbar,stateNew->L,intermediate2);
+	// m_sub(intermediate1,intermediate2,BnDot);
+	// m_add(BnCr,BnDot,BnDot);
+	// sm_mlt(deltaT,BnDot,deltaB);
+
+
+	// Update B
 	m_add(stateOld->Bbar,deltaB,stateNew->Bbar);
+
+
+
+	// Eigen Value process
 	symmeig(stateNew->Bbar,eigVecB,eigValB);	
 	// find edwards vilgis stress
 	edwardsVilgis(Sc_n_1p,eigValB,para, Jacobian, stateNew->temperature);
