@@ -61,10 +61,10 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	// alpha_T
 	double alpha_T = exp ( (H0/R) * ( 1/temperature - 1/star_T) );
 
-	if ( alpha_sig < 0.20)
-	{
-		alpha_sig = 0.20;
-	}
+	// if ( alpha_sig < 0.01)
+	// {
+	// 	alpha_sig = 0.01;
+	// }
 
 
 	// tau = tau_s * alpha_s * alpha_T * alpha_sig ;
@@ -91,8 +91,8 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 
 
 
-	// Jaumann rate
-	//W*s
+	// // Jaumann rate
+	// //W*s
 	// m_mlt(stateNew->W,Sb_n,mat1);
 	// // s*W'
 	// mmtr_mlt(Sb_n,stateNew->W,mat2);
@@ -111,9 +111,9 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 
 	m_add(mat1,mat2,mat1);
 
-	//sm_mlt(stateNew->div_v, Sb_n, mat2);
+	sm_mlt(stateNew->div_v, Sb_n, mat2);
 
-	//m_sub(mat1,mat2,Sb_n_1);
+	m_sub(mat1,mat2,Sb_n_1);
 
 	sm_mlt(dt,mat1,Sb_n_1);
 
@@ -121,7 +121,7 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	m_add(Sb_n,Sb_n_1,Sb_n_1);
 
 
-	// Sb_n_1 = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
+	//Sb_n_1 = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
 	// m_mlt(stateNew->W,Sb_n_1,mat1);
 	// m_mlt(Sb_n_1,stateNew->W,mat2);
 	// m_sub(mat1,mat2,mat1);	

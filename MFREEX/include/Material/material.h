@@ -21,6 +21,7 @@ typedef struct state_Buckley
 	// deformation gradient
 	MAT * F;
 	MAT * Fdot;
+	MAT * Fn;
 
 	MAT * invF;
 	MAT * delta_F;

@@ -14,7 +14,7 @@ int main(void)
 
 	double temperature = 85;
 	double sr = 4;
-	double peakStrain = 3;
+	double peakStrain = 2.5;
 
 	double dim = 3;
 	double is_axi = 0;
@@ -63,7 +63,7 @@ int main(void)
 	materialParameters->ve[1] =-0.1478;
 	materialParameters->ve[2] = 0.0042;
 	materialParameters->ve[3] =100;
-	double dt = 1e-4;
+	double dt = 1e-5;
 
 	double tmax = 4;
 	double t_n_1 = 0;
@@ -96,12 +96,10 @@ int main(void)
 		t_n_1  = t_n +  dt;
 
 
-		if ( maxStrain < 2)
-		{
+	
 		stateNew[0]->F->me[0][0] = 1.00+t_n_1*sr;
 		stateNew[0]->F->me[1][1] = 1.00+t_n_1*sr;
 		stateNew[0]->F->me[2][2] = 1.00/pow(1.00+t_n_1*sr,2);
-		 }
 
 
 		// if( t_n_1 < 1)
@@ -136,8 +134,8 @@ int main(void)
 
 		double sig11 = stateNew[0]->Sc->me[0][0] - stateNew[0]->Sc->me[2][2]+stateNew[0]->Sb->me[0][0] - stateNew[0]->Sb->me[2][2];
 		sig11 = sig11/pow(10,6);
-		sig11 = stateNew[0]->Sc->me[0][0] + stateNew[0]->Sb->me[0][0];
-		sig11 = sig11/pow(10,6);
+		//sig11 = stateNew[0]->Sc->me[0][0] + stateNew[0]->Sb->me[0][0];
+		//sig11 = sig11/pow(10,6);
 		double sig12 = 0*stateNew[0]->Sc->me[0][1] + stateNew[0]->Sb->me[0][1] ;//+ stateNew[0]->Sc->me[0][1] ;
 		sig12 = sig12/pow(10,6);
 
@@ -148,8 +146,8 @@ int main(void)
 		if ( n % writeFreq == 0)
 		{
 			fp = fopen("Stress_11_nominal.txt","a");
-			fprintf(fp,"%lf,%lf\n",t_n_1, sig11);
-			//fprintf(fp,"%lf,%lf\n",stateNew[0]->F->me[0][0]-1, sig11);
+			//fprintf(fp,"%lf,%lf\n",t_n_1, sig11);
+			fprintf(fp,"%lf,%lf\n",stateNew[0]->F->me[0][0]-1, sig11);
 
 			fclose(fp);
 		}

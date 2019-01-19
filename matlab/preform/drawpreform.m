@@ -24,7 +24,7 @@ L_t = 37.31-19.48-L_t1;
 
 
 N1 = 24;
-N2 = 15;
+N2 = 11;
 
 
 
@@ -45,6 +45,7 @@ end
 nodes;
 N3 = 0;
 N4 = 3;
+N5 = 3;
 % Left wall
 %% traction nodes
 nodes(count:1:count+N1-1,:) = [linspace(Din_b/2,Din_b/2,N1)',linspace(0,L_m-2,N1)'];
@@ -70,6 +71,7 @@ nodes(count:1:count+N1-1,:) = [linspace(Dout_b/2,Dout_b/2,N1)',linspace(L_m-2,0,
 
 
 
+
 count = count + N1;
 
 theta = linspace(-10,-90,ntheta);
@@ -79,8 +81,11 @@ for i = 1:length(theta)
     count = count +1;
     
 end
+% Bottom edge
+nodes(count:1:count+N5-1,:) = [linspace(0,0,N5)',linspace(-Rout_bot,-Rout_bot+thickness_bot,N5)'];
 
-[~,ib] = unique(nodes,'rows')
+nodes
+[~,ib] = unique(nodes,'rows');
 
 ib = sort(ib);
 nodes = nodes(ib,:);
@@ -96,7 +101,7 @@ nodes(i,3) = interp1q(tempProfile(:,1),tempProfile(:,3),nodes(i,2));
     
 end
 
-for i = (length(nodes)+1)/2+1:length(nodes)
+for i = (length(nodes)+2)/2+1:length(nodes)
    nodes(i,3) = interp1q(tempProfile(:,1),tempProfile(:,2),nodes(i,2));
 end
 
@@ -116,7 +121,7 @@ end
 
 segments(1:(ntheta + N1+N2+N3),3) = 2;
 segments((ntheta+(N1+N2+N3)):((ntheta+(N1+N2+N3))+ N4-2),3) = 5;
-segments(end,3) = 4;
+segments(end:-1:end-(N5-2),3) = 4;
 
 
 % Plot it 

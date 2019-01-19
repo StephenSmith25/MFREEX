@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
 	matParams->ve[6] = (67.47); // Cv
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
-	matParams->ve[9] = 1.8e9; // Kb
+	matParams->ve[9] = 2.6e9; // Kb
 	matParams->ve[10] = 6e8;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
@@ -181,7 +181,7 @@ int main(int argc, char** argv) {
 	 *  */
 	// Read PLSG 
 
-	char opt[20] = "pYDq27a3";
+	char opt[20] = "pYDq20a3";
 	char fileName[30] = "preform";
 	double * points_out ;
 	int * boundaryNodes;
@@ -236,7 +236,7 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 
 	// shape function parameters
-	double dmax = 1.5;
+	double dmax = 2.1;
 	int constant_support_size = 1;
 	VEC * dI = v_get(xI->m);
 

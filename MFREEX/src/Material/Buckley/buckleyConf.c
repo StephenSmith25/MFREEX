@@ -32,9 +32,14 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	MAT * intermediate2 = m_get(3,3);
 	MAT * Dn = m_get(3,3);
 	MAT * Ds = m_get(3,3);
+
+
+	// approach 1 case 1
 	MAT * BnCr = m_get(3,3);
 	MAT * BnDot = m_get(3,3);
 	MAT * deltaB = m_get(3,3);
+
+
 	VEC * Sc_n_1p = v_get(3);
 	MAT * eigVecB = m_get(3,3);
 	VEC * eigValB = v_get(3);
@@ -59,26 +64,30 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	}
 
 
+
 	// network rate of deformation tensor 
-	m_sub(stateNew->Dbar,Ds,Dn);
+	//m_sub(stateNew->Dbar,Ds,Dn);
 
-
+	// APPROACH 1 CASE 1
 	// Fixed material frame rate of deformation
 	// BnCr = Dn_n*Bn_n + Bn_n*Dn_n;
-	m_mlt(Dn,stateOld->Bbar,intermediate1);
-	m_mlt(stateOld->Bbar,Dn,intermediate2);
-	m_add(intermediate1,intermediate2,BnCr);
 
-	//Material time derivative of B  ( Jaumann )
-	m_mlt(stateNew->W,stateOld->Bbar,intermediate1);
-	mmtr_mlt(stateOld->Bbar,stateNew->W,intermediate2);
-	m_add(intermediate1,intermediate2,BnDot);
-	m_add(BnCr,BnDot,BnDot);
-	sm_mlt(deltaT,BnDot,deltaB);
+	// m_sub(stateNew->Dbar,Ds,Dn);
+	// m_mlt(Dn,stateOld->Bbar,intermediate1);
+	// m_mlt(stateOld->Bbar,Dn,intermediate2);
+	// m_add(intermediate1,intermediate2,BnCr);
+
+	// //Material time derivative of B  ( Jaumann )
+	// m_mlt(stateNew->W,stateOld->Bbar,intermediate1);
+	// mmtr_mlt(stateOld->Bbar,stateNew->W,intermediate2);
+	// m_add(intermediate1,intermediate2,BnDot);
+	// m_add(BnCr,BnDot,BnDot);
+	// sm_mlt(deltaT,BnDot,deltaB);
+	// // Update B
+	// m_add(stateOld->Bbar,deltaB,stateNew->Bbar);
 
 
-
-	// Material time derivative of B  ( Truesdell )
+	//Material time derivative of B  ( Truesdell )
 	// m_mlt(stateNew->L,stateOld->Bbar,intermediate1);
 	// m_mlt(stateOld->Bbar,stateNew->L,intermediate2);
 	// m_sub(intermediate1,intermediate2,BnDot);
@@ -86,9 +95,21 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	// sm_mlt(deltaT,BnDot,deltaB);
 
 
-	// Update B
-	m_add(stateOld->Bbar,deltaB,stateNew->Bbar);
 
+
+
+	// // APPROACH 2 CASE 3-
+	m_sub(stateNew->Dbar,Ds,Dn);
+	sm_mlt(deltaT,Dn,intermediate1);
+	m_ident(intermediate2);
+	m_add(intermediate2,intermediate1,intermediate1);
+	m_mlt(intermediate1,stateOld->Fn,stateNew->Fn);
+	m_mlt(stateOld->W,stateOld->Fn,intermediate1);
+	sm_mlt(deltaT,intermediate1,intermediate1);
+	m_add(stateNew->Fn,intermediate1,stateNew->Fn);
+
+
+	mmtr_mlt(stateNew->Fn, stateNew->Fn, stateNew->Bbar);
 
 
 	// Eigen Value process
@@ -114,19 +135,25 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	m_copy(stateNew->Bbar,stateOld->Bbar);
 	stateOld->lambdaNMax = stateNew->lambdaNMax;
 
+	// Approach 2 case 3
+	m_copy(stateNew->Fn,stateOld->Fn);
 
 	M_FREE(intermediate1);
 	M_FREE(intermediate2);
 	M_FREE(Dn);
 	M_FREE(Ds);
+
+
+
+	//arppoach 1 case 1
 	M_FREE(BnCr);
 	M_FREE(BnDot);
 	M_FREE(deltaB);
+
+
+
+	// eigen routines
 	M_FREE(eigVecB);
-
-
-
-
 	V_FREE(eigValB);
 	V_FREE(Sc_n_1p); 
 

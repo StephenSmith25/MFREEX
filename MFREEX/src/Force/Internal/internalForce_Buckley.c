@@ -140,17 +140,17 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			double Jacobian = stateNew[i]->Jacobian;
 
 
-			double b1 = 0;
-			double b2 = 1.44; 
-			double Le = 5.69/1000;
+			double b1 = 0.06;
+			double b2 = 1.5; 
+			double Le = 4/1000;
 			double rho = 1380;
 			double c = sqrt(((lambda+2*mu)/rho));
-			double P_b1 = b1*div_v*rho*Le*c;
-			double eta = b1;
+			double P_b1 = 0;
+			double eta = 0;
 			double P_b2 = 0;
 			if ( div_v < 0 ){
-
-				P_b2 = Le*rho*(b2*b2*Le*div_v*div_v);
+				eta = b1;
+				P_b2 = Le*rho*(b2*b2*Le*div_v*div_v) - b1*div_v*rho*Le*c;
 				eta -= b2*b2*Le*(1/c)*div_v;
 			}
 
@@ -164,7 +164,7 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			// 	delta_t_min_i = delta_t;
 			// }
 
-			if ((i == 74) && (call_count % 100 == 0)) {
+			if ((i == 66) && (call_count % 100 == 0)) {
 
 
 
