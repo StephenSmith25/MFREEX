@@ -64,8 +64,10 @@ double lambdaCrit(double critLambda_n, VEC * lambda, VEC * eigD, VEC * para, dou
 
 
 	double shift_factor = pow(10,(C1*(maxSr-1)/(C2 + maxSr -1))*pow(beta,2-2*xi));
-	double shifted_temperature = temperature*shift_factor; 
+	double shifted_temperature = temperature*shift_factor;
+	//shifted_temperature = temperature-10;
 
+	//printf("shifted_temperature = %lf \n",shifted_temperature);
 	double critLambda_a = k * shifted_temperature + b;
 
 

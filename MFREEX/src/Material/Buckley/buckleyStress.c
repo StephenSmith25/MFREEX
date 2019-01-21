@@ -11,9 +11,9 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 
 
 			/* Find Fdot */
-			m_sub(stateNew->F, stateOld->F, stateNew->delta_F);
+			m_add(stateNew->F, stateOld->F, stateNew->delta_F);
 
-			sm_mlt(1.000/dt,stateNew->delta_F,stateNew->Fdot);
+			sm_mlt(1.000/(dt*2),stateNew->delta_F,stateNew->Fdot);
 			
 
 			// inverse deformation gradient
@@ -95,9 +95,13 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			/* Distortional deformation gradient */
 			__smlt__(stateNew->F->base, pow(stateNew->Jacobian, -1.00/3.00), stateNew->Fbar->base, dim*dim);
 			m_inverse(stateNew->Fbar,stateNew->invFbar);
-			m_sub(stateNew->Fbar, stateOld->Fbar, stateNew->delta_F);
 
-			sm_mlt(1.000/dt,stateNew->delta_F,stateNew->Fbardot);
+
+			m_add(stateNew->Fbar, stateOld->Fbar, stateNew->delta_F);
+			sm_mlt(1.000/(2*dt),stateNew->delta_F,stateNew->Fbardot);
+
+
+
 			velocity_grad(stateNew->Lbar, stateNew->Dbar, stateNew->Wbar,stateNew->Fbardot,stateNew->invFbar);
 
 			// m_copy(stateNew->D,stateNew->Dbar);
@@ -129,6 +133,8 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			// update critical network stretch 
 			stateNew->critLambdaBar =lambdaCrit(stateOld->critLambdaBar,stateNew->eigValVBar, 
 				stateNew->eigValDBar, critLambdaParams, stateNew->temperature);
+
+			//stateNew->critLambdaBar = 2.8;
 
 
 

@@ -60,7 +60,7 @@ double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,VEC * p
 	}
 
 	// find theta, the ratio of in plane natural strain rate
-	if ( eigD->ve[1] < 1e-6 ){
+	if ( eigD->ve[1] < 0){
 		theta = 0;
 	}else{
 		theta = eigD->ve[2]/eigD->ve[1];
@@ -84,6 +84,7 @@ double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,VEC * p
 
 	double shiftTemperature = temperature * pow(10, ( ( shiftTSlope*log2sr ) / ( shiftTIntercept + log2sr) )* pow(expFactor,2-2*xi));
 
+	//shiftTemperature = 378.15;
 
 	gamma0 = exp( Cs/(shiftTemperature - Tinf) - Cs/(starT - Tinf));
 	gamma0 = gamma0*refGamma;

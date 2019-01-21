@@ -91,34 +91,34 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 
 
 
-	// // Jaumann rate
-	// //W*s
-	// m_mlt(stateNew->W,Sb_n,mat1);
-	// // s*W'
-	// mmtr_mlt(Sb_n,stateNew->W,mat2);
-	// m_add(mat1,mat2,mat1);	
-	// sm_mlt(dt,mat1,mat1);
-	// m_add(Sb_n,mat1,mat1);
+	// Jaumann rate
+	//W*s
+	m_mlt(stateNew->W,Sb_n,mat1);
+	// s*W'
+	mmtr_mlt(Sb_n,stateNew->W,mat2);
+	m_add(mat1,mat2,mat1);	
+	sm_mlt(dt,mat1,mat1);
+	m_add(Sb_n,mat1,mat1);
 
-	// //Sb* = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
-	// m_add(deltaSb,mat1,Sb_n_1);
+	//Sb* = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
+	m_add(deltaSb,mat1,Sb_n_1);
 
 	
 
 	//TRUESDEL RATE
-	m_mlt(stateNew->L,Sb_n,mat1);
-	mmtr_mlt(Sb_n, stateNew->L, mat2);
+	// m_mlt(stateNew->L,Sb_n,mat1);
+	// mmtr_mlt(Sb_n, stateNew->L, mat2);
 
-	m_add(mat1,mat2,mat1);
+	// m_add(mat1,mat2,mat1);
 
-	sm_mlt(stateNew->div_v, Sb_n, mat2);
+	// sm_mlt(stateNew->div_v, Sb_n, mat2);
 
-	m_sub(mat1,mat2,Sb_n_1);
+	// m_sub(mat1,mat2,Sb_n_1);
 
-	sm_mlt(dt,mat1,Sb_n_1);
+	// sm_mlt(dt,mat1,Sb_n_1);
 
-	m_add(deltaSb,Sb_n_1,Sb_n_1);
-	m_add(Sb_n,Sb_n_1,Sb_n_1);
+	// m_add(deltaSb,Sb_n_1,Sb_n_1);
+	// m_add(Sb_n,Sb_n_1,Sb_n_1);
 
 
 	//Sb_n_1 = Sb_n + deltaSb + (WSb_n - Sb_n W)dt

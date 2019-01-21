@@ -23,19 +23,19 @@ L_t1 = 3;
 L_t = 37.31-19.48-L_t1;
 
 
-N1 = 24;
+N1 = 26;
 N2 = 11;
 
 
 
 % Draw it
-ntheta = 8;
+ntheta = 10;
 % starting from 0,0
 nodes = [];
 count = 1;
 
 
-theta = linspace(-90,-10,ntheta);
+theta = linspace(-90,-5,ntheta);
 
 for i = 1:length(theta)
     nodes(count,:) = [Rin_bot*cosd(theta(i)), -vDim + Rin_bot*sind(theta(i))];
@@ -101,9 +101,13 @@ nodes(i,3) = interp1q(tempProfile(:,1),tempProfile(:,3),nodes(i,2));
     
 end
 
-for i = (length(nodes)+2)/2+1:length(nodes)
+for i = (length(nodes))/2+1:length(nodes)
    nodes(i,3) = interp1q(tempProfile(:,1),tempProfile(:,2),nodes(i,2));
 end
+
+% overwrite temperature profile
+%%nodes(:,3) = 97.45;
+
 
 segments = [];
 % Write the segments 

@@ -63,14 +63,14 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 		}
 	}
 
+	
 
+	// //APPROACH 1 CASE 1
+	// // network rate of deformation tensor 
+	// m_sub(stateNew->Dbar,Ds,Dn);
 
-	// network rate of deformation tensor 
-	//m_sub(stateNew->Dbar,Ds,Dn);
-
-	// APPROACH 1 CASE 1
-	// Fixed material frame rate of deformation
-	// BnCr = Dn_n*Bn_n + Bn_n*Dn_n;
+	// //Fixed material frame rate of deformation
+	// //BnCr = Dn_n*Bn_n + Bn_n*Dn_n;
 
 	// m_sub(stateNew->Dbar,Ds,Dn);
 	// m_mlt(Dn,stateOld->Bbar,intermediate1);
@@ -87,7 +87,7 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	// m_add(stateOld->Bbar,deltaB,stateNew->Bbar);
 
 
-	//Material time derivative of B  ( Truesdell )
+	// //Material time derivative of B  ( Truesdell )
 	// m_mlt(stateNew->L,stateOld->Bbar,intermediate1);
 	// m_mlt(stateOld->Bbar,stateNew->L,intermediate2);
 	// m_sub(intermediate1,intermediate2,BnDot);
@@ -104,9 +104,12 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	m_ident(intermediate2);
 	m_add(intermediate2,intermediate1,intermediate1);
 	m_mlt(intermediate1,stateOld->Fn,stateNew->Fn);
+
+	// Spin components
 	m_mlt(stateOld->W,stateOld->Fn,intermediate1);
 	sm_mlt(deltaT,intermediate1,intermediate1);
 	m_add(stateNew->Fn,intermediate1,stateNew->Fn);
+
 
 
 	mmtr_mlt(stateNew->Fn, stateNew->Fn, stateNew->Bbar);

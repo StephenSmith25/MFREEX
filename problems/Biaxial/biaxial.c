@@ -33,7 +33,7 @@ int main(void)
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
 	matParams->ve[9] = 1.8e9; // Kb
-	matParams->ve[10] = 6e7;// Gb
+	matParams->ve[10] = 3e8;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
 	matParams->ve[14] = 0.001;// eta_c
@@ -132,7 +132,8 @@ int main(void)
 
 
 
-		double sig11 = stateNew[0]->Sc->me[0][0] - stateNew[0]->Sc->me[2][2]+stateNew[0]->Sb->me[0][0] - stateNew[0]->Sb->me[2][2];
+		double sig11 = (stateNew[0]->Sc->me[0][0] - stateNew[0]->Sc->me[2][2])
+		+(stateNew[0]->Sb->me[0][0] - stateNew[0]->Sb->me[2][2])*0;
 		sig11 = sig11/pow(10,6);
 		//sig11 = stateNew[0]->Sc->me[0][0] + stateNew[0]->Sb->me[0][0];
 		//sig11 = sig11/pow(10,6);

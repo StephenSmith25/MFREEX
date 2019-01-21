@@ -141,7 +141,7 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 
 			double b1 = 0.06;
-			double b2 = 1.5; 
+			double b2 = 1.50; 
 			double Le = 4/1000;
 			double rho = 1380;
 			double c = sqrt(((lambda+2*mu)/rho));
@@ -164,8 +164,10 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			// 	delta_t_min_i = delta_t;
 			// }
 
-			if ((i == 66) && (call_count % 100 == 0)) {
+			if ((i == 71) && (call_count % 100 == 0)) {
 
+
+			printf("critLambdaBar \n = %lf ", stateOld[i]->critLambdaBar);
 
 
 			//m_foutput(stdout,stateNew[i]->W);

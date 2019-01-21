@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
 	VEC * matParams = v_get(26);
 	matParams->ve[0] = 2.814e-3; // VS
 	matParams->ve[1] = 0.526e-3; // VP
-	matParams->ve[2] = (1.71e6); // mu*_0
+	matParams->ve[2] = (1.7057e6); // mu*_0
 	matParams->ve[3] = (328.76); // Tinf
 	matParams->ve[4] = 358.15; // T*
 	matParams->ve[5] = matParams->ve[4]; // Tf*
@@ -181,7 +181,7 @@ int main(int argc, char** argv) {
 	 *  */
 	// Read PLSG 
 
-	char opt[20] = "pYDq20a3";
+	char opt[20] = "pYDq30a3";
 	char fileName[30] = "preform";
 	double * points_out ;
 	int * boundaryNodes;
@@ -643,7 +643,7 @@ int main(int argc, char** argv) {
 			if (distanceProj > 0){
 
 				f1Cor = 1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-				f2Cor = 1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+				f2Cor = 0.8*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
 
 
 				for ( int k = 0 ; k < neighbours->max_dim ; k++){
