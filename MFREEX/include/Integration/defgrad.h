@@ -13,6 +13,7 @@ void get_dot_defgrad(MAT * f,MAT * B,IVEC * neighbours, MAT * F_r, VEC * velocit
 
 
 
+void get_grad_u(MAT * f, MAT * B, IVEC * neighbours, MAT * F_r, VEC * disp);
 
 
 

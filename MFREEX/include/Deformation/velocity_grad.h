@@ -7,7 +7,7 @@
 
 
 
-int velocity_grad(MAT * L, MAT * D, MAT * W, MAT * Fdot, MAT * invF);
+int velocity_grad(MAT * h, MAT * L, MAT * D, MAT * W, double delta_t,double alpha);
 
 
 

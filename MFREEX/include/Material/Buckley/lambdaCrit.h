@@ -26,7 +26,7 @@
 
 
 
-double lambdaCrit(double critLambda_n, VEC * lambda, VEC * eigD, VEC * para, double temperature);
+double lambdaCrit(double critLambda_n, VEC * lambda, MAT *  D, VEC * para, double temperature, double dt);
 
 
 

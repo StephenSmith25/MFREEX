@@ -19,7 +19,7 @@
 
 #include "Material/Buckley/gamma.h"
 
-double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,VEC * para){
+double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,VEC * para, double dt){
 
 
 	double starT = para->ve[18];
@@ -47,14 +47,13 @@ double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,VEC * p
 	double theta = 0;
 	// find the strain rate
 	for ( int i = 0 ; i < 3 ; i++){
-		strainRate->ve[i] = eigD->ve[i]*lambda->ve[i] ;
+		strainRate->ve[i] = lambda->ve[i]/dt ;
 	}
-
+	//v_foutput(stdout, lambda);
 
 	double maxSr = v_max(strainRate,&index);
 
-
-
+	//printf("maxSr = %lf \n", maxSr);
 	if ( maxSr == 0){
 		maxSr = 0.0000001; 
 	}
@@ -75,6 +74,7 @@ double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,VEC * p
 	}else{
 		// do nothing
 	}
+	xi = 1.00;
 
 	double log2sr = log(maxSr)/log(2);
 	if ( maxSr < 0.001){
@@ -83,11 +83,11 @@ double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,VEC * p
 
 
 	double shiftTemperature = temperature * pow(10, ( ( shiftTSlope*log2sr ) / ( shiftTIntercept + log2sr) )* pow(expFactor,2-2*xi));
-
-	//shiftTemperature = 378.15;
+	shiftTemperature = 85+273.15+20;
 
 	gamma0 = exp( Cs/(shiftTemperature - Tinf) - Cs/(starT - Tinf));
 	gamma0 = gamma0*refGamma;
+
 	if ( maxLambdaN >= critLambda ){
 		gamma_n_1 = 1e50;
 

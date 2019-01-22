@@ -60,6 +60,8 @@ typedef struct state_Buckley
 	MAT * Dbar;
 	MAT * Wbar;
 
+	// rotation
+	MAT * Omega;
 
 	// Deformation tensors
 	MAT * Bbar;
@@ -80,6 +82,12 @@ typedef struct state_Buckley
 	double Jacobian;
 	double div_v; 
 
+	MAT * h ; 
+	MAT * GRAD_U ;
+
+	// temp arrays
+	MAT * temp;
+	MAT * temp1;
 
 
 
