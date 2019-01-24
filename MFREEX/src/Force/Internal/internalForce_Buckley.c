@@ -167,9 +167,6 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			if ((i == 71) && (call_count % 100 == 0)) {
 
 
-			printf("critLambdaBar \n = %lf ", stateOld[i]->critLambdaBar);
-
-
 			//m_foutput(stdout,stateNew[i]->W);
 	
 			stateNew[i]->F->me[2][1] = t_n_1;

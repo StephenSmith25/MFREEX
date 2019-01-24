@@ -52,6 +52,9 @@ typedef struct state_Buckley
 	MAT * eigVecDBar  ;
 	MAT * eigVecVBar ;
 
+
+	VEC * lambdaDot;
+
 	// True strain
 	MAT * true_strain;
 
@@ -82,12 +85,18 @@ typedef struct state_Buckley
 	double Jacobian;
 	double div_v; 
 
-	MAT * h ; 
+	MAT * H ; 
 	MAT * GRAD_U ;
 
 	// temp arrays
 	MAT * temp;
 	MAT * temp1;
+
+	// Rotation vectos
+	VEC * w;
+	VEC * omega;
+	VEC * h;
+	VEC * z;
 
 
 

@@ -10,55 +10,48 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			double Kb = matParams->ve[9];
 
 
-			// /* Find Fdot */
-			// m_sub(stateNew->F, stateOld->F, stateNew->delta_F);
-
-			// sm_mlt(1.000/dt,stateNew->delta_F,stateNew->Fdot);
-
-			//m_add(stateNew->F,stateOld->F,stateNew->delta_F);
-			//sm_mlt(0.5,stateNew->delta_F,stateNew->delta_F);
-			//m_inverse(stateNew->delta_F,stateNew->invF);
-
-			//m_sub(stateNew->F, stateOld->F, stateNew->GRAD_U);
-			//m_mlt(stateNew->GRAD_U,stateNew->invF,stateNew->h);
+			
+			// // update to D_n_h and W_n_h
+			m_sub(stateNew->F, stateOld->F, stateNew->GRAD_U);
+			m_mlt(stateNew->GRAD_U,stateOld->invF,stateNew->H);
+			m_add(stateNew->F,stateOld->F,stateNew->delta_F);
+			sm_mlt(0.5,stateNew->delta_F,stateNew->delta_F);
+			m_inverse_small(stateNew->delta_F,stateNew->invF);
+			velocity_grad(stateNew->H, stateNew->L,stateNew->D, stateNew->W,dt,0.500);
 
 
 			// inverse deformation gradient			
-			catchall(m_inverse(stateNew->F,stateNew->invF),
-				printf("Inverse of F is singular for node %d F \n = %lf %lf %lf\n %lf %lf %lf\n %lf %lf %lf\n ",i,
-					stateNew->F->me[0][0], stateNew->F->me[0][1], stateNew->F->me[0][2],
-					stateNew->F->me[1][0], stateNew->F->me[1][1], stateNew->F->me[1][2],
-					stateNew->F->me[2][0], stateNew->F->me[2][1], stateNew->F->me[2][2])
-			);
+			m_inverse_small(stateNew->F, stateNew->invF);
 	
-			// // update Dn and Wn
-			m_sub(stateNew->F, stateOld->F, stateNew->GRAD_U);
 
-			m_mlt(stateNew->GRAD_U,stateOld->invF,stateNew->h);
-			velocity_grad(stateNew->h, stateOld->L,stateOld->D, stateOld->W,dt,0);
-			m_copy(stateOld->D,stateOld->Dbar);
-	
+
+
+
+			// Find deviatoric part of the deformation 
+			m_copy(stateNew->D,stateNew->Dbar);
+
 			if ( dim == 2)
 			{
-				stateOld->div_v = stateOld->L->me[0][0] + stateOld->L->me[1][1];
+				stateNew->div_v = stateNew->L->me[0][0] + stateNew->L->me[1][1];
 
 			}else if ( dim == 3)
 			{
-				stateOld->div_v = stateOld->L->me[0][0] + stateOld->L->me[1][1] + stateOld->L->me[2][2];
+				stateNew->div_v = stateNew->L->me[0][0] + stateNew->L->me[1][1] + stateNew->L->me[2][2];
 
 			}
 
 			if ( dim == 2)
 			{
-				stateOld->Dbar->me[0][0] += (-1.00/3.00)*stateOld->div_v;
-				stateOld->Dbar->me[1][1] += (-1.00/3.00)*stateOld->div_v;
+				stateNew->Dbar->me[0][0] += (-1.00/3.00)*stateNew->div_v;
+				stateNew->Dbar->me[1][1] += (-1.00/3.00)*stateNew->div_v;
 
 			}else {
-				stateOld->Dbar->me[0][0] += (-1.00/3.00)*stateOld->div_v;
-				stateOld->Dbar->me[1][1] += (-1.00/3.00)*stateOld->div_v;
-				stateOld->Dbar->me[2][2] += (-1.00/3.00)*stateOld->div_v;
+				stateNew->Dbar->me[0][0] += (-1.00/3.00)*stateNew->div_v;
+				stateNew->Dbar->me[1][1] += (-1.00/3.00)*stateNew->div_v;
+				stateNew->Dbar->me[2][2] += (-1.00/3.00)*stateNew->div_v;
 
 			}
+			m_add(stateNew->Dbar,stateNew->W,stateNew->Lbar);
 
 			//------------------------//
 			//      Velocity grad     //
@@ -118,33 +111,25 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 
 			/* Distortional deformation gradient */
 			__smlt__(stateNew->F->base, pow(stateNew->Jacobian, -1.00/3.00), stateNew->Fbar->base, dim*dim);
-			// m_inverse(stateNew->Fbar,stateNew->invFbar);
-			// m_sub(stateNew->Fbar, stateOld->Fbar, stateNew->delta_F);
+		
 
-			// sm_mlt(1.000/dt,stateNew->delta_F,stateNew->Fbardot);
-			// velocity_grad(stateNew->Lbar, stateNew->Dbar, stateNew->Wbar,stateNew->Fbardot,stateNew->invFbar);
+			// FIND THE ROTATION TENSOR
+			m_mlt(stateOld->V,stateNew->D,stateNew->temp);
+			m_mlt(stateNew->D,stateOld->V,stateNew->temp1);
+			m_sub(stateNew->temp1,stateNew->temp,stateNew->temp);
 
-			m_copy(stateNew->D,stateNew->Dbar);
-			if ( dim == 2)
-			{
-				stateNew->Dbar->me[0][0] += (-1.00/3.00)*stateNew->div_v;
-				stateNew->Dbar->me[1][1] += (-1.00/3.00)*stateNew->div_v;
-
-			}else {
-				stateNew->Dbar->me[0][0] += (-1.00/3.00)*stateNew->div_v;
-				stateNew->Dbar->me[1][1] += (-1.00/3.00)*stateNew->div_v;
-				stateNew->Dbar->me[2][2] += (-1.00/3.00)*stateNew->div_v;
-
-			}
-
-
-
-			// find zi
-			m_mlt(stateOld->V,stateOld->D,stateNew->temp);
 			MAT * Vdot = m_get(dim,dim);
-			double tempVec[dim];
-			double omega[dim];
-			double zi[dim];
+			VEC * h = stateNew->h;
+			VEC * w = stateNew->w;
+			VEC * omega = stateNew->omega;
+			VEC * z = stateNew->z;
+
+			// ZERO INPUTS
+			v_zero(h);
+			v_zero(w);
+			v_zero(omega);
+			v_zero(z);
+			m_zero(stateNew->Omega);
 
 
 			// zi = eigejk Vjm Dbamk
@@ -154,9 +139,12 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 				{
 					for ( int k = 0 ; k < dim ; k++)
 					{
-						int e = ((i-j)*(j-k)*(k-i))/2;
-						zi[i] += e*stateNew->temp->me[j][k];
-
+						int i1 = i+1;
+						int j1 = j+1;
+						int k1 = k+1;
+						double e = ((i1-j1)*(j1-k1)*(k1-i1))/2;
+						z->ve[j] += (double)(0.5*e)*stateNew->temp->me[i][k];
+						w->ve[j] += (double)(0.5*e)*stateNew->W->me[i][k];
 
 					}
 				}
@@ -168,8 +156,14 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 
 			double traceV = stateOld->V->me[0][0] + stateOld->V->me[1][1] + stateOld->V->me[2][2];
 			sm_mlt(traceV,stateNew->temp,stateNew->temp);
-			m_sub(stateOld->V,stateNew->temp, stateNew->temp);
-			m_inverse(stateNew->temp,stateNew->temp1);
+			m_sub(stateNew->temp,stateOld->V, stateNew->temp);
+
+			CHfactor(stateNew->temp);
+			CHsolve(stateNew->temp, z, h);
+
+			v_add(w,h,omega);
+
+
 
 
 			for ( int i = 0  ; i < dim ; i++)
@@ -178,78 +172,59 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 				{
 					for ( int k = 0 ; k < dim ; k++)
 					{
-						int e = ((i-j)*(j-k)*(k-i))/2;
-						omega[i] += e*stateOld->W->me[j][k];
-
-
-					}
-				}
-
-			}
-
-			for ( int i = 0  ; i < dim ; i++)
-			{
-				for ( int j = 0 ; j < dim ; j++)
-				{
-					tempVec[i] +=  stateNew->temp1->me[i][j]*zi[j]; 
-				}
-
-			}
-
-
-			for ( int i = 0  ; i < dim ; i++)
-			{
-				omega[i] = omega[i] - 2*tempVec[i];		
-			}
-
-			for ( int i = 0  ; i < dim ; i++)
-			{
-				for ( int j = 0 ; j < dim ; j++)
-				{
-					for ( int k = 0 ; k < dim ; k++)
-					{
-						int e = ((i-j)*(j-k)*(k-i))/2;
-						stateNew->Omega->me[i][j] += 0.5*e*omega[k];
-
+						int i1 = i+1;
+						int j1 = j+1;
+						int k1 = k+1;
+						int e = ((i1-j1)*(j1-k1)*(k1-i1))/2;
+						stateNew->Omega->me[i][k] += e*omega->ve[j];
 
 					}
 				}
 
 			}
 
-			m_mlt(stateOld->L,stateOld->V,Vdot);
+
+			m_mlt(stateNew->L,stateOld->V,Vdot);
 			m_mlt(stateOld->V,stateNew->Omega,stateNew->temp);
 			m_sub(Vdot,stateNew->temp,Vdot);
+
+			symmeig(Vdot, stateNew->temp, stateNew->lambdaDot);
 
 			sm_mlt(dt,Vdot,stateNew->V);
 			m_add(stateNew->V,stateOld->V,stateNew->V);
 
+			// //Find rotation tensor using Hughes, Winget algorithm
+			// m_ident(stateNew->temp);
+			// sm_mlt(0.5*dt,stateNew->Omega,stateNew->temp1);
+			// m_sub(stateNew->temp,stateNew->temp1,stateNew->temp1);
+			// m_inverse(stateNew->temp1,stateNew->temp);
+
+			// m_ident(stateOld->temp);
+			// sm_mlt(0.5*dt,stateNew->Omega,stateNew->temp1);
+			// m_add(stateOld->temp,stateNew->temp1,stateNew->temp1);
+
+			// m_mlt(stateNew->temp1,stateOld->R,stateOld->temp);
+			// m_mlt(stateNew->temp,stateOld->temp,stateNew->R);
 
 
-			// Find rotation tensor using Hughes, Winget algorithm
-			m_ident(stateNew->temp);
-			sm_mlt(0.5*dt,stateNew->Omega,stateNew->temp1);
-			m_sub(stateNew->temp,stateNew->temp1,stateNew->temp1);
-			m_inverse(stateNew->temp1,stateNew->temp);
+			// v_foutput(stdout,w);
+			// v_foutput(stdout,h);
+			// v_foutput(stdout,z);
+			// v_foutput(stdout,omega);
 
-			m_ident(stateOld->temp);
-			sm_mlt(0.5*dt,stateNew->Omega,stateNew->temp1);
-			m_add(stateOld->temp,stateNew->temp1,stateNew->temp1);
+			// printf("Omega = ");
+			// m_foutput(stdout,stateNew->Omega);
 
-			m_mlt(stateNew->temp1,stateOld->R,stateOld->temp);
-			m_mlt(stateNew->temp,stateOld->temp,stateNew->R);
-			// update rotation tensor
-			printf("F = ");
-			m_foutput(stdout,stateNew->F);
-			printf("R = ");
-			m_foutput(stdout,stateNew->R);
-			printf("Vdot = ");
-			m_foutput(stdout,Vdot);
+			// printf("F = ");
+			// m_foutput(stdout,stateNew->F);
+			// // printf("R = ");
+			// // m_foutput(stdout,stateNew->R);
+			// printf("Vdot = ");
+			// m_foutput(stdout,Vdot);
 
-			printf("V = ");
-			m_foutput(stdout,stateNew->V);
-			printf("W = ");
-			m_foutput(stdout,stateOld->W);
+			// printf("V = ");
+			// m_foutput(stdout,stateNew->V);
+			// m_foutput(stdout, stateNew->F);
 			//printf("Vdot = ");
 			//m_foutput(stdout,Vdot);
 		
@@ -259,35 +234,32 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 
 
 
-
 			// // Polar Decomposition
 			// poldec(stateNew->Fbar, stateNew->R, stateNew->U, stateNew->V);
 
-			//Get eigen values of polar decomposition
-			// tracecatch(
-			// symmeig(stateNew->V,stateNew->eigVecVBar,stateNew->eigValVBar);,
-			// "Eigen values of V in internalForce");
+			// Get priciple nominal strain rates 
+			tracecatch(
+			symmeig(Vdot, stateNew->temp, stateNew->lambdaDot);,
+			"Eigen values of V in internalForce");
+			m_free(Vdot);
 
-			// tracecatch(
-			// symmeig(stateNew->Dbar,stateNew->eigVecDBar,stateNew->eigValDBar);,
-			// "Eigen values of D in internalForce");
+			tracecatch(
+			symmeig(stateNew->Dbar,stateNew->eigVecDBar,stateNew->eigValDBar);,
+			"Eigen values of D in internalForce");
 			
+			PERM * order = px_get(dim);
+			v_sort(stateNew->eigValDBar, order);
+			px_free(order);
 
 			// // update critical network stretch 
-			stateNew->critLambdaBar =lambdaCrit(stateOld->critLambdaBar,stateNew->eigValVBar, 
-			stateOld->Dbar, critLambdaParams, stateNew->temperature, dt);
-
-			stateNew->critLambdaBar = 2.4;
-
-
+			stateNew->critLambdaBar =lambdaCrit(stateOld->critLambdaBar,stateNew->lambdaDot, 
+			stateOld->eigValDBar, critLambdaParams, stateNew->temperature, dt);
 
 			/* ------------------------------------------*/
 			/* ------------- --Update Stress--------------*/
 			/* ------------------------------------------*/
 			/*  Obtain stresses using explicit integration of stress rate */
-
 			buckleyBond(stateNew,stateOld,matParams,dt);
-
 			// Conformational stress
 			buckleyConf(stateNew,stateOld, matParams,dt);
 
@@ -321,7 +293,8 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			m_copy(stateNew->Sc,stateOld->Sc);			
 			m_copy(stateNew->sigma,stateOld->sigma);
 			stateOld->Jacobian = stateNew->Jacobian;
-			stateOld->mSigma = stateNew->mSigma;			
+			stateOld->mSigma = stateNew->mSigma;		
+			stateOld->div_v = stateNew->div_v;	
 			stateOld->critLambdaBar = stateNew->critLambdaBar;			
 			m_copy(stateNew->V,stateOld->V);
 			m_copy(stateNew->R,stateOld->R);

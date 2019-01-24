@@ -30,11 +30,11 @@ double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,VEC * p
 	double shiftTIntercept = para->ve[23];
 	double expFactor = para->ve[24];
 	double gamma0 = 0;
-	VEC * lambda = state->eigValVBar;
+	VEC * lambdaDot = state->lambdaDot;
 	VEC * eigD = state->eigValDBar;
 
 
-
+	int dim = eigD->max_dim;
 	double temperature = state->temperature;
 
 
@@ -42,24 +42,19 @@ double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,VEC * p
 	double gamma_n_1 = 0; 
 
 	// find theta 
-	VEC * strainRate = v_get(3);
 	int index = 0;
 	double theta = 0;
+
 	// find the strain rate
-	for ( int i = 0 ; i < 3 ; i++){
-		strainRate->ve[i] = lambda->ve[i]/dt ;
-	}
-	//v_foutput(stdout, lambda);
+	double maxSr = v_max(lambdaDot,&index);
 
-	double maxSr = v_max(strainRate,&index);
-
-	//printf("maxSr = %lf \n", maxSr);
 	if ( maxSr == 0){
 		maxSr = 0.0000001; 
 	}
 
-	// find theta, the ratio of in plane natural strain rate
-	if ( eigD->ve[1] < 0){
+
+
+	if ( eigD->ve[1] == 0){
 		theta = 0;
 	}else{
 		theta = eigD->ve[2]/eigD->ve[1];
@@ -70,23 +65,22 @@ double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,VEC * p
 	if ( xi > 1){
 		xi = 1;
 	}else if( xi < 0 ) {
-		xi = 0.0001;
+		xi = 0.001;
 	}else{
 		// do nothing
 	}
-	xi = 1.00;
+
 
 	double log2sr = log(maxSr)/log(2);
 	if ( maxSr < 0.001){
-	log2sr = 0;
+		log2sr = 0;
 	}
 
 
 	double shiftTemperature = temperature * pow(10, ( ( shiftTSlope*log2sr ) / ( shiftTIntercept + log2sr) )* pow(expFactor,2-2*xi));
-	shiftTemperature = 85+273.15+20;
-
 	gamma0 = exp( Cs/(shiftTemperature - Tinf) - Cs/(starT - Tinf));
 	gamma0 = gamma0*refGamma;
+
 
 	if ( maxLambdaN >= critLambda ){
 		gamma_n_1 = 1e50;
@@ -94,8 +88,7 @@ double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,VEC * p
 	}else{
 		gamma_n_1 = gamma0/ ( 1.000 - (maxLambdaN/critLambda)) ; 
 	}
-	
-	v_free(strainRate);
+
 	
 	
 	gamma_n_1 = gamma_n_1 ;

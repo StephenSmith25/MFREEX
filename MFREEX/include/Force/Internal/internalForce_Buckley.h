@@ -12,6 +12,7 @@
 #include "Integration/defgrad.h"
 #include "Material/Buckley/buckleyStress.h"
 #include "mat2csv.h"
+#include "m_inverse_small.h"
 
 #include "Integration/gMat.h"
 #define PI 3.14159265359

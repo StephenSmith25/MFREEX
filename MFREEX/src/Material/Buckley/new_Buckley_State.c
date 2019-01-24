@@ -58,6 +58,7 @@ state_Buckley ** new_Buckley_State(int num_Points, double * temperatures, int is
 		state[i]->eigValDBar = v_get(dim_s);
 		state[i]->eigVecVBar = m_get(dim_s,dim_s);
 		state[i]->eigValVBar = v_get(dim_s);
+		state[i]->lambdaDot = v_get(dim_s);
 
 
 		state[i]->true_strain = m_get(dim_s,dim_s);
@@ -77,11 +78,18 @@ state_Buckley ** new_Buckley_State(int num_Points, double * temperatures, int is
 		state[i]->lambdaNMax = 1;
 		state[i]->Jacobian = 1;
 
-		state[i]->h = m_get(dim_s,dim_s);
+		state[i]->H = m_get(dim_s,dim_s);
 		state[i]->GRAD_U = m_get(dim_s,dim_s);
 
 		state[i]->temp = m_get(dim_s,dim_s);
 		state[i]->temp1 = m_get(dim_s,dim_s);
+
+
+		state[i]->w = v_get(dim_s);
+		state[i]->h = v_get(dim_s);
+		state[i]->z = v_get(dim_s);
+		state[i]->omega = v_get(dim_s);
+
 
 
 	}

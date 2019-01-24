@@ -1,5 +1,6 @@
 #ifndef INTERNALFORCE_HYPERELASTIC_S_H_
 #define INTERNALFORCE_HYPERELASTIC_S_H_
+#include "m_inverse_small.h"
 
 #include "matrix.h"
 #include "matrix2.h"

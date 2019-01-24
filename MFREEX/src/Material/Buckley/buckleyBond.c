@@ -79,7 +79,7 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 
 	double sbFactor = 1 - exp(-dt/tau);
 	// mat1 = 2Gb*D*tau
-	sm_mlt(2*Gb*tau,stateOld->Dbar,mat1);
+	sm_mlt(2*Gb*tau,stateNew->Dbar,mat1);
 
 	// 2Gb*D*tau - Sb_n
 	m_sub(mat1,stateOld->Sb,deltaSb);
@@ -91,12 +91,12 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 
 
 
-	// Jaumann rate
+	// Green rate
 	//W*s
-	m_mlt(stateOld->W,Sb_n,mat1);
+	m_mlt(stateNew->Omega,Sb_n,mat1);
 	// s*W'
-	mmtr_mlt(Sb_n,stateOld->W,mat2);
-	m_add(mat1,mat2,mat1);	
+	m_mlt(Sb_n,stateNew->Omega,mat2);
+	m_sub(mat1,mat2,mat1);
 	sm_mlt(dt,mat1,mat1);
 	m_add(Sb_n,mat1,mat1);
 	//Sb* = Sb_n + deltaSb + (WSb_n - Sb_n W)dt

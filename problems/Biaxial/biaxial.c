@@ -8,13 +8,12 @@
 #include "Material/material.h"
 #include <sys/time.h>
 #include "Material/Hyperelastic/yeoh.h"
-
 int main(void)
 {
 
-	double temperature = 85;
-	double sr = 4;
-	double peakStrain = 2.5;
+	double temperature = 105;
+	double sr = 16;
+	double peakStrain = 3;
 
 	double dim = 3;
 	double is_axi = 0;
@@ -33,7 +32,7 @@ int main(void)
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
 	matParams->ve[9] = 1.8e9; // Kb
-	matParams->ve[10] = 3e7;// Gb
+	matParams->ve[10] = 1e7;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
 	matParams->ve[14] = 0.001;// eta_c
@@ -63,9 +62,9 @@ int main(void)
 	materialParameters->ve[1] =-0.1478;
 	materialParameters->ve[2] = 0.0042;
 	materialParameters->ve[3] =100;
-	double dt = 1e-4;
+	double dt = 1e-5;
 
-	double tmax = 4;
+	double tmax = 10;
 	double t_n_1 = 0;
 	double t_n = 0;
 
@@ -90,25 +89,20 @@ int main(void)
 	struct timeval start, end;
 	gettimeofday(&start, NULL);
 
-	while (( t_n < tmax) && (maxStrain < peakStrain) && ( n < 100))
+	while (( t_n < tmax) && (maxStrain < peakStrain) )
 	{
 		t_n_1  = t_n +  dt;
 
 
 	
-		// stateNew[0]->F->me[0][0] = 1.00+t_n_1*sr;
-		// stateNew[0]->F->me[1][1] = 1.00+t_n_1*sr;
-		// stateNew[0]->F->me[2][2] = 1.00/pow(1.00+t_n_1*sr,2);
+		stateNew[0]->F->me[0][0] = 1.00+t_n_1*sr;
+		stateNew[0]->F->me[1][1] = 1.00+t_n_1*sr;
+		stateNew[0]->F->me[2][2] = (1.00/pow(1.00+t_n_1*sr,2));
 
 
-		if( t_n_1 < 0.125)
-		{
-
-		stateNew[0]->F->me[0][1] = sr*t_n_1; 
+		//stateNew[0]->F->me[0][1] = sr*t_n_1; 
 		//stateNew[0]->F->me[1][0] = t_n_1; 
-		}else{
-			exit(0);
-		}
+	
 		
 
 		buckleyStress(stateNew[0], stateOld[0], matParams,critLambdaParams,dt,0);
@@ -142,14 +136,14 @@ int main(void)
 		sig12 = sig12/pow(10,6);
 
 		//sig11 = sigma->me[1][1];
-
 		maxStrain = stateNew[0]->F->me[0][0]-1;
+		//maxStrain = stateNew[0]->F->me[0][1];
 		// write stress to file 
 		if ( n % writeFreq == 0)
 		{
 			fp = fopen("Stress_11_nominal.txt","a");
-			fprintf(fp,"%lf,%lf\n",t_n_1, sig12);
-			//fprintf(fp,"%lf,%lf\n",stateNew[0]->F->me[0][0]-1, sig11);
+			//fprintf(fp,"%lf,%lf\n",t_n_1, sig12);
+			fprintf(fp,"%lf,%lf\n",stateNew[0]->F->me[0][0]-1, sig11);
 
 			fclose(fp);
 		}
@@ -157,7 +151,20 @@ int main(void)
 		t_n = t_n_1;
 	}
 
+	printf("omega =");
+	m_foutput(stdout, stateNew[0]->Omega);
+	printf("V =");
+	m_foutput(stdout, stateNew[0]->V);
+	printf("D =");
+	m_foutput(stdout, stateNew[0]->Dbar);
 
+
+	printf("det V  = %lf\n", determinant(stateNew[0]->V));
+	printf("det F  = %lf\n", determinant(stateNew[0]->F));
+
+	m_foutput(stdout, stateNew[0]->F);
+
+	printf("trace of D = %lf", stateNew[0]->Dbar->me[0][0] + stateNew[0]->Dbar->me[1][1] + stateNew[0]->Dbar->me[2][2]);
 	gettimeofday(&end, NULL);
 	double delta = ((end.tv_sec  - start.tv_sec) * 1000000u + 
          end.tv_usec - start.tv_usec) / 1.e6;
@@ -166,12 +173,29 @@ int main(void)
 	printf("buckley took %lf seconds to run\n", delta);
 
 
+	// test some eigen value computations
 
 
+	MAT * test = m_get(3,3);
+	test->me[0][0] = 1;
+	test->me[0][1] = 88;
+	test->me[0][2] = 150;
 
+	test->me[1][0] = 31.1;
+	test->me[1][1] = 1;
+	test->me[1][2] = 95.1;
 
+	test->me[2][0] = 11.4;
+	test->me[2][1] = 13.1;
+	test->me[2][2] = 1;
+	MAT * Q = m_get(3,3); 
+	VEC * eigVals = v_get(3);
 
-
+	symmeig(test, Q, eigVals);
+	PERM * order = px_get(3);
+			v_sort(eigVals, order);
+			px_free(order);
+	v_foutput(stdout, eigVals);
 
 
 	exit(0);
