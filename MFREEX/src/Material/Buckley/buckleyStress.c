@@ -2,7 +2,8 @@
 #include "Material/Buckley/buckleyStress.h"
 #include "determinant.h"
 
-int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matParams, VEC * critLambdaParams, double dt, int i )
+int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matParams, 
+	VEC * critLambdaParams, double dt, int i, int IS_AXI)
 {
 
 
@@ -118,7 +119,7 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			m_mlt(stateNew->D,stateOld->V,stateNew->temp1);
 			m_sub(stateNew->temp1,stateNew->temp,stateNew->temp);
 
-			MAT * Vdot = m_get(dim,dim);
+			MAT * Vdot = stateNew->Vdot;
 			VEC * h = stateNew->h;
 			VEC * w = stateNew->w;
 			VEC * omega = stateNew->omega;
@@ -241,19 +242,18 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			tracecatch(
 			symmeig(Vdot, stateNew->temp, stateNew->lambdaDot);,
 			"Eigen values of V in internalForce");
-			m_free(Vdot);
 
 			tracecatch(
 			symmeig(stateNew->Dbar,stateNew->eigVecDBar,stateNew->eigValDBar);,
 			"Eigen values of D in internalForce");
 			
 			PERM * order = px_get(dim);
-			v_sort(stateNew->eigValDBar, order);
+			stateNew->eigValDBar = v_sort(stateNew->eigValDBar, order);
 			px_free(order);
 
 			// // update critical network stretch 
-			stateNew->critLambdaBar =lambdaCrit(stateOld->critLambdaBar,stateNew->lambdaDot, 
-			stateOld->eigValDBar, critLambdaParams, stateNew->temperature, dt);
+			stateNew->critLambdaBar =lambdaCrit(stateOld->critLambdaBar,stateNew,
+			 critLambdaParams, stateNew->temperature, dt, IS_AXI);
 
 			/* ------------------------------------------*/
 			/* ------------- --Update Stress--------------*/
@@ -261,7 +261,7 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			/*  Obtain stresses using explicit integration of stress rate */
 			buckleyBond(stateNew,stateOld,matParams,dt);
 			// Conformational stress
-			buckleyConf(stateNew,stateOld, matParams,dt);
+			buckleyConf(stateNew,stateOld, matParams,dt, IS_AXI);
 
 			
 			stateNew->mSigma = log(stateNew->Jacobian)*Kb;

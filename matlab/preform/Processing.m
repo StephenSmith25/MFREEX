@@ -14,7 +14,7 @@ numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
 
-plot_point =72;
+plot_point =76;
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.txt');
 disp = csvread(filename);
 figure
@@ -223,7 +223,9 @@ for i = 1:length(plotFiles)
     radial_strain(i) = true_strain(1,1);
     shear_strain(i) = true_strain(1,2);
     jacobian(i) = det(F);
-
+    crit_lambda(i) = strain(2,3);
+    gamma(i) = strain(3,1);
+    max_lambda_n(i) = strain(1,3);
     time(i) = strain(3,2);
   
     
@@ -295,6 +297,7 @@ grid on
 
 print -depsc2 strain_axial.eps
 
+
 subplot(1,2,2)
 plot(time,(hoop_strain),'k','linewidth',2);
 
@@ -352,8 +355,78 @@ grid on
 
 print -depsc2 strain_hoop.eps
 
+figure 
+subplot(1,2,1);
+plot(time,crit_lambda,'k-');
+hold on
+plot(time,max_lambda_n,'b-');
 
+%set axis
+set(gca, 'FontName', 'cmr12')
+% set x tics and y tics
+set(gca,...
+'Units','normalized',...
+'FontUnits','points',...
+'FontWeight','normal',...
+'FontSize',14,... % size ofiguref numbers on axis
+'FontName','cmr14') % font name
+set(gca,'TickLabelInterpreter', 'latex');
+
+% Y label
+ylabel({'Critical Network Stretch ($\lambda$)'},...
+'FontUnits','points',...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% X label
+xlabel('Time (s)',...
+'FontUnits','points',...
+'interpreter','latex',...
+'FontWeight','normal',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+
+
+ 
+subplot(1,2,2);
+plot(time,gamma,'k-');
+%set axis
+set(gca, 'FontName', 'cmr12')
+% set x tics and y tics
+set(gca,...
+'Units','normalized',...
+'FontUnits','points',...
+'FontWeight','normal',...
+'FontSize',14,... % size ofiguref numbers on axis
+'FontName','cmr14') % font name
+set(gca,'TickLabelInterpreter', 'latex');
+
+% Y label
+ylabel({'Viscosity ($\gamma$) Pa'},...
+'FontUnits','points',...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% X label
+xlabel('Time (s)',...
+'FontUnits','points',...
+'interpreter','latex',...
+'FontWeight','normal',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+
+
+
+
+
+
+
+% legend
 path = './../../build/bin/preform/History/Stress';
+
+
+
+
 
 addpath(path)
 displacementdir = path ;

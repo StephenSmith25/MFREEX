@@ -80,6 +80,7 @@ int main(void)
 	MAT * inter = m_get(3,3);
 	MAT * sigma = m_get(3,3);
 	FILE * fp;
+	int IS_AXI = 0;
 
 	fp = fopen("Stress_11_nominal.txt","w");
 	double maxStrain = 0;
@@ -105,7 +106,7 @@ int main(void)
 	
 		
 
-		buckleyStress(stateNew[0], stateOld[0], matParams,critLambdaParams,dt,0);
+		buckleyStress(stateNew[0], stateOld[0], matParams,critLambdaParams,dt,0, IS_AXI);
 
 
 
@@ -193,8 +194,8 @@ int main(void)
 
 	symmeig(test, Q, eigVals);
 	PERM * order = px_get(3);
-			v_sort(eigVals, order);
-			px_free(order);
+	v_sort(eigVals, order);
+	px_free(order);
 	v_foutput(stdout, eigVals);
 
 

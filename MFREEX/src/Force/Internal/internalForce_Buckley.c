@@ -95,7 +95,7 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			/*  Find deformation gradient */
 			get_defgrad(stateNew[i]->F, B, neighbours,F_r,disp);
 
-			buckleyStress(stateNew[i],stateOld[i],matParams,critLambdaParams,deltat,i);
+			buckleyStress(stateNew[i],stateOld[i],matParams,critLambdaParams,deltat,i,is_axi);
 
 			/* ------------------------------------------*/
 			/* --------------New time increment----------*/
@@ -164,12 +164,16 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			// 	delta_t_min_i = delta_t;
 			// }
 
-			if ((i == 71) && (call_count % 100 == 0)) {
+			if ((i == 75) && (call_count % 50 == 0)) {
 
 
 			//m_foutput(stdout,stateNew[i]->W);
 	
 			stateNew[i]->F->me[2][1] = t_n_1;
+			stateNew[i]->F->me[1][2] = stateNew[i]->critLambdaBar;
+			stateNew[i]->F->me[2][0] = stateNew[i]->gamma;
+			stateNew[i]->F->me[0][2] = stateNew[i]->lambdaNMax;
+
 			//m_add(Sb_n_1,Savg_bond,Savg_bond);
 				//m_add(Sc_n_1,Savg_conf,Savg_conf);
 			snprintf(filename, 50, "strain_%d%s",print_count,".txt");
@@ -178,7 +182,13 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			mat2csv(stateNew[i]->Sb,"./History/Stress",filename);
 			snprintf(filename, 50, "Conformational_Stress_%d%s",print_count,".txt");
 			mat2csv(stateNew[i]->Sc,"./History/Stress",filename);
+			int indx = 0;
+			printf("max strain rate = %lf \n", v_max(stateNew[i]->lambdaDot,&indx));
 			stateNew[i]->F->me[2][1] = 0;
+			stateNew[i]->F->me[1][2] = 0;
+			stateNew[i]->F->me[2][0] = 0;
+			stateNew[i]->F->me[0][2] = 0;
+
 			++print_count;
 
 

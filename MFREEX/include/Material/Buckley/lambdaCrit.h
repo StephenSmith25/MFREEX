@@ -23,10 +23,10 @@
 #include <math.h>
 #include "matrix.h"
 #include "matrix2.h"
+#include "Material/material.h"
 
 
-
-double lambdaCrit(double critLambda_n, VEC * lambda, VEC *  eigD, VEC * para, double temperature, double dt);
+double lambdaCrit(double critLambda_n, state_Buckley * state, VEC * para, double temperature, double dt, int IS_AXI);
 
 
 

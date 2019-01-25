@@ -15,7 +15,8 @@
 #include "m_inverse_small.h"
 
 
-int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matParams, VEC * critLambdaParams, double dt, int i );
+int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, 
+	VEC * matParams, VEC * critLambdaParams, double dt, int i, int IS_AXI );
 
 
 

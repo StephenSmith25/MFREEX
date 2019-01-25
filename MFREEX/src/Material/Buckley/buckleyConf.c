@@ -22,7 +22,7 @@
 
 static int call_count_2 = 0;
 
-int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, double deltaT)
+int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, double deltaT, int IS_AXI)
 {
 
 
@@ -51,14 +51,13 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	int index = 0; 
 	++call_count_2;
 
-
-	if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
-		gamma_n_1 = gammaV(stateNew,stateOld->lambdaNMax,
-			stateNew->critLambdaBar,para, deltaT);
-		sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
-			//m_foutput(stdout,stateNew->Sc);
-	}else{
-			// Ds = zero;
+		if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
+			gamma_n_1 = gammaV(stateNew,stateOld->lambdaNMax,
+				stateNew->critLambdaBar,para, deltaT, IS_AXI);
+			sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
+				//m_foutput(stdout,stateNew->Sc);
+		}else{
+				// Ds = zero;
 	}
 
 	// //APPROACH 1 CASE 1

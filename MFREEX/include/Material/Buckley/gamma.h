@@ -27,7 +27,9 @@
 #include <math.h>
 #include "Material/material.h"
 
-double gammaV(state_Buckley * state, double maxLambdaN, double critLambda,VEC * para, double dt);
+
+
+double gammaV(state_Buckley * state, double maxLambdaN, double critLambda,VEC * para, double dt, int IS_AXI);
 
 
 

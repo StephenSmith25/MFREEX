@@ -45,6 +45,7 @@ typedef struct state_Buckley
 	MAT * R;
 	MAT * U;
 	MAT * V;
+	MAT * Vdot; 
 
 	// Eigen values
 	VEC * eigValDBar ;
@@ -78,6 +79,7 @@ typedef struct state_Buckley
 	// stretch
 	VEC * lambdaNBar;
 	double lambdaNMax;
+	double gamma; 
 	// temperature
 	double temperature;
 	// critical network stretch

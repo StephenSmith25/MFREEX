@@ -18,27 +18,42 @@
 
 #include "Material/Buckley/lambdaCrit.h"
 
-double lambdaCrit(double critLambda_n, VEC * lambdaDot, VEC * eigD, VEC * para, double temperature, double dt){
+double lambdaCrit(double critLambda_n, state_Buckley * state, VEC * para, double temperature, double dt, int IS_AXI){
+	
+
+	VEC * lambdaDot = state->lambdaDot;
 
 	double critLambda = 1;
 	int  index = 0;
 	double theta = 0;
-	int dim = eigD->max_dim;
+	int dim = lambdaDot->max_dim;
 	// find the strain rate
+	double V1 = 0;
+	double V2 = 0;
+	if ( IS_AXI){
+		V1 = state->Vdot->me[1][1]; 
+		V2 = state->Vdot->me[2][2];
+	}else{
+		V1 = state->Vdot->me[0][0];
+		V2 = state->Vdot->me[1][1];
 
+	}
+	double maxSr = max(V1,V2);
 
-	double maxSr = v_max(lambdaDot,&index);
+	//double maxSr = v_max(lambdaDot,&index);
 
 
 	if ( maxSr == 0){
-		maxSr = 0.00000001; 
+		maxSr = 0.01; 
 	}
+	double D1 = state->eigValDBar->ve[2];
+	double D2 = state->eigValDBar->ve[1];
 
 	// find theta, the ratio of in plane natural strain rate
-	if ( eigD->ve[1] == 0){
+	if ( D1 == 0){
 		theta = 0;
 	}else{
-		theta = eigD->ve[2]/eigD->ve[1];
+		theta = D2/D1;
 	}
 
 
@@ -67,9 +82,11 @@ double lambdaCrit(double critLambda_n, VEC * lambdaDot, VEC * eigD, VEC * para, 
 	double critLambda_a = k * shifted_temperature + b;
 
 
-	if ( eigD->ve[1] < 0 ){
+	if ( D2 < 0 ){
+		// don't update the value
 		critLambda = critLambda_n;
 	}else{
+		// update the value
 		critLambda = critLambda_a; 
 	}
 
@@ -82,3 +99,32 @@ double lambdaCrit(double critLambda_n, VEC * lambdaDot, VEC * eigD, VEC * para, 
 
 
 }
+// double D1 = 0;
+// 	double D2 = 0;
+// 	if ( IS_AXI == 1)
+// 	{
+// 		D1 = Dbar->me[1][1];
+// 		D2 = Dbar->me[2][2];
+
+// 		if ( D1 >= D2)
+// 		{
+// 			// correct order
+// 		}else{
+// 			double temp = D1;
+// 			D1 = D2;
+// 			D2 = temp;
+// 		}
+
+
+// 	}else{
+// 		D1 = Dbar->me[0][0];
+// 		D2 = Dbar->me[1][1];
+// 		if ( D1 >= D2)
+// 		{
+// 			// correct order
+// 		}else{
+// 			double temp = D1;
+// 			D1 = D2;
+// 			D2 = temp;
+// 		}
+// 	}

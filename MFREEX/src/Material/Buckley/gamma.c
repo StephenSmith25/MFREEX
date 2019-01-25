@@ -19,7 +19,10 @@
 
 #include "Material/Buckley/gamma.h"
 
-double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,VEC * para, double dt){
+
+
+double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,
+	VEC * para, double dt, int IS_AXI){
 
 
 	double starT = para->ve[18];
@@ -31,12 +34,12 @@ double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,VEC * p
 	double expFactor = para->ve[24];
 	double gamma0 = 0;
 	VEC * lambdaDot = state->lambdaDot;
-	VEC * eigD = state->eigValDBar;
+	MAT * Dbar = state->Dbar;
 
-
-	int dim = eigD->max_dim;
+	int dim = Dbar->m;
 	double temperature = state->temperature;
 
+	double gamma = state->gamma;
 
 	// initialise gamma 
 	double gamma_n_1 = 0; 
@@ -46,19 +49,40 @@ double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,VEC * p
 	double theta = 0;
 
 	// find the strain rate
-	double maxSr = v_max(lambdaDot,&index);
+	double V1 = 0;
+	double V2 = 0;
+	if ( IS_AXI){
+		V1 = state->Vdot->me[1][1]; 
+		V2 = state->Vdot->me[2][2];
+	}else{
+		V1 = state->Vdot->me[0][0];
+		V2 = state->Vdot->me[1][1];
+
+	}
+	double maxSr = max(V1,V2);
 
 	if ( maxSr == 0){
 		maxSr = 0.0000001; 
 	}
 
 
+	double D1 = state->eigValDBar->ve[2];
+	double D2 = state->eigValDBar->ve[1];
 
-	if ( eigD->ve[1] == 0){
+	// find theta, the ratio of in plane natural strain rate
+	if ( D1 == 0){
 		theta = 0;
 	}else{
-		theta = eigD->ve[2]/eigD->ve[1];
+		theta = D2/D1;
 	}
+
+	// find theta, the ratio of in plane natural strain rate
+	if ( D1 == 0){
+		theta = 0;
+	}else{
+		theta = D2/D1;
+	}
+
 
 	// find xi 
 	double xi = ( 2 * theta + 1)/(theta +2);
@@ -72,8 +96,8 @@ double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,VEC * p
 
 
 	double log2sr = log(maxSr)/log(2);
-	if ( maxSr < 0.001){
-		log2sr = 0;
+	if ( maxSr < 0.01){
+		log2sr = 0.01;
 	}
 
 
@@ -83,14 +107,15 @@ double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,VEC * p
 
 
 	if ( maxLambdaN >= critLambda ){
-		gamma_n_1 = 1e50;
-
+		gamma_n_1 = 1e30;
 	}else{
 		gamma_n_1 = gamma0/ ( 1.000 - (maxLambdaN/critLambda)) ; 
 	}
 
+
 	
-	
+	state->gamma = gamma_n_1; 
+
 	gamma_n_1 = gamma_n_1 ;
 	
 	return gamma_n_1;
