@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
 	matParams->ve[6] = (67.47); // Cv
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
-	matParams->ve[9] = 1e9; // Kb
+	matParams->ve[9] = 1.8e9; // Kb
 	matParams->ve[10] = 6e8;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
@@ -236,7 +236,7 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 
 	// shape function parameters
-	double dmax = 2.2;
+	double dmax = 2.5;
 	int constant_support_size = 1;
 	VEC * dI = v_get(xI->m);
 
@@ -643,7 +643,7 @@ int main(int argc, char** argv) {
 			if (distanceProj > 0){
 
 				f1Cor = 1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-				f2Cor = 0.8*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+				f2Cor = 1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
 
 
 				for ( int k = 0 ; k < neighbours->max_dim ; k++){
@@ -791,7 +791,12 @@ int main(int argc, char** argv) {
 		/* ------------Find Internal Force-----------*/
 		/* ------------------------------------------*/
 		/*  Internal force */
-		//internalForceBuckley(Fint_n_1,scni,d_n_1,matParams,critLambdaParams,state_n,deltaT,efgBlock->numnode,t_n_1);
+		// d_n_1->ve[0] = 1;
+		// d_n_1->ve[1] = 0.5;
+		// d_n_1->ve[43] = 0.2;
+		// d_n_1->ve[44] = 0.1;
+		// d_n_1->ve[42] = 0.3;
+
 		internalForce_ForceBuckley(Fint_n_1, _scni_obj, d_n_1, v_n_h,
 		matParams,critLambdaParams, state_n_1, state_n,
 		mfree.IS_AXI, dim,delta_t,t_n_1);

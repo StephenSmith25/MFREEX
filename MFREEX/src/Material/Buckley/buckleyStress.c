@@ -195,17 +195,17 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			m_add(stateNew->V,stateOld->V,stateNew->V);
 
 			// //Find rotation tensor using Hughes, Winget algorithm
-			// m_ident(stateNew->temp);
-			// sm_mlt(0.5*dt,stateNew->Omega,stateNew->temp1);
-			// m_sub(stateNew->temp,stateNew->temp1,stateNew->temp1);
-			// m_inverse(stateNew->temp1,stateNew->temp);
+			m_ident(stateNew->temp);
+			sm_mlt(0.5*dt,stateNew->Omega,stateNew->temp1);
+			m_sub(stateNew->temp,stateNew->temp1,stateNew->temp1);
+			m_inverse_small(stateNew->temp1,stateNew->temp);
 
-			// m_ident(stateOld->temp);
-			// sm_mlt(0.5*dt,stateNew->Omega,stateNew->temp1);
-			// m_add(stateOld->temp,stateNew->temp1,stateNew->temp1);
+			m_ident(stateOld->temp);
+			sm_mlt(0.5*dt,stateNew->Omega,stateNew->temp1);
+			m_add(stateOld->temp,stateNew->temp1,stateNew->temp1);
 
-			// m_mlt(stateNew->temp1,stateOld->R,stateOld->temp);
-			// m_mlt(stateNew->temp,stateOld->temp,stateNew->R);
+			m_mlt(stateNew->temp1,stateOld->R,stateOld->temp);
+			m_mlt(stateNew->temp,stateOld->temp,stateNew->R);
 
 
 			// v_foutput(stdout,w);

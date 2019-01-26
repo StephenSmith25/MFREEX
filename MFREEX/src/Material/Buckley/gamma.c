@@ -49,32 +49,25 @@ double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,
 	double theta = 0;
 
 	// find the strain rate
-	double V1 = 0;
-	double V2 = 0;
-	if ( IS_AXI){
-		V1 = state->Vdot->me[1][1]; 
-		V2 = state->Vdot->me[2][2];
-	}else{
-		V1 = state->Vdot->me[0][0];
-		V2 = state->Vdot->me[1][1];
+	// double V1 = 0;
+	// double V2 = 0;
+	// if ( IS_AXI){
+	// 	V1 = state->Vdot->me[1][1]; 
+	// 	V2 = state->Vdot->me[2][2];
+	// }else{
+	// 	V1 = state->Vdot->me[0][0];
+	// 	V2 = state->Vdot->me[1][1];
 
-	}
-	double maxSr = max(V1,V2);
+	// }
+	// double maxSr = max(V1,V2);
 
+	double maxSr = v_max(state->lambdaDot,&index);
 	if ( maxSr == 0){
 		maxSr = 0.0000001; 
 	}
 
-
 	double D1 = state->eigValDBar->ve[2];
 	double D2 = state->eigValDBar->ve[1];
-
-	// find theta, the ratio of in plane natural strain rate
-	if ( D1 == 0){
-		theta = 0;
-	}else{
-		theta = D2/D1;
-	}
 
 	// find theta, the ratio of in plane natural strain rate
 	if ( D1 == 0){

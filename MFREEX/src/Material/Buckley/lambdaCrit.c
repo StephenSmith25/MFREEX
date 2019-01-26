@@ -28,19 +28,19 @@ double lambdaCrit(double critLambda_n, state_Buckley * state, VEC * para, double
 	double theta = 0;
 	int dim = lambdaDot->max_dim;
 	// find the strain rate
-	double V1 = 0;
-	double V2 = 0;
-	if ( IS_AXI){
-		V1 = state->Vdot->me[1][1]; 
-		V2 = state->Vdot->me[2][2];
-	}else{
-		V1 = state->Vdot->me[0][0];
-		V2 = state->Vdot->me[1][1];
+	// double V1 = 0;
+	// double V2 = 0;
+	// if ( IS_AXI){
+	// 	V1 = state->Vdot->me[1][1]; 
+	// 	V2 = state->Vdot->me[2][2];
+	// }else{
+	// 	V1 = state->Vdot->me[0][0];
+	// 	V2 = state->Vdot->me[1][1];
 
-	}
-	double maxSr = max(V1,V2);
+	// }
+	// double maxSr = max(V1,V2);
 
-	//double maxSr = v_max(lambdaDot,&index);
+	double maxSr = v_max(lambdaDot,&index);
 
 
 	if ( maxSr == 0){

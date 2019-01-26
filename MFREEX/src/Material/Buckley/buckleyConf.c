@@ -43,7 +43,7 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	VEC * Sc_n_1p = v_get(3);
 	MAT * eigVecB = m_get(3,3);
 	VEC * eigValB = v_get(3);
-
+	MAT * relSpin = m_get(3,3);
 	MAT * Sc_n_1 = stateNew->Sc;
 
 	double Jacobian = stateNew->Jacobian;
@@ -60,16 +60,21 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 				// Ds = zero;
 	}
 
+
 	// //APPROACH 1 CASE 1
 	// network rate of deformation tensor 
+	m_sub(stateNew->W,stateNew->Omega,relSpin);
+
 	m_sub(stateNew->Dbar,Ds,Dn);
 
 
 
 	//Fixed material frame rate of deformation
 	//BnCr = Dn_n*Bn_n + Bn_n*Dn_n;
-	m_mlt(Dn,stateOld->Bbar,intermediate1);
-	m_mlt(stateOld->Bbar,Dn,intermediate2);
+	m_add(Dn,relSpin,stateNew->temp);
+	m_sub(Dn,relSpin,stateNew->temp1);
+	m_mlt(stateNew->temp,stateOld->Bbar,intermediate1);
+	m_mlt(stateOld->Bbar,stateNew->temp1,intermediate2);
 	m_add(intermediate1,intermediate2,BnCr);
 
 	//Material time derivative of B  ( Jaumann )
@@ -81,6 +86,7 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	sm_mlt(deltaT,BnDot,deltaB);
 	// Update B
 	m_add(stateOld->Bbar,deltaB,stateNew->Bbar);
+
 
 
 	//Material time derivative of B  ( Truesdell )
@@ -150,6 +156,7 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	M_FREE(BnDot);
 	M_FREE(deltaB);
 
+	m_free(relSpin);
 
 
 	// eigen routines

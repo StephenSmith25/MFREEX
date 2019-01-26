@@ -224,12 +224,13 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 		if ( is_AXI == 1)
 		{
 			neighbours = sf_nodes->sf_list[i]->neighbours;
-			double r = nodes->me[i][0];
+			//double r = nodes->me[i][0]
+			double r = center[0];
 
 			for ( int k = 0 ; k < neighbours->max_dim ; k++)
 			{
 				//double r = nodes->me[neighbours->ive[k]][0];
-				if ( r > 0)
+				if ( r > 0.01)
 				{
 					int indx = findInt(neighbours->ive[k], cell_sf_index->ive, cell_sf_index->max_dim);
 					bI_n->me[indx][2] += sf_nodes->sf_list[i]->phi->ve[k]/r;

@@ -101,7 +101,11 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			/* --------------New time increment----------*/
 			/* ------------------------------------------*/
 			// m_add(Sb_n_1, Sc_n_1, cauchy_dev);
-
+			// if ( (i == 1) || ( i == 0) || ( i == 21) )
+			// {
+			// 	printf("F(%d) = ",i);
+			// 	m_foutput(stdout, stateNew[i]->F);
+			// }
 
 			// // Find hydrostatic and deviatoric stress
 
@@ -140,8 +144,8 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			double Jacobian = stateNew[i]->Jacobian;
 
 
-			double b1 = 0.06;
-			double b2 = 1.50; 
+			double b1 = 0;
+			double b2 = 0; 
 			double Le = 4/1000;
 			double rho = 1380;
 			double c = sqrt(((lambda+2*mu)/rho));
