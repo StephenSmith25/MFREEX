@@ -35,10 +35,13 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 
 
 
-	MAT * Sb_n = stateOld->Sb;
-	MAT * Sb_n_1 = stateNew->Sb;
+	MAT * Sb_n = stateOld->Sb_R;
+	MAT * Sb_n_1 = stateNew->Sb_R;
+	MAT * d = stateNew->d;
 
-
+	// MAT * Sb_n = stateOld->Sb;
+	// MAT * Sb_n_1 = stateNew->Sb;
+	// MAT * d = stateNew->Dbar;
 
 	double tauOCT = sqrt (  (1.000/3.00) * contraction(Sb_n,Sb_n)  ) ;
 	double alpha_sig = 1;
@@ -61,9 +64,9 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	// alpha_T
 	double alpha_T = exp ( (H0/R) * ( 1/temperature - 1/star_T) );
 
-	if ( alpha_sig < 0.4)
+	if ( alpha_sig < 0.5)
 	{
-		alpha_sig = 0.4;
+		alpha_sig = 0.5;
 	}
 
 
@@ -72,69 +75,85 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 
 
 
-	MAT * mat1 = m_get(3,3) ;
-	MAT * mat2 = m_get(3,3) ;
-	MAT * deltaSb = m_get(3,3);
-
 
 	double sbFactor = 1 - exp(-dt/tau);
 	// mat1 = 2Gb*D*tau
-	sm_mlt(2*Gb*tau,stateNew->Dbar,mat1);
+	sm_mlt(2*Gb*tau,d,stateNew->temp);
 
 	// 2Gb*D*tau - Sb_n
-	m_sub(mat1,stateOld->Sb,deltaSb);
+	m_sub(stateNew->temp,Sb_n,stateNew->temp1);
 
 	// deltaSb = ( 1- exp(-dt/tau)) * ( 2G*D*tau - Sb_n)
 	// corrotational stress increment
-	sm_mlt(sbFactor,deltaSb, deltaSb);
+	sm_mlt(sbFactor,stateNew->temp1,stateNew->temp1);
 
-
-
-
-	// Green rate
-	//W*s
-	m_mlt(stateNew->Omega,Sb_n,mat1);
-	// s*W'
-	m_mlt(Sb_n,stateNew->Omega,mat2);
-	m_sub(mat1,mat2,mat1);
-	sm_mlt(dt,mat1,mat1);
-	m_add(Sb_n,mat1,mat1);
-	//Sb* = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
-	m_add(deltaSb,mat1,Sb_n_1);
-
-	
-
-	//TRUESDEL RATE
-	// m_mlt(stateNew->L,Sb_n,mat1);
-	// mmtr_mlt(Sb_n, stateNew->L, mat2);
-
-	// m_add(mat1,mat2,mat1);
-
-	// sm_mlt(stateNew->div_v, Sb_n, mat2);
-
-	// m_sub(mat1,mat2,Sb_n_1);
-
-	// sm_mlt(dt,mat1,Sb_n_1);
-
-	// m_add(deltaSb,Sb_n_1,Sb_n_1);
-	// m_add(Sb_n,Sb_n_1,Sb_n_1);
-
-
-	//Sb_n_1 = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
-	// m_mlt(stateNew->W,Sb_n_1,mat1);
-	// m_mlt(Sb_n_1,stateNew->W,mat2);
-	// m_sub(mat1,mat2,mat1);	
-	// sm_mlt(0.5*dt,mat1,mat1);
-
-	// m_add(Sb_n_1,mat1,Sb_n_1);
-
-
-	M_FREE(deltaSb); 
-	M_FREE(mat1);
-	M_FREE(mat2);
-
+	m_add(Sb_n,stateNew->temp1,Sb_n_1);
 
 
 
 	return 0;
 }
+
+
+// MAT * mat1 = m_get(3,3) ;
+// 	MAT * mat2 = m_get(3,3) ;
+// 	MAT * deltaSb = m_get(3,3);
+
+
+// 	double sbFactor = 1 - exp(-dt/tau);
+// 	// mat1 = 2Gb*D*tau
+// 	sm_mlt(2*Gb*tau,stateNew->Dbar,mat1);
+
+// 	// 2Gb*D*tau - Sb_n
+// 	m_sub(mat1,stateOld->Sb,deltaSb);
+
+// 	// deltaSb = ( 1- exp(-dt/tau)) * ( 2G*D*tau - Sb_n)
+// 	// corrotational stress increment
+// 	sm_mlt(sbFactor,deltaSb, deltaSb);
+
+
+
+
+// 	// Green rate
+// 	//W*s
+// 	m_mlt(stateNew->Omega,Sb_n,mat1);
+// 	// s*W'
+// 	m_mlt(Sb_n,stateNew->Omega,mat2);
+// 	m_sub(mat1,mat2,mat1);
+// 	sm_mlt(dt,mat1,mat1);
+// 	m_add(Sb_n,mat1,mat1);
+// 	//Sb* = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
+// 	m_add(deltaSb,mat1,Sb_n_1);
+
+	
+
+// 	//TRUESDEL RATE
+// 	// m_mlt(stateNew->L,Sb_n,mat1);
+// 	// mmtr_mlt(Sb_n, stateNew->L, mat2);
+
+// 	// m_add(mat1,mat2,mat1);
+
+// 	// sm_mlt(stateNew->div_v, Sb_n, mat2);
+
+// 	// m_sub(mat1,mat2,Sb_n_1);
+
+// 	// sm_mlt(dt,mat1,Sb_n_1);
+
+// 	// m_add(deltaSb,Sb_n_1,Sb_n_1);
+// 	// m_add(Sb_n,Sb_n_1,Sb_n_1);
+
+
+// 	//Sb_n_1 = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
+// 	// m_mlt(stateNew->W,Sb_n_1,mat1);
+// 	// m_mlt(Sb_n_1,stateNew->W,mat2);
+// 	// m_sub(mat1,mat2,mat1);	
+// 	// sm_mlt(0.5*dt,mat1,mat1);
+
+// 	// m_add(Sb_n_1,mat1,Sb_n_1);
+
+
+// 	M_FREE(deltaSb); 
+// 	M_FREE(mat1);
+// 	M_FREE(mat2);
+
+

@@ -207,6 +207,29 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			m_mlt(stateNew->temp1,stateOld->R,stateOld->temp);
 			m_mlt(stateNew->temp,stateOld->temp,stateNew->R);
 
+			// Find co-rotated Dbar and Vdot
+
+
+
+	
+
+
+			// Find delta V
+			m_inverse_small(stateOld->V, stateOld->temp);
+			m_mlt(stateNew->V,stateOld->temp,stateNew->delta_V);
+
+			m_ident(stateNew->temp);
+			m_sub(stateNew->delta_V,stateNew->temp,stateNew->temp);
+
+
+			sm_mlt(1.00/dt,stateNew->temp,stateNew->temp1);
+
+
+			// Rotate d to rotation-neutralised configuration 
+
+			mtrm_mlt(stateNew->R,stateNew->temp1,stateNew->temp);
+			m_mlt(stateNew->temp,stateNew->R,stateNew->d);
+
 
 			// v_foutput(stdout,w);
 			// v_foutput(stdout,h);
@@ -251,6 +274,9 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			stateNew->eigValDBar = v_sort(stateNew->eigValDBar, order);
 			px_free(order);
 
+
+
+
 			// // update critical network stretch 
 			stateNew->critLambdaBar =lambdaCrit(stateOld->critLambdaBar,stateNew,
 			 critLambdaParams, stateNew->temperature, dt, IS_AXI);
@@ -263,7 +289,17 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			// Conformational stress
 			buckleyConf(stateNew,stateOld, matParams,dt, IS_AXI);
 
-			
+			m_mlt(stateNew->R,stateNew->Sb_R,stateNew->temp);
+			mmtr_mlt(stateNew->temp,stateNew->R,stateNew->Sb);
+
+
+			// m_mlt(stateNew->R,stateNew->Sc_R,stateNew->temp);
+			// m_mlt(stateNew->temp,stateNew->R,stateNew->Sc);
+
+			// Rotate back
+
+
+
 			stateNew->mSigma = log(stateNew->Jacobian)*Kb;
 
 			m_add(stateNew->Sb, stateNew->Sc, stateNew->sigma);
@@ -290,7 +326,9 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			m_copy(stateNew->invF,stateOld->invF);			
 			m_copy(stateNew->Fbar,stateOld->Fbar);			
 			m_copy(stateNew->Sb,stateOld->Sb);			
-			m_copy(stateNew->Sc,stateOld->Sc);			
+			m_copy(stateNew->Sc,stateOld->Sc);	
+			m_copy(stateNew->Sb_R,stateOld->Sb_R);			
+			m_copy(stateNew->Sc_R,stateOld->Sc_R);			
 			m_copy(stateNew->sigma,stateOld->sigma);
 			stateOld->Jacobian = stateNew->Jacobian;
 			stateOld->mSigma = stateNew->mSigma;		

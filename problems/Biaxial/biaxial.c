@@ -96,13 +96,13 @@ int main(void)
 
 
 	
-		// stateNew[0]->F->me[0][0] = 1.00+t_n_1*sr;
-		// stateNew[0]->F->me[1][1] = 1.00+t_n_1*sr;
-		// stateNew[0]->F->me[2][2] = (1.00/pow(1.00+t_n_1*sr,2));
+		stateNew[0]->F->me[0][0] = 1.00+t_n_1*sr;
+		stateNew[0]->F->me[1][1] = 1.00+t_n_1*sr;
+		stateNew[0]->F->me[2][2] = (1.00/pow(1.00+t_n_1*sr,2));
 
 
-		stateNew[0]->F->me[0][1] = sr*t_n_1; 
-		stateNew[0]->F->me[1][0] = 0; 
+		// stateNew[0]->F->me[0][1] = sr*t_n_1; 
+		// stateNew[0]->F->me[1][0] = 0; 
 	
 		
 
@@ -137,8 +137,8 @@ int main(void)
 		sig12 = sig12/pow(10,6);
 
 		//sig11 = sigma->me[1][1];
-		//maxStrain = stateNew[0]->F->me[0][0]-1;
-		maxStrain = stateNew[0]->F->me[0][1];
+		maxStrain = stateNew[0]->F->me[0][0]-1;
+		//maxStrain = stateNew[0]->F->me[0][1];
 		// write stress to file 
 		if ( n % writeFreq == 0)
 		{

@@ -40,6 +40,8 @@ typedef struct state_Buckley
 	MAT * L; 
 	MAT * D;
 	MAT * W;
+	MAT * d;
+
 
 	// Polar decomposition
 	MAT * R;
@@ -72,6 +74,9 @@ typedef struct state_Buckley
 	// bond and conformational stress
 	MAT * Sb;
 	MAT * Sc;
+	MAT * Sb_R;
+	MAT * Sc_R;
+
 	MAT * sigma;
 
 	// mean stress
