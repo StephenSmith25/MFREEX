@@ -181,7 +181,7 @@ int main(int argc, char** argv) {
 	 *  */
 	// Read PLSG 
 
-	char opt[20] = "pYDq30a1.5";
+	char opt[20] = "pYDq0a0.8";
 	char fileName[30] = "preform";
 	double * points_out ;
 	int * boundaryNodes;

@@ -23,7 +23,7 @@ L_t1 = 3;
 L_t = 37.31-19.48-L_t1;
 
 
-N1 = 26;
+N1 = 35;
 N2 = 15;
 
 
@@ -43,12 +43,12 @@ for i = 1:length(theta)
     
 end
 nodes;
-N3 = 3;
+N3 = 4;
 N4 = 3;
 N5 = 3;
 % Left wall
 %% traction nodes
-nodes(count:1:count+N1-1,:) = [linspace(Din_b/2,Din_b/2,N1)',linspace(0,L_m-2,N1)'];
+nodes(count:1:count+N1-1,:) = [linspace(Din_b/2,Din_b/2,N1)',linspace(0,L_m-1,N1)'];
 count = count + N1 ;
 nodes(count:1:count+N2-1,:) = [linspace(Din_b/2,Din_t/2,N2)',linspace(L_m,L_t+L_m,N2)'];
 count = count + N2;
@@ -66,7 +66,7 @@ count = count + N3;
 nodes(count:1:count+N2-1,:) = [linspace(Dout_t/2,Dout_b/2,N2)',linspace(L_t+L_m,L_m,N2)'];
 count = count + N2;
 % right wall
-nodes(count:1:count+N1-1,:) = [linspace(Dout_b/2,Dout_b/2,N1)',linspace(L_m-2,0,N1)'];
+nodes(count:1:count+N1-1,:) = [linspace(Dout_b/2,Dout_b/2,N1)',linspace(L_m-1,0,N1)'];
 
 
 

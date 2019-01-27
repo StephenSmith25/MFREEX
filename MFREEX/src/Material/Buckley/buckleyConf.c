@@ -28,22 +28,22 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 
 
 
-	MAT * intermediate1 = m_get(3,3);
-	MAT * intermediate2 = m_get(3,3);
-	MAT * Dn = m_get(3,3);
-	MAT * Ds = m_get(3,3);
+	MAT * intermediate1 = stateNew->temp;
+	MAT * intermediate2 = stateNew->temp1;
+	MAT * intermediate3 = stateNew->temp2;
+
+
+	MAT * Dn = stateOld->temp;
+	MAT * Ds = stateOld->temp1;
+	MAT * relSpin = stateOld->temp2;
+	VEC * Sc_n_1p = stateNew->v_temp1;
 
 
 	// approach 1 case 1
-	MAT * BnCr = m_get(3,3);
-	MAT * BnDot = m_get(3,3);
-	MAT * deltaB = m_get(3,3);
 
 
-	VEC * Sc_n_1p = v_get(3);
-	MAT * eigVecB = m_get(3,3);
-	VEC * eigValB = v_get(3);
-	MAT * relSpin = m_get(3,3);
+	MAT * eigVecB = stateNew->eigVecVBar;
+	VEC * eigValB = stateNew->eigValVBar;
 	MAT * Sc_n_1 = stateNew->Sc;
 
 	double Jacobian = stateNew->Jacobian;
@@ -60,24 +60,26 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 		sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
 				//m_foutput(stdout,stateNew->Sc);
 	}else{
-				// Ds = zero;
+		Ds = m_zero(Ds);
 	}
-	
 	// //APPROACH 1 CASE 1
 	// network rate of deformation tensor 
 	m_sub(stateNew->W,stateNew->Omega,relSpin);
-
 	m_sub(stateNew->Dbar,Ds,Dn);
-
 
 
 	//Fixed material frame rate of deformation
 	//BnCr = Dn_n*Bn_n + Bn_n*Dn_n;
-	m_add(Dn,relSpin,stateNew->temp);
-	m_sub(Dn,relSpin,stateNew->temp1);
-	m_mlt(stateNew->temp,stateOld->Bbar,intermediate1);
-	m_mlt(stateOld->Bbar,stateNew->temp1,intermediate2);
-	m_add(intermediate1,intermediate2,BnCr);
+	m_add(Dn,relSpin,intermediate1);
+	m_sub(Dn,relSpin,intermediate2);
+	m_mlt(intermediate1,stateOld->Bbar,intermediate3);
+	m_mlt(stateOld->Bbar,intermediate2,intermediate1);
+
+	MAT * BnCr = stateOld->temp;
+	MAT * BnDot = stateOld->temp1;
+	MAT * deltaB = stateOld->Fn;
+
+	m_add(intermediate1,intermediate3,BnCr);
 
 	//Material time derivative of B  ( Jaumann )
 	m_mlt(stateNew->Omega,stateOld->Bbar,intermediate1);
@@ -142,35 +144,6 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	stateNew->lambdaNMax = sqrt(v_max(eigValB,&index));
 	m_copy(stateNew->Bbar,stateOld->Bbar);
 	stateOld->lambdaNMax = stateNew->lambdaNMax;
-
-	// Approach 2 case 3
-	m_copy(stateNew->Fn,stateOld->Fn);
-
-	M_FREE(intermediate1);
-	M_FREE(intermediate2);
-	M_FREE(Dn);
-	M_FREE(Ds);
-
-
-
-	//arppoach 1 case 1
-	M_FREE(BnCr);
-	M_FREE(BnDot);
-	M_FREE(deltaB);
-
-	m_free(relSpin);
-
-
-	// eigen routines
-	M_FREE(eigVecB);
-	V_FREE(eigValB);
-	V_FREE(Sc_n_1p); 
-
-
-
-
-
-
 
 
 

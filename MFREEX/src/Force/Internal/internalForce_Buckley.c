@@ -168,7 +168,7 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			// 	delta_t_min_i = delta_t;
 			// }
 
-			if ((i == 58) && (call_count % 50 == 0)) {
+			if ((i == 97) && (call_count % 50 == 0)) {
 
 
 			//m_foutput(stdout,stateNew[i]->W);

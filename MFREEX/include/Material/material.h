@@ -92,13 +92,17 @@ typedef struct state_Buckley
 	double Jacobian;
 	double div_v; 
 	double tau;
-	
+
 	MAT * H ; 
 	MAT * GRAD_U ;
 
 	// temp arrays
 	MAT * temp;
 	MAT * temp1;
+	MAT * temp2;
+
+	VEC * v_temp1;
+	VEC * v_temp2;
 
 	// Rotation vectos
 	VEC * w;
