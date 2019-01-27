@@ -97,7 +97,7 @@ state_Buckley ** new_Buckley_State(int num_Points, double * temperatures, int is
 		state[i]->omega = v_get(dim_s);
 
 
-		state[i]->gamma = 0;
+		state[i]->gamma = 0.653e6;
 
 
 

@@ -144,8 +144,8 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			double Jacobian = stateNew[i]->Jacobian;
 
 
-			double b1 = 0;
-			double b2 = 0; 
+			double b1 = 0.06;
+			double b2 = 1.44; 
 			double Le = 4/1000;
 			double rho = 1380;
 			double c = sqrt(((lambda+2*mu)/rho));
@@ -168,15 +168,15 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			// 	delta_t_min_i = delta_t;
 			// }
 
-			if ((i == 75) && (call_count % 50 == 0)) {
+			if ((i == 58) && (call_count % 50 == 0)) {
 
 
 			//m_foutput(stdout,stateNew[i]->W);
 	
 			stateNew[i]->F->me[2][1] = t_n_1;
 			stateNew[i]->F->me[1][2] = stateNew[i]->critLambdaBar;
-			stateNew[i]->F->me[2][0] = stateNew[i]->gamma;
-			stateNew[i]->F->me[0][2] = stateNew[i]->lambdaNMax;
+			stateNew[i]->F->me[2][0] = stateNew[i]->tau;
+			stateNew[i]->F->me[0][2] = stateNew[i]->gamma;
 
 			//m_add(Sb_n_1,Savg_bond,Savg_bond);
 				//m_add(Sc_n_1,Savg_conf,Savg_conf);

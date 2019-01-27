@@ -47,7 +47,7 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	double alpha_sig = 1;
 	
 	double sigma_m = stateOld->mSigma;
-
+	// sigma_m = 0;
 	if (sigma_m < 0)
 	 {
 	 	sigma_m = 0;
@@ -64,16 +64,15 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	// alpha_T
 	double alpha_T = exp ( (H0/R) * ( 1/temperature - 1/star_T) );
 
-	if ( alpha_sig < 0.5)
+
+	if (alpha_sig < 0.4)
 	{
-		alpha_sig = 0.5;
+		alpha_sig = 0.4;
 	}
-
-
 	// tau = tau_s * alpha_s * alpha_T * alpha_sig ;
 	double tau = (star_mu0/(2*Gb))*alpha_sig*alpha_s*alpha_T;
 
-
+	stateNew->tau = tau;
 
 
 	double sbFactor = 1 - exp(-dt/tau);

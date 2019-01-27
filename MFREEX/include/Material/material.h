@@ -91,7 +91,8 @@ typedef struct state_Buckley
 	double critLambdaBar;
 	double Jacobian;
 	double div_v; 
-
+	double tau;
+	
 	MAT * H ; 
 	MAT * GRAD_U ;
 

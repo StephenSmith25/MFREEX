@@ -103,9 +103,9 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 
 
 			// Update Jacobian
-			//stateNew->Jacobian = stateOld->Jacobian + stateOld->Jacobian*stateNew->div_v*dt;
+			stateNew->Jacobian = stateOld->Jacobian + stateOld->Jacobian*stateNew->div_v*dt;
 
-			stateNew->Jacobian = determinant(stateNew->F);
+			//stateNew->Jacobian = determinant(stateNew->F);
 			/* ------------------------------------------*/
 			/* ---------Isochoric   Deformation---------*/
 			/* ------------------------------------------*/
@@ -209,26 +209,34 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 
 			// Find co-rotated Dbar and Vdot
 
+			mtrm_mlt(stateNew->R,stateNew->Dbar,stateNew->temp);
+			m_mlt(stateNew->temp,stateNew->R,stateNew->d);
+
+			// Find Vbar dot...
+			sm_mlt(pow(stateOld->Jacobian,-1.00/3.00)/dt,stateOld->V,stateNew->temp);
+			sm_mlt(pow(stateNew->Jacobian,-1.00/3.00)/dt,stateNew->V,stateNew->temp1);
+			m_sub(stateNew->temp1,stateNew->temp,stateNew->Vdot);
+			mtrm_mlt(stateNew->R,stateNew->Vdot,stateNew->temp);
+			m_mlt(stateNew->temp,stateNew->R,stateNew->Vdot);
 
 
 	
 
 
 			// Find delta V
-			m_inverse_small(stateOld->V, stateOld->temp);
-			m_mlt(stateNew->V,stateOld->temp,stateNew->delta_V);
+			// m_inverse_small(stateOld->V, stateOld->temp);
+			// m_mlt(stateNew->V,stateOld->temp,stateNew->delta_V);
 
-			m_ident(stateNew->temp);
-			m_sub(stateNew->delta_V,stateNew->temp,stateNew->temp);
+			// m_ident(stateNew->temp);
+			// m_sub(stateNew->delta_V,stateNew->temp,stateNew->temp);
 
 
-			sm_mlt(1.00/dt,stateNew->temp,stateNew->temp1);
+			// sm_mlt(1.00/dt,stateNew->temp,stateNew->temp1);
 
 
 			// Rotate d to rotation-neutralised configuration 
 
-			mtrm_mlt(stateNew->R,stateNew->temp1,stateNew->temp);
-			m_mlt(stateNew->temp,stateNew->R,stateNew->d);
+	
 
 
 			// v_foutput(stdout,w);

@@ -40,33 +40,49 @@ double lambdaCrit(double critLambda_n, state_Buckley * state, VEC * para, double
 	// }
 	// double maxSr = max(V1,V2);
 
-	double maxSr = v_max(lambdaDot,&index);
+	//find the strain rate
+	double V1 = 0;
+	double V2 = 0;
+	if ( IS_AXI == 1){
+		V1 = state->Vdot->me[1][1]; 
+		V2 = state->Vdot->me[2][2];
+	}else{
+		V1 = state->Vdot->me[0][0];
+		V2 = state->Vdot->me[1][1];
 
+	}
+	double maxSr = max(V1,V2);
 
+	//double maxSr = v_max(state->lambdaDot,&index);
 	if ( maxSr == 0){
 		maxSr = 0.01; 
 	}
-	double D1 = state->eigValDBar->ve[2];
-	double D2 = state->eigValDBar->ve[1];
 
-	// find theta, the ratio of in plane natural strain rate
-	if ( D1 == 0){
-		theta = 0;
+	// double D1 = state->eigValDBar->ve[2];
+	// double D2 = state->eigValDBar->ve[1];
+	//find the strain rate
+	double D1 = 0;
+	double D2 = 0;
+	if ( IS_AXI == 1){
+		D1 = state->d->me[1][1]; 
+		D2 = state->d->me[2][2];
 	}else{
-		theta = D2/D1;
+		D1 = state->d->me[0][0];
+		D2 = state->d->me[1][1];
+
 	}
 
 
-	// find xi 
-	double xi = ( 2.00 * theta + 1.00)/(theta +2.00);
-	if ( xi > 1){
-		xi = 1;
-	}else if( xi < -1) {
-		xi = -1;
-	}else{
-		// do nothing
-	}
-
+	// // find xi 
+	// double xi = ( 2.00 * theta + 1.00)/(theta +2.00);
+	// if ( xi > 1){
+	// 	xi = 1;
+	// }else if( xi < -1) {
+	// 	xi = -1;
+	// }else{
+	// 	// do nothing
+	// }
+	double xi = 1.00;
 
 	// update critical network stretch 
 	double C1 = para->ve[0];
@@ -82,7 +98,7 @@ double lambdaCrit(double critLambda_n, state_Buckley * state, VEC * para, double
 	double critLambda_a = k * shifted_temperature + b;
 
 
-	if ( D2 < 0 ){
+	if ( (D2 < 0) && ( D1 < 0) ){
 		// don't update the value
 		critLambda = critLambda_n;
 	}else{
@@ -90,6 +106,7 @@ double lambdaCrit(double critLambda_n, state_Buckley * state, VEC * para, double
 		critLambda = critLambda_a; 
 	}
 
+	critLambda = critLambda_a; 
 
 
 	return critLambda;

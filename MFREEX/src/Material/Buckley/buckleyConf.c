@@ -51,16 +51,18 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	int index = 0; 
 	++call_count_2;
 
-		if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
-			gamma_n_1 = gammaV(stateNew,stateOld->lambdaNMax,
-				stateNew->critLambdaBar,para, deltaT, IS_AXI);
-			sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
+
+
+
+	if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
+		gamma_n_1 = gammaV(stateNew,stateOld->lambdaNMax,
+			stateNew->critLambdaBar,para, deltaT, IS_AXI);
+		sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
 				//m_foutput(stdout,stateNew->Sc);
-		}else{
+	}else{
 				// Ds = zero;
 	}
-
-
+	
 	// //APPROACH 1 CASE 1
 	// network rate of deformation tensor 
 	m_sub(stateNew->W,stateNew->Omega,relSpin);
@@ -268,7 +270,7 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 
 
 // 	// mmtr_mlt(stateNew->Fn, stateNew->Fn, stateNew->Bbar);
-	
+
 // 	// Eigen Value process
 
 // 	tracecatch(symmeig(stateNew->Bbar,eigVecB,eigValB);,	
