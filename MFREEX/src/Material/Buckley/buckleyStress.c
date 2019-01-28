@@ -220,9 +220,6 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			m_mlt(stateNew->temp,stateNew->R,stateNew->Vdot);
 
 
-	
-
-
 			// Find delta V
 			// m_inverse_small(stateOld->V, stateOld->temp);
 			// m_mlt(stateNew->V,stateOld->temp,stateNew->delta_V);
@@ -230,14 +227,11 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			// m_ident(stateNew->temp);
 			// m_sub(stateNew->delta_V,stateNew->temp,stateNew->temp);
 
-
-			// sm_mlt(1.00/dt,stateNew->temp,stateNew->temp1);
-
-
-			// Rotate d to rotation-neutralised configuration 
-
+			// double trace_ep = stateNew->temp
+			// Find volumetric increment
+			// Find deviatoric increment 
 	
-
+		
 
 			// v_foutput(stdout,w);
 			// v_foutput(stdout,h);
@@ -327,6 +321,75 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			}
 
 
+			// // time step update
+			// mtrm_mlt(stateNew->R,stateNew->D,stateNew->temp);
+			// m_mlt(stateNew->temp,stateNew->R,stateNew->temp1);
+
+
+			// double dkk = stateNew->temp1->me[0][0] + stateNew->temp1->me[1][1] + stateNew->temp1->me[2][2];
+
+			// double ep_vol = dkk*dt;
+			// m_ident(stateNew->temp);
+			// sm_mlt((1.000/3.00)*dkk,stateNew->temp,stateNew->delta_ep_vol);
+			// m_sub(stateNew->temp1,stateNew->delta_ep_vol,stateNew->delta_ep_dev);
+
+			// MAT * delta_sigma = stateNew->temp;
+
+			// m_sub(stateNew->sigma,stateOld->sigma,delta_sigma);
+
+			// double sigma_vol = delta_sigma->me[0][0] + delta_sigma->me[1][1] + delta_sigma->me[2][2];
+			
+
+			// m_ident(stateNew->temp);
+			// sm_mlt((1.000/3.00)*sigma_vol,stateNew->temp,stateNew->temp);
+			// m_sub(stateNew->sigma,stateNew->temp,stateNew->temp1);
+
+
+
+
+
+
+
+			// double eij_eij = contraction(stateNew->delta_ep_dev, stateNew->delta_ep_dev);
+			// double sij_eij = contraction(stateNew->temp1, stateNew->delta_ep_dev);
+			// double mu;
+			// double lambda;
+			// double kappa; 
+
+
+			// double lambda_0 = 0;
+			// double mu_0 = 0;
+
+
+
+			// if (ep_vol > pow(10,-6))
+			// {
+			// 	if ( dt*dt*eij_eij > pow(10,-12))
+			// 	{
+			// 		mu = (1.00/2.00) * ( sij_eij / (dt * eij_eij));
+
+
+			// 	}else{
+
+			// 		kappa = sigma_vol/ep_vol;
+			// 		lambda = lambda_0;
+			// 		mu = 0.5 * ( 3*(lambda_0 + 2*mu_0) - 3*kappa );
+
+			// 	}
+
+
+			// }else{
+			// 	if ( dt*dt*eij_eij > pow(10,-12))
+			// 	{
+			// 		mu = (1.00/2.00) * ( sij_eij / (dt * eij_eij));
+			// 		lambda = 
+
+			// 	}else{
+			// 		lambda = lambda_0;
+			// 		mu = mu_0;
+			// 	}
+
+			// }
 
 
 

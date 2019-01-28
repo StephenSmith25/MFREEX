@@ -181,7 +181,7 @@ int main(int argc, char** argv) {
 	 *  */
 	// Read PLSG 
 
-	char opt[20] = "pYDq0a0.8";
+	char opt[20] = "pYDq30a1";
 	char fileName[30] = "preform";
 	double * points_out ;
 	int * boundaryNodes;
@@ -236,7 +236,7 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 
 	// shape function parameters
-	double dmax = 2.5;
+	double dmax = 2;
 	int constant_support_size = 1;
 	VEC * dI = v_get(xI->m);
 
@@ -669,7 +669,6 @@ int main(int argc, char** argv) {
 		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
 
 
-
 		/* ------------------------------------------*/
 		/* -----------Boundary Conditions------------*/
 		/* ------------------------------------------*/
@@ -697,74 +696,7 @@ int main(int argc, char** argv) {
 		mv_mlt(Lambda,d_n_1,nodal_disp);
 		__add__(nodes_X->base, nodal_disp->ve, updatedNodes->base, num_dof);
 
-		// if (( n % 50000000 == 0 )&& ( n < 100000))
-		// {	
-		// 	mfree.nodes = updatedNodes;
-		// 	int digits;
-		// 	if ( n < 10000){
-		// 		digits = 7;
-		// 	}else{
-		// 		digits = 7;
-		// 	}
-		// 	double fac = pow(10, digits);
-
-
-
-		// 	for ( int k = 0 ; k < num_dof ; k++)
-		// 	{
-		// 		double x = updatedNodes->base[k];
-  //   			updatedNodes->base[k] = round(x*fac)/fac;
-		// 	}
 	
-		// 	// setDomain(&mfree,constant_support_size, dmax);
-		// 	voronoi_diagram * vor_1 = generate_voronoi(updatedNodes->base, boundaryNodes, mfree.num_nodes, numBoundary, 2);
-
-		// 	//setDomain(&mfree,constant_support_size, dmax);
-
-		// 	scni_update_B(_scni_obj, disp_inc, vor_1, &mfree, is_AXI);
-
-		// 	v_copy(d_n_1,disp_r);
-
-		// 	FILE * fp;
-		// 	fp = fopen("cells1.txt","w");
-		// 	print_voronoi_diagram(fp,vor_1);
-		// 	fclose(fp);
-
-		// 	for ( int i = 0 ; i < numB3 ; i++){
-		// 	contact_nodes_coords->me[i][0] = mfree.nodes->me[eb3_nodes->ive[i]][0];
-		// 	contact_nodes_coords->me[i][1] = mfree.nodes->me[eb3_nodes->ive[i]][1];
-
-		// 	}
-
-		// 	phi_contact = mls_shapefunction(contact_nodes_coords, 
-		// 	"linear", "cubic", 2, 1, &mfree);
-
-		// 	pB->sf_traction = mls_shapefunction(pB->coords, 
-		// 	"linear", "cubic", 2, 1, &mfree);
-
-		// 	free_voronoi_diagram(vor_1);
-
-		// 	// shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes, "linear", "cubic", 2, 1, &mfree);
-		// 	// m_zero(Lambda);
-
-		// 	// // u = Lambda * u_g
-		// 	// for ( int i = 0 ; i < mfree.num_nodes ; i++)
-		// 	// {
-		// 	// 	VEC * phi = sf_nodes->sf_list[i]->phi;
-		// 	// 	IVEC * neighbours  = sf_nodes->sf_list[i]->neighbours;
-		// 	// 	for ( int k = 0 ; k < neighbours->max_dim ; k++)
-		// 	// 	{
-		// 	// 		Lambda->me[2*i][2*neighbours->ive[k]] += phi->ve[k]; 
-		// 	// 		Lambda->me[2*i+1][2*neighbours->ive[k]+1] += phi->ve[k]; 
-		// 	// 	}
-		// 	// }
-		// 	// free_shapefunction_container(sf_nodes);
-
-
-
-		// }
-		__sub__(d_n_1->ve, disp_r->ve,disp_inc->ve, num_dof);
-
 		/* ------------------------------------------*/
 		/* ------------Find External Force-----------*/
 		/* ------------------------------------------*/
@@ -796,8 +728,9 @@ int main(int argc, char** argv) {
 		// d_n_1->ve[43] = 0.2;
 		// d_n_1->ve[44] = 0.1;
 		// d_n_1->ve[42] = 0.3;
+		__sub__(d_n_1->ve, disp_r->ve,disp_inc->ve, num_dof);
 
-		internalForce_ForceBuckley(Fint_n_1, _scni_obj, d_n_1, v_n_h,
+		internalForce_ForceBuckley(Fint_n_1, _scni_obj, disp_inc, v_n_h,
 		matParams,critLambdaParams, state_n_1, state_n,
 		mfree.IS_AXI, dim,delta_t,t_n_1);
 
@@ -834,7 +767,72 @@ int main(int argc, char** argv) {
 			v_n_1->ve[eb2->nodes->ive[i]*2] = 0;
 		}
 
+		if (( n % 5000 == 0 ))
+		{	
+			mfree.nodes = updatedNodes;
+			int digits;
+			if ( n < 10000){
+				digits = 7;
+			}else{
+				digits = 7;
+			}
+			double fac = pow(10, digits);
 
+
+
+			for ( int k = 0 ; k < num_dof ; k++)
+			{
+				double x = updatedNodes->base[k];
+    			updatedNodes->base[k] = round(x*fac)/fac;
+			}
+	
+			// setDomain(&mfree,constant_support_size, dmax);
+			voronoi_diagram * vor_1 = generate_voronoi(updatedNodes->base, boundaryNodes, mfree.num_nodes, numBoundary, 2);
+
+			//setDomain(&mfree,constant_support_size, dmax);
+
+			scni_update_B(_scni_obj, disp_inc, vor_1, &mfree, is_AXI);
+
+			v_copy(d_n_1,disp_r);
+
+			FILE * fp;
+			fp = fopen("cells1.txt","w");
+			print_voronoi_diagram(fp,vor_1);
+			fclose(fp);
+
+			for ( int i = 0 ; i < numB3 ; i++){
+			contact_nodes_coords->me[i][0] = mfree.nodes->me[eb3_nodes->ive[i]][0];
+			contact_nodes_coords->me[i][1] = mfree.nodes->me[eb3_nodes->ive[i]][1];
+
+			}
+
+			phi_contact = mls_shapefunction(contact_nodes_coords, 
+			"linear", "cubic", 2, 1, &mfree);
+
+			pB->sf_traction = mls_shapefunction(pB->coords, 
+			"linear", "cubic", 2, 1, &mfree);
+
+			free_voronoi_diagram(vor_1);
+
+			// shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes, "linear", "cubic", 2, 1, &mfree);
+			// m_zero(Lambda);
+
+			// // u = Lambda * u_g
+			// for ( int i = 0 ; i < mfree.num_nodes ; i++)
+			// {
+			// 	VEC * phi = sf_nodes->sf_list[i]->phi;
+			// 	IVEC * neighbours  = sf_nodes->sf_list[i]->neighbours;
+			// 	for ( int k = 0 ; k < neighbours->max_dim ; k++)
+			// 	{
+			// 		Lambda->me[2*i][2*neighbours->ive[k]] += phi->ve[k]; 
+			// 		Lambda->me[2*i+1][2*neighbours->ive[k]+1] += phi->ve[k]; 
+			// 	}
+			// }
+			// free_shapefunction_container(sf_nodes);
+
+
+
+		}
 		/* ------------------------------------------*/
 		/* --------------Write outputs---------------*/
 		/* ------------------------------------------*/

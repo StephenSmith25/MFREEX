@@ -23,19 +23,19 @@ L_t1 = 3;
 L_t = 37.31-19.48-L_t1;
 
 
-N1 = 35;
-N2 = 15;
+N1 = 45;
+N2 = 20;
 
 
 
 % Draw it
-ntheta = 10;
+ntheta = 15;
 % starting from 0,0
 nodes = [];
 count = 1;
 
 
-theta = linspace(-90,-5,ntheta);
+theta = linspace(-90,-2,ntheta);
 
 for i = 1:length(theta)
     nodes(count,:) = [Rin_bot*cosd(theta(i)), -vDim + Rin_bot*sind(theta(i))];
@@ -43,8 +43,8 @@ for i = 1:length(theta)
     
 end
 nodes;
-N3 = 4;
-N4 = 3;
+N3 = 0;
+N4 = 4;
 N5 = 3;
 % Left wall
 %% traction nodes
@@ -74,7 +74,7 @@ nodes(count:1:count+N1-1,:) = [linspace(Dout_b/2,Dout_b/2,N1)',linspace(L_m-1,0,
 
 count = count + N1;
 
-theta = linspace(-10,-90,ntheta);
+theta = linspace(-5,-90,ntheta);
 
 for i = 1:length(theta)
     nodes(count,:) = [Rout_bot*cosd(theta(i)), Rout_bot*sind(theta(i))];
@@ -101,7 +101,7 @@ nodes(i,3) = interp1q(tempProfile(:,1),tempProfile(:,3),nodes(i,2));
     
 end
 
-for i = (length(nodes))/2+1:length(nodes)
+for i = (length(nodes)+1)/2:length(nodes)
    nodes(i,3) = interp1q(tempProfile(:,1),tempProfile(:,2),nodes(i,2));
 end
 
@@ -123,8 +123,8 @@ for i = 1:length(nodes)
     
 end
 
-segments(1:(ntheta + N1+N2+(N3-1)),3) = 2;
-segments((ntheta+(N1+N2+(N3-1))):((ntheta+(N1+N2+(N3-1)))+ N4-2),3) = 5;
+segments(1:(ntheta + N1+N2+(N3)),3) = 2;
+segments((ntheta+(N1+N2+(N3))):((ntheta+(N1+N2+(N3)))+ N4-2),3) = 5;
 segments(end:-1:end-(N5-2),3) = 4;
 
 

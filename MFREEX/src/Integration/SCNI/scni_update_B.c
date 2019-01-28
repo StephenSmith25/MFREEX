@@ -248,7 +248,7 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 		if ( is_AXI == 1)
 		{
 			neighbours = sf_nodes->sf_list[i]->neighbours;
-			double r = nodes->me[i][0];
+			double r = center[0];
 
 			for ( int k = 0 ; k < neighbours->max_dim ; k++)
 			{

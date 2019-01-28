@@ -42,7 +42,8 @@ typedef struct state_Buckley
 	MAT * W;
 	MAT * d;
 
-
+	MAT * delta_ep_vol ;
+	MAT * delta_ep_dev ;
 	// Polar decomposition
 	MAT * R;
 	MAT * U;

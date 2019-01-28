@@ -48,10 +48,10 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	
 	double sigma_m = stateOld->mSigma;
 	// sigma_m = 0;
-	if (sigma_m < 0)
-	 {
-	 	sigma_m = 0;
- 	}
+	// if (sigma_m < 0)
+	//  {
+	//  	sigma_m = 0;
+ // 	}
 
 	if ( tauOCT == 0){
 		alpha_sig = 1;
@@ -63,7 +63,7 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	double alpha_s = exp ( Cv / ( temperature - vogel_T) - Cv / ( star_T - vogel_T) );	
 	// alpha_T
 	double alpha_T = exp ( (H0/R) * ( 1/temperature - 1/star_T) );
-
+	
 
 	if (alpha_sig < 0.1)
 	{

@@ -56,7 +56,8 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		VEC * stressVoigt = v_get(dim_piola);
 		VEC * sigma = v_get(dim_cauchy);
 		VEC * fIntTemp = v_get(Fint->max_dim);
-
+		double S11,S12,S13,S21,S22,S23,S31,S32,S33;
+		double F11,F12,F13,F21,F22,F23,F31,F32,F33;
 		// Gmat matrix
 		MAT * G = m_get(dim_piola,dim_cauchy);
 
@@ -168,7 +169,7 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			// 	delta_t_min_i = delta_t;
 			// }
 
-			if ((i == 97) && (call_count % 50 == 0)) {
+			if ((i == 124) && (call_count % 50 == 0)) {
 
 
 			//m_foutput(stdout,stateNew[i]->W);
@@ -231,6 +232,51 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			gMat(G,stateNew[i]->invF,is_axi);
 			mv_mlt(G,sigma,stressVoigt);
 			sv_mlt(stateNew[i]->Jacobian,stressVoigt,stressVoigt);
+
+
+
+		// push forward stress to new reference configuration
+		if ( dim_piola == 4)
+		{
+
+
+			S11 = stressVoigt->ve[0] ; S12 = stressVoigt->ve[2];
+			S21 = stressVoigt->ve[3]; S22 = stressVoigt->ve[1];
+
+			F11 = scni[i]->F_r->me[0][0]; F12 = scni[i]->F_r->me[0][1];
+			F21 = scni[i]->F_r->me[1][0]; F22 = scni[i]->F_r->me[1][1];
+
+			stressVoigt->ve[0] = S11*F11 + S12*F12;
+			stressVoigt->ve[1] = S21*F21 + S22*F22; 
+			stressVoigt->ve[2] = S11*F21 + S12*F22;
+			stressVoigt->ve[3] = S21*F11 + S22*F12;
+
+		}else if ( dim_piola == 5)
+		{
+
+
+			S11 = stressVoigt->ve[0] ; S12 = stressVoigt->ve[2];
+			S21 = stressVoigt->ve[3]; S22 = stressVoigt->ve[1];
+			S33 = stressVoigt->ve[4] ;
+
+			F11 = scni[i]->F_r->me[0][0]; F12 = scni[i]->F_r->me[0][1];
+			F21 = scni[i]->F_r->me[1][0]; F22 = scni[i]->F_r->me[1][1];
+			F33 = scni[i]->F_r->me[2][2];
+
+
+			stressVoigt->ve[0] = S11*F11 + S12*F12;
+			stressVoigt->ve[1] = S21*F21 + S22*F22; 
+			stressVoigt->ve[2] = S11*F21 + S12*F22;
+			stressVoigt->ve[3] = S21*F11 + S22*F12;
+			stressVoigt->ve[4] = S33*F33;
+
+		}else{
+			fprintf(stderr,"dimension not yet supported");
+		}
+
+
+
+
 
 			vm_mlt(scni[i]->B,stressVoigt,scni[i]->fInt);
 

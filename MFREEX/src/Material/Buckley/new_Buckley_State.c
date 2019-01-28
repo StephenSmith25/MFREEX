@@ -63,6 +63,8 @@ state_Buckley ** new_Buckley_State(int num_Points, double * temperatures, int is
 		state[i]->eigValVBar = v_get(dim_s);
 		state[i]->lambdaDot = v_get(dim_s);
 
+		state[i]->delta_ep_vol = m_get(dim_s,dim_s);
+		state[i]->delta_ep_dev = m_get(dim_s,dim_s);
 
 		state[i]->true_strain = m_get(dim_s,dim_s);
 
