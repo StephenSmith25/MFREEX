@@ -1,6 +1,6 @@
 
 #include "Material/Hyperelastic/cubicRivlin.h"
-
+#include "m_inverse_small.h"
 int cubicRivlin(VEC * stressVoigt, MAT * defGrad, VEC * matParams){
 
 
@@ -15,19 +15,12 @@ int cubicRivlin(VEC * stressVoigt, MAT * defGrad, VEC * matParams){
 
 	MAT * term1 = m_get(defGrad->m,defGrad->n);
 	MAT * term2 = m_get(defGrad->m,defGrad->n);
+	int dim_stress = stressVoigt->max_dim;
 
-	/*  Find C */ 
-
-	defGrad->me[1][1] = 1;
-	defGrad->me[0][1] = 0;
-	defGrad->me[1][0] = 0;
 
 	mtrm_mlt(defGrad,defGrad,C);
-	
-
-
 	/*  Find inv C */
-	m_inverse(C,invC);
+	m_inverse_small(C,invC);
 
 	/*  Find I1 */
 	double I1 = trace(C);
@@ -35,7 +28,7 @@ int cubicRivlin(VEC * stressVoigt, MAT * defGrad, VEC * matParams){
 	double I3 = determinant(C);
 	
 	/*  Find I1bar and J */
-	double J = pow(I3,1.00/2.00);
+	double J = sqrt(I3);
 	double I1bar = I1*pow(I3,-1.00/3.00);
 
 	/*  Find K1 = dWd/dI1 */
@@ -58,26 +51,26 @@ int cubicRivlin(VEC * stressVoigt, MAT * defGrad, VEC * matParams){
 
 	m_mlt(defGrad,stress2PKF,stress1PKF);
 
-	// if ( AXI == 1){
-	// stressVoigt->ve[4] = stress1PKF->me[2][2];
-	// }
-	stressVoigt->ve[0] = stress1PKF->me[0][0];
-	stressVoigt->ve[1] = stress1PKF->me[1][1];
-	stressVoigt->ve[2] = stress1PKF->me[0][1];
-	stressVoigt->ve[3] = stress1PKF->me[1][0];
+	if ( dim_stress == 5){
+
+		stressVoigt->ve[0] = stress1PKF->me[0][0];
+		stressVoigt->ve[1] = stress1PKF->me[1][1];
+		stressVoigt->ve[2] = stress1PKF->me[0][1];
+		stressVoigt->ve[3] = stress1PKF->me[1][0];
+		stressVoigt->ve[4] = stress1PKF->me[2][2];
+
+
+	}else{
+
+		stressVoigt->ve[0] = stress1PKF->me[0][0];
+		stressVoigt->ve[1] = stress1PKF->me[1][1];
+		stressVoigt->ve[2] = stress1PKF->me[0][1];
+		stressVoigt->ve[3] = stress1PKF->me[1][0];
 
 
 
 
-	//printf("C[2][2] = %lf\n",C->me[1][1]);
-
-
-
-
-
-
-	
-
+	}
 
 
 

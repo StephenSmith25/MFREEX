@@ -10,6 +10,7 @@ OPTION(PROBLEM_BEAM "Compile Beam program" ON)
 OPTION(PROBLEM_BEAM_UL "Compile updated lagrangian version of Beam program" ON)
 OPTION(PROBLEM_PREFORM "Compile preform program" ON)
 OPTION(PROBLEM_BIAXIAL "Compile biaxial program" ON)
+OPTION(PROBLEM_TUBE "Compile tube program" ON)
 
 
 
@@ -32,3 +33,7 @@ endif(PROBLEM_PREFORM)
 if(PROBLEM_BIAXIAL)
 	add_subdirectory(problems/Biaxial)
 endif(PROBLEM_BIAXIAL)	
+
+if(PROBLEM_TUBE)
+	add_subdirectory(problems/tube)
+endif(PROBLEM_TUBE)	

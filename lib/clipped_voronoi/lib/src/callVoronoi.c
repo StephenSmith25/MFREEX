@@ -1,12 +1,12 @@
 
 #include "callVoronoi.h"
 #define JC_VORONOI_IMPLEMENTATION
-#define JCV_REAL_TYPE double
-#define JCV_ATAN2 atan2
-#define JCV_FLT_MAX 1.7976931348623157E+308
-#define JCV_CEIL ceil
-#define JCV_FLOOR floor
-#define JCV_FABS fabs
+// #define JCV_REAL_TYPE double
+// #define JCV_ATAN2 atan2
+// #define JCV_FLT_MAX 1.7976931348623157E+308
+// #define JCV_CEIL ceil
+// #define JCV_FLOOR floor
+// #define JCV_FABS fabs
 #include "jc_voronoi.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"

@@ -28,6 +28,12 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		mu = 2*(matParams->ve[0]);
 		lambda = 2*matParams->ve[3] - (2/3)*mu;
 
+	}else if( strcmp(Material, "cubic_rivlin") == 0 )
+	{
+		mat_func_ptr = &cubicRivlin;
+		mu = 2*(matParams->ve[0]);
+		lambda = 2*matParams->ve[3] - (2/3)*mu;
+
 	}
 
 	int dim_v = 0;
@@ -53,7 +59,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 
 
-	omp_set_num_threads(3);
+	omp_set_num_threads(1);
 
 
 
@@ -91,10 +97,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		get_dot_defgrad(Fdot,B, neighbours,F_r,velocity);
 
 		int num_neighbours = neighbours->max_dim;
-	
-
-
-
+		
 
 		double Jacobian ;
 
@@ -127,10 +130,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		}else if ( dim == 3)
 		{
 
-			F11 = F->me[0][0]; F12 = F->me[0][1]; F12 = F->me[0][1];
-			F21 = F->me[1][0]; F22 = F->me[1][1]; F12 = F->me[0][1];
-			F21 = F->me[1][0]; F22 = F->me[1][1]; F12 = F->me[0][1];
-			m_inverse(F,invF);
+			m_inverse_small(F,invF);
 
 			m_mlt(Fdot,invF,L);
 
@@ -204,14 +204,12 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 		// }
 
-
-		double b1 = 0.06;
-		double b2 = 1.44;
+		double b1 = 0;
+		double b2 = 0;
 
 		double Le = sqrt(scni[i]->area);
 		//Le = 2;
 		double c = sqrt(((lambda+2*mu)/rho));
-
 		double P_b1 = 0;
 		P_b1 = b1*div_v*rho*Le*c;
 
@@ -232,6 +230,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 
 		mat_func_ptr(stressVoigt,F,matParams);
+
 		__zero__(scni[i]->fInt->ve,scni[i]->fInt->max_dim);
 
 
@@ -292,36 +291,38 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		}
 
 
-		if ((i == 93) && (call_count % 1000 == 0)) {
+		if ((i == 0) && (call_count % 10000 == 0)) {
 
 
+			printf("got here \n");
+			// code for tube problem
+			double disp_point = disp->ve[0];
+			double sigma_point = (1.00/Jacobian)*stressVoigt->ve[0]*F->me[0][0]*((60)/(60+disp_point));
 
-	
-			F->me[2][1] = t_n_1;
-			//m_add(Sb_n_1,Savg_bond,Savg_bond);
-				//m_add(Sc_n_1,Savg_conf,Savg_conf);
-			snprintf(filename, 50, "strain_%d%s",print_count,".txt");
-			mat2csv(F,"./History/Strain",filename);
-			// snprintf(filename, 50, "Bond_Stress_%d%s",print_count,".txt");
-			// mat2csv(stateNew[i]->Sb,"./History/Stress",filename);
-			// snprintf(filename, 50, "Conformational_Stress_%d%s",print_count,".txt");
-			// mat2csv(stateNew[i]->Sc,"./History/Stress",filename);
-			F->me[2][1] = 0;
-			++print_count;
+			m_foutput(stdout, F);
+
+			FILE * fp;
+			fp = fopen("loadDisp.txt","a");
+			fprintf(fp,"%lf %lf\n",disp_point,sigma_point);
+			fclose(fp);
+
+			// printf("got here \n");
+
+			// F->me[2][1] = t_n_1;
+			// //m_add(Sb_n_1,Savg_bond,Savg_bond);
+			// 	//m_add(Sc_n_1,Savg_conf,Savg_conf);
+			// snprintf(filename, 50, "strain_%d%s",print_count,".txt");
+			// mat2csv(F,"./History/Strain",filename);
+			// // snprintf(filename, 50, "Bond_Stress_%d%s",print_count,".txt");
+			// // mat2csv(stateNew[i]->Sb,"./History/Stress",filename);
+			// // snprintf(filename, 50, "Conformational_Stress_%d%s",print_count,".txt");
+			// // mat2csv(stateNew[i]->Sc,"./History/Stress",filename);
+			// F->me[2][1] = 0;
+			// ++print_count;
 
 
 		}
 		
-
-
-
-
-
-
-
-
-
-
 
 		vm_mlt(scni[i]->B,stressVoigt,scni[i]->fInt);
 

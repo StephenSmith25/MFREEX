@@ -51,14 +51,19 @@ int main(int argc, char** argv) {
 	int numBoundary;
 	int * boundaryNodes ;
 
-	/*  Material parameters */
-	const double rho = 1000e-9;
-		/*  Material struct */
-	VEC * matParams = v_get(4);
-	matParams->ve[0] = 0.373;
-	matParams->ve[1] = -0.031;
-	matParams->ve[2] = 0.005;
-	matParams->ve[3] = 1e5;
+
+
+	// material parameters and model (St. Venant Kirchoff)
+	char * material = "cubic_rivlin";
+	double rho = 1000e-9;
+
+	VEC * materialParameters = v_get(4);
+	materialParameters->ve[0] = 0.373;
+	materialParameters->ve[1] = -0.031;
+	materialParameters->ve[2] = 0.005;
+	materialParameters->ve[3] = 1e5;
+
+
 
 	/*  Time step variables */
 
@@ -103,9 +108,9 @@ int main(int argc, char** argv) {
 	struct triangulateio * out = malloc(1*sizeof(struct triangulateio )); ;
 
 	/*  Manual triangulation */
-	double rin = 60;
-	double rout = 80;
-	double width = 2;
+	double rin = 60.00;
+	double rout = 80.00;
+	double width = 2.00;
 	int numPoint = 15;
 
 	out->pointlist = malloc(2*2*numPoint*sizeof(double));
@@ -179,7 +184,7 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 
 	// shape function parameters
-	double dmax = 2;
+	double dmax = 2.0;
 	int constant_support_size = 1;
 	VEC * dI = v_get(xI->m);
 
@@ -210,36 +215,36 @@ int main(int argc, char** argv) {
 	printf("scni function took %lf seconds to run\n", delta);
 
 	// Test divergence free condition
-	IVEC * index ;
-	MAT * B; 
-	MAT * check_B = m_get(dim*dim,2);
-	printf("checking scni \n \n");
-	int checkPoint = 33;
+	// IVEC * index ;
+	// MAT * B; 
+	// MAT * check_B = m_get(dim*dim,2);
+	// printf("checking scni \n \n");
+	// int checkPoint = 33;
 
-	m_foutput(stdout,_scni_obj->scni[checkPoint]->B);
-	iv_foutput(stdout, _scni_obj->scni[checkPoint]->sfIndex);
+	// m_foutput(stdout,_scni_obj->scni[checkPoint]->B);
+	// iv_foutput(stdout, _scni_obj->scni[checkPoint]->sfIndex);
 
-	printf("checking divergence free condition at point %d\n", checkPoint);
-	printf("with coordinates %lf %lf\n", mfree.nodes->me[checkPoint][0], mfree.nodes->me[checkPoint][1]);
-	printf("cell area = %lf \n", _scni_obj->scni[checkPoint]->area);
-	printf("and neighbours \n");
-	for ( int i = 0 ; i < _scni_obj->num_points ; i++)
-	{
-		index = _scni_obj->scni[i]->sfIndex;
-		B = _scni_obj->scni[i]->B;
+	// printf("checking divergence free condition at point %d\n", checkPoint);
+	// printf("with coordinates %lf %lf\n", mfree.nodes->me[checkPoint][0], mfree.nodes->me[checkPoint][1]);
+	// printf("cell area = %lf \n", _scni_obj->scni[checkPoint]->area);
+	// printf("and neighbours \n");
+	// for ( int i = 0 ; i < _scni_obj->num_points ; i++)
+	// {
+	// 	index = _scni_obj->scni[i]->sfIndex;
+	// 	B = _scni_obj->scni[i]->B;
 
-		for (int k = 0 ; k < index->max_dim ; k++){
-			int indx = index->ive[k];
+	// 	for (int k = 0 ; k < index->max_dim ; k++){
+	// 		int indx = index->ive[k];
 
-			if ( indx == checkPoint)
-			{
-				check_B->me[0][0] += B->me[0][2*k]*_scni_obj->scni[i]->area;
-				check_B->me[1][1] += B->me[1][2*k+1]*_scni_obj->scni[i]->area;
-				check_B->me[2][0] += B->me[2][2*k]*_scni_obj->scni[i]->area;
-				check_B->me[3][1] += B->me[3][2*k+1]*_scni_obj->scni[i]->area;
-			}
-		}
-	}
+	// 		if ( indx == checkPoint)
+	// 		{
+	// 			check_B->me[0][0] += B->me[0][2*k]*_scni_obj->scni[i]->area;
+	// 			check_B->me[1][1] += B->me[1][2*k+1]*_scni_obj->scni[i]->area;
+	// 			check_B->me[2][0] += B->me[2][2*k]*_scni_obj->scni[i]->area;
+	// 			check_B->me[3][1] += B->me[3][2*k+1]*_scni_obj->scni[i]->area;
+	// 		}
+	// 	}
+	// }
 	// m_foutput(stdout, check_B);
 
 
@@ -317,7 +322,15 @@ int main(int argc, char** argv) {
 
 	m_foutput(stdout,eb3->coords);
 
+	IVEC * traction_nodes = iv_get(2) ;
+	traction_nodes->ive[0] = 2*numPoint - 1 ;
+	traction_nodes->ive[1] = 0;
 
+	pressure_boundary * pB = new_pressure_boundary(traction_nodes, &mfree);
+
+
+	printf("traction_nodes = ");
+	m_foutput(stdout,pB->coords);
 
 
 	shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes, "linear", "cubic", 2, 1, &mfree);
@@ -369,10 +382,11 @@ int main(int argc, char** argv) {
 
 	VEC * v_n_mh = v_get(num_dof);
 	VEC * v_n = v_get(num_dof);
-	VEC * deltaDisp = v_get(num_dof);
-	VEC * nodalDisp = v_get(num_dof);
 	MAT * updatedNodes = m_get(num_dof,dim);
 
+
+	VEC * delta_disp = v_get(num_dof);
+	VEC * nodal_disp = v_get(num_dof);
 
 	/*  Force variables */
 	VEC * Fext_n_1 = v_get(num_dof);
@@ -391,17 +405,20 @@ int main(int argc, char** argv) {
 	eb3->uBar2 = v_get(eb3->nodes->max_dim);
 
 	VEC * v_correct = v_get(num_dof);
+	MAT * nodes_X = m_copy(mfree.nodes,MNULL);
 
-	/*  Energy  */
-	double Wkin_n_1;
-	double Wext_n_1;
-	double Wint_n_1;
-	double Wint_n;
-	double Wext_n;
-	double Wbal;
-
+	// Energy
+	double Wext = 0;
+	double Wint = 0;
+	double Wkin = 0;
+	double Wbal = 0;
 	double tStop = 0;
+
+
 	double preStop = 0;
+
+
+
 	/*  Iteration counter */
 	int n= 0;
 	/*  File write counter */
@@ -417,6 +434,7 @@ int main(int argc, char** argv) {
 	fclose(fp);
 
 	while ( t_n < tMax){
+	//while ( n < 1){
 
 		/*  Update time step */
 		t_n_1 = t_n + deltaT;
@@ -426,100 +444,120 @@ int main(int argc, char** argv) {
 		v_mltadd(v_n,a_n,(double)0.5*deltaT,v_n_h);
 		v_mltadd(d_n,v_n_h,deltaT,d_n_1);
 
+		/*  Implement BCs */
+		for ( int k = 0 ; k < eb1->nodes->max_dim ; k++)
+		{
 
-	
+			eb1->uBar1->ve[k] =  150.000*smoothstep(t_n_1,10,0.00);
+
+
+		}
+		// v_foutput(stdout,
+		// enforceBC(eb1,d_n_1); 
+
+		// find velocity correction
+		sv_mlt(1.00/(deltaT),eb1->uCorrect1,v_correct);
+		for ( int k = 0 ; k < v_correct->max_dim; k++){
+			v_n_h->ve[2*k] += v_correct->ve[k];
+		}
+		enforceBC(eb1,d_n_1); 
+
 		/*  Implement BCs */
 		enforceBC(eb2,d_n_1); 
 		// find velocity correction
-		sv_mlt(1.00/(2*deltaT),eb2->uCorrect2,v_correct);
+		sv_mlt(1.00/(deltaT),eb2->uCorrect2,v_correct);
 		for ( int k = 0 ; k < v_correct->max_dim; k++){
 			v_n_h->ve[2*k+1] += v_correct->ve[k];
 		}
 
 		enforceBC(eb3,d_n_1); 
-		sv_mlt(1.000/(2*deltaT),eb3->uCorrect2,v_correct);
+		sv_mlt(1.000/(deltaT),eb3->uCorrect2,v_correct);
 		for ( int k = 0 ; k < v_correct->max_dim; k++){
 			v_n_h->ve[2*k+1] += v_correct->ve[k];
 		}
 
 		/*  Update nodal positions */
 		
-		mv_mlt(Lambda,d_n_1,nodalDisp);
-		for ( int i = 0 ; i < efgBlock->numnode ; i++){
-			updatedNodes->me[i][0]  = efgBlock->nodes->me[i][0] + nodalDisp->ve[2*i] ;
-			updatedNodes->me[i][1]  = efgBlock->nodes->me[i][1] + nodalDisp->ve[2*i+1] ;
-		}
+		// find new nodal positions
+		mv_mlt(Lambda,d_n_1,nodal_disp);
+		__add__(nodes_X->base, nodal_disp->ve, updatedNodes->base, num_dof);
 
 
 
 
 
-		/*  Update pressure load */
+		// /*  Update pressure load */
 
-		if ( nodalDisp->ve[2*eb1->nodes->ive[0]] < 80){
-			pre_n_1 = pre1 * smoothstep(t_n_1,tRamp,0);
-			tStop = t_n_1;
-			preStop = pre_n_1;
-		}
-		else{
-			pre_n_1 = pre2 * smoothstep(t_n_1,0.5+tStop,tStop+deltaT) + preStop;
-		}
+		// if ( nodal_disp->ve[2*eb1->nodes->ive[0]] < 80){
+		// 	pre_n_1 = pre1 * smoothstep(t_n_1,tRamp,0);
+		// 	tStop = t_n_1;
+		// 	preStop = pre_n_1;
+		// }
+		// else{
+		// 	pre_n_1 = pre2 * smoothstep(t_n_1,0.5+tStop,tStop+deltaT) + preStop;
+		// }
 
 
 		
-		internalForce(Fint_n_1,scni,d_n_1,matParams,efgBlock->numnode);
-	
+		double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, v_n_h,
+		 materialParameters, "cubic_rivlin", is_AXI, dim,t_n_1);
 		
-		update_pressure_boundary(pB, updatedNodes);
-		assemble_pressure_load(Fext_n_1, pre_n_1, pB);
-		
+		// update_pressure_boundary(pB, updatedNodes);
+		// v_zero(Fext_n_1);
+		// assemble_pressure_load(Fext_n_1, -pre_n_1, pB);
+
+
+
 
 		/*  Balance of forces */
 		v_sub(Fext_n_1,Fint_n_1,Fnet);
 		
-		/*  Find acceleration */
-		mv_mlt(invMass,Fnet,a_n_1);
+		for ( int i = 0 ; i < numnodes  ; i++ )
+		{
+			a_n_1->ve[2*i] = Fnet->ve[2*i]*inv_nodal_mass->ve[i];
+			a_n_1->ve[2*i+1] = Fnet->ve[2*i+1]*inv_nodal_mass->ve[i];
+		}
 
-		/*  Integer time step velocity */
-		v_mltadd(v_n_h,a_n_1,t_n_1-t_n_h,v_n_1);	
 
-
-		// update nodal positions
+		// update to interger time step velocities
+		v_mltadd(v_n_h,a_n_1,0.5*deltaT,v_n_1);	
+		// save outputs
 		if ( n % writeFreq == 0 ){
-			char * filename[50];
+			char filename[50];
 			snprintf(filename, 50, "displacement_%d%s",fileCounter,".txt");
 			mat2csv(updatedNodes,"./Displacement",filename);
-			
-			fp = fopen("loadDisp.txt","a");
-			fprintf(fp,"%lf %lf\n",nodalDisp->ve[2*eb1->nodes->ive[0]],-pre_n_1);
-			fclose(fp);
 
-			fileCounter++;
+			// 	fp = fopen("loadDisp.txt","a");
+			// fprintf(fp,"%lf %lf\n",nodal_disp->ve[2*eb1->nodes->ive[0]]/10,-pre_n_1);
+			// fclose(fp);
+			fileCounter++;	
+		}
+		/* ------------------------------------------*/
+		/* -----------------Find Energy--------------*/
+		/* ------------------------------------------*/
+
+
+		// find change in displacement 
+		__sub__(d_n_1->ve, d_n->ve, delta_disp->ve, num_dof);
+
+		Wext += in_prod(delta_disp, Fext_n) + in_prod(delta_disp, Fext_n_1);
+		Wint += in_prod(delta_disp, Fint_n) + in_prod(delta_disp, Fint_n_1);
+		Wkin = 0;
+		for ( int i = 0 ; i < mfree.num_nodes; i++ )
+		{
+			Wkin += 0.5*(v_n_1->ve[2*i]*nodal_mass->ve[i]*v_n_1->ve[2*i]);
+			Wkin += 0.5*(v_n_1->ve[2*i+1]*nodal_mass->ve[i]*v_n_1->ve[2*i+1]);
+
 		}
 
-
-		/*  Find energy */
-		v_sub(d_n_1,d_n,deltaDisp);
-		// External Energy
-		Wext_n_1 = Wext_n + 0.5*(in_prod(deltaDisp,Fext_n) + in_prod(deltaDisp,Fext_n_1));
-		// Internl Energy
-		Wint_n_1 = Wint_n + 0.5*(in_prod(deltaDisp,Fint_n) + in_prod(deltaDisp,Fint_n_1));
-		// Kinetic Energy = 1/2 v^T * M * v
-		Wkin_n_1 = 0 ;
-		for (int i = 0 ; i < 2* efgBlock->numnode ; i++){
-
-			Wkin_n_1 = Wkin_n_1 + 0.5*(v_n_1->ve[i]*mass->me[i][i]*v_n_1->ve[i]);
+		double Wmax = max(Wext,Wint);
+		Wmax =  max(Wmax,Wkin);
+		if ( Wmax == 0)
+		{
+			Wbal = 0;
+		}else{
+			Wbal = fabs(Wkin + Wint - Wext)/Wmax;
 		}
-		// Find the energy balance.
-		Wbal = fabs(Wkin_n_1 + Wint_n_1 - Wext_n_1) ;
-		// Find maximum of the energies, used to normalise the balance. Uses the max macro defined in matrix.h
-		double W_max = max(Wext_n_1,Wint_n_1);
-		W_max = max(W_max,Wkin_n_1);
-		/*  Update counters */
-		t_n = t_n_1;
-		// Store energy accumulated
-		Wext_n = Wext_n_1;
-		Wint_n = Wint_n_1;
 		// Store previous time step quanities for the kinematic, and force variables.
 		v_copy(Fint_n_1,Fint_n);
 		v_copy(Fext_n_1,Fext_n);
@@ -527,9 +565,12 @@ int main(int argc, char** argv) {
 		v_copy(d_n_1,d_n);
 		v_copy(v_n_1,v_n);
 		v_copy(a_n_1,a_n);
+		t_n = t_n_1;
 		// update iteration counter
 		n++	;
-		printf("%i  \t  %lf %lf \t  %10.2E \n",n,t_n,pre_n_1,Wbal/W_max);
+
+		printf("%i  \t  %lf  \t %lf \t  %10.2E %10.2E \n",n,t_n,pre_n_1, Wbal, deltaT);
+
 
 	}
 
