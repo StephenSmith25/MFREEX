@@ -13,6 +13,7 @@
 #include "matrix2.h"
 #include <math.h>
 #include "m_inverse_small.h"
+#include "contraction.h"
 
 
 int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, 

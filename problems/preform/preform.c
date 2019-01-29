@@ -433,38 +433,15 @@ int main(int argc, char** argv) {
 	double massAir = massInitial;
 	double pRatio;
 
-	// // tst poldec
-
-	// int test_dim = 3;
-	// MAT * F = m_get(test_dim,test_dim);
-	// F->me[0][0] = 1;
-	// F->me[0][1] = 0.495;
-	// F->me[0][2] = 0.5;
-
-	// F->me[1][0] = -0.333;
-	// F->me[1][1] = 1;
-	// F->me[1][2] = -0.247;
 
 
-	// F->me[2][0] = 0.959;
-	// F->me[2][1] = 0;
-	// F->me[2][2] = 1.5;
+	// material
+	double Kb = matParams->ve[9];
+	double Gb = matParams->ve[10];
 
 
-	// MAT * R = m_get(test_dim,test_dim);
-	// MAT * U = m_get(test_dim,test_dim);
-	// MAT * V = m_get(test_dim,test_dim);
-
-
-	// poldec(F, R, U, V);
-	// printf("F = \n");
-	// m_foutput(stdout,F);
-	// printf("R = \n");
-	// m_foutput(stdout,R);
-	// printf("U = \n");
-	// m_foutput(stdout,U);
-	// printf("V = \n");
-	// m_foutput(stdout,V);
+	double mu = Gb;
+	double lambda = Kb - (2.00/3.00)*mu;
 
 	/* ------------------------------------------*/
 	/* --------------State storage---------------*/
@@ -473,7 +450,12 @@ int main(int argc, char** argv) {
 	state_Buckley ** state_n = new_Buckley_State(mfree.num_nodes,temperatures,is_AXI,dim);;
 	state_Buckley ** state_n_1 = new_Buckley_State(mfree.num_nodes,temperatures,is_AXI,dim);
 
+	for ( int i = 0 ; i < mfree.num_nodes ; i++)
+	{
+		state_n_1[i]->mu_0 = mu;
+		state_n_1[i]->lambda_0 = lambda;
 
+	}
 
 
 	// ///////////////////////////////////////////////////////////////
@@ -485,7 +467,6 @@ int main(int argc, char** argv) {
 	// /*////////////////////////////////////////////////////////// */
 	
 	// time parameters
-	double t_max = 0.08; // 1s
 	double delta_t = 4e-7;
 	double t_n = 0;
 	double t_n_1 = 0;
@@ -601,10 +582,12 @@ int main(int argc, char** argv) {
 		/*  Update time step */
 		t_n_1 = t_n + delta_t;
 		/*  Make a time step  */ 
-		__mltadd__(v_n_h->ve, a_n->ve,0.5*delta_t,num_dof);
+		__mltadd__(v_n_h->ve, a_n->ve,delta_t,num_dof);
 		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
 
 
+		mv_mlt(Lambda,d_n_1,nodal_disp);
+		__add__(nodes_X->base, nodal_disp->ve, updatedNodes->base, num_dof);
 
 		/* ------------------------------------------*/
 		/* -----------Contact Conditions-------------*/
@@ -626,11 +609,7 @@ int main(int argc, char** argv) {
 
 			}
 		}
-
-		// find new nodal positions
-		mv_mlt(Lambda,d_n_1,nodal_disp);
-		__add__(nodes_X->base, nodal_disp->ve, updatedNodes->base, num_dof);
-
+	
 		for ( int i = 0 ; i < eb3_nodes->max_dim ; i++){
 
 			neighbours = phi_contact->sf_list[i]->neighbours;
@@ -665,7 +644,7 @@ int main(int argc, char** argv) {
 			a_n->ve[2*i+1] = Fcont_n_1->ve[2*i+1]*inv_nodal_mass->ve[i];
 		}
 
-		__mltadd__(v_n_h->ve, a_n->ve,0.5*delta_t,num_dof);
+		__mltadd__(v_n_h->ve, a_n->ve,delta_t,num_dof);
 		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
 
 
@@ -730,7 +709,7 @@ int main(int argc, char** argv) {
 		// d_n_1->ve[42] = 0.3;
 		__sub__(d_n_1->ve, disp_r->ve,disp_inc->ve, num_dof);
 
-		internalForce_ForceBuckley(Fint_n_1, _scni_obj, disp_inc, v_n_h,
+		double delta_t_new = internalForce_ForceBuckley(Fint_n_1, _scni_obj, disp_inc, v_n_h,
 		matParams,critLambdaParams, state_n_1, state_n,
 		mfree.IS_AXI, dim,delta_t,t_n_1);
 
@@ -767,72 +746,72 @@ int main(int argc, char** argv) {
 			v_n_1->ve[eb2->nodes->ive[i]*2] = 0;
 		}
 
-		if (( n % 5000 == 0 ))
-		{	
-			mfree.nodes = updatedNodes;
-			int digits;
-			if ( n < 10000){
-				digits = 7;
-			}else{
-				digits = 7;
-			}
-			double fac = pow(10, digits);
+		// if ( n == 80000  || n == 90000)
+		// {	
+		// 	mfree.nodes = updatedNodes;
+		// 	int digits;
+		// 	if ( n < 10000){
+		// 		digits = 7;
+		// 	}else{
+		// 		digits = 7;
+		// 	}
+		// 	double fac = pow(10, digits);
 
 
 
-			for ( int k = 0 ; k < num_dof ; k++)
-			{
-				double x = updatedNodes->base[k];
-    			updatedNodes->base[k] = round(x*fac)/fac;
-			}
+		// 	for ( int k = 0 ; k < num_dof ; k++)
+		// 	{
+		// 		double x = updatedNodes->base[k];
+  //   			updatedNodes->base[k] = round(x*fac)/fac;
+		// 	}
 	
-			// setDomain(&mfree,constant_support_size, dmax);
-			voronoi_diagram * vor_1 = generate_voronoi(updatedNodes->base, boundaryNodes, mfree.num_nodes, numBoundary, 2);
+		// 	// setDomain(&mfree,constant_support_size, dmax);
+		// 	voronoi_diagram * vor_1 = generate_voronoi(updatedNodes->base, boundaryNodes, mfree.num_nodes, numBoundary, 2);
 
-			//setDomain(&mfree,constant_support_size, dmax);
+		// 	//setDomain(&mfree,constant_support_size, dmax);
 
-			scni_update_B(_scni_obj, disp_inc, vor_1, &mfree, is_AXI);
+		// 	scni_update_B(_scni_obj, disp_inc, vor_1, &mfree, is_AXI);
 
-			v_copy(d_n_1,disp_r);
+		// 	v_copy(d_n_1,disp_r);
 
-			FILE * fp;
-			fp = fopen("cells1.txt","w");
-			print_voronoi_diagram(fp,vor_1);
-			fclose(fp);
+		// 	FILE * fp;
+		// 	fp = fopen("cells1.txt","w");
+		// 	print_voronoi_diagram(fp,vor_1);
+		// 	fclose(fp);
 
-			for ( int i = 0 ; i < numB3 ; i++){
-			contact_nodes_coords->me[i][0] = mfree.nodes->me[eb3_nodes->ive[i]][0];
-			contact_nodes_coords->me[i][1] = mfree.nodes->me[eb3_nodes->ive[i]][1];
+		// 	// for ( int i = 0 ; i < numB3 ; i++){
+		// 	// contact_nodes_coords->me[i][0] = mfree.nodes->me[eb3_nodes->ive[i]][0];
+		// 	// contact_nodes_coords->me[i][1] = mfree.nodes->me[eb3_nodes->ive[i]][1];
 
-			}
+		// 	// }
 
-			phi_contact = mls_shapefunction(contact_nodes_coords, 
-			"linear", "cubic", 2, 1, &mfree);
+		// 	// phi_contact = mls_shapefunction(contact_nodes_coords, 
+		// 	// "linear", "cubic", 2, 1, &mfree);
 
-			pB->sf_traction = mls_shapefunction(pB->coords, 
-			"linear", "cubic", 2, 1, &mfree);
+		// 	// pB->sf_traction = mls_shapefunction(pB->coords, 
+		// 	// "linear", "cubic", 2, 1, &mfree);
 
-			free_voronoi_diagram(vor_1);
+		// 	// free_voronoi_diagram(vor_1);
 
-			// shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes, "linear", "cubic", 2, 1, &mfree);
-			// m_zero(Lambda);
+		// 	// shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes, "linear", "cubic", 2, 1, &mfree);
+		// 	// m_zero(Lambda);
 
-			// // u = Lambda * u_g
-			// for ( int i = 0 ; i < mfree.num_nodes ; i++)
-			// {
-			// 	VEC * phi = sf_nodes->sf_list[i]->phi;
-			// 	IVEC * neighbours  = sf_nodes->sf_list[i]->neighbours;
-			// 	for ( int k = 0 ; k < neighbours->max_dim ; k++)
-			// 	{
-			// 		Lambda->me[2*i][2*neighbours->ive[k]] += phi->ve[k]; 
-			// 		Lambda->me[2*i+1][2*neighbours->ive[k]+1] += phi->ve[k]; 
-			// 	}
-			// }
-			// free_shapefunction_container(sf_nodes);
+		// 	// // u = Lambda * u_g
+		// 	// for ( int i = 0 ; i < mfree.num_nodes ; i++)
+		// 	// {
+		// 	// 	VEC * phi = sf_nodes->sf_list[i]->phi;
+		// 	// 	IVEC * neighbours  = sf_nodes->sf_list[i]->neighbours;
+		// 	// 	for ( int k = 0 ; k < neighbours->max_dim ; k++)
+		// 	// 	{
+		// 	// 		Lambda->me[2*i][2*neighbours->ive[k]] += phi->ve[k]; 
+		// 	// 		Lambda->me[2*i+1][2*neighbours->ive[k]+1] += phi->ve[k]; 
+		// 	// 	}
+		// 	// }
+		// 	// free_shapefunction_container(sf_nodes);
 
 
 
-		}
+		// }
 		/* ------------------------------------------*/
 		/* --------------Write outputs---------------*/
 		/* ------------------------------------------*/
@@ -882,13 +861,13 @@ int main(int argc, char** argv) {
 
 		/*  Update counters */
 		t_n = t_n_1;
-		//delta_t = t_min/10;
+		//delta_t = 0.8*delta_t_new;
 		/*  Store previous volume */
 		volume_t = volume; 
 		// Store previous time step quanities for the kinematic, and force variables.
 		v_copy(Fint_n_1,Fint_n);
 		v_copy(Fext_n_1,Fext_n);
-		v_copy(v_n_1,v_n_h);
+		//v_copy(v_n_1,v_n_h);
 		v_copy(d_n_1,d_n);
 		//v_copy(v_n_1,v_n);
 		v_copy(a_n_1,a_n);
@@ -896,7 +875,8 @@ int main(int argc, char** argv) {
 		// update iteration counter
 		double t_min = 0;
 		n++	;
-		printf("%i  \t  %lf %10.2E %lf %lf %lf %lf %10.2E %lf \n",n,t_n,Wbal,pre_n_1,disp_rod,v_rod,volume/1e3,t_min,mfree.di->ve[0]);
+		printf("%i  \t  %lf %10.2E %lf %lf %lf %lf %10.2E %lf \n",n,t_n,Wbal,
+			pre_n_1,disp_rod,v_rod,volume/1e3,delta_t,mfree.di->ve[0]);
 
 
 

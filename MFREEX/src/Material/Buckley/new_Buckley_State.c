@@ -49,6 +49,11 @@ state_Buckley ** new_Buckley_State(int num_Points, double * temperatures, int is
 		state[i]->W = m_get(dim_s,dim_s);
 		state[i]->d = m_get(dim_s,dim_s);
 
+
+		state[i]->D_c = m_get(dim_s,dim_s);
+		state[i]->D_b = m_get(dim_s,dim_s);
+
+
 		state[i]->Lbar = m_get(dim_s,dim_s);
 		state[i]->Dbar = m_get(dim_s,dim_s);
 		state[i]->Bbar = m_get(dim_s,dim_s);
@@ -104,6 +109,12 @@ state_Buckley ** new_Buckley_State(int num_Points, double * temperatures, int is
 
 		state[i]->gamma = 0.653e6;
 
+
+		// time step
+		state[i]->delta_sig = m_get(dim_s,dim_s);
+		state[i]->delta_sig_dev = m_get(dim_s,dim_s);
+		state[i]->delta_sig_vol = m_get(dim_s,dim_s);
+		state[i]->sig_R = m_get(dim_s,dim_s);
 
 
 	}

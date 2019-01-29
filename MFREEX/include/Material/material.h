@@ -67,6 +67,9 @@ typedef struct state_Buckley
 	MAT * Dbar;
 	MAT * Wbar;
 
+	MAT * D_c;
+	MAT * D_b;
+
 	// rotation
 	MAT * Omega;
 
@@ -110,6 +113,19 @@ typedef struct state_Buckley
 	VEC * omega;
 	VEC * h;
 	VEC * z;
+
+	// Time stepping variables
+
+	double lambda_0 ;
+	double mu_0 ;
+
+	double lambda;
+	double mu; 
+
+	MAT * delta_sig_vol ;
+	MAT * delta_sig_dev ; 
+	MAT * delta_sig;
+	MAT * sig_R;
 
 
 

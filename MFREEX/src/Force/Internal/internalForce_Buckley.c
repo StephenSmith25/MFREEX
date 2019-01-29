@@ -13,7 +13,8 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 	double Kb = matParams->ve[9];
 	double Gb = matParams->ve[10];
- 
+
+
 	double mu = Gb;
 	double lambda = Kb - (2.00/3.00)*mu;
 	int dim_piola = 0;
@@ -101,41 +102,41 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			/* ------------------------------------------*/
 			/* --------------New time increment----------*/
 			/* ------------------------------------------*/
-			// m_add(Sb_n_1, Sc_n_1, cauchy_dev);
-			// if ( (i == 1) || ( i == 0) || ( i == 21) )
-			// {
-			// 	printf("F(%d) = ",i);
-			// 	m_foutput(stdout, stateNew[i]->F);
-			// }
-
-			// // Find hydrostatic and deviatoric stress
-
-			// m_sub(cauchy_dev,stateOld[i]->dev_Stress,delta_cauchy_dev);
-
-			// for ( int k = 0 ; k < dim_strain ; k++)
-			// {
-			// 	cauchy_hyd->me[i][i] = matParams->ve[5]*log(Jacobian_n_1);
-
-			// }
-			// m_sub(cauchy_hyd,stateOld[i]->hyd_Stress,delta_cauchy_hyd);
-			//Find 1D frequency bounds
-			// time step calculation
-			// double B11 = 0;
-			// double B22 = 0;
-			// double MaxB = -1;
-			// double rho = 1000e-9;
 
 
-			// for ( int k = 0 ; k < (num_neighbours)*2 ; k++)
-			// {	
-			// 	B11 += (num_neighbours/rho)*(B->me[0][k]*B->me[0][k]);
-			// 	B22 += (num_neighbours/rho)*(B->me[1][k]*B->me[1][k]);
+			// Find 1D frequency bounds
+			//time step calculation
+			double rho = 1380e-9;
+			double B11 = 0;
+			double B22 = 0;
+			double B33 = 0;
+			double MaxB = -1;
+			double num_neighbours_J = 0;
+			double m_j;
+			double volume_I = scni[i]->area;
+			for ( int k = 0 ; k < (num_neighbours) ; k++)
+			{	
+				int index_J = neighbours->ive[k];
+				num_neighbours_J = scni[index_J]->sfIndex->max_dim;
+				volume_I = scni[i]->area;
+				m_j = rho * scni[index_J]->area;
+				// if ( is_axi == 1){
+				// 	m_j = rho * scni[index_J]->area*2*PI*scni[index_J]->r;
+				// }
+				B11 += (volume_I*num_neighbours_J/m_j)*(B->me[0][2*k]*B->me[0][2*k]);
+				B22 += (volume_I*num_neighbours_J/m_j)*(B->me[1][2*k+1]*B->me[1][2*k+1]);
 
-			// }
+				if ( is_axi == 1)
+				{
+				B33 += (volume_I*num_neighbours_J/m_j)*(B->me[4][2*k]*B->me[4][2*k]);
+				}
 
-			// MaxB = max(B11,B22);
-
-
+			}
+				MaxB = max(B11,B22);
+				if ( is_axi == 1)
+				{
+					MaxB = max(MaxB,B33);
+				}
 
 			/* ------------------------------------------*/
 			/* ---------------Bulk Damping---------------*/
@@ -145,17 +146,19 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			double Jacobian = stateNew[i]->Jacobian;
 
 
-			double b1 = 0.06;
-			double b2 = 1.44; 
-			double Le = 4/1000;
-			double rho = 1380;
+
+			double lambda = stateNew[i]->lambda/1e6;
+			double mu = stateNew[i]->mu/1e6;
+			double b1 = 0;
+			double b2 = 0; 
+			double Le = sqrt(scni[i]->area);
 			double c = sqrt(((lambda+2*mu)/rho));
-			double P_b1 = 0;
+			double P_b1 = b1*div_v*rho*Le*c;
 			double eta = 0;
 			double P_b2 = 0;
 			if ( div_v < 0 ){
 				eta = b1;
-				P_b2 = Le*rho*(b2*b2*Le*div_v*div_v) - b1*div_v*rho*Le*c;
+				P_b2 = Le*rho*(b2*b2*Le*div_v*div_v);
 				eta -= b2*b2*Le*(1/c)*div_v;
 			}
 
@@ -163,22 +166,24 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 
 
-			// double delta_t = (2.00/sqrt(((lambda + 2*mu)*MaxB)))*(sqrt(1+eta*eta)-eta);
-			// if ( delta_t <delta_t_min_i )
-			// {
-			// 	delta_t_min_i = delta_t;
-			// }
+			double delta_t = (2.00/sqrt(((lambda + 2*mu)*MaxB)))*(sqrt(1+eta*eta)-eta);
+			if ( delta_t <delta_t_min_i )
+			{
+				delta_t_min_i = delta_t;
+			}
 
-			if ((i == 124) && (call_count % 50 == 0)) {
+
+
+			if ((i == 124) && (call_count % 100 == 0)) {
 
 
 			//m_foutput(stdout,stateNew[i]->W);
 	
 			stateNew[i]->F->me[2][1] = t_n_1;
 			stateNew[i]->F->me[1][2] = stateNew[i]->critLambdaBar;
-			stateNew[i]->F->me[2][0] = stateNew[i]->tau;
-			stateNew[i]->F->me[0][2] = stateNew[i]->gamma;
-
+			stateNew[i]->F->me[2][0] = stateNew[i]->mu;
+			stateNew[i]->F->me[0][2] = stateNew[i]->lambda;
+			printf("lambda = %10.2E, mu = %10.2E \n",stateNew[i]->lambda,stateNew[i]->mu);
 			//m_add(Sb_n_1,Savg_bond,Savg_bond);
 				//m_add(Sc_n_1,Savg_conf,Savg_conf);
 			snprintf(filename, 50, "strain_%d%s",print_count,".txt");
@@ -216,10 +221,10 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			// sigma->ve[2] = (Sc_n_1->me[0][1] + Sb_n_1->me[0][1] )/1e6;
 			// sigma->ve[3] = (Sb_n_1->me[2][2] + Sb_n_1->me[2][2] + mSigma + (P_b1+P_b2))/1e6 ;
 
-			sigma->ve[0] = (stateNew[i]->sigma->me[0][0]+(P_b1+P_b2))/1e6;
-			sigma->ve[1] = (stateNew[i]->sigma->me[1][1]+(P_b1+P_b2))/1e6;
+			sigma->ve[0] = (stateNew[i]->sigma->me[0][0])/1e6 +(P_b1+P_b2);
+			sigma->ve[1] = (stateNew[i]->sigma->me[1][1])/1e6 +(P_b1+P_b2);
 			sigma->ve[2] = stateNew[i]->sigma->me[0][1]/1e6;
-			sigma->ve[3] = (stateNew[i]->sigma->me[2][2]+(P_b1+P_b2))/1e6;
+			sigma->ve[3] = (stateNew[i]->sigma->me[2][2])/1e6 +(P_b1+P_b2);
 
 			// if ( i == 0)
 			// {
@@ -294,10 +299,10 @@ double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	#pragma omp critical
 		{
 			__add__(fIntTemp->ve, Fint->ve, Fint->ve, Fint->max_dim);
-			// if ( delta_t_min_i < delta_t_min)
-			// {
-			// 	delta_t_min = delta_t_min_i;
-			// }
+			if ( delta_t_min_i < delta_t_min)
+			{
+				delta_t_min = delta_t_min_i;
+			}
 		}
 
 	/*  Free allocated memory */

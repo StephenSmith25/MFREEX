@@ -1,7 +1,7 @@
 
 #include "Material/Buckley/buckleyStress.h"
 #include "determinant.h"
-
+#include "contraction.h"
 int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matParams, 
 	VEC * critLambdaParams, double dt, int i, int IS_AXI)
 {
@@ -301,7 +301,6 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			// Rotate back
 
 
-
 			stateNew->mSigma = log(stateNew->Jacobian)*Kb;
 
 			m_add(stateNew->Sb, stateNew->Sc, stateNew->sigma);
@@ -319,80 +318,84 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 				stateNew->sigma->me[2][2] += stateNew->mSigma;	
 
 			}
-
-
-			// // time step update
-			// mtrm_mlt(stateNew->R,stateNew->D,stateNew->temp);
-			// m_mlt(stateNew->temp,stateNew->R,stateNew->temp1);
-
-
-			// double dkk = stateNew->temp1->me[0][0] + stateNew->temp1->me[1][1] + stateNew->temp1->me[2][2];
-
-			// double ep_vol = dkk*dt;
-			// m_ident(stateNew->temp);
-			// sm_mlt((1.000/3.00)*dkk,stateNew->temp,stateNew->delta_ep_vol);
-			// m_sub(stateNew->temp1,stateNew->delta_ep_vol,stateNew->delta_ep_dev);
-
-			// MAT * delta_sigma = stateNew->temp;
-
-			// m_sub(stateNew->sigma,stateOld->sigma,delta_sigma);
-
-			// double sigma_vol = delta_sigma->me[0][0] + delta_sigma->me[1][1] + delta_sigma->me[2][2];
 			
 
-			// m_ident(stateNew->temp);
-			// sm_mlt((1.000/3.00)*sigma_vol,stateNew->temp,stateNew->temp);
-			// m_sub(stateNew->sigma,stateNew->temp,stateNew->temp1);
+			// Rotate stres
+			mtrm_mlt(stateNew->R,stateNew->sigma,stateNew->temp);
+			m_mlt(stateNew->temp,stateNew->R,stateNew->sig_R);
+
+
+			//Find change in stress
+			m_sub(stateNew->sig_R,stateOld->sig_R,stateNew->delta_sig);
+
+		
+
+			// Find increment in deviatoric strain
+			m_copy(stateNew->d,stateNew->delta_ep_dev);
+
+			double sigma_vol = stateNew->mSigma - stateOld->mSigma;
+			double ep_vol = (1.00/3.00)*stateOld->Jacobian*stateNew->div_v*dt;
+
+
+			// Find stress change
+			m_ident(stateNew->temp);
+			sm_mlt((1.000/3.00)*sigma_vol,stateNew->temp,stateNew->delta_sig_vol);
+			m_sub(stateNew->delta_sig,stateNew->delta_sig_vol,stateNew->delta_sig_dev);
+
+
+			double eij_eij = contraction(stateNew->delta_ep_dev, stateNew->delta_ep_dev);
+			double sij_eij = contraction(stateNew->delta_sig_dev, stateNew->delta_ep_dev);
+			double mu;
+			double lambda;
+			double kappa; 
+
+
+			double lambda_0 = stateNew->lambda_0;
+			double mu_0 = stateNew->mu_0;
+
+
+
+			if ( fabs(ep_vol) > pow(10,-6))
+			{
+
+				if ( dt*dt*eij_eij > pow(10,-12))
+				{
+					mu = (1.00/2.00) * ( sij_eij / (dt * eij_eij));
+					kappa = 1.8e9;
+					lambda = kappa - (2.00/3.00)*mu;
+
+
+				}else{
+
+					kappa = 1.8e9;
+					lambda = lambda_0;
+					mu = (1.00/4.00) * ( 3*(lambda_0 + 2*mu_0) - 3*kappa );
+
+				}
+
+
+			}else{
+
+				if ( dt*dt*eij_eij > pow(10,-12))
+				{
+					mu = (1.00/2.00) * ( sij_eij / (dt * eij_eij));
+					lambda = lambda_0 + 2*mu_0 - 2*mu;
+
+				}else{
+					lambda = lambda_0;
+					mu = mu_0;
+				}
+
+			}
+
+
+			stateNew->lambda = fabs(lambda);
+			stateNew->mu = fabs(mu);
 
 
 
 
-
-
-
-			// double eij_eij = contraction(stateNew->delta_ep_dev, stateNew->delta_ep_dev);
-			// double sij_eij = contraction(stateNew->temp1, stateNew->delta_ep_dev);
-			// double mu;
-			// double lambda;
-			// double kappa; 
-
-
-			// double lambda_0 = 0;
-			// double mu_0 = 0;
-
-
-
-			// if (ep_vol > pow(10,-6))
-			// {
-			// 	if ( dt*dt*eij_eij > pow(10,-12))
-			// 	{
-			// 		mu = (1.00/2.00) * ( sij_eij / (dt * eij_eij));
-
-
-			// 	}else{
-
-			// 		kappa = sigma_vol/ep_vol;
-			// 		lambda = lambda_0;
-			// 		mu = 0.5 * ( 3*(lambda_0 + 2*mu_0) - 3*kappa );
-
-			// 	}
-
-
-			// }else{
-			// 	if ( dt*dt*eij_eij > pow(10,-12))
-			// 	{
-			// 		mu = (1.00/2.00) * ( sij_eij / (dt * eij_eij));
-			// 		lambda = 
-
-			// 	}else{
-			// 		lambda = lambda_0;
-			// 		mu = mu_0;
-			// 	}
-
-			// }
-
-
-
+			// UPDATE PREVIOUS TIME STEP VARAIBLES
 			m_copy(stateNew->F,stateOld->F);
 			m_copy(stateNew->invF,stateOld->invF);			
 			m_copy(stateNew->Fbar,stateOld->Fbar);			
@@ -400,7 +403,7 @@ int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, VEC * matP
 			m_copy(stateNew->Sc,stateOld->Sc);	
 			m_copy(stateNew->Sb_R,stateOld->Sb_R);			
 			m_copy(stateNew->Sc_R,stateOld->Sc_R);			
-			m_copy(stateNew->sigma,stateOld->sigma);
+			m_copy(stateNew->sig_R,stateOld->sig_R);
 			stateOld->Jacobian = stateNew->Jacobian;
 			stateOld->mSigma = stateNew->mSigma;		
 			stateOld->div_v = stateNew->div_v;	

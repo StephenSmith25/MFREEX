@@ -44,6 +44,7 @@ int edwardsVilgis(VEC * stress, VEC * lambda, VEC * para, double Jacobian, doubl
 	double tg = 1 - 2*td ;
 	double th = 0;
 
+
 	for ( int k = 0 ; k < 3 ; k++){
 		th = th + (lambda->ve[k])/(1+eta*lambda->ve[k]);
 	}

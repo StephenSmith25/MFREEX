@@ -33,7 +33,7 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	MAT * intermediate3 = stateNew->temp2;
 
 
-	MAT * Dn = stateOld->temp;
+	MAT * Dn = stateOld->D_c;
 	MAT * Ds = stateOld->temp1;
 	MAT * relSpin = stateOld->temp2;
 	VEC * Sc_n_1p = stateNew->v_temp1;
@@ -52,18 +52,35 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	++call_count_2;
 
 
-
-
-	if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
-		gamma_n_1 = gammaV(stateNew,stateOld->lambdaNMax,
-			stateNew->critLambdaBar,para, deltaT, IS_AXI);
-		sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
-				//m_foutput(stdout,stateNew->Sc);
-	}else{
-		Ds = m_zero(Ds);
+	double D1,D2;
+	if ( IS_AXI)
+	{
+		D1 = stateNew->d->me[1][1];
+		D2 = stateNew->d->me[2][2];
+	}else
+	{
+		D1 = stateNew->d->me[0][0];
+		D2 = stateNew->d->me[1][1];		
 	}
-	// //APPROACH 1 CASE 1
-	// network rate of deformation tensor 
+
+
+	// if ( D1 >= 0 && D2 >= 0){
+		if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
+			gamma_n_1 = gammaV(stateNew,stateOld->lambdaNMax,
+				stateNew->critLambdaBar,para, deltaT, IS_AXI);
+			sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
+					//m_foutput(stdout,stateNew->Sc);
+		}else{
+			Ds = m_zero(Ds);
+		}
+	// }else{
+	// 				Ds = m_zero(Ds);
+
+	// }
+
+
+	// // //APPROACH 1 CASE 1
+	// // network rate of deformation tensor 
 	m_sub(stateNew->W,stateNew->Omega,relSpin);
 	m_sub(stateNew->Dbar,Ds,Dn);
 
@@ -81,7 +98,7 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 
 	m_add(intermediate1,intermediate3,BnCr);
 
-	//Material time derivative of B  ( Jaumann )
+	//Material time derivative of B  ( Green-Naghdi )
 	m_mlt(stateNew->Omega,stateOld->Bbar,intermediate1);
 	m_mlt(stateOld->Bbar,stateNew->Omega,intermediate2);
 
@@ -102,23 +119,38 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 
 
 
+	//APPROACH 2, with spin
+	// m_sub(stateNew->Lbar,stateNew->Omega,stateNew->temp);
+	// m_sub(stateNew->temp,Ds,stateNew->temp);
+	// sm_mlt(deltaT,stateNew->temp,intermediate1);
 
 
-	// APPROACH 2 CASE 3-
-	// m_sub(stateOld->Dbar,Ds,Dn);
+
+	// m_sub(stateNew->Dbar,Ds,Dn);
 	// sm_mlt(deltaT,Dn,intermediate1);
 	// m_ident(intermediate2);
 	// m_add(intermediate2,intermediate1,intermediate1);
 	// m_mlt(intermediate1,stateOld->Fn,stateNew->Fn);
 
 	// //Spin components
-	// m_mlt(stateNew->W,stateOld->Fn,intermediate1);
+	// m_mlt(stateNew->Omega,stateOld->Fn,intermediate1);
 	// sm_mlt(deltaT,intermediate1,intermediate1);
 	// m_add(stateNew->Fn,intermediate1,stateNew->Fn);
 
 
+	// method 2, no rotation
+	// m_sub(stateNew->Dbar,Ds,Dn);
+	// sm_mlt(deltaT,Dn,intermediate1);
+	// m_ident(intermediate2);
+	// m_add(intermediate2,intermediate1,intermediate1);
+	// m_mlt(intermediate1,stateOld->Fn,stateNew->Fn);
 
-	// mmtr_mlt(stateNew->Fn, stateNew->Fn, stateNew->Bbar);
+
+
+
+
+	//mmtr_mlt(stateNew->Fn, stateNew->Fn, stateNew->Bbar);
+	//m_copy(stateNew->Fn,stateOld->Fn);
 	
 	// Eigen Value process
 

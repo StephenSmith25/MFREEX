@@ -47,11 +47,11 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	double alpha_sig = 1;
 	
 	double sigma_m = stateOld->mSigma;
-	// sigma_m = 0;
-	// if (sigma_m < 0)
-	//  {
-	//  	sigma_m = 0;
- // 	}
+	if (sigma_m < 0)
+	 {
+	 	sigma_m = 0;
+ 	}
+
 
 	if ( tauOCT == 0){
 		alpha_sig = 1;
@@ -69,6 +69,8 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	{
 		alpha_sig = 0.1;
 	}
+		alpha_sig = 1.00;
+
 	// tau = tau_s * alpha_s * alpha_T * alpha_sig ;
 	double tau = (star_mu0/(2*Gb))*alpha_sig*alpha_s*alpha_T;
 
@@ -88,6 +90,7 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 
 	m_add(Sb_n,stateNew->temp1,Sb_n_1);
 
+	sm_mlt(1.00/(2*Gb*dt),stateNew->temp1,stateNew->D_b);
 
 
 	return 0;
