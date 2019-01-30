@@ -30,70 +30,69 @@
 #include "Boundary/Displacement/enforceBC.h"
 #include "Integration/SCNI/scni_update_B.h"
 
-/*  Function definitions */
+// problem
+
+const int dim = 2;
+const int is_AXI = 1;
+
+// Loading
+const double INITIAL_BAR_VELOCITY = -300; // 300 m/s
+
+// model
+const double radius = 0.391/100; // 0.391cm
+const double height = 2.346/100; // 2.346cm;
+const double start_height = 0;
+const double NUM_NODES_R = 10;
+const double NUM_NODES_Z = 30;
+
+// MATERIAL
+const double YIELD_STRESS = 0.29e9; // Pa
+const double mu = 0.3; // poisson ratio
+const double E = 78.2e9; // Pa
+const double rho = 2700; // kg/m^3
+
+// time step
+const double tMax = 10;
+const double deltaT = 1e-9;
+
+// Meshfree
+const double dmax = 2;
+const int constant_support_size = 1;
+const int is_stabalised = 0;
+
+// Define the rigid plate
+const double RIGID_PLATE_WIDTH = 0.5/100;
+
+
+// writing files
+const int  writeFreq = 100;
+
+
 
 int main(int argc, char** argv) {
 
-	/*////////////////////////////////////////////////////////// */
-	/*                                                           */
-	/*			        Initialisation                           */
-	/*                                                           */
-	/*////////////////////////////////////////////////////////// */
+
 
 
 	struct timeval beginPre, endPre, endExp;
 
 	gettimeofday(&beginPre, NULL);
 
-	/* Initialsie random parameters  */
-	FILE * fp;
-	int i;
-	char code;
-
-	/*  Material parameters */
-	const double rho = 1000e-9;
-
-
-
-	/*  Material struct */
-	VEC * materialParameters = v_get(3);
-	materialParameters->ve[0] = 1835.0;
-	materialParameters->ve[1] = 146.8;
-	materialParameters->ve[2] = 1e5;
-
-
-	// VEC * materialParameters = v_get(4);
-	// materialParameters->ve[0] = 0.373;
-	// materialParameters->ve[1] = -0.031;
-	// materialParameters->ve[2] = 0.005;
-	// materialParameters->ve[3] = 1e5;
-
-
-	char * material = "mooney_rivlin";
-	/*  Time step variables */
-
-	double deltaT = 5e-7;
-	double tMax = 0.8;
-
-	int dim = 2;
-	int is_AXI = 0;
-
-
-
-	/*  Meshfree Paramters */
-	double dMax = 2;
-	double dMax_x = 2.5;
-	double dMax_y = 2.5;	
-
-
-	/*  Loading parameters */
-	double pressure = 200;
-
-	/*  Plotting parameters */
 
 
 	/*////////////////////////////////////////////////////////// */
 	/*////////////////////////////////////////////////////////// */
+
+
+
+
+	char * material = "cubic_rivlin";
+
+	VEC * materialParameters = v_get(4);
+	materialParameters->ve[0] = 0.373e9;
+	materialParameters->ve[1] = -0.031e9;
+	materialParameters->ve[2] = 0.005e9;
+	materialParameters->ve[3] = 1e9;
 
 
 	/*////////////////////////////////////////////////////////// */
@@ -102,54 +101,28 @@ int main(int argc, char** argv) {
 	/*                                                           */
 	/*////////////////////////////////////////////////////////// */
 
+	// generate the model
 
-
-	/*  Create points 
-	 *
-	 *	Via a 2D triangulation 
-	 *
-	 *  */
-	// Read PLSG 
-
-	char opt[20] = "pDq0a0.3";
-	char fileName[30] = "cylinder";
-	double * points_out ;
+	int num_boundary ;
 	int * boundaryNodes;
-	int numBoundary;
-	int * nodalMarkers;
-	int  numnodes;
-	double * temperatures;
-	trigen(&points_out,&boundaryNodes,opt,fileName,&numnodes,&numBoundary,&nodalMarkers,&temperatures);	
+
+	MAT * xI = meshgrid(0.00, radius, NUM_NODES_R, start_height, 
+		height+start_height, NUM_NODES_Z, &boundaryNodes, &num_boundary);
 
 
-	MAT * xI = m_get(numnodes,dim);
-	// create nodes
-	for ( int i = 0 ; i < numnodes ; i++)
-	{
-		xI->me[i][0] = points_out[2*i];
-		xI->me[i][1] = points_out[2*i+1];
 
-	}
-
-	fp = fopen("boundary.txt","w");
-	for (int i = 0; i < numBoundary; ++i)
-	{
-		/* code */
-		fprintf(fp,"%i\n",boundaryNodes[i]+1);
-	}
-	fclose(fp);
-
-
-	
+	printf("creating voronoi diagram \n");
+	// Construct voronoi diagram
+	FILE * fp;
 	struct timeval start, end;
 	// generate clipped voronoi diagram
 	gettimeofday(&start, NULL);
 	voronoi_diagram * vor = NULL;
-	vor = generate_voronoi(xI->base, boundaryNodes, xI->m, numBoundary, 2);
+	vor = generate_voronoi(xI->base, boundaryNodes, xI->m, num_boundary, dim);
  	// get time took to run
 	gettimeofday(&end, NULL);
 	double delta = ((end.tv_sec  - start.tv_sec) * 1000000u + 
-         end.tv_usec - start.tv_usec) / 1.e6;
+		end.tv_usec - start.tv_usec) / 1.e6;
 
 	// get time taken to run
 	printf("voronoi took %lf seconds to run\n", delta);
@@ -158,80 +131,41 @@ int main(int argc, char** argv) {
 	fp = fopen("cells.txt","w");
 	print_voronoi_diagram(fp,vor);
 	fclose(fp);
-	/*  Set up efgBlock 
-	 *  nodes
-	 *  meshfree domain
-	 *  */
-	
+
+	m_foutput(stdout, xI);
+	// Rigid plate
+	MAT * rigidPlate = m_get(2,2);
+	rigidPlate->me[0][0] = 0;
+	rigidPlate->me[1][0] = RIGID_PLATE_WIDTH;
+	// rigidPlate->me[2][0] = 2*RIGID_PLATE_WIDTH/3.00;
+	// rigidPlate->me[3][0] = RIGID_PLATE_WIDTH;
+
+
 	/* ------------------------------------------*/
 	/* ------------Meshfree Domain---------------*/
 	/* ------------------------------------------*/
 
 	// shape function parameters
-	double dmax = 2.5;
-	int constant_support_size = 1;
 	VEC * dI = v_get(xI->m);
 
 	// meshfree domain
 	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI};
 	setDomain(&mfree,constant_support_size, dmax);
 
-	v_foutput(stdout,mfree.di);
-
 	
-
 	/* ------------------------------------------*/
 	/* ------------------SCNI--------------------*/
 	/* ------------------------------------------*/
-
-	int is_stabalised = 0;
 	SCNI_OBJ * _scni_obj = NULL;
-	MSCNI_OBJ * _mscni_obj = NULL;
-
 	struct timeval start2, end2;
 	gettimeofday(&start2, NULL);
-	// set up return container
-	// generate shape functions at sample points 
 	_scni_obj = generate_scni(vor, NULL , is_stabalised, is_AXI, dim, &mfree);
 	gettimeofday(&end2, NULL);
 	delta = ((end2.tv_sec  - start2.tv_sec) * 1000000u + 
-         end2.tv_usec - start2.tv_usec) / 1.e6;
+		end2.tv_usec - start2.tv_usec) / 1.e6;
 	printf("scni function took %lf seconds to run\n", delta);
 
-	// Test divergence free condition
-	IVEC * index ;
-	MAT * B; 
-	MAT * check_B = m_get(dim*dim,2);
-	printf("checking scni \n \n");
-	int checkPoint = 33;
 
-	m_foutput(stdout,_scni_obj->scni[checkPoint]->B);
-	iv_foutput(stdout, _scni_obj->scni[checkPoint]->sfIndex);
-
-	printf("checking divergence free condition at point %d\n", checkPoint);
-	printf("with coordinates %lf %lf\n", mfree.nodes->me[checkPoint][0], mfree.nodes->me[checkPoint][1]);
-	printf("cell area = %lf \n", _scni_obj->scni[checkPoint]->area);
-	printf("and neighbours \n");
-	for ( int i = 0 ; i < _scni_obj->num_points ; i++)
-	{
-		index = _scni_obj->scni[i]->sfIndex;
-		B = _scni_obj->scni[i]->B;
-
-		for (int k = 0 ; k < index->max_dim ; k++){
-			int indx = index->ive[k];
-
-			if ( indx == checkPoint)
-			{
-				check_B->me[0][0] += B->me[0][2*k]*_scni_obj->scni[i]->area;
-				check_B->me[1][1] += B->me[1][2*k+1]*_scni_obj->scni[i]->area;
-				check_B->me[2][0] += B->me[2][2*k]*_scni_obj->scni[i]->area;
-				check_B->me[3][1] += B->me[3][2*k+1]*_scni_obj->scni[i]->area;
-			}
-		}
-	}
-
-
-	
 	/* ------------------------------------------*/
 	/* ----------------Mass Vector---------------*/
 	/* ------------------------------------------*/
@@ -253,7 +187,6 @@ int main(int argc, char** argv) {
 		{
 			double r = _scni_obj->scni[i]->r;
 			volume = volume*r*2*PI;
-
 		}
 		for ( int k = 0 ; k < neighbours->max_dim ; k++)
 		{
@@ -261,55 +194,16 @@ int main(int argc, char** argv) {
 			nodal_mass->ve[index] += phi->ve[k]*rho*volume;
 		}
 
-		//nodal_mass->ve[i] = volume*rho;
-		//inv_nodal_mass->ve[i] = 1.000/nodal_mass->ve[i];
-
 	}
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
 		inv_nodal_mass->ve[i] = 1.00/nodal_mass->ve[i];
 	}
 	printf("total mass = %lf (g) \n", v_sum(nodal_mass)*1000);
-	v_foutput(stdout,nodal_mass);
-	
 
-	
 	/* ------------------------------------------*/
-	/* ----------------Boundaries---------------*/
+	/* -----------Transformation Matrix----------*/
 	/* ------------------------------------------*/
-	
-
-	// Traction
-	IVEC * traction_nodes ;
-	getBoundary(&traction_nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,2);
-	pressure_boundary * pB = new_pressure_boundary(traction_nodes, &mfree);
-	m_foutput(stdout,pB->coords);
-	pB->is_axi = is_AXI;
-	/*  Set up essential boundary  */
-
-	m_foutput(stdout,pB->segment_normals);
-
-
-	/*  Set up essential boundary  */
-	EBC * eb1 = malloc(1*sizeof(EBC));
-	eb1->dofFixed = 1;
-	getBoundary(&eb1->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,3);
-	iv_addNode(eb1->nodes,traction_nodes->ive[0],'e');
-	setUpBC(eb1,inv_nodal_mass,&mfree);
-	m_foutput(stdout,eb1->coords);
-
-	/*  Set up essential boundary  */
-	EBC * eb2 = malloc(1*sizeof(EBC));
-	eb2->dofFixed = 2;
-	getBoundary(&eb2->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,8);
-	iv_addNode(eb2->nodes,traction_nodes->ive[traction_nodes->max_dim -1 ],'s');
-	setUpBC(eb2,inv_nodal_mass,&mfree);
-	m_foutput(stdout,eb2->coords);
-
-
-
-	/*  Get transformation matrix */
-	/* Lambda  */
 
 	shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes, "linear", "cubic", 2, 1, &mfree);
 
@@ -329,19 +223,89 @@ int main(int argc, char** argv) {
 
 	}
 
-	free_shapefunction_container(sf_nodes);
+
+	// Find eb1 nodes
+	IVEC * eb1_nodes = iv_get(NUM_NODES_Z);
 
 
-	gettimeofday(&endPre, NULL);
-	long elapsedPre = (endPre.tv_sec-beginPre.tv_sec) + (endPre.tv_usec-beginPre.tv_usec)/1000000.0;
+	int count =0;
+	for ( int i = 0 ; i < mfree.num_nodes ; i++)
+	{
+		double X = mfree.nodes->me[i][0];
+		double Y = mfree.nodes->me[i][1];
 
-	///////////////////////////////////////////////////////////////
-	
+		if ( X == 0)
+		{
+			eb1_nodes->ive[count] =  i;
+			++count;
+		}
+
+
+	}
+
+	iv_foutput(stdout, eb1_nodes);
+
+
+	/*  Set up essential boundary  */
+	EBC * eb1 = malloc(1*sizeof(EBC));
+	eb1->nodes = eb1_nodes;
+	eb1->dofFixed = 1;
+	int num_nodes_eb1 = eb1->nodes->max_dim;
+	setUpBC(eb1,inv_nodal_mass,&mfree);
+	m_foutput(stdout,eb1->coords);
+
+	/* ------------------------------------------*/
+	/* ----------------Contact nodes------------*/
+	/* ------------------------------------------*/
+
+
+	/* ------------------------------------------*/
+	/* ----------------Contact nodes------------*/
+	/* ------------------------------------------*/
+
+	IVEC * contact_nodes = iv_get(NUM_NODES_R);
+	MAT * contact_nodes_coords = m_get(NUM_NODES_R,dim);
+	count =0;
+	for ( int i = 0 ; i < mfree.num_nodes ; i++)
+	{
+		double X = mfree.nodes->me[i][0];
+		double Y = mfree.nodes->me[i][1];
+
+		if ( Y == start_height)
+		{
+			contact_nodes->ive[count] =  i;
+			contact_nodes_coords->me[count][0] = X;
+			contact_nodes_coords->me[count][1] = Y;
+
+			++count;
+		}
+
+
+	}
+
+
+	/*  Set up essential boundary  */
+	EBC * eb2 = malloc(1*sizeof(EBC));
+	eb2->nodes = contact_nodes;
+	eb2->dofFixed = 2;
+	setUpBC(eb2,inv_nodal_mass,&mfree);
+
+
+
+	printf("contact nodes = ");
+	m_foutput(stdout, contact_nodes_coords);
+		// get shape function and contact nodes
+	shape_function_container * phi_contact = mls_shapefunction(contact_nodes_coords, 
+		"linear", "quartic", 2, 1, &mfree);
+	m_foutput(stdout,contact_nodes_coords);
+
+
 	/*////////////////////////////////////////////////////////// */
 	/*                                                           */
 	/*			      EXPLICIT TIME STEPPNG                      */
 	/*                                                           */
 	/*////////////////////////////////////////////////////////// */
+
 
 	/*  time step  */
 	double t_n_1;
@@ -349,20 +313,26 @@ int main(int argc, char** argv) {
 	double t_n_h;
 
 	int num_dof = mfree.num_nodes * dim;
+	int numnodes = mfree.num_nodes;
+
+
 	/*  Kinematic variables */
 	VEC * a_n_1 = v_get(num_dof);
 	VEC * a_n = v_get(num_dof);
+	// Displacements
 	VEC * d_n_1 = v_get(num_dof);
 	VEC * d_n = v_get(num_dof);
+
+	// Velocities
 	VEC * v_n_1 = v_get(num_dof);
 	VEC * v_n_h = v_get(num_dof);
-
 	VEC * v_n_mh = v_get(num_dof);
 	VEC * v_n = v_get(num_dof);
-	MAT * updatedNodes = m_get(num_dof,dim);
 
 
+	// Displacmeent increment during the step
 	VEC * delta_disp = v_get(num_dof);
+	// Displacment of the nodes
 	VEC * nodal_disp = v_get(num_dof);
 
 	/*  Force variables */
@@ -371,37 +341,47 @@ int main(int argc, char** argv) {
 	VEC * Fint_n_1 = v_get(num_dof);
 	VEC * Fint_n = v_get(num_dof);
 	VEC * Fnet = v_get(num_dof);
+	VEC * Fcont_n_1 = v_get(num_dof);
+	VEC * Fcont_n = v_get(num_dof);
+
+	for ( int i = 0 ; i < numnodes ; i++)
+	{
+		v_n_mh->ve[2*i+1 ] = INITIAL_BAR_VELOCITY;
+	}
 
 
-
-	/* Boundary conditions */
-	eb1->uBar1 = v_get(eb1->nodes->max_dim);
-	eb1->uBar2 = v_get(eb1->nodes->max_dim);
-	eb2->uBar1 = v_get(eb2->nodes->max_dim);
-	eb2->uBar2 = v_get(eb2->nodes->max_dim);
 
 	VEC * v_correct = v_get(num_dof);
+
+
+	// Original nodal postions
 	MAT * nodes_X = m_copy(mfree.nodes,MNULL);
+	// updated nodal positions
+	MAT * updatedNodes = m_get(mfree.num_nodes,dim);
+
+	// boundaries
+	eb1->uBar1 = v_get(eb1->nodes->max_dim);
+	eb2->uBar2 = v_get(eb2->nodes->max_dim);
 
 	// Energy
 	double Wext = 0;
 	double Wint = 0;
 	double Wkin = 0;
 	double Wbal = 0;
-	double tStop = 0;
 
-
-	double preStop = 0;
-
-
-
+	// Contact
+	MAT * testPoint = m_get(1,dim);
+	double distanceProj = 0.00;
+	MAT * msNormal = m_get(1,dim);
+	double f1Cor = 0.00;
+	double f2Cor = 0.00;
 	/*  Iteration counter */
 	int n= 0;
-	/*  File write counter */
-	int writeFreq = 500;
-	int fileCounter = 1;
 
-	double pre_n_1 = 0; 
+
+	/*  File write counter */
+		int fileCounter = 1;
+
 
 	
 	/*  For writing to file */
@@ -409,19 +389,65 @@ int main(int argc, char** argv) {
 	fprintf(fp,"%lf %lf\n",0.00,0.00);
 	fclose(fp);
 
-	while ( t_n < tMax){
+	//while ( t_n < tMax){
+	while ( n < 1000000){
 
 		/*  Update time step */
 		t_n_1 = t_n + deltaT;
 
-		// Find d_n_1 and v_n_h
-		__mltadd__(v_n_h->ve, a_n_1->ve,deltaT,num_dof);
-		// update displacements
-		__mltadd__(d_n_1->ve,v_n_h->ve,deltaT, num_dof);
-		// implement boundary conditions
+		/*  Make a time step  */ 
+		v_mltadd(v_n_mh,a_n,deltaT,v_n_h);
+		v_mltadd(d_n,v_n_h,deltaT,d_n_1);
 
-			
-		// Boundary conditions
+
+
+		__add__(nodes_X->base, d_n_1->ve, updatedNodes->base, num_dof);
+
+
+		// /* Implement contact conditions */
+		// for ( int i = 0 ; i < contact_nodes->max_dim ; i++){
+
+		// 	neighbours = phi_contact->sf_list[i]->neighbours;
+		// 	phi = phi_contact->sf_list[i]->phi;
+		// 	testPoint->me[0][0] = updatedNodes->me[contact_nodes->ive[i]][0];
+		// 	testPoint->me[0][1] = updatedNodes->me[contact_nodes->ive[i]][1];
+
+		// 	distanceProj = contactDetection(testPoint,rigidPlate,msNormal);
+
+
+		// 	if (distanceProj <= 0){
+
+
+		// 		//x direction
+		// 		f1Cor = (2*distanceProj*msNormal->me[0][0]*
+		// 		nodal_mass->ve[contact_nodes->ive[i]])/pow(deltaT,2);
+
+		// 		// y direction
+		// 		f2Cor = (2*distanceProj*msNormal->me[0][1]*
+		// 			nodal_mass->ve[contact_nodes->ive[i]])/pow(deltaT,2);
+
+
+		// 		for ( int k = 0 ; k < neighbours->max_dim ; k++){
+		// 			Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
+		// 			Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
+		// 		}
+
+		// 	}
+
+
+		// }
+
+		// /* Update nodal positions using corrective accceleration */
+		// for ( int i = 0 ; i < numnodes  ; i++ )
+		// {
+		// 	a_n->ve[2*i] = Fcont_n_1->ve[2*i]*inv_nodal_mass->ve[i];
+		// 	a_n->ve[2*i+1] = Fcont_n_1->ve[2*i+1]*inv_nodal_mass->ve[i];
+		// }
+
+		// __mltadd__(v_n_h->ve, a_n->ve,deltaT,num_dof);
+		// __mltadd__(d_n_1->ve,v_n_h->ve,deltaT, num_dof);
+
+		/*  Implement BCs */
 		enforceBC(eb1,d_n_1); 
 		// find velocity correction
 		sv_mlt(1.00/(deltaT),eb1->uCorrect1,v_correct);
@@ -429,10 +455,17 @@ int main(int argc, char** argv) {
 			v_n_h->ve[2*k] += v_correct->ve[k];
 		}
 
+		// if ( n % 1000 == 0)
+		// {
+		// 	v_foutput(stdout, V_n)
+		// }
+
+		/*  Implement BCs */
 		enforceBC(eb2,d_n_1); 
-		sv_mlt(1.000/(deltaT),eb2->uCorrect2,v_correct);
+		// find velocity correction
+		sv_mlt(1.00/(deltaT),eb2->uCorrect2,v_correct);
 		for ( int k = 0 ; k < v_correct->max_dim; k++){
-			v_n_h->ve[2*k+1] += v_correct->ve[k];
+			//v_n_h->ve[2*k+1] += v_correct->ve[k];
 		}
 
 
@@ -440,20 +473,15 @@ int main(int argc, char** argv) {
 		mv_mlt(Lambda,d_n_1,nodal_disp);
 		__add__(nodes_X->base, nodal_disp->ve, updatedNodes->base, num_dof);
 
-		//__mltadd__(d_n_1->ve,v_n_h->ve,deltaT, num_dof);
 
+		// Find internal force
 
-		/*  Update tip load */
-		pre_n_1 = pressure * smoothstep(t_n_1,tMax,0);
-		update_pressure_boundary(pB, updatedNodes);
-		v_zero(Fext_n_1);
-
-		assemble_pressure_load(Fext_n_1, -pre_n_1, pB);
-	
 		double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, v_n_h,
-		 materialParameters, material, is_AXI, dim,t_n_1);
+		 materialParameters, "cubic_rivlin", is_AXI, dim,t_n_1);
 
-				
+
+
+
 		/*  Balance of forces */
 		v_sub(Fext_n_1,Fint_n_1,Fnet);
 		
@@ -464,22 +492,12 @@ int main(int argc, char** argv) {
 		}
 
 
+
 		// update to interger time step velocities
 		v_mltadd(v_n_h,a_n_1,0.5*deltaT,v_n_1);	
 
 
-		for ( int i = 0 ; i < eb1->nodes->max_dim ; i++)
-		{
-			int indx = 2*eb1->nodes->ive[i];
-			v_n_1->ve[indx] = 0;
-		}
-
-
-		for ( int i = 0 ; i < eb2->nodes->max_dim ; i++)
-		{
-			int indx = 2*eb2->nodes->ive[i]+1;
-			v_n_1->ve[indx] = 0;
-		}
+	
 
 
 		// save outputs
@@ -487,12 +505,8 @@ int main(int argc, char** argv) {
 			char filename[50];
 			snprintf(filename, 50, "displacement_%d%s",fileCounter,".txt");
 			mat2csv(updatedNodes,"./Displacement",filename);
-
-			fp = fopen("loadDisp.txt","a");
-			printf("node = %d\n",traction_nodes->ive[traction_nodes->max_dim-1]) ;
-			fprintf(fp,"%lf %lf\n",nodal_disp->ve[0],pre_n_1);		
-			fclose(fp);
 			fileCounter++;	
+
 		}
 		/* ------------------------------------------*/
 		/* -----------------Find Energy--------------*/
@@ -521,11 +535,8 @@ int main(int argc, char** argv) {
 			Wbal = fabs(Wkin + Wint - Wext)/Wmax;
 		}
 		// Store previous time step quanities for the kinematic, and force variables.
-
-
 		v_copy(Fint_n_1,Fint_n);
 		v_copy(Fext_n_1,Fext_n);
-		deltaT = 0.85*delta_t_min;
 		v_copy(v_n_h,v_n_mh);
 		v_copy(d_n_1,d_n);
 		v_copy(v_n_1,v_n);
@@ -534,7 +545,9 @@ int main(int argc, char** argv) {
 		// update iteration counter
 		n++	;
 
-		printf("%i  \t  %lf  \t %lf \t  %10.2E %10.2E \n",n,t_n,pre_n_1, Wbal, deltaT);
+		printf("%i  \t  %lf  \t    %10.2E %10.2E \n",n,t_n, Wbal, deltaT);
+
+
 	}
 
 
@@ -542,14 +555,14 @@ int main(int argc, char** argv) {
 	/*////////////////////////////////////////////////////////// */
 
 
-	gettimeofday(&endExp, NULL);
 
-	long elapsedExp = (endExp.tv_sec-endPre.tv_sec) + (endExp.tv_usec-endPre.tv_usec)/1000000.0;
+	/*////////////////////////////////////////////////////////// */
+	/*			      POSTPROCESSING STAGE                       */
+	/*                                                           */
+	/*////////////////////////////////////////////////////////// */
 
-
-	printf("Post processing took %ld seconds \n Explicit routine took %ld seconds\n",elapsedPre,elapsedExp);
-
-
+	
+	/*  Free allocated memory */
 
 
 
@@ -560,4 +573,8 @@ int main(int argc, char** argv) {
 
 	/*  Program exit */
 	return 0;
+
+
+
+
 }

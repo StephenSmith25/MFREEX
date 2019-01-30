@@ -41,8 +41,7 @@ double contactDetection(MAT * point, MAT * masterNodes,MAT  * msNormal){
 
 	if ( closestNode == 0){
 		closestSeg = closestNode + 1;
-		segNormal[0] = 0;
-		segNormal[1] = -1;
+
 
 		double eA[2] = {masterNodes->me[closestNode+1][0]-masterNodes->me[closestNode][0],
 			masterNodes->me[closestNode+1][1]-masterNodes->me[closestNode][1]};
@@ -51,14 +50,20 @@ double contactDetection(MAT * point, MAT * masterNodes,MAT  * msNormal){
 		double dot2 = masterDist[0]*eA[0] + masterDist[1]*eA[1];
 
 
+
+		segLength = sqrt(pow(eA[0],2) + pow(eA[1],2));
+		segNormal[0] = eA[1]/segLength;
+		segNormal[1] = -eA[0]/segLength;
+
 		if ( dot2 < 0){
 			closestSeg = closestNode;
 		}
 
 	}else if ( closestNode == (masterNodes->m -1)){
+
+
 		closestSeg = closestNode - 1;
-		segNormal[0] = 1;
-		segNormal[1] = 0;	
+
 
 		double eAm1[2] = {masterNodes->me[closestNode][0]-masterNodes->me[closestNode-1][0],
 			masterNodes->me[closestNode][1]-masterNodes->me[closestNode-1][1]};
@@ -67,6 +72,9 @@ double contactDetection(MAT * point, MAT * masterNodes,MAT  * msNormal){
 
 		double dot1 = masterDist[0]*eAm1[0] + masterDist[1]*eAm1[1];
 
+		segLength = sqrt(pow(eAm1[0],2) + pow(eAm1[1],2));
+		segNormal[0] = eAm1[1]/segLength;
+		segNormal[1] = -eAm1[0]/segLength;
 		if ( dot1 > 0){
 			closestSeg = closestNode;
 		}
@@ -79,7 +87,6 @@ double contactDetection(MAT * point, MAT * masterNodes,MAT  * msNormal){
 		double eA[2] = {masterNodes->me[closestNode+1][0]-masterNodes->me[closestNode][0],
 			masterNodes->me[closestNode+1][1]-masterNodes->me[closestNode][1]};
 		/*  Can check both sides */
-
 		double masterDist[2] = {point->me[0][0] - masterNodes->me[closestNode][0],
 			point->me[0][1] - masterNodes->me[closestNode][1]};
 
@@ -156,7 +163,8 @@ double contactDetection(MAT * point, MAT * masterNodes,MAT  * msNormal){
 
 		double closestPoint[2] = {masterNodes->me[closestNode][0] + xi*a[0],
 			masterNodes->me[closestNode][1] + xi*a[1]};
-		closestDistance = sqrt(   pow(closestPoint[0] - point->me[0][0],2)   + pow(closestPoint[1] - point->me[0][1],2)     );
+		closestDistance = sqrt(   pow(closestPoint[0] - point->me[0][0],2)   
+			+ pow(closestPoint[1] - point->me[0][1],2)     );
 
 
 		double vec2slave[2] = {closestPoint[0]-point->me[0][0],closestPoint[1]-point->me[0][1]};

@@ -355,6 +355,7 @@ int main(int argc, char** argv) {
 	getBoundary(&traction_nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,2);
 	pressure_boundary * pB = new_pressure_boundary(traction_nodes, &mfree);
 	m_foutput(stdout,pB->coords);
+	pB->is_axi = is_AXI;
 
 	// /*  EB1  */
 	EBC * eb1 = malloc(1*sizeof(EBC));

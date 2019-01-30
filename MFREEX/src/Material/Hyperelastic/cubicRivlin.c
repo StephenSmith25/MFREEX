@@ -67,9 +67,6 @@ int cubicRivlin(VEC * stressVoigt, MAT * defGrad, VEC * matParams){
 		stressVoigt->ve[2] = stress1PKF->me[0][1];
 		stressVoigt->ve[3] = stress1PKF->me[1][0];
 
-
-
-
 	}
 
 

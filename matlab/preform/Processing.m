@@ -75,6 +75,7 @@ hold on
 plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 
 
+print -dpng2 Displacement.png
 
 m = dlmread('./../../build/bin/preform/pressureTime.txt',' ');
 %m(ceil(length(m)/4):end,:) = smoothdata(m(ceil(length(m)/4):end,:))
@@ -136,7 +137,7 @@ legend({'Meshfree','Experimental','FE (Abaqus )'},... % { 'legend1', 'legend2',.
 
 set(gcf, 'Color', 'w');
 
-print -depsc2 pressure.eps
+print -dpng2 pressure.png
 set(gcf, 'Color', 'w');
 
 if ( PLOT_GRAPHS)
@@ -167,7 +168,7 @@ for i = 1:length(plotFiles)
     [R U V] = poldecomp(F);
     
     
-    true_strain = logm(U);
+    true_strain = logm(V);
     
     
     hoop_strain(i) =true_strain(3,3);
@@ -184,8 +185,7 @@ for i = 1:length(plotFiles)
 end
 
 
-
-figure
+strain = figure('Position', get(0, 'Screensize'));
 subplot(1,2,1)
 plot(time,(axial_strain),'k','linewidth',2);
 % hold on
@@ -247,8 +247,6 @@ grid on
 
 
 
-print -depsc2 strain_axial.eps
-
 
 subplot(1,2,2)
 plot(time,(hoop_strain),'k','linewidth',2);
@@ -305,7 +303,7 @@ grid on
 
 
 
-print -depsc2 strain_hoop.eps
+print -dpng2 strain.png
 
 figure 
 subplot(1,2,1);
@@ -411,8 +409,10 @@ for i = 1:length(plotFiles)
   
 end
 
-figure
-
+stress = figure('Position', get(0, 'Screensize'));
+set(stress,'MenuBar','none')
+set(gca,'DataAspectRatioMode','auto')
+set(gca,'Position',[0 0 1 1])
 subplot(1,2,1)
 hold on 
 plot(time,hoop_stress_conf,'r');
@@ -499,7 +499,7 @@ grid on
 
 
 
-print -depsc2 stress.eps
+print -dpng2 stress.png
 
 
 

@@ -11,7 +11,8 @@ OPTION(PROBLEM_BEAM_UL "Compile updated lagrangian version of Beam program" ON)
 OPTION(PROBLEM_PREFORM "Compile preform program" ON)
 OPTION(PROBLEM_BIAXIAL "Compile biaxial program" ON)
 OPTION(PROBLEM_TUBE "Compile tube program" ON)
-
+OPTION(PROBLEM_CYLINDER "Compile cylinder program" ON)
+OPTION(PROBLEM_TAYLOR_BAR "Compile cylinder program" ON)
 
 
 add_subdirectory(lib)
@@ -37,3 +38,12 @@ endif(PROBLEM_BIAXIAL)
 if(PROBLEM_TUBE)
 	add_subdirectory(problems/tube)
 endif(PROBLEM_TUBE)	
+
+
+if(PROBLEM_CYLINDER)
+	add_subdirectory(problems/Cylinder)
+endif(PROBLEM_CYLINDER)	
+
+if(PROBLEM_TAYLOR_BAR)
+	add_subdirectory(problems/taylor_bar)
+endif(PROBLEM_TAYLOR_BAR)	

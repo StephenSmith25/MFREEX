@@ -31,10 +31,17 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	}else if( strcmp(Material, "cubic_rivlin") == 0 )
 	{
 		mat_func_ptr = &cubicRivlin;
-		mu = 2*(matParams->ve[0]);
-		lambda = 2*matParams->ve[3] - (2/3)*mu;
+		mu = 2*(matParams->ve[0] + matParams->ve[1]);
+		lambda = matParams->ve[2];
+
+	}else if( strcmp(Material, "mooney_rivlin") == 0 )
+	{
+		mat_func_ptr = &mooneyRivlin;
+		mu = 2*(matParams->ve[0] + matParams->ve[1]);
+		lambda = matParams->ve[2];
 
 	}
+
 
 	int dim_v = 0;
 	// check if problem is axisymmetric
@@ -59,7 +66,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 
 
-	omp_set_num_threads(1);
+	omp_set_num_threads(4);
 
 
 
@@ -155,7 +162,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		double fro_b = 0;
 
 		double MaxB = -1;
-		double rho = 1000e-9;
+		double rho =  1800e-9;
 		double num_neighbours_J = 0;
 		double m_j;
 		double volume_I = intFactor;
@@ -197,7 +204,6 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 
 
-
 		// if ( is_axi == 1)
 		// {
 		// 	MaxB = max(MaxB,B33);
@@ -211,12 +217,11 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		//Le = 2;
 		double c = sqrt(((lambda+2*mu)/rho));
 		double P_b1 = 0;
-		P_b1 = b1*div_v*rho*Le*c;
-
+		//P_b1 = b1*div_v*rho*Le*c;
 		double eta = b1;
 		double P_b2 = 0;
 		if ( div_v < 0 ){
-			P_b2 = Le*rho*(b2*b2*Le*div_v*div_v);
+			P_b2 = Le*rho*(b2*b2*Le*div_v*div_v) -  b1*div_v*rho*Le*c;
 			eta -= b2*b2*Le*(1/c)*div_v;
 		}
 
@@ -231,6 +236,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 		mat_func_ptr(stressVoigt,F,matParams);
 
+
 		__zero__(scni[i]->fInt->ve,scni[i]->fInt->max_dim);
 
 
@@ -238,21 +244,20 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		if ( dim_v == 4)
 		{
 
+			// double S11_hyd = (Jacobian)*(P_b1+P_b2)*invF11;
+			// double S22_hyd = (Jacobian)*(P_b1+P_b2)*invF22;
 
-			double S11_hyd = (Jacobian)*(P_b1+P_b2)*invF11;
-			double S22_hyd = (Jacobian)*(P_b1+P_b2)*invF22;
 
+			// S11 = stressVoigt->ve[0]+S11_hyd; S12 = stressVoigt->ve[2];
+			// S21 = stressVoigt->ve[3]; S22 = stressVoigt->ve[1]+S22_hyd;
 
-			S11 = stressVoigt->ve[0]+S11_hyd; S12 = stressVoigt->ve[2];
-			S21 = stressVoigt->ve[3]; S22 = stressVoigt->ve[1]+S22_hyd;
+			// F11 = scni[i]->F_r->me[0][0]; F12 = scni[i]->F_r->me[0][1];
+			// F21 = scni[i]->F_r->me[1][0]; F22 = scni[i]->F_r->me[1][1];
 
-			F11 = scni[i]->F_r->me[0][0]; F12 = scni[i]->F_r->me[0][1];
-			F21 = scni[i]->F_r->me[1][0]; F22 = scni[i]->F_r->me[1][1];
-
-			stressVoigt->ve[0] = S11*F11 + S12*F12;
-			stressVoigt->ve[1] = S21*F21 + S22*F22; 
-			stressVoigt->ve[2] = S11*F21 + S12*F22;
-			stressVoigt->ve[3] = S21*F11 + S22*F12;
+			// stressVoigt->ve[0] = S11*F11 + S12*F12;
+			// stressVoigt->ve[1] = S21*F21 + S22*F22; 
+			// stressVoigt->ve[2] = S11*F21 + S12*F22;
+			// stressVoigt->ve[3] = S21*F11 + S22*F12;
 
 		}else if ( dim_v == 5)
 		{
@@ -291,20 +296,16 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		}
 
 
-		if ((i == 0) && (call_count % 10000 == 0)) {
+		if ((i == 0) && (call_count % 1000== 0)) {
 
 
-			printf("got here \n");
-			// code for tube problem
-			double disp_point = disp->ve[0];
-			double sigma_point = (1.00/Jacobian)*stressVoigt->ve[0]*F->me[0][0]*((60)/(60+disp_point));
 
-			m_foutput(stdout, F);
+			// m_foutput(stdout, F);
 
-			FILE * fp;
-			fp = fopen("loadDisp.txt","a");
-			fprintf(fp,"%lf %lf\n",disp_point,sigma_point);
-			fclose(fp);
+			// FILE * fp;
+			// fp = fopen("loadDisp.txt","a");
+			// fprintf(fp,"%lf %lf\n",disp_point,sigma_point);
+			// fclose(fp);
 
 			// printf("got here \n");
 

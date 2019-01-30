@@ -138,7 +138,6 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 			// segment length
 			l[k] = sqrt(pow(v2[0]-v1[0],2) + pow(v2[1]-v1[1],2)); 
 
-			printf("l(k) = %lf \n", l[k]); 
 			// segment normals
 			n[k][0] = (normalFactor)*1.00*(v2[1] - v1[1])/l[k];
 			n[k][1] = (normalFactor)*-1.00*(v2[0] - v1[0])/l[k];
@@ -151,7 +150,6 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 		center[1] = center[1]/num_cell_verticies;
 		area = 0.5*fabs(area);
 
-		printf("area of (%d) = %lf \n",i,area);
 
 
 
@@ -287,7 +285,7 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 	SCNI_OBJ * scni_obj = malloc(1*sizeof(SCNI_OBJ));
 	scni_obj->scni = scni_;
 	scni_obj->num_points = num_cells;
-	printf("area = %lf \n",area_sum);
+	printf("area = %10.2E \n",area_sum);
 	return scni_obj;
 }
 

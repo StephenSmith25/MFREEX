@@ -6,7 +6,7 @@
 #include "matrix2.h"
 
 
-MAT * meshgrid(double xmin,double xmax,int nx, double ymin, double ymax, int ny);
+MAT * meshgrid(double xmin,double xmax,int nx, double ymin, double ymax, int ny,int ** boundaryNodes, int * numBoundary);
 
 
 #endif 

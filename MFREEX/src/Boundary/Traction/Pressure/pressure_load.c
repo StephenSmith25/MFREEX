@@ -46,7 +46,13 @@ pressure_boundary * new_pressure_boundary(IVEC * points,  meshfreeDomain * mFree
 		// length of segment
 		seg_length =  sqrt(pow(x2-x1,2) + pow(y2-y1,2));
 
-		pB->segment_weights[i] = seg_length*2*M_PI*((x1+x2)/2.00);
+
+		if ( pB->is_axi == 1)
+		{
+			pB->segment_weights[i] = seg_length*2*M_PI*((x1+x2)/2.00);
+		}else{
+			pB->segment_weights[i] = seg_length;
+		}
 
 		// normal
 		pB->segment_normals->me[i][0] = (y2-y1)/seg_length;
@@ -88,7 +94,16 @@ int update_pressure_boundary(pressure_boundary *pB, MAT * coords)
 		// length of segment
 		seg_length =  sqrt(pow(x2-x1,2) + pow(y2-y1,2));
 
-		pB->segment_weights[i] = M_PI*((x1+x2))*seg_length;
+
+
+		if ( pB->is_axi == 1)
+		{
+			pB->segment_weights[i] = seg_length*2*M_PI*((x1+x2)/2.00);
+		}else{
+			pB->segment_weights[i] = seg_length;
+			
+		}
+
 
 		// normal
 		pB->segment_normals->me[i][0] = (y2-y1)/seg_length;

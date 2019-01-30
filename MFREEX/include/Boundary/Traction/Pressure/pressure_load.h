@@ -21,6 +21,7 @@ typedef struct pressure_boundary
 	MAT * segment_normals;
 	double magnitude;
 	shape_function_container * sf_traction;
+	int is_axi;
 
 } pressure_boundary;
 

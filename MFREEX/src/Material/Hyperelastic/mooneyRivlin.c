@@ -1,7 +1,7 @@
 
 #include "Material/Hyperelastic/mooneyRivlin.h"
 #include <math.h>
-
+#include "m_inverse_small.h"
 
 int mooneyRivlin(VEC * stressVoigt, MAT * defGrad, VEC * params){
 
@@ -20,6 +20,8 @@ int mooneyRivlin(VEC * stressVoigt, MAT * defGrad, VEC * params){
 	MAT * term2 = m_get(defGrad->m,defGrad->n);
 	MAT * term3 = m_get(defGrad->m,defGrad->n);
 
+	int dim = C->m;
+
 
 	/*  Material constants */
 	double c1 = params->ve[0];
@@ -30,11 +32,17 @@ int mooneyRivlin(VEC * stressVoigt, MAT * defGrad, VEC * params){
 	/*  Find C */
 	mtrm_mlt(defGrad,defGrad,C);
 	/*  Find C^{-1} */
-	m_inverse(C,invC);
+	m_inverse_small(C,invC);
 
 	/*  I1 and I3 */
 	double I1 = trace(C);
+
+	if ( dim == 2)
+	{
+		I1 = I1 + 1;
+	}
 	double I3 = determinant(C);
+
 
 
 	/*  Stress computation */
@@ -72,7 +80,6 @@ int mooneyRivlin(VEC * stressVoigt, MAT * defGrad, VEC * params){
 	M_FREE(ident);
 	M_FREE(stress2PKF);
 	M_FREE(stress1PKF);
-
 
 
 
