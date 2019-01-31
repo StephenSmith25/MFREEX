@@ -33,14 +33,3 @@ add_executable(taylor_bar taylor_bar.c)
 target_link_libraries(taylor_bar CVLIB MFREEX EFSFLIB triangulate meschach m gpc util)
 
 
-# copy input files to location
-# add_custom_command(
-#         TARGET tube POST_BUILD
-#         COMMAND ${CMAKE_COMMAND} -E copy
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/tube.segs
-#                 ${EXECUTABLE_OUTPUT_PATH}/tube.segs)
-# add_custom_command(
-#         TARGET tube POST_BUILD
-#         COMMAND ${CMAKE_COMMAND} -E copy
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/tube.nodes
-#                 ${EXECUTABLE_OUTPUT_PATH}/tube.nodes)

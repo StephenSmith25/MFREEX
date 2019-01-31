@@ -26,7 +26,8 @@
 #include "Material/material.h"
 
 
-double lambdaCrit(double critLambda_n, state_Buckley * state, VEC * para, double temperature, double dt, int IS_AXI);
+double 
+lambdaCrit(double critLambda_n, state_variables * state, VEC * para, double temperature, double dt);
 
 
 

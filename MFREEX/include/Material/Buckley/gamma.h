@@ -29,7 +29,7 @@
 
 
 
-double gammaV(state_Buckley * state, double maxLambdaN, double critLambda,VEC * para, double dt, int IS_AXI);
+double gammaV(state_variables * state, double maxLambdaN, double critLambda,VEC * para, double dt);
 
 
 

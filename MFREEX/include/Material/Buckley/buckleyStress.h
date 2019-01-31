@@ -14,11 +14,14 @@
 #include <math.h>
 #include "m_inverse_small.h"
 #include "contraction.h"
+#include "Deformation/update_Polar_Decomposition.h"
 
 
-int buckleyStress(state_Buckley * stateNew, state_Buckley * stateOld, 
-	VEC * matParams, VEC * critLambdaParams, double dt, int i, int IS_AXI );
-
+int 
+buckleyStress(state_variables * stateNew, 
+	state_variables * stateOld,
+	VEC * matParams,
+	double dt);
 
 
 #endif

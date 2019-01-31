@@ -12,7 +12,7 @@
 #include "mls_shapefunction.h"
 #include "setDomain.h"
 #include "smoothstep.h"
-#include "Force/Internal/internalForce_Buckley.h"
+#include "Force/Internal/internalForce_Inelastic.h"
 #include "Force/Internal/internalForce_hyperelastic.h"
 #include "Boundary/Displacement/essential_boundary.h"
 #include "mat2csv.h"
@@ -24,13 +24,26 @@
 #include "Boundary/Traction/Pressure/pressure_load.h"
 #include <math.h>
 #include "Deformation/poldec.h"
-#include "Material/Buckley/new_Buckley_State.h"
 #include "Boundary/Contact/contactDetection.h"
 #include "Boundary/Displacement/setUpBC.h"
 #include "Boundary/Displacement/enforceBC.h"
 #include "Integration/SCNI/scni_update_B.h"
 
-extern double time;
+
+
+const char * MATERIAL = "BUCKLEY";
+const int BUCKLEY_MATERIAL = 1;
+const int PLASTIC_MATERIAL = 0;
+
+
+// time step parameters
+const double TMAX = 0.4;
+double delta_t = 4e-7;
+
+// Meshfree parameters
+const double dmax = 2.00;
+const int is_stabalised = 0;
+const int is_constant_support_size = 1;
 
 int main(int argc, char** argv) {
 
@@ -50,19 +63,10 @@ int main(int argc, char** argv) {
 	const double rho = 1380e-9;
 
 	// material parameters and model (St. Venant Kirchoff)
-	char * material = "YEOH";
-
-	VEC * materialParameters = v_get(4);
-	materialParameters->ve[0] = 3.0208;
-	materialParameters->ve[1] =-0.1478;
-	materialParameters->ve[2] = 0.0042;
-	materialParameters->ve[3] =500;
-
-
 
 
 	/*  Material struct */
-	VEC * matParams = v_get(26);
+	VEC * matParams = v_get(31);
 	matParams->ve[0] = 2.814e-3; // VS
 	matParams->ve[1] = 0.526e-3; // VP
 	matParams->ve[2] = (1.7057e6); // mu*_0
@@ -89,16 +93,13 @@ int main(int argc, char** argv) {
 	matParams->ve[23] = 39.937;// C2
 	matParams->ve[24] = 0.9878;// beta
 	matParams->ve[25] = 0.33;// poissons ratio
-	VEC * critLambdaParams = v_get(6);
-	critLambdaParams->ve[0] = -0.0111; // C1
-	critLambdaParams->ve[1] = 3.627; // C2
-	critLambdaParams->ve[2] = 0.9856; // BETA
-	critLambdaParams->ve[3] = -0.0356; // k
-	critLambdaParams->ve[4] = 15.393; // b 
 
-	/*  Time step variables */
-
-	double tMax = 0.4;
+	// crit lambda properties
+	matParams->ve[26] = -0.0111; // C1
+	matParams->ve[27] = 3.627; // C2
+	matParams->ve[28] = 0.9856; // BETA
+	matParams->ve[29] = -0.0356; // k
+	matParams->ve[30] = 15.393; // b 
 
 
 
@@ -236,13 +237,11 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 
 	// shape function parameters
-	double dmax = 2;
-	int constant_support_size = 1;
 	VEC * dI = v_get(xI->m);
 
 	// meshfree domain
 	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI};
-	setDomain(&mfree,constant_support_size, dmax);
+	setDomain(&mfree,is_constant_support_size, dmax);
 
 	v_foutput(stdout,mfree.di);
 
@@ -252,7 +251,6 @@ int main(int argc, char** argv) {
 	/* ------------------SCNI--------------------*/
 	/* ------------------------------------------*/
 
-	int is_stabalised = 0;
 	SCNI_OBJ * _scni_obj = NULL;
 	MSCNI_OBJ * _mscni_obj = NULL;
 
@@ -447,18 +445,14 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 	/* --------------State storage---------------*/
 	/* ------------------------------------------*/
-	// store F, D at each time step for each material point for use with buckley model 
-	state_Buckley ** state_n = new_Buckley_State(mfree.num_nodes,temperatures,is_AXI,dim);;
-	state_Buckley ** state_n_1 = new_Buckley_State(mfree.num_nodes,temperatures,is_AXI,dim);
-
-	for ( int i = 0 ; i < mfree.num_nodes ; i++)
-	{
-		state_n_1[i]->mu_0 = mu;
-		state_n_1[i]->lambda_0 = lambda;
-
-	}
-
-
+	state_variables ** state_n = new_material_state(temperatures, mfree.num_nodes, 
+		BUCKLEY_MATERIAL , 
+		PLASTIC_MATERIAL , 
+		dim, is_AXI);
+	state_variables ** state_n_1 = new_material_state(temperatures, mfree.num_nodes, 
+		BUCKLEY_MATERIAL , 
+		PLASTIC_MATERIAL , 
+		dim, is_AXI);
 	// ///////////////////////////////////////////////////////////////
 
 	// /*////////////////////////////////////////////////////////// */
@@ -468,7 +462,6 @@ int main(int argc, char** argv) {
 	// /*////////////////////////////////////////////////////////// */
 	
 	// time parameters
-	double delta_t = 4e-7;
 	double t_n = 0;
 	double t_n_1 = 0;
 	double t_n_h =  0; 
@@ -574,9 +567,8 @@ int main(int argc, char** argv) {
 
 
 
-
 	/*  Explicit Loop */
-	while ( t_n < tMax)
+	while ( t_n < TMAX)
 	//while ( n < 1 )
 	{
 
@@ -710,12 +702,13 @@ int main(int argc, char** argv) {
 		// d_n_1->ve[42] = 0.3;
 		__sub__(d_n_1->ve, disp_r->ve,disp_inc->ve, num_dof);
 
-		double delta_t_new = internalForce_ForceBuckley(Fint_n_1, _scni_obj, disp_inc, v_n_h,
-		matParams,critLambdaParams, state_n_1, state_n,
-		mfree.IS_AXI, dim,delta_t,t_n_1);
+		printf( "got inside internal force routine \n");
+		double delta_t_new = internalForce_Inelastic(Fint_n_1, _scni_obj,
+		disp_inc, v_n_h,
+		matParams, state_n_1, state_n,
+		mfree.IS_AXI, dim,delta_t,t_n_1, MATERIAL);
+		printf("got out of internal force rotuine\n");
 
-		//double t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, disp_inc, v_n_h, materialParameters, 
-		//	"YEOH", is_AXI, dim, t_n_1);
 
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/

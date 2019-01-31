@@ -26,7 +26,7 @@
 #include "Material/material.h"
 #include "contraction.h"
 
-int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para, double dt);
+int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * para, double dt);
 
 
 #endif

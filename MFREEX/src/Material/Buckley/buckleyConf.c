@@ -22,20 +22,22 @@
 
 static int call_count_2 = 0;
 
-int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, double deltaT, int IS_AXI)
+
+int buckleyConf(state_variables * stateNew, state_variables * stateOld, 
+	VEC * para, double deltaT)
 {
 
 
 
 
-	MAT * intermediate1 = stateNew->temp;
-	MAT * intermediate2 = stateNew->temp1;
-	MAT * intermediate3 = stateNew->temp2;
+	MAT * intermediate1 = stateNew->m_temp1;
+	MAT * intermediate2 = stateNew->m_temp2;
+	MAT * intermediate3 = stateNew->m_temp3;
 
 
-	MAT * Dn = stateOld->D_c;
-	MAT * Ds = stateOld->temp1;
-	MAT * relSpin = stateOld->temp2;
+	MAT * Dn = stateOld->Dn;
+	MAT * Ds = stateOld->m_temp1;
+	MAT * relSpin = stateOld->m_temp2;
 	VEC * Sc_n_1p = stateNew->v_temp1;
 
 
@@ -44,7 +46,7 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 
 	MAT * eigVecB = stateNew->eigVecVBar;
 	VEC * eigValB = stateNew->eigValVBar;
-	MAT * Sc_n_1 = stateNew->Sc;
+	MAT * Sc_n_1 = stateNew->Sc_R;
 
 	double Jacobian = stateNew->Jacobian;
 	double gamma_n_1;
@@ -52,31 +54,14 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	++call_count_2;
 
 
-	double D1,D2;
-	if ( IS_AXI)
-	{
-		D1 = stateNew->d->me[1][1];
-		D2 = stateNew->d->me[2][2];
-	}else
-	{
-		D1 = stateNew->d->me[0][0];
-		D2 = stateNew->d->me[1][1];		
+	if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
+		gamma_n_1 = gammaV(stateNew,stateOld->lambdaNMax,
+			stateNew->critLambdaBar,para, deltaT);
+		sm_mlt(1.0000/gamma_n_1,stateOld->Sc_R,Ds);
+	}else{
+		Ds = m_zero(Ds);
 	}
 
-
-	// if ( D1 >= 0 && D2 >= 0){
-		if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
-			gamma_n_1 = gammaV(stateNew,stateOld->lambdaNMax,
-				stateNew->critLambdaBar,para, deltaT, IS_AXI);
-			sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
-					//m_foutput(stdout,stateNew->Sc);
-		}else{
-			Ds = m_zero(Ds);
-		}
-	// }else{
-	// 				Ds = m_zero(Ds);
-
-	// }
 
 
 	// // //APPROACH 1 CASE 1
@@ -92,9 +77,9 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	m_mlt(intermediate1,stateOld->Bbar,intermediate3);
 	m_mlt(stateOld->Bbar,intermediate2,intermediate1);
 
-	MAT * BnCr = stateOld->temp;
-	MAT * BnDot = stateOld->temp1;
-	MAT * deltaB = stateOld->Fn;
+	MAT * BnCr = stateOld->m_temp1;
+	MAT * BnDot = stateOld->m_temp2;
+	MAT * deltaB = stateOld->m_temp3;
 
 	m_add(intermediate1,intermediate3,BnCr);
 
@@ -103,6 +88,9 @@ int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, VEC * para, 
 	m_mlt(stateOld->Bbar,stateNew->Omega,intermediate2);
 
 	m_sub(intermediate1,intermediate2,BnDot);
+
+
+	
 	m_add(BnCr,BnDot,BnDot);
 	sm_mlt(deltaT,BnDot,deltaB);
 	// Update B

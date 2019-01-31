@@ -5,130 +5,134 @@
 #include "matrix2.h"
 
 
-// stores the state of a material
-typedef struct state
+// stores the state of a material in terms of its deformation, 
+// and material properties
+
+
+
+typedef struct state_variables
 {
 
+
+	/* ------------------------------------------*/
+	/* -----------------Deformation--------------*/
+	/* ------------------------------------------*/
+	
+	// Deformation gradient
 	MAT * F;
-	MAT * D;
-
-
-} state;
-
-
-typedef struct state_Buckley
-{
-	// deformation gradient
-	MAT * F;
-	MAT * Fdot;
-	MAT * Fn;
-
 	MAT * invF;
-	MAT * delta_F;
-	MAT * delta_R;
-	MAT * delta_U;
-	MAT * delta_V;
 
-
-	// isochoric deformation gradient
-	MAT * Fbar;
-	MAT * Fbardot;
-
-	MAT * invFbar;
-
-	// velocity gradinet
-	MAT * L; 
-	MAT * D;
-	MAT * W;
-	MAT * d;
-
-	MAT * delta_ep_vol ;
-	MAT * delta_ep_dev ;
-	// Polar decomposition
-	MAT * R;
-	MAT * U;
-	MAT * V;
-	MAT * Vdot; 
-
-	// Eigen values
-	VEC * eigValDBar ;
-	VEC * eigValVBar ;
-	MAT * eigVecDBar  ;
-	MAT * eigVecVBar ;
-
-
-	VEC * lambdaDot;
-
-	// True strain
-	MAT * true_strain;
-
-	// Isochoric components
-	MAT * Lbar; 
-	MAT * Dbar;
-	MAT * Wbar;
-
-	MAT * D_c;
-	MAT * D_b;
-
-	// rotation
-	MAT * Omega;
+	// Determinant of F
+	double Jacobian;
 
 	// Deformation tensors
-	MAT * Bbar;
-	// bond and conformational stress
-	MAT * Sb;
-	MAT * Sc;
-	MAT * Sb_R;
-	MAT * Sc_R;
+	MAT * B;
+	MAT * C;
 
+	// Polar Decomposition
+	MAT * U;
+	MAT * V;
+	MAT * R;
+	MAT * Vdot;
+
+
+
+	// Rate measures
+	MAT * L;
+	MAT * D;
+	MAT * W;
+	MAT * Omega;
+	double div_v;
+
+
+	// Stress
 	MAT * sigma;
+
+
+	// rotated tensors
+	MAT * d;
+	MAT * T;
+	MAT * omega; 
+
+
+
+	// temperature
+	double temperature;
+
+	/* ------------------------------------------*/
+	/* -----------------Plasticity--------------*/
+	/* ------------------------------------------*/
+	MAT * alpha;
+	MAT * back_stress;
+	MAT * eta;
+	MAT * Deps;
+
+
+	/* ------------------------------------------*/
+	/* -----------------Buckley------------------*/
+	/* ------------------------------------------*/
+
+	// Eigen values
+	VEC * eigValDBar;
+	VEC * eigValVBar;
+	MAT * eigVecDBar;
+	MAT * eigVecVBar;
+	VEC * lambdaDot;
+
+	// Isochoric components
+	MAT * Dbar;
+	MAT * Lbar;
+	MAT * Fbar;
+
+	// Conformational branch network left cauchy green tensor
+	MAT * Bbar;
+	MAT * Dn;
+	// Network stretch
+	VEC * lambdaNBar;
+
 
 	// mean stress
 	double mSigma;
-	// stretch
-	VEC * lambdaNBar;
+	// max stretch
 	double lambdaNMax;
+
+	// currently conformational gamma
 	double gamma; 
-	// temperature
-	double temperature;
+
 	// critical network stretch
 	double critLambdaBar;
-	double Jacobian;
-	double div_v; 
+	// relaxation time
 	double tau;
 
-	MAT * H ; 
-	MAT * GRAD_U ;
+	// Buckley output stresses
+	MAT * Sb;
+	MAT * Sc;
 
-	// temp arrays
-	MAT * temp;
-	MAT * temp1;
-	MAT * temp2;
+	// rotated stresses
+	MAT * Sb_R;
+	MAT * Sc_R;
 
+	/* ------------------------------------------*/
+	/* -----------------Workspace----------------*/
+	/* ------------------------------------------*/
+
+	// Workspace matricies
+	MAT * m_temp1;
+	MAT * m_temp2;
+	MAT * m_temp3;
+	MAT * m_temp4;
+
+	// Workspace vectors
 	VEC * v_temp1;
 	VEC * v_temp2;
-
-	// Rotation vectos
-	VEC * w;
-	VEC * omega;
-	VEC * h;
-	VEC * z;
-
-	// Time stepping variables
-
-	double lambda_0 ;
-	double mu_0 ;
-
-	double lambda;
-	double mu; 
-
-	MAT * delta_sig_vol ;
-	MAT * delta_sig_dev ; 
-	MAT * delta_sig;
-	MAT * sig_R;
+	VEC * v_temp3;
+	VEC * v_temp4;
 
 
 
-} state_Buckley;
+} state_variables;
+
+state_variables ** new_material_state(double * temperatures, int num_nodes, int is_buckley,
+ int is_plastic, int dim, int is_AXI);
 
 #endif

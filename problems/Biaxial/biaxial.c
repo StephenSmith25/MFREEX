@@ -1,27 +1,50 @@
-
-
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
-#include "Material/Buckley/new_Buckley_State.h"
 #include "Material/Buckley/buckleyStress.h"
 #include "Material/material.h"
 #include <sys/time.h>
 #include "Material/Hyperelastic/yeoh.h"
+#include "Deformation/update_Polar_Decomposition.h"
+#include "Deformation/rotate_tensor.h"
+#include "Material/Buckley/buckleyStress.h"
+#include "matrix.h"
+#include "matrix2.h"
+#include <omp.h>
+#include "Integration/SCNI/generate_scni.h"
+#include "Material/material.h"
+#include "mat2csv.h"
+#include "m_inverse_small.h"
+#include "Material/material.h"
+#include "Integration/gMat.h"
+#include "Deformation/velocity_grad.h"
+
+
+// material
+const char * MATERIAL = "BUCKLEY";
+const int BUCKLEY_MATERIAL = 1;
+const int PLASTIC_MATERIAL = 0;
+
+// deformaton
+const int SR = 4;
+const double TEMPERATURE = 75;
+char * DEFORMATION_MODE = "SIMPLE_SHEAR";
+const int DIM = 3;
+const int IS_AXI = 0;
+
+// time step
+const double DT = 1e-5;
+const double TMAX = 10;
+const double PEAK_STRAIN = 3;
+
+
 int main(void)
 {
 
-	double temperature = 105;
-	double sr = 16;
-	double peakStrain = 3;
 
-	double dim = 3;
-	double is_axi = 0;
-
-	// material parameters 
 
 	/*  Material struct */
-	VEC * matParams = v_get(26);
+	VEC * matParams = v_get(31);
 	matParams->ve[0] = 2.814e-3; // VS
 	matParams->ve[1] = 0.526e-3; // VP
 	matParams->ve[2] = 1.81e6; // mu*_0
@@ -32,7 +55,7 @@ int main(void)
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
 	matParams->ve[9] = 1.8e9; // Kb
-	matParams->ve[10] = 1e7;// Gb
+	matParams->ve[10] = 6e8;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
 	matParams->ve[14] = 0.001;// eta_c
@@ -48,23 +71,17 @@ int main(void)
 	matParams->ve[23] = 39.937;// C2
 	matParams->ve[24] = 0.9878;// beta
 	matParams->ve[25] = 0.33;// poissons ratio
-	VEC * critLambdaParams = v_get(6);
-	critLambdaParams->ve[0] = -0.0111; // C1
-	critLambdaParams->ve[1] = 3.627; // C2
-	critLambdaParams->ve[2] = 0.9856; // BETA
-	critLambdaParams->ve[3] = -0.0356; // k
-	critLambdaParams->ve[4] = 15.393; // b 
 
 
-	VEC * materialParameters = v_get(4);
+	// crit lambda properties
+	matParams->ve[26] = -0.0111; // C1
+	matParams->ve[27] = 3.627; // C2
+	matParams->ve[28] = 0.9856; // BETA
+	matParams->ve[29] = -0.0356; // k
+	matParams->ve[30] = 15.393; // b 
 
-	materialParameters->ve[0] = 3.0208;
-	materialParameters->ve[1] =-0.1478;
-	materialParameters->ve[2] = 0.0042;
-	materialParameters->ve[3] =100;
-	double dt = 1e-5;
 
-	double tmax = 10;
+
 	double t_n_1 = 0;
 	double t_n = 0;
 
@@ -72,8 +89,18 @@ int main(void)
 
 
 	int n = 0;
-	state_Buckley ** stateOld = new_Buckley_State(1, &temperature, is_axi, dim);
-	state_Buckley ** stateNew = new_Buckley_State(1, &temperature, is_axi, dim);
+
+
+	state_variables ** stateOld = new_material_state(&TEMPERATURE, 1, 
+		BUCKLEY_MATERIAL , 
+		PLASTIC_MATERIAL , 
+		DIM, IS_AXI);
+	state_variables ** stateNew = new_material_state(&TEMPERATURE, 1, 
+		BUCKLEY_MATERIAL , 
+		PLASTIC_MATERIAL , 
+		DIM, IS_AXI);
+
+
 	VEC * stressVoigt = v_get(5);
 
 	MAT * P = m_get(3,3);
@@ -90,67 +117,126 @@ int main(void)
 	struct timeval start, end;
 	gettimeofday(&start, NULL);
 
-	while (( t_n < tmax) && (maxStrain < peakStrain) )
+	double sigplot = 0 ;
+	double strainplot = 0;
+
+	while (( t_n < TMAX) && (maxStrain < PEAK_STRAIN) )
+	//while ( n < 1)
 	{
-		t_n_1  = t_n +  dt;
 
+		// update time
+		t_n_1  = t_n +  DT;
 
-	
-		stateNew[0]->F->me[0][0] = 1.00+t_n_1*sr;
-		stateNew[0]->F->me[1][1] = 1.00+t_n_1*sr;
-		stateNew[0]->F->me[2][2] = (1.00/pow(1.00+t_n_1*sr,2));
+		if ( strcmp (DEFORMATION_MODE, "BIAXIAL") == 0 )
+		{
+			stateNew[0]->F->me[0][0] = 1.00+t_n_1*SR;
+			stateNew[0]->F->me[1][1] = 1.00+t_n_1*SR;
+			stateNew[0]->F->me[2][2] = (1.00/pow(1.00+t_n_1*SR,2));
 
+		}else if ( strcmp (DEFORMATION_MODE, "SIMPLE_SHEAR") == 0 ) {
 
-		// stateNew[0]->F->me[0][1] = sr*t_n_1; 
-		// stateNew[0]->F->me[1][0] = 0; 
-	
-		
-
-		buckleyStress(stateNew[0], stateOld[0], matParams,critLambdaParams,dt,0, IS_AXI);
-
-
-
-		// m_inverse(stateNew[0]->F, invF);
-
-		// yeoh(stressVoigt,stateNew[0]->F,materialParameters);
-
-		// P->me[0][0] = stressVoigt->ve[0];
-		// P->me[1][1] = stressVoigt->ve[1];
-		// P->me[0][1] = stressVoigt->ve[2];
-		// P->me[1][0] = stressVoigt->ve[3];
-		// P->me[2][2] = stressVoigt->ve[4];
-
-		// mmtr_mlt(P, stateNew[0]->F, sigma);
+			stateNew[0]->F->me[0][1] = SR*t_n_1; 
+			stateNew[0]->F->me[1][0] = 0; 
+		}
 
 
 
+		/* ------------------------------------------*/
+		/* -----------------Deformation--------------*/
+		/* ------------------------------------------*/
+
+		/*  Find Rate of deformation tensors at n+h*/
+		velocity_grad(stateNew[0],stateOld[0],DT,0.500);
+
+		// Find inverse deformation gradient at n+1
+		m_inverse_small(stateNew[0]->F, stateNew[0]->invF);
+
+		// Find Jacobian at n+1
+		stateNew[0]->Jacobian = determinant(stateNew[0]->F);
+
+		//------------------------------------------//
+		//        Update Polar Decomposition        //
+		//------------------------------------------//
+		update_Polar_Decomposition(stateNew[0], stateOld[0], DT);
+
+		// remove rotation from D to get d
+		un_rotate_tensor(stateNew[0]->D, stateNew[0]->R, 
+			stateNew[0]->m_temp1, stateNew[0]->d);
+
+
+		un_rotate_tensor(stateNew[0]->Omega, stateNew[0]->R, 
+			stateNew[0]->m_temp1, stateNew[0]->omega);
+
+
+		// Find stress
+		buckleyStress(stateNew[0], stateOld[0], matParams,DT);
 
 
 
 
-		double sig11 = (stateNew[0]->Sc->me[0][0] - stateNew[0]->Sc->me[2][2])
-		+(stateNew[0]->Sb->me[0][0] - stateNew[0]->Sb->me[2][2]);
-		sig11 = sig11/pow(10,6);
-		//sig11 = stateNew[0]->Sc->me[0][0] + stateNew[0]->Sb->me[0][0];
-		//sig11 = sig11/pow(10,6);
-		double sig12 = 0*stateNew[0]->Sc->me[0][1] + stateNew[0]->Sb->me[0][1] ;//+ stateNew[0]->Sc->me[0][1] ;
-		sig12 = sig12/pow(10,6);
+		if ( strcmp (DEFORMATION_MODE, "BIAXIAL") == 0 )
+		{
+			strainplot = stateNew[0]->F->me[0][0]-1;
+			maxStrain = stateNew[0]->F->me[0][0]-1;
+			sigplot = (stateNew[0]->Sc->me[0][0] - stateNew[0]->Sc->me[2][2])
+			+(stateNew[0]->Sb->me[0][0] - stateNew[0]->Sb->me[2][2]);
+			sigplot = sigplot/pow(10,6);
 
-		//sig11 = sigma->me[1][1];
-		maxStrain = stateNew[0]->F->me[0][0]-1;
-		//maxStrain = stateNew[0]->F->me[0][1];
+		}else if ( strcmp (DEFORMATION_MODE, "SIMPLE_SHEAR") == 0 ) {
+			maxStrain = stateNew[0]->F->me[0][1];
+			strainplot = stateNew[0]->F->me[0][1];
+			sigplot = 0*stateNew[0]->Sc->me[0][1] + stateNew[0]->Sb->me[0][1] ;//+ stateNew[0]->Sc->me[0][1] ;
+			sigplot = sigplot/pow(10,6);
+		}
 		// write stress to file 
 		if ( n % writeFreq == 0)
 		{
 			fp = fopen("Stress_11_nominal.txt","a");
 			//fprintf(fp,"%lf,%lf\n",t_n_1, sig12);
-			fprintf(fp,"%lf,%lf\n",stateNew[0]->F->me[0][0]-1, sig11);
+			fprintf(fp,"%lf,%lf\n",strainplot, sigplot);
 
 			fclose(fp);
 		}
+
+
+
+		//-------------------------------------------------//
+		//                  State updates                  //
+		//-------------------------------------------------//
+
+		// n+1 --->>>> n 
+		m_copy(stateNew[0]->F,stateOld[0]->F);
+		m_copy(stateNew[0]->V,stateOld[0]->V);
+		m_copy(stateNew[0]->R,stateOld[0]->R);
+		m_copy(stateNew[0]->invF,stateOld[0]->invF);			
+		stateOld[0]->Jacobian = stateNew[0]->Jacobian;
+		stateOld[0]->div_v = stateNew[0]->div_v;
+
+
+
 		++n;
 		t_n = t_n_1;
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	printf("omega =");
 	m_foutput(stdout, stateNew[0]->Omega);
@@ -171,7 +257,7 @@ int main(void)
 	printf("trace of D = %lf", stateNew[0]->Dbar->me[0][0] + stateNew[0]->Dbar->me[1][1] + stateNew[0]->Dbar->me[2][2]);
 	gettimeofday(&end, NULL);
 	double delta = ((end.tv_sec  - start.tv_sec) * 1000000u + 
-         end.tv_usec - start.tv_usec) / 1.e6;
+		end.tv_usec - start.tv_usec) / 1.e6;
 
 	// get time taken to run
 	printf("buckley took %lf seconds to run\n", delta);

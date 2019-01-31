@@ -17,7 +17,7 @@
  */
 #include "Material/Buckley/buckleyBond.h"
 #include <math.h>
-int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para, double dt)
+int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * para, double dt)
 {
 
 
@@ -39,9 +39,6 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	MAT * Sb_n_1 = stateNew->Sb_R;
 	MAT * d = stateNew->d;
 
-	// MAT * Sb_n = stateOld->Sb;
-	// MAT * Sb_n_1 = stateNew->Sb;
-	// MAT * d = stateNew->Dbar;
 
 	double tauOCT = sqrt (  (1.000/3.00) * contraction(Sb_n,Sb_n)  ) ;
 	double alpha_sig = 1;
@@ -65,12 +62,6 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 	double alpha_T = exp ( (H0/R) * ( 1/temperature - 1/star_T) );
 	
 
-	if (alpha_sig < 0.1)
-	{
-		alpha_sig = 0.1;
-	}
-		alpha_sig = 1.00;
-
 	// tau = tau_s * alpha_s * alpha_T * alpha_sig ;
 	double tau = (star_mu0/(2*Gb))*alpha_sig*alpha_s*alpha_T;
 
@@ -79,18 +70,35 @@ int buckleyBond(state_Buckley * stateNew, state_Buckley * stateOld , VEC * para,
 
 	double sbFactor = 1 - exp(-dt/tau);
 	// mat1 = 2Gb*D*tau
-	sm_mlt(2*Gb*tau,d,stateNew->temp);
+	sm_mlt(2*Gb*tau,d,stateNew->m_temp1);
 
 	// 2Gb*D*tau - Sb_n
-	m_sub(stateNew->temp,Sb_n,stateNew->temp1);
+	m_sub(stateNew->m_temp1,Sb_n,stateNew->m_temp2);
 
 	// deltaSb = ( 1- exp(-dt/tau)) * ( 2G*D*tau - Sb_n)
-	// corrotational stress increment
-	sm_mlt(sbFactor,stateNew->temp1,stateNew->temp1);
+	// stress increment in material frame
+	sm_mlt(sbFactor,stateNew->m_temp2,stateNew->m_temp2);
 
-	m_add(Sb_n,stateNew->temp1,Sb_n_1);
+	MAT * mat1 = stateOld->m_temp3;
+	MAT * mat2 = stateOld->m_temp4;
 
-	sm_mlt(1.00/(2*Gb*dt),stateNew->temp1,stateNew->D_b);
+	m_mlt(stateNew->omega,Sb_n,mat1);
+	// s*W'
+	m_mlt(Sb_n,stateNew->omega,mat2);
+
+	m_sub(mat2,mat1,mat1);
+
+
+	sm_mlt(dt,mat1,mat1);
+
+
+	m_add(Sb_n,mat1,Sb_n);
+
+	m_add(Sb_n,stateNew->m_temp2,Sb_n_1);
+
+
+	// m_foutput(stdout, stateNew->omega);
+	//sm_mlt(1.00/(2*Gb*dt),stateNew->temp1,stateNew->D_b);
 
 
 	return 0;

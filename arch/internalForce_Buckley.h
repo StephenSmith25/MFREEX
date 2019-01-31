@@ -18,9 +18,8 @@
 #define PI 3.14159265359
 
 
-
-double internalForce_ForceBuckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC * velocity,
-	VEC * matParams, VEC * critLambdaParams, state_Buckley ** stateNew, state_Buckley ** stateOld,
+double internalForce_Buckley(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC * velocity,
+	VEC * matParams,VEC * critLambdaParams, state_Buckley ** stateNew, state_Buckley ** stateOld,
 	 int is_axi, int dim, double deltat, double t_n_1);
 
 

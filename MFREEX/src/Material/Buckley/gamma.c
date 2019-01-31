@@ -21,8 +21,10 @@
 
 
 
-double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,
-	VEC * para, double dt, int IS_AXI){
+double gammaV(state_variables * state, double maxLambdaN,double critLambda,
+	VEC * para, double dt){
+
+
 
 
 	double starT = para->ve[18];
@@ -49,37 +51,26 @@ double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,
 	int index = 0;
 	double theta = 0;
 
-	//find the strain rate
-	double V1 = 0;
-	double V2 = 0;
-	if ( IS_AXI == 1){
-		V1 = state->Vdot->me[1][1]; 
-		V2 = state->Vdot->me[2][2];
-	}else{
-		V1 = state->Vdot->me[0][0];
-		V2 = state->Vdot->me[1][1];
 
-	}
-	double maxSr = max(V1,V2);
 
-	//double maxSr = v_max(state->lambdaDot,&index);
+	double maxSr = v_max(state->lambdaDot,&index);
 	if ( maxSr == 0){
 		maxSr = 0.01; 
 	}
 
-	// double D1 = state->eigValDBar->ve[2];
-	// double D2 = state->eigValDBar->ve[1];
-	// //find the strain rate
-	double D1 = 0;
-	double D2 = 0;
-	if ( IS_AXI == 1){
-		D1 = state->d->me[1][1]; 
-		D2 = state->d->me[2][2];
-	}else{
-		D1 = state->d->me[0][0];
-		D2 = state->d->me[1][1];
+	// // double D1 = state->eigValDBar->ve[2];
+	// // double D2 = state->eigValDBar->ve[1];
+	// // //find the strain rate
+	// double D1 = 0;
+	// double D2 = 0;
+	// if ( IS_AXI == 1){
+	// 	D1 = state->d->me[1][1]; 
+	// 	D2 = state->d->me[2][2];
+	// }else{
+	// 	D1 = state->d->me[0][0];
+	// 	D2 = state->d->me[1][1];
 
-	}
+	// }
 	// // find theta, the ratio of in plane natural strain rate
 	// if ( D1 == 0){
 	// 	theta = 0;
@@ -110,18 +101,12 @@ double gammaV(state_Buckley * state, double maxLambdaN,double critLambda,
 	gamma0 = exp( Cs/(shiftTemperature - Tinf) - Cs/(starT - Tinf));
 	gamma0 = gamma0*refGamma;
 
-	// if ( (D1 >= 0 ) && ( D2 >= 0))
-	// {
+
 	if ( maxLambdaN >= critLambda ){
 		gamma_n_1 = 1e30;
 	}else{
 		gamma_n_1 = gamma0/ ( 1.000 - (maxLambdaN/critLambda)) ; 
 	}
-
-	
-	// }else{
-	// 	gamma_n_1 = gamma_n;
-	// }
 
 
 	

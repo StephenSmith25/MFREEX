@@ -12,7 +12,6 @@
 #include "mls_shapefunction.h"
 #include "setDomain.h"
 #include "smoothstep.h"
-#include "Force/Internal/internalForce_Buckley.h"
 #include "Force/Internal/internalForce_hyperelastic.h"
 #include "Boundary/Displacement/essential_boundary.h"
 #include "mat2csv.h"
@@ -24,7 +23,6 @@
 #include "Boundary/Traction/Pressure/pressure_load.h"
 #include <math.h>
 #include "Deformation/poldec.h"
-#include "Material/Buckley/new_Buckley_State.h"
 #include "Boundary/Contact/contactDetection.h"
 #include "Boundary/Displacement/setUpBC.h"
 #include "Boundary/Displacement/enforceBC.h"
@@ -400,52 +398,8 @@ int main(int argc, char** argv) {
 		v_mltadd(d_n,v_n_h,deltaT,d_n_1);
 
 
-
 		__add__(nodes_X->base, d_n_1->ve, updatedNodes->base, num_dof);
 
-
-		// /* Implement contact conditions */
-		// for ( int i = 0 ; i < contact_nodes->max_dim ; i++){
-
-		// 	neighbours = phi_contact->sf_list[i]->neighbours;
-		// 	phi = phi_contact->sf_list[i]->phi;
-		// 	testPoint->me[0][0] = updatedNodes->me[contact_nodes->ive[i]][0];
-		// 	testPoint->me[0][1] = updatedNodes->me[contact_nodes->ive[i]][1];
-
-		// 	distanceProj = contactDetection(testPoint,rigidPlate,msNormal);
-
-
-		// 	if (distanceProj <= 0){
-
-
-		// 		//x direction
-		// 		f1Cor = (2*distanceProj*msNormal->me[0][0]*
-		// 		nodal_mass->ve[contact_nodes->ive[i]])/pow(deltaT,2);
-
-		// 		// y direction
-		// 		f2Cor = (2*distanceProj*msNormal->me[0][1]*
-		// 			nodal_mass->ve[contact_nodes->ive[i]])/pow(deltaT,2);
-
-
-		// 		for ( int k = 0 ; k < neighbours->max_dim ; k++){
-		// 			Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
-		// 			Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
-		// 		}
-
-		// 	}
-
-
-		// }
-
-		// /* Update nodal positions using corrective accceleration */
-		// for ( int i = 0 ; i < numnodes  ; i++ )
-		// {
-		// 	a_n->ve[2*i] = Fcont_n_1->ve[2*i]*inv_nodal_mass->ve[i];
-		// 	a_n->ve[2*i+1] = Fcont_n_1->ve[2*i+1]*inv_nodal_mass->ve[i];
-		// }
-
-		// __mltadd__(v_n_h->ve, a_n->ve,deltaT,num_dof);
-		// __mltadd__(d_n_1->ve,v_n_h->ve,deltaT, num_dof);
 
 		/*  Implement BCs */
 		enforceBC(eb1,d_n_1); 

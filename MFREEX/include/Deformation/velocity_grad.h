@@ -4,11 +4,13 @@
 
 #include "matrix.h"
 #include "matrix2.h"
+#include "Material/material.h"
+#include "Deformation/incremental_deformation_gradient.h"
 
 
 
-int velocity_grad(MAT * h, MAT * L, MAT * D, MAT * W, double delta_t,double alpha);
-
+int velocity_grad(state_variables * stateNew, state_variables * stateOld, 
+double delta_t,double alpha);
 
 
 

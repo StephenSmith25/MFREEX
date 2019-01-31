@@ -28,8 +28,8 @@
 #include <math.h>
 #include "Material/Buckley/edwardsVilgis.h"
 
-int buckleyConf(state_Buckley * stateNew, state_Buckley * stateOld, 
-	VEC * para, double deltaT, int IS_AXI);
+int buckleyConf(state_variables * stateNew, state_variables * stateOld, 
+	VEC * para, double deltaT);
 
 
 

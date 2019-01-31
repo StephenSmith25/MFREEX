@@ -12,7 +12,6 @@
 #include "mls_shapefunction.h"
 #include "setDomain.h"
 #include "smoothstep.h"
-#include "Force/Internal/internalForce_Buckley.h"
 #include "Force/Internal/internalForce_hyperelastic.h"
 #include "Boundary/Displacement/essential_boundary.h"
 #include "mat2csv.h"
@@ -24,7 +23,6 @@
 #include "Boundary/Traction/Pressure/pressure_load.h"
 #include <math.h>
 #include "Deformation/poldec.h"
-#include "Material/Buckley/new_Buckley_State.h"
 #include "Boundary/Contact/contactDetection.h"
 #include "Boundary/Displacement/setUpBC.h"
 #include "Boundary/Displacement/enforceBC.h"

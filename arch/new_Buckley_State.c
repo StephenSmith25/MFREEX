@@ -100,6 +100,14 @@ state_Buckley ** new_Buckley_State(int num_Points, double * temperatures, int is
 		state[i]->v_temp1 = v_get(dim_s);
 		state[i]->v_temp2 = v_get(dim_s);
 
+		state[i]->m_temp1 = m_get(dim_s,dim_s);
+		state[i]->m_temp2 = m_get(dim_s,dim_s);
+		state[i]->m_temp3 = m_get(dim_s,dim_s);
+		state[i]->v_temp3 = v_get(dim_s);
+		state[i]->v_temp4 = v_get(dim_s);
+
+
+
 
 		state[i]->w = v_get(dim_s);
 		state[i]->h = v_get(dim_s);
