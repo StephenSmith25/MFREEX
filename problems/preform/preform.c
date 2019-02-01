@@ -41,10 +41,10 @@ const char opt[20] = "pYDq0a0.5";
 
 // time step parameters
 const double TMAX = 0.4;
-double delta_t = 4e-7;
+double delta_t = 3e-7;
 
 // Meshfree parameters
-const double dmax = 2.5;
+const double dmax = 2.0;
 const int is_stabalised = 0;
 const int is_constant_support_size = 1;
 
