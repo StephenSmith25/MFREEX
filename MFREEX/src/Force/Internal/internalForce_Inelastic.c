@@ -70,7 +70,7 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 
 
 	// set number of threads
-	omp_set_num_threads(1);
+	omp_set_num_threads(8);
 
 	int i;
 #pragma omp parallel 
@@ -129,13 +129,9 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			//------------------------------------------//
 			update_Polar_Decomposition(stateNew[i], stateOld[i], DT);
 
-			// // remove rotation from D to get d
-			// un_rotate_tensor(stateNew[i]->D, stateNew[i]->R, 
-			// 	stateNew[i]->m_temp1, stateNew[i]->d);
-
-
-			// un_rotate_tensor(stateNew[i]->Omega, stateNew[i]->R, 
-			// 	stateNew[i]->m_temp1, stateNew[i]->omega);
+			// remove rotation from D to get d
+			un_rotate_tensor(stateNew[i]->D, stateNew[i]->R, 
+				stateNew[i]->m_temp1, stateNew[i]->d);
 
 
 			//--------------------------------------------//

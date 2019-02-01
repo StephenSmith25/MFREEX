@@ -1,0 +1,58 @@
+//////////////////////////////////////////
+//                                     //
+//			PREFORM INPUT FILE         //
+//                                     //
+/////////////////////////////////////////
+
+**START
+**PROBLEM=STRETCH_BLOW_MOULDING
+**PARTS
+*PART, name=PREFORM
+*DEFORMABLE
+MESH_FILE=preform
+*END PART
+preform
+*DIM
+2
+*AXI
+1
+*PART, name=stretchrod
+*
+*END PART
+**END PARTS
+
+**MATERIALS
+*MATERIAL=BUCKLEY, name=BUCKLEY_MATERIAL
+*MATPARAMS=31
+1380e-9 # density
+2.814e-3 # VS
+0.526e-3 # Vp
+1.7057e6 # mu*_0
+*END MATERIAL
+**END MATERIALS
+
+
+
+# MESHFREE PARAMETERS
+**MESHFREE
+*DMAX=2.0
+*CONSTANT_SUPPORT=1
+
+**LOAD=PRESSURE, name=CAVITY_PRESSURE
+*CAVITY
+
+**TIME_STEP
+*DT=4e-7
+*TMAX=0.4
+**END TIMESTEP
+
+
+## stretch rod
+**CONTACT
+*RIGID, name=STRETCH_ROD
+*DISPLACEMENT=POLYNOMIAL
+8
+-2.2264e7
+**END CONTACT
+
+**END

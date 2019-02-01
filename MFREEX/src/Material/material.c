@@ -87,12 +87,14 @@ state_variables ** new_material_state(double * temperatures, int num_Points, int
 			m_ident(state[i]->Fbar);
 			state[i]->Dbar = m_get(dim_s,dim_s);
 			state[i]->Lbar = m_get(dim_s,dim_s);
-
+			state[i]->dbar = m_get(dim_s,dim_s);
 
 			// Conformation network stretch
 			state[i]->Bbar = m_get(dim_s,dim_s);
 			m_ident(state[i]->Bbar);
 			state[i]->lambdaNBar = v_get(dim_s);
+
+			v_ones(state[i]->lambdaNBar);
 			state[i]->Dn = m_get(dim_s,dim_s);
 
 

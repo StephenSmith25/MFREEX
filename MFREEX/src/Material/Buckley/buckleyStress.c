@@ -2,6 +2,7 @@
 #include "Material/Buckley/buckleyStress.h"
 #include "determinant.h"
 #include "contraction.h"
+#include "Deformation/rotate_tensor.h"
 
 
 int 
@@ -23,7 +24,7 @@ buckleyStress(state_variables * stateNew,
 			/* ---------Isochoric   Deformation----------*/
 			/* ------------------------------------------*/
 			// Find deviatoric part of the deformation 
-			m_copy(stateNew->d,stateNew->Dbar);
+			m_copy(stateNew->D,stateNew->Dbar);
 			
 
 
@@ -40,6 +41,12 @@ buckleyStress(state_variables * stateNew,
 			}
 			m_add(stateNew->Dbar,stateNew->W,stateNew->Lbar);
 
+			// remove rotation from D to get d
+			un_rotate_tensor(stateNew->Dbar, stateNew->R, 
+				stateNew->m_temp1, stateNew->dbar);
+
+
+	
 			// Find Vbar dot
 			sm_mlt(pow(stateOld->Jacobian,-1.00/3.00)/dt,stateOld->V,stateNew->m_temp1);
 			sm_mlt(pow(stateNew->Jacobian,-1.00/3.00)/dt,stateNew->V,stateNew->m_temp2);
@@ -57,13 +64,13 @@ buckleyStress(state_variables * stateNew,
 			symmeig(stateNew->Vdot, stateNew->m_temp1, stateNew->lambdaDot);,
 			"Eigen values of V in internalForce");
 
-			tracecatch(
-			symmeig(stateNew->Dbar,stateNew->eigVecDBar,stateNew->eigValDBar);,
-			"Eigen values of D in internalForce");
+			// tracecatch(
+			// symmeig(stateNew->Dbar,stateNew->eigVecDBar,stateNew->eigValDBar);,
+			// "Eigen values of D in internalForce");
 			
-			PERM * order = px_get(dim);
-			stateNew->eigValDBar = v_sort(stateNew->eigValDBar, order);
-			px_free(order);
+			// PERM * order = px_get(dim);
+			// stateNew->eigValDBar = v_sort(stateNew->eigValDBar, order);
+			// px_free(order);
 
 
 			// update critical network stretch 
@@ -84,9 +91,9 @@ buckleyStress(state_variables * stateNew,
 			mmtr_mlt(stateNew->m_temp1,stateNew->R,stateNew->Sb);
 
 
-			// rotate unrotated stress back into n+1 configuration
-			m_mlt(stateNew->R,stateNew->Sc_R,stateNew->m_temp1);
-			mmtr_mlt(stateNew->m_temp1,stateNew->R,stateNew->Sc);
+			// // rotate unrotated stress back into n+1 configuration
+			// m_mlt(stateNew->R,stateNew->Sc_R,stateNew->m_temp1);
+			// mmtr_mlt(stateNew->m_temp1,stateNew->R,stateNew->Sc);
 
 
 			// Hydrostatic stress
@@ -117,6 +124,7 @@ buckleyStress(state_variables * stateNew,
 			m_copy(stateNew->Sc_R,stateOld->Sc_R);	
 			stateOld->mSigma = stateNew->mSigma;		
 			stateOld->critLambdaBar = stateNew->critLambdaBar;			
+				
 
 
 

@@ -171,14 +171,14 @@ for i = 1:length(plotFiles)
     [R U V] = poldecomp(F);
     
     
-    true_strain = logm(V);
+    true_strain = logm(U);
 
     
-    hoop_strain(i) =true_strain(3,3);
-    axial_strain(i) = true_strain(2,2);
-    radial_strain(i) = true_strain(1,1);
-    shear_strain(i) = true_strain(1,2);
-    
+%     hoop_strain(i) =true_strain(3,3);
+%     axial_strain(i) = true_strain(2,2);
+%     radial_strain(i) = true_strain(1,1);
+%     shear_strain(i) = true_strain(1,2);
+%     
 
 
     

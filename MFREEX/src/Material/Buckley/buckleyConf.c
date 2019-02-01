@@ -46,7 +46,7 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 
 	MAT * eigVecB = stateNew->eigVecVBar;
 	VEC * eigValB = stateNew->eigValVBar;
-	MAT * Sc_n_1 = stateNew->Sc_R;
+	MAT * Sc_n_1 = stateNew->Sc;
 
 	double Jacobian = stateNew->Jacobian;
 	double gamma_n_1;
@@ -57,7 +57,7 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 	if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
 		gamma_n_1 = gammaV(stateNew,stateOld->lambdaNMax,
 			stateNew->critLambdaBar,para, deltaT);
-		sm_mlt(1.0000/gamma_n_1,stateOld->Sc_R,Ds);
+		sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
 	}else{
 		Ds = m_zero(Ds);
 	}
@@ -74,6 +74,8 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 	//BnCr = Dn_n*Bn_n + Bn_n*Dn_n;
 	m_add(Dn,relSpin,intermediate1);
 	m_sub(Dn,relSpin,intermediate2);
+
+
 	m_mlt(intermediate1,stateOld->Bbar,intermediate3);
 	m_mlt(stateOld->Bbar,intermediate2,intermediate1);
 
@@ -83,6 +85,8 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 
 	m_add(intermediate1,intermediate3,BnCr);
 
+
+
 	//Material time derivative of B  ( Green-Naghdi )
 	m_mlt(stateNew->Omega,stateOld->Bbar,intermediate1);
 	m_mlt(stateOld->Bbar,stateNew->Omega,intermediate2);
@@ -90,7 +94,7 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 	m_sub(intermediate1,intermediate2,BnDot);
 
 
-	
+
 	m_add(BnCr,BnDot,BnDot);
 	sm_mlt(deltaT,BnDot,deltaB);
 	// Update B
@@ -164,6 +168,25 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 	stateNew->lambdaNMax = sqrt(v_max(eigValB,&index));
 	m_copy(stateNew->Bbar,stateOld->Bbar);
 	stateOld->lambdaNMax = stateNew->lambdaNMax;
+
+
+	// Find rotation neutralised V_n
+
+	double lambda_1 = eigValB->ve[0] ;
+	double lambda_2 = eigValB->ve[1];
+	double lambda_3 = eigValB->ve[2];
+
+
+	double i1 = lambda_1 + lambda_2 + lambda_3;
+	double i2 = lambda_1*lambda_2 + lambda_1*lambda_3 + lambda_2*lambda_3;
+	double i3 = lambda_1*lambda_2*lambda_3;
+
+	double D = i1*i2 - i3;
+	
+
+
+
+
 
 
 

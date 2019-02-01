@@ -27,7 +27,7 @@ const int PLASTIC_MATERIAL = 0;
 
 // deformaton
 const int SR = 4;
-const double TEMPERATURE = 75;
+const double TEMPERATURE = 85;
 char * DEFORMATION_MODE = "SIMPLE_SHEAR";
 const int DIM = 3;
 const int IS_AXI = 0;
@@ -185,7 +185,7 @@ int main(void)
 		}else if ( strcmp (DEFORMATION_MODE, "SIMPLE_SHEAR") == 0 ) {
 			maxStrain = stateNew[0]->F->me[0][1];
 			strainplot = stateNew[0]->F->me[0][1];
-			sigplot = 0*stateNew[0]->Sc->me[0][1] + stateNew[0]->Sb->me[0][1] ;//+ stateNew[0]->Sc->me[0][1] ;
+			sigplot = stateNew[0]->Sc->me[0][1] + stateNew[0]->Sb->me[0][1] ;//+ stateNew[0]->Sc->me[0][1] ;
 			sigplot = sigplot/pow(10,6);
 		}
 		// write stress to file 

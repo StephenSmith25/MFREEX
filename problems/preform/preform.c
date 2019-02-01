@@ -35,13 +35,16 @@ const char * MATERIAL = "BUCKLEY";
 const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
+// Meshing
+const char opt[20] = "pYDq0a0.5";
+
 
 // time step parameters
 const double TMAX = 0.4;
 double delta_t = 4e-7;
 
 // Meshfree parameters
-const double dmax = 2.00;
+const double dmax = 2.5;
 const int is_stabalised = 0;
 const int is_constant_support_size = 1;
 
@@ -182,7 +185,6 @@ int main(int argc, char** argv) {
 	 *  */
 	// Read PLSG 
 
-	char opt[20] = "pYDq30a1";
 	char fileName[30] = "preform";
 	double * points_out ;
 	int * boundaryNodes;
@@ -702,12 +704,10 @@ int main(int argc, char** argv) {
 		// d_n_1->ve[42] = 0.3;
 		__sub__(d_n_1->ve, disp_r->ve,disp_inc->ve, num_dof);
 
-		printf( "got inside internal force routine \n");
 		double delta_t_new = internalForce_Inelastic(Fint_n_1, _scni_obj,
 		disp_inc, v_n_h,
 		matParams, state_n_1, state_n,
 		mfree.IS_AXI, dim,delta_t,t_n_1, MATERIAL);
-		printf("got out of internal force rotuine\n");
 
 
 		/* ------------------------------------------*/

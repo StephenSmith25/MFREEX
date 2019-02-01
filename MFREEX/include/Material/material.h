@@ -78,6 +78,7 @@ typedef struct state_variables
 	MAT * eigVecDBar;
 	MAT * eigVecVBar;
 	VEC * lambdaDot;
+	MAT * dbar;
 
 	// Isochoric components
 	MAT * Dbar;
