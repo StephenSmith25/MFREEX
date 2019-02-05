@@ -36,7 +36,7 @@ const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
 // Meshing
-const char opt[20] = "pYDq0a0.5";
+const char opt[20] = "pYDq22a0.7";
 
 
 // time step parameters
@@ -44,9 +44,9 @@ const double TMAX = 0.4;
 double delta_t = 3e-7;
 
 // Meshfree parameters
-const double dmax = 2.0;
+const double dmax = 2.2;
 const int is_stabalised = 0;
-const int is_constant_support_size = 1;
+const int is_constant_support_size = 0;
 
 int main(int argc, char** argv) {
 
@@ -571,7 +571,7 @@ int main(int argc, char** argv) {
 
 	/*  Explicit Loop */
 	while ( t_n < TMAX)
-	//while ( n < 1 )
+	//while ( n < 10000 )
 	{
 
 		/*  Update time step */

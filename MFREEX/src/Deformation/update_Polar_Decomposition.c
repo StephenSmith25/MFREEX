@@ -7,8 +7,8 @@ int update_Polar_Decomposition(state_variables * stateNew, state_variables * sta
 
 
 			// FIND THE ROTATION TENSOR
-
-			int dim = stateOld->V->m;
+			const int dim = 3;
+			//int dim = stateOld->V->m;
 			m_mlt(stateOld->V,stateNew->D,stateNew->m_temp1);
 			m_mlt(stateNew->D,stateOld->V,stateNew->m_temp2);
 			m_sub(stateNew->m_temp2,stateNew->m_temp1,stateNew->m_temp1);
@@ -53,10 +53,11 @@ int update_Polar_Decomposition(state_variables * stateNew, state_variables * sta
 			sm_mlt(traceV,stateNew->m_temp1,stateNew->m_temp1);
 			m_sub(stateNew->m_temp1,stateOld->V, stateNew->m_temp1);
 
+			// m_inverse_small(stateNew->m_temp1,stateNew->m_temp4);
+			// vm_mlt(stateNew->m_temp4, z, h);
 
 			CHfactor(stateNew->m_temp1);
 			CHsolve(stateNew->m_temp1, z, h);
-
 			v_add(w,h,omega);
 
 
@@ -109,4 +110,14 @@ int update_Polar_Decomposition(state_variables * stateNew, state_variables * sta
 
 
 	return 0.0;
+}
+int polar_decomposition(state_variables * stateNew, state_variables * stateOld, double dt)
+{
+
+
+
+
+
+
+	return 0;
 }

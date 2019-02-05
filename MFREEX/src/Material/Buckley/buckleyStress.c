@@ -3,7 +3,7 @@
 #include "determinant.h"
 #include "contraction.h"
 #include "Deformation/rotate_tensor.h"
-
+#include "symmeig_small.h"
 
 int 
 buckleyStress(state_variables * stateNew, 
@@ -60,17 +60,20 @@ buckleyStress(state_variables * stateNew,
 			/* ------------------------------------------*/
 
 			//Get priciple nominal strain rates 
-			tracecatch(
-			symmeig(stateNew->Vdot, stateNew->m_temp1, stateNew->lambdaDot);,
-			"Eigen values of V in internalForce");
-
 			// tracecatch(
-			// symmeig(stateNew->Dbar,stateNew->eigVecDBar,stateNew->eigValDBar);,
-			// "Eigen values of D in internalForce");
+			// symmeig(stateNew->Vdot, stateNew->m_temp1, stateNew->lambdaDot);,
+			// "Eigen values of V in internalForce");
+
+
+			//dsyevc3(stateNew->Vdot->me, stateNstateNew->lambdaDot->ve);
+
+// 			tracecatch(
+// 			symmeig(stateNew->Dbar,stateNew->eigVecDBar,stateNew->eigValDBar);,
+// 			"Eigen values of D in internalForce");
 			
-			// PERM * order = px_get(dim);
-			// stateNew->eigValDBar = v_sort(stateNew->eigValDBar, order);
-			// px_free(order);
+// 			PERM * order = px_get(dim);
+// 			stateNew->eigValDBar = v_sort(stateNew->eigValDBar, order);
+// 			px_free(order);
 
 
 			// update critical network stretch 

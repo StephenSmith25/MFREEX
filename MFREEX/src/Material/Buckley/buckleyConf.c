@@ -16,9 +16,10 @@
  * =====================================================================================
  */
 #include "Material/Buckley/buckleyConf.h"
+#include "dsyevq3.h"
+#include "dsyevv3.h"
 
-
-
+#include "symmeig_small.h"
 
 static int call_count_2 = 0;
 
@@ -55,9 +56,15 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 
 
 	if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
+
+
 		gamma_n_1 = gammaV(stateNew,stateOld->lambdaNMax,
 			stateNew->critLambdaBar,para, deltaT);
 		sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
+
+
+
+
 	}else{
 		Ds = m_zero(Ds);
 	}
@@ -146,10 +153,29 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 	
 	// Eigen Value process
 
-	tracecatch(symmeig(stateNew->Bbar,eigVecB,eigValB);,	
-		"Eigen values of Bbar in Buckley conf");
-	// find edwards vilgis stress
+	// tracecatch(symmeig(stateNew->Bbar,eigVecB,eigValB);,	
+	// "Eigen values of Bbar in Buckley conf");
+
+	dsyevq3(stateNew->Bbar->base,eigVecB->base,eigValB->ve);
+
+
+	// 		printf("for loop print\n");
+
+	// 		for ( int i = 0 ; i < 3 ; i++)
+	// 		{
+	// 			for ( int j = 0 ; j < 3 ; j++)
+	// 			{
+	// 				printf("%lf ",eigVecB->me[i][j]);
+	// 			}
+	// 			printf("\n");
+	// 		}
+	// // find edwards vilgis stress
+
+
+
 	edwardsVilgis(Sc_n_1p,eigValB,para, Jacobian, stateNew->temperature);
+
+
 	// Find /\, such that /\ = Q^T * A * Q;
 
 	for ( int i = 0 ; i < Sc_n_1p->max_dim ; i++)
@@ -172,17 +198,19 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 
 	// Find rotation neutralised V_n
 
-	double lambda_1 = eigValB->ve[0] ;
-	double lambda_2 = eigValB->ve[1];
-	double lambda_3 = eigValB->ve[2];
+	// double lambda_1 = eigValB->ve[0] ;
+	// double lambda_2 = eigValB->ve[1];
+	// double lambda_3 = eigValB->ve[2];
 
 
-	double i1 = lambda_1 + lambda_2 + lambda_3;
-	double i2 = lambda_1*lambda_2 + lambda_1*lambda_3 + lambda_2*lambda_3;
-	double i3 = lambda_1*lambda_2*lambda_3;
+	// double i1 = lambda_1 + lambda_2 + lambda_3;
+	// double i2 = lambda_1*lambda_2 + lambda_1*lambda_3 + lambda_2*lambda_3;
+	// double i3 = lambda_1*lambda_2*lambda_3;
 
-	double D = i1*i2 - i3;
-	
+	// double D = i1*i2 - i3;
+
+
+
 
 
 

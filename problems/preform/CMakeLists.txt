@@ -2,12 +2,15 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(preform)
 
 
+
+
+
+
 include_directories(${EFSFLIB_SOURCE_DIR}/lib/include)
 include_directories(${Meschach_SOURCE_DIR})
 include_directories(${CVLIB_SOURCE_DIR}/lib/include)
 include_directories(${CVLIB_SOURCE_DIR}/test/include)
 include_directories(${util_SOURCE_DIR}/include)
-
 include_directories(${GPC_SOURCE_DIR})
 include_directories(${MFREEX_SOURCE_DIR}/MFREEX/include)
 include_directories(${triangulate_SOURCE_DIR}/include)
@@ -28,13 +31,20 @@ if (OPENMP_FOUND)
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
+
+
+
+
 find_package (Threads)
 
-SET(GCC_COVERAGE_COMPILE_FLAGS " -g")
+SET(GCC_COVERAGE_COMPILE_FLAGS " -g -O2")
 add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
+
+
+
 add_executable(preform preform.c)
-target_link_libraries(preform CVLIB MFREEX EFSFLIB triangulate meschach m gpc util)
+target_link_libraries(preform CVLIB MFREEX EFSFLIB util triangulate meschach m gpc)
 
 
 # copy input files to location

@@ -16,7 +16,7 @@ numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
 
-plot_point =125;
+plot_point =132;
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.txt');
 disp = csvread(filename);
 figure

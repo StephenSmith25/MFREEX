@@ -97,7 +97,7 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 		MAT * Sb_n_1;
 
 
-#pragma omp for nowait schedule(dynamic,2) 
+#pragma omp for nowait schedule(dynamic,4) 
 		for(i = 0 ; i < num_int_points ; i++){
 
 
@@ -147,7 +147,7 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			/* ------------------------------------------*/
 
 
-			if ((i == 124) && (call_count % 100 == 0)) {
+			if ((i == 131) && (call_count % 100 == 0)) {
 
 
 				stateNew[i]->F->me[2][1] = t_n_1;

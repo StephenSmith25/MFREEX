@@ -43,7 +43,7 @@ for i = 1:length(theta)
     
 end
 nodes;
-N3 = 0;
+N3 = 5;
 N4 = 4;
 N5 = 3;
 % Left wall
@@ -101,7 +101,7 @@ nodes(i,3) = interp1q(tempProfile(:,1),tempProfile(:,3),nodes(i,2));
     
 end
 
-for i = (length(nodes)+1)/2:length(nodes)
+for i = round ((length(nodes)+1)/2):length(nodes)
    nodes(i,3) = interp1q(tempProfile(:,1),tempProfile(:,2),nodes(i,2));
 end
 
@@ -123,8 +123,8 @@ for i = 1:length(nodes)
     
 end
 
-segments(1:(ntheta + N1+N2+(N3)),3) = 2;
-segments((ntheta+(N1+N2+(N3))):((ntheta+(N1+N2+(N3)))+ N4-2),3) = 5;
+segments(1:(ntheta + N1+N2+(N3)-1),3) = 2;
+segments((ntheta+(N1+N2+(N3)-1)):((ntheta+(N1+N2+(N3)-1))+ N4-2),3) = 5;
 segments(end:-1:end-(N5-2),3) = 4;
 
 

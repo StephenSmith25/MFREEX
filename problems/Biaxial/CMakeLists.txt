@@ -2,12 +2,12 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(biaxial)
 
 
+
 include_directories(${EFSFLIB_SOURCE_DIR}/lib/include)
 include_directories(${Meschach_SOURCE_DIR})
 include_directories(${CVLIB_SOURCE_DIR}/lib/include)
 include_directories(${CVLIB_SOURCE_DIR}/test/include)
 include_directories(${util_SOURCE_DIR}/include)
-
 include_directories(${GPC_SOURCE_DIR})
 include_directories(${MFREEX_SOURCE_DIR}/MFREEX/include)
 include_directories(${triangulate_SOURCE_DIR}/include)
@@ -26,11 +26,11 @@ if (OPENMP_FOUND)
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
-SET(GCC_COVERAGE_COMPILE_FLAGS "-O2 -g")
+SET(GCC_COVERAGE_COMPILE_FLAGS "-O3 -g")
 add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
 add_executable(biaxial biaxial.c)
-target_link_libraries(biaxial CVLIB MFREEX EFSFLIB triangulate meschach m gpc util)
+target_link_libraries(biaxial CVLIB MFREEX EFSFLIB triangulate meschach m gpc util )
 
 
 # copy input files to location

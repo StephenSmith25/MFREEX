@@ -6,6 +6,8 @@
 
 **START
 **PROBLEM=STRETCH_BLOW_MOULDING
+
+
 **PARTS
 *PART, name=PREFORM
 *DEFORMABLE
@@ -16,10 +18,11 @@ preform
 2
 *AXI
 1
-*PART, name=stretchrod
+*PART, name=stretch_rod
 *
 *END PART
 **END PARTS
+
 
 **MATERIALS
 *MATERIAL=BUCKLEY, name=BUCKLEY_MATERIAL

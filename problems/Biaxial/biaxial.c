@@ -18,6 +18,7 @@
 #include "Material/material.h"
 #include "Integration/gMat.h"
 #include "Deformation/velocity_grad.h"
+#include "symmeig_small.h"
 
 
 // material
@@ -225,36 +226,6 @@ int main(void)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-	printf("omega =");
-	m_foutput(stdout, stateNew[0]->Omega);
-	printf("V =");
-	m_foutput(stdout, stateNew[0]->V);
-	printf("D =");
-	m_foutput(stdout, stateNew[0]->D);
-	printf("R =");
-
-	m_foutput(stdout, stateNew[0]->R);
-
-
-	printf("det V  = %lf\n", determinant(stateNew[0]->V));
-	printf("det F  = %lf\n", determinant(stateNew[0]->F));
-
-	m_foutput(stdout, stateNew[0]->F);
-
-	printf("trace of D = %lf", stateNew[0]->Dbar->me[0][0] + stateNew[0]->Dbar->me[1][1] + stateNew[0]->Dbar->me[2][2]);
 	gettimeofday(&end, NULL);
 	double delta = ((end.tv_sec  - start.tv_sec) * 1000000u + 
 		end.tv_usec - start.tv_usec) / 1.e6;
@@ -263,29 +234,132 @@ int main(void)
 	printf("buckley took %lf seconds to run\n", delta);
 
 
-	// test some eigen value computations
 
+
+
+
+
+
+
+
+	// printf("omega =");
+	// m_foutput(stdout, stateNew[0]->Omega);
+	// printf("V =");
+	// m_foutput(stdout, stateNew[0]->V);
+	// printf("D =");
+	// m_foutput(stdout, stateNew[0]->D);
+	// printf("R =");
+
+	// m_foutput(stdout, stateNew[0]->R);
+
+
+	// printf("det V  = %lf\n", determinant(stateNew[0]->V));
+	// printf("det F  = %lf\n", determinant(stateNew[0]->F));
+
+	// m_foutput(stdout, stateNew[0]->F);
+
+	// printf("trace of D = %lf", stateNew[0]->Dbar->me[0][0] + stateNew[0]->Dbar->me[1][1] + stateNew[0]->Dbar->me[2][2]);
+	// gettimeofday(&end, NULL);
+	// double delta = ((end.tv_sec  - start.tv_sec) * 1000000u + 
+	// 	end.tv_usec - start.tv_usec) / 1.e6;
+
+
+
+	//test some eigen value computations
 
 	MAT * test = m_get(3,3);
-	test->me[0][0] = 1;
-	test->me[0][1] = 88;
-	test->me[0][2] = 150;
+	test->me[0][0] = 3;
+	test->me[0][1] = 2;
+	test->me[0][2] = 4;
 
-	test->me[1][0] = 31.1;
-	test->me[1][1] = 1;
-	test->me[1][2] = 95.1;
+	test->me[1][0] = 2;
+	test->me[1][1] = 0;
+	test->me[1][2] = 2;
 
-	test->me[2][0] = 11.4;
-	test->me[2][1] = 13.1;
-	test->me[2][2] = 1;
+	test->me[2][0] = 4;
+	test->me[2][1] = 2;
+	test->me[2][2] = 3;
+
+
+
+	// MAT * Q = m_get(3,3); 
+
+
+
+	// printf("TESTING EIGEN VALUES \n \n \n ");
+	// printf("Test = \n");
+	// m_foutput(stdout, test);
+	// symmeig(test, Q, eigVals);
+
+
+	// v_foutput(stdout, eigVals);
+	// m_foutput(stdout, Q);
+	// printf("TESTING MY IMPLEMENTATION\n");
+
+	// // printf("Test = \n");
+	// // m_foutput(stdout, test);
+
+	// m_zero(Q);
+	// symmeig_small(test, Q, eigVals);
+
+	// MAT *A;
+
+
+	// v_foutput(stdout, eigVals);
+	// m_foutput(stdout, Q);
+
+
 	MAT * Q = m_get(3,3); 
+
 	VEC * eigVals = v_get(3);
 
-	symmeig(test, Q, eigVals);
+	double test_1[3][3];
+
+
+	test_1[0][0] = 1;
+	test_1[0][1] = 1;
+	test_1[0][2] = 0;
+
+	test_1[1][0] = 1;
+	test_1[1][1] = 0;
+	test_1[1][2] = 1;
+
+	test_1[2][0] = 0;
+	test_1[2][1] = 1;
+	test_1[2][2] = 1;
+
+	double Q_1[3][3];
+
+
+	//dsyevv3(test->base, Q->base, eigVals->ve);
+
+	v_foutput(stdout, eigVals);
+
+	m_foutput(stdout, Q);
+
+	// MAT * m_temp = m_get(3,3);
+	// MAT * m_temp1 = m_get(3,3);
+
+
+	// MAT * D = m_get(3,3);
+
+	// D->me[0][0] = eigVals->ve[0];
+	// D->me[1][1] = eigVals->ve[1];
+	// D->me[2][2] = eigVals->ve[2];
+
+	// m_mlt(test,Q,m_temp1);
+	// m_mlt(Q,D,m_temp);
+
+	// m_sub(m_temp1,m_temp,m_temp);
+
+	// m_foutput(stdout, m_temp);
+
+
+
+
 	PERM * order = px_get(3);
 	v_sort(eigVals, order);
 	px_free(order);
-	v_foutput(stdout, eigVals);
 
 
 	exit(0);

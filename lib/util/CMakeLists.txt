@@ -8,5 +8,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${Meschach_SOURCE_DIR})
 
+SET(GCC_COVERAGE_COMPILE_FLAGS " -O3")
+add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
 add_library(util STATIC ${SRCS} ${HEADERS})
