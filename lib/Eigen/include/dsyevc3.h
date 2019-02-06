@@ -19,6 +19,6 @@
 #ifndef __DSYEVC3_H
 #define __DSYEVC3_H
 
-int dsyevc3(double A[3][3], double w[3]);
+int dsyevc3(double ** A, double w[3]);
 
 #endif

@@ -28,7 +28,7 @@
 
 
 // ----------------------------------------------------------------------------
-int dsyevc3(double A[3][3], double w[3])
+int dsyevc3(double ** A_in, double w[3])
 // ----------------------------------------------------------------------------
 // Calculates the eigenvalues of a symmetric 3x3 matrix A using Cardano's
 // analytical algorithm.
@@ -45,6 +45,20 @@ int dsyevc3(double A[3][3], double w[3])
 // ----------------------------------------------------------------------------
 {
   double m, c1, c0;
+
+  double A[3][3];
+
+  for ( int i = 0 ; i < 3 ; i++)
+  {
+    for ( int j = 0 ; j < 3 ; j++)
+    {
+      A[i][j] = A_in[i][j];
+    }
+
+  }
+
+
+
   
   // Determine coefficients of characteristic poynomial. We write
   //       | a   d   f  |
@@ -77,5 +91,13 @@ int dsyevc3(double A[3][3], double w[3])
   w[1] -= s;
 
   return 0;
+
+
+
+
+
+
+
+
 }
 

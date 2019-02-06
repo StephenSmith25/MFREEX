@@ -19,6 +19,6 @@
 #ifndef __DSYEVH3_H
 #define __DSYEVH3_H
 
-int dsyevh3(double A[3][3], double Q[3][3], double w[3]);
+int dsyevh3(double ** A_in, double ** Q_in, double w[3]);
 
 #endif

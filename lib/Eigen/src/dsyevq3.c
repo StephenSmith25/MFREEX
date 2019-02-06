@@ -26,7 +26,7 @@
 
 
 // ----------------------------------------------------------------------------
-int dsyevq3(double A[3][3], double Q[3][3], double w[3])
+int dsyevq3(double ** A_in, double ** Q_in, double w[3])
 // ----------------------------------------------------------------------------
 // Calculates the eigenvalues and normalized eigenvectors of a symmetric 3x3
 // matrix A using the QL algorithm with implicit shifts, preceded by a
@@ -53,7 +53,17 @@ int dsyevq3(double A[3][3], double Q[3][3], double w[3])
   int nIter;
   int m;
 
+  double A[3][3], Q[3][3];
 
+  for ( int i = 0 ; i < 3 ; i++)
+  {
+    for ( int j = 0 ; j < 3 ; j++)
+    {
+      A[i][j] = A_in[i][j];
+      Q[i][j] = Q_in[i][j];
+    }
+
+  }
 
 
   // Transform A to real tridiagonal form by the Householder method
@@ -133,6 +143,15 @@ int dsyevq3(double A[3][3], double Q[3][3], double w[3])
     }
   }
 
+
+  for ( int i = 0 ; i < 3 ; i++)
+  {
+    for ( int j = 0 ; j < 3 ; j++)
+    {
+      Q_in[i][j] = Q[i][j];
+    }
+
+  }
 
 
 

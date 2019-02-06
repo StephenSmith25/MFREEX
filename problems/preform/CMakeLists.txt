@@ -44,7 +44,7 @@ add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
 
 add_executable(preform preform.c)
-target_link_libraries(preform CVLIB MFREEX EFSFLIB util triangulate meschach m gpc)
+target_link_libraries(preform CVLIB MFREEX Eigen EFSFLIB util triangulate meschach m gpc)
 
 
 # copy input files to location

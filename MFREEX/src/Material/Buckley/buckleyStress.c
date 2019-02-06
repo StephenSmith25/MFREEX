@@ -4,7 +4,7 @@
 #include "contraction.h"
 #include "Deformation/rotate_tensor.h"
 #include "symmeig_small.h"
-
+#include "dsyevc3.h"
 int 
 buckleyStress(state_variables * stateNew, 
 	state_variables * stateOld,
@@ -65,7 +65,7 @@ buckleyStress(state_variables * stateNew,
 			// "Eigen values of V in internalForce");
 
 
-			//dsyevc3(stateNew->Vdot->me, stateNstateNew->lambdaDot->ve);
+			dsyevc3(stateNew->Vdot->me, stateNew->lambdaDot->ve);
 
 // 			tracecatch(
 // 			symmeig(stateNew->Dbar,stateNew->eigVecDBar,stateNew->eigValDBar);,

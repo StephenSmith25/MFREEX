@@ -30,7 +30,7 @@ SET(GCC_COVERAGE_COMPILE_FLAGS "-O3 -g")
 add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
 add_executable(biaxial biaxial.c)
-target_link_libraries(biaxial CVLIB MFREEX EFSFLIB triangulate meschach m gpc util )
+target_link_libraries(biaxial CVLIB MFREEX Eigen EFSFLIB triangulate meschach m gpc util )
 
 
 # copy input files to location

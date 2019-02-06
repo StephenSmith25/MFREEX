@@ -28,7 +28,7 @@
 #define SQR(x)      ((x)*(x))                        // x^2 
 
 // ----------------------------------------------------------------------------
-int dsyevh3(double A[3][3], double Q[3][3], double w[3])
+int dsyevh3(double ** A_in, double ** Q_in, double w[3])
 // ----------------------------------------------------------------------------
 // Calculates the eigenvalues and normalized eigenvectors of a symmetric 3x3
 // matrix A using Cardano's method for the eigenvalues and an analytical
@@ -63,8 +63,21 @@ int dsyevh3(double A[3][3], double Q[3][3], double w[3])
   int j;                // Loop counter
 #endif
 
+  double A[3][3], Q[3][3];
+
+  for ( int i = 0 ; i < 3 ; i++)
+  {
+    for ( int j = 0 ; j < 3 ; j++)
+    {
+      A[i][j] = A_in[i][j];
+      Q[i][j] = Q_in[i][j];
+    }
+
+  }
+
+
   // Calculate eigenvalues
-  dsyevc3(A, w);
+  dsyevc3(A_in, w);
 
 #ifndef EVALS_ONLY
 //  n0 = SQR(A[0][0]) + SQR(A[0][1]) + SQR(A[0][2]);
@@ -100,7 +113,7 @@ int dsyevh3(double A[3][3], double Q[3][3], double w[3])
   // not cause problems: If w[0] = w[1], then A - w[0] * I has rank 1,
   // i.e. all columns of A - w[0] * I are linearly dependent.
   if (norm <= error)
-    return dsyevq3(A, Q, w);
+    return dsyevq3(A_in, Q_in, w);
   else                      // This is the standard branch
   {
     norm = sqrt(1.0 / norm);
@@ -115,7 +128,7 @@ int dsyevh3(double A[3][3], double Q[3][3], double w[3])
   Q[2][1]  = (A[0][0] - w[1]) * (A[1][1] - w[1]) - Q[2][1];
   norm     = SQR(Q[0][1]) + SQR(Q[1][1]) + SQR(Q[2][1]);
   if (norm <= error)
-    return dsyevq3(A, Q, w);
+    return dsyevq3(A_in, Q_in, w);
   else
   {
     norm = sqrt(1.0 / norm);
@@ -129,6 +142,18 @@ int dsyevh3(double A[3][3], double Q[3][3], double w[3])
   Q[1][2] = Q[2][0]*Q[0][1] - Q[0][0]*Q[2][1];
   Q[2][2] = Q[0][0]*Q[1][1] - Q[1][0]*Q[0][1];
 #endif
+
+  for ( int i = 0 ; i < 3 ; i++)
+  {
+    for ( int j = 0 ; j < 3 ; j++)
+    {
+      Q_in[i][j] = Q[i][j];
+    }
+
+  }
+
+
+
 
   return 0;
 }

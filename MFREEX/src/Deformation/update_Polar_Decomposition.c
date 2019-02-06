@@ -1,8 +1,76 @@
 #include "Deformation/update_Polar_Decomposition.h"
+#include "dsyevq3.h"
+#include "dsyevv3.h"
+#include "dsyevh3.h"
+#include <math.h>
 
 
 int update_Polar_Decomposition(state_variables * stateNew, state_variables * stateOld, double dt)
 {
+
+
+			// algorithm from simo
+			// mmtr_mlt(stateNew->F, stateNew->F, stateNew->B);
+			// MAT * Q = stateNew->m_temp1;
+			// double w[3];
+			// dsyevh3(stateNew->B->me,Q->me,w);
+
+			// MAT * V_n_1 = stateNew->V;
+			// MAT * V_n = stateOld->V;
+			// MAT * B = stateNew->B;
+			// MAT * invV_n_1 = stateNew->m_temp4;
+
+			// double lambda_1 = sqrt(w[0]);
+			// double lambda_2 = sqrt(w[1]);
+			// double lambda_3 = sqrt(w[2]);
+
+			// double i1 = lambda_1 + lambda_2 + lambda_3;
+			// double i2 = lambda_1*lambda_2 + lambda_1*lambda_3 + lambda_2*lambda_3;
+			// double i3 = lambda_1*lambda_2*lambda_3;
+
+			// double D = i1*i2 - i3;
+			// double invD = 1.000/D;
+
+
+			// // FInd Bsqr 
+
+			// MAT * B_sqr = stateNew->m_temp2;
+
+			// m_zero(B_sqr);
+
+			// B_sqr->me[0][0] = lambda_1*lambda_1;
+			// B_sqr->me[1][1] = lambda_2*lambda_2;
+			// B_sqr->me[2][2] = lambda_3*lambda_3;
+
+
+
+
+
+			// // Find V_n_1 = 1/D [ -B^2 + (i1^2 - i2)B + i1*i3 *1]
+			// double fac1 = (i1*i1 - i2);
+			// double fac2 = i1*i3;
+			// double fac3 = 1.00/i3;
+
+			// for ( int i = 0 ; i < 3 ; i++)
+			// {
+			// 	for ( int j = 0 ; i < 3 ; j++)
+			// 	{
+			// 		if ( i == j)
+			// 		{
+			// 			V_n_1->me[i][j] = invD*(-B_sqr->me[i][j] + fac1*B->me[i][j] + fac2 );
+			// 			invV_n_1->me[i][j] = fac3*(B->me[i][j] - i1*V_n_1->me[i][j] + i2);
+
+			// 		}else{
+			// 			V_n_1->me[i][j] = invD*(-B_sqr->me[i][j] + fac1*B->me[i][j] );
+			// 			invV_n_1->me[i][j] = fac3*(B->me[i][j] - i1*V_n_1->me[i][j] );
+
+			// 		}
+			// 	}
+			// }
+			// // Find V-1
+			// stateNew->
+			// // FInd R
+
 
 
 

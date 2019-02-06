@@ -44,7 +44,7 @@ const double TMAX = 0.4;
 double delta_t = 3e-7;
 
 // Meshfree parameters
-const double dmax = 2.2;
+const double dmax = 2.5;
 const int is_stabalised = 0;
 const int is_constant_support_size = 0;
 
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 
 
 	/*  Material struct */
-	VEC * matParams = v_get(31);
+	VEC * matParams = v_get(32);
 	matParams->ve[0] = 2.814e-3; // VS
 	matParams->ve[1] = 0.526e-3; // VP
 	matParams->ve[2] = (1.7057e6); // mu*_0
@@ -103,6 +103,7 @@ int main(int argc, char** argv) {
 	matParams->ve[28] = 0.9856; // BETA
 	matParams->ve[29] = -0.0356; // k
 	matParams->ve[30] = 15.393; // b 
+	matParams->ve[31] = rho; // b 
 
 
 

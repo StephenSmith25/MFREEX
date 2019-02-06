@@ -22,7 +22,7 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 
 		// zero internal force input
 	__zero__(Fint->ve,Fint->max_dim);
-
+	double rho;
 
 	// create pointer to correct material function
 	int (*mat_func_ptr)(state_variables *,state_variables * ,VEC *, double) = NULL;
@@ -30,6 +30,7 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 	if ( strcmp (Material, "BUCKLEY") == 0 )
 	{
 		mat_func_ptr = &buckleyStress;
+		rho = matParams->ve[31];
 
 	}else if( strcmp(Material, "J2") == 0 )
 	{
@@ -161,6 +162,27 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 
 
 			}
+
+
+			/* ------------------------------------------*/
+			/* -----------------Damping -----------------*/
+			/* ------------------------------------------*/
+
+			double b1 = 0.06;
+			double b2 = 1.44;
+			double Le = sqrt(scni[i]->area);
+			double Cd = 1400;
+			double div_v = stateNew[i]->div_v;
+			double qv = 0;
+			if ( div_v < 0)
+			{
+				qv = rho*Le*(b2 * (Le/1000) * pow(div_v,2) - b1*Cd * div_v);
+			}
+
+
+
+
+
 			/* ------------------------------------------*/
 			/* --------------Internal Force--------------*/
 			/* ------------------------------------------*/
@@ -179,10 +201,10 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			//-------------------------------------------------//
 
 
-			sigma->ve[0] = (stateNew[i]->sigma->me[0][0])/1e6 ;
-			sigma->ve[1] = (stateNew[i]->sigma->me[1][1])/1e6 ;
+			sigma->ve[0] = (stateNew[i]->sigma->me[0][0])/1e6 + qv;
+			sigma->ve[1] = (stateNew[i]->sigma->me[1][1])/1e6 + qv;
 			sigma->ve[2] = stateNew[i]->sigma->me[0][1]/1e6;
-			sigma->ve[3] = (stateNew[i]->sigma->me[2][2])/1e6;
+			sigma->ve[3] = (stateNew[i]->sigma->me[2][2])/1e6 + qv;
 
 
 

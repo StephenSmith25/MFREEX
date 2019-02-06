@@ -2,8 +2,6 @@ file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR}/*.c)
 file(GLOB_RECURSE HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 
 
-SET(EIGEN_SRC_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../lib/Eigen/src)
-SET(EIGEN_HEADER_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../lib/Eigen/include)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/lib)
 include_directories(${EIGEN_HEADER_DIRECTORY})
@@ -14,7 +12,7 @@ include_directories(${CVLIB_SOURCE_DIR}/lib/include)
 include_directories(${CVLIB_SOURCE_DIR}/test/include)
 include_directories(${GPC_SOURCE_DIR})
 include_directories(${util_SOURCE_DIR}/include)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/Eigen)
+include_directories(${Eigen_SOURCE_DIR}/include)
 
 
 find_package(OpenMP)
@@ -26,22 +24,9 @@ endif()
 
 find_package (Threads)
 
-SET(GCC_COVERAGE_COMPILE_FLAGS " -O3 -fPIC -std=c99 ")
+SET(GCC_COVERAGE_COMPILE_FLAGS " -O3  ")
 add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
 
-add_library(MFREEX STATIC ${SRCS} 
-
-
-	${EIGEN_SRC_DIRECTORY}/dsytrd3.c 
-	${EIGEN_SRC_DIRECTORY}/dsyevc3.c 
-	${EIGEN_SRC_DIRECTORY}/dsyevj3.c 
-	${EIGEN_SRC_DIRECTORY}/dsyevq3.c 
-	${EIGEN_SRC_DIRECTORY}/dsyevv3.c 
-	${EIGEN_SRC_DIRECTORY}/dsyevh3.c 
-	${EIGEN_SRC_DIRECTORY}/dsyevd3.c 
-
-	${HEADERS}
-
-)
+add_library(MFREEX STATIC ${SRCS} ${HEADERS})
 

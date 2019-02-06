@@ -18,6 +18,7 @@
 #include "Material/Buckley/buckleyConf.h"
 #include "dsyevq3.h"
 #include "dsyevv3.h"
+#include "dsyevh3.h"
 
 #include "symmeig_small.h"
 
@@ -155,8 +156,7 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 
 	// tracecatch(symmeig(stateNew->Bbar,eigVecB,eigValB);,	
 	// "Eigen values of Bbar in Buckley conf");
-
-	dsyevq3(stateNew->Bbar->base,eigVecB->base,eigValB->ve);
+	dsyevh3(stateNew->Bbar->me,eigVecB->me,eigValB->ve);
 
 
 	// 		printf("for loop print\n");
