@@ -48,14 +48,15 @@ int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * p
 	 {
 	 	sigma_m = 0;
  	}
-
+	sigma_m = 0;
 
 	if ( tauOCT == 0){
 		alpha_sig = 1;
 	}else{
 		alpha_sig = ( Vs*tauOCT/(2*R*temperature) ) * exp ( -Vp * sigma_m/(R*temperature) ) / ( sinh ( Vs * tauOCT/(2*R*temperature)) ) ; 
 	}
-	alpha_sig = 0.5;
+	
+	//alpha_sig = 0.4;
 	// alpha_s
 	double alpha_s = exp ( Cv / ( temperature - vogel_T) - Cv / ( star_T - vogel_T) );	
 	// alpha_T

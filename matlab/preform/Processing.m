@@ -28,6 +28,7 @@ subplot(1,3,1)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
+ymax = max(disp(:,2));
 hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal 
@@ -42,7 +43,7 @@ plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 xlim([-50,50])
-ylim([-170,79])
+ylim([-170,ymax])
 
        % line plot
 
@@ -68,7 +69,7 @@ plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 xlim([-50,50])
-ylim([-170,77])
+ylim([-170,ymax])
 
 filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.csv');
 disp = csvread(filename,1);
@@ -92,7 +93,7 @@ plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 xlim([-50,50])
-ylim([-170,77])
+ylim([-170,ymax])
 
 print -dpng2 Displacement.png
 

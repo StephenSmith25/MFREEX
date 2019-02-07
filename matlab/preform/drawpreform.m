@@ -126,8 +126,8 @@ for i = 1:length(nodes)
     
 end
 
-segments(1:(ntheta + N1+N2+(N3)-1),3) = 2;
-segments((ntheta+(N1+N2+(N3)-1)):((ntheta+(N1+N2+(N3)-1))+ N4-2),3) = 5;
+segments(1:(ntheta + N1+N2),3) = 2;
+segments((ntheta+(N1+N2)):((ntheta+(N1+N2+(N3)-1))+ N4-2),3) = 5;
 segments(end:-1:end-(N5-2),3) = 4;
 
 

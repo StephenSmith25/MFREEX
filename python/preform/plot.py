@@ -1,10 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import csv
-
+import os, os.path
 
 x = []
 y = []
+DIR = '/tmp'
+i =  len([name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name))])
+print i
+
+
 
 firstline = True
 with open('example.csv','r') as csvfile:
@@ -19,32 +24,23 @@ with open('example.csv','r') as csvfile:
         y.append(float(row[1]))
 
 
+x1 = -1*np.array(x)
+plt.plot(x,y,x1,y, marker=".",linestyle='None')
 
-plt.plot(x,y, marker=".",linestyle='None')
 plt.xlabel('x')
 plt.ylabel('y')
 plt.title('Displacement')
 plt.legend()
 
-plt.xlim([0,40])
-plt.ylim([-140,77])
-plt.gca().set_aspect('equal', adjustable='box')
-
-
-plt.plot(x,y, marker=".",linestyle='None')
-plt.xlabel('x')
-plt.ylabel('y')
-plt.title('Displacement')
-plt.legend()
-
-plt.xlim([0,40])
+plt.xlim([-40,40])
 plt.ylim([-140,77])
 plt.gca().set_aspect('equal', adjustable='box')
 plt.show()
 
 
-f = open("/home/stephen/Documents/Meshless/build/bin/preform/History/Strain/strain_1.txt", "r")
-print(f.read()) 
+
+#f = open("/home/stephen/Documents/Meshless/build/bin/preform/History/Strain/strain_1.txt", "r")
+#print(f.read()) 
 
 
 
