@@ -42,7 +42,7 @@ plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 xlim([-50,50])
-ylim([-170,77])
+ylim([-170,79])
 
        % line plot
 

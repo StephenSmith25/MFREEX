@@ -56,20 +56,23 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 	++call_count_2;
 
 
-	if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
+	if ( stateNew->div_v >= 0 )
+	{
 
 
-		gamma_n_1 = gammaV(stateNew,stateOld->lambdaNMax,
-			stateNew->critLambdaBar,para, deltaT);
-		sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
+		if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
 
 
+			gamma_n_1 = gammaV(stateNew,stateOld->lambdaNMax,
+				stateNew->critLambdaBar,para, deltaT);
+			sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
 
-
+		}else{
+			Ds = m_zero(Ds);
+		}
 	}else{
 		Ds = m_zero(Ds);
 	}
-
 
 
 	// // //APPROACH 1 CASE 1
@@ -193,7 +196,7 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 
 	stateNew->lambdaNMax = sqrt(v_max(eigValB,&index));
 
-	stateNew->lambdaNMax = stateNew->Bbar->me[2][2];
+	stateNew->lambdaNMax = sqrt(stateNew->Bbar->me[2][2]);
 
 
 	m_copy(stateNew->Bbar,stateOld->Bbar);

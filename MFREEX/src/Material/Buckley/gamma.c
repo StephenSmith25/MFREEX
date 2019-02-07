@@ -52,8 +52,8 @@ double gammaV(state_variables * state, double maxLambdaN,double critLambda,
 	double theta = 0;
 
 
-
-	double maxSr = v_max(state->lambdaDot,&index);
+	double maxSr = state->Vdot->me[2][2];
+	//double maxSr = v_max(state->lambdaDot,&index);
 	if ( maxSr == 0){
 		maxSr = 0.01; 
 	}
