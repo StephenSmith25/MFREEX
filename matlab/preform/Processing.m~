@@ -27,8 +27,6 @@ figure
 subplot(1,3,1)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 hold on
-plot(-disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
-hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal 
 hold on
@@ -41,34 +39,32 @@ hold on
 plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
-xlim([-50,50])
-ylim([-170,77])
+
 
        % line plot
 
 
 
 
-filename = strcat(path,'displacement_',num2str(plotFiles(5)),'.csv');
+filename = strcat(path,'displacement_',num2str(plotFiles(8)),'.csv');
 disp = csvread(filename,1);
 subplot(1,3,2)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 hold on
-plot(-disp(:,1),disp(:,2),'k.','markersize',5) % line plot
-hold on
-plot(disp(plot_point,1),disp(plot_point,2),'r*')
+
+plot(plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
+disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
 hold on
 %plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
-filename = strcat(pathSR,'srRod_',num2str(plotFiles(5)),'.csv');
+filename = strcat(pathSR,'srRod_',num2str(plotFiles(8)),'.csv');
 disp = csvread(filename,1);
 hold on
 plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
-xlim([-50,50])
-ylim([-170,77])
+
 
 filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.csv');
 disp = csvread(filename,1);
@@ -91,8 +87,7 @@ hold on
 plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
-xlim([-50,50])
-ylim([-170,77])
+
 
 print -dpng2 Displacement.png
 

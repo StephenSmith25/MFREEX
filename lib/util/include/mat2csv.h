@@ -13,6 +13,7 @@
 
 void mat2csv(MAT * in,char * folderName, const char * filename);
 
+void disp2csv(MAT * in,char * folderName, const char * filename);
 
 
 

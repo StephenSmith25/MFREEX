@@ -8,16 +8,19 @@ close all;
 % bottom
 Din_b = (13.97+14.43)/2;
 Dout_b = (23.19+22.50)/2;
+
+
+
 Rin_bot = Din_b/2;
 Rout_bot = Dout_b/2;
+
+
 thickness_bot = 3.2;
 vDim = Dout_b/2 -Rin_bot -thickness_bot;
 % middle
-Din_b = (13.97+14.43)/2;
-Dout_b = (23.19+22.50)/2;
 L_m = 97.18-37.31-11.25;
 % top
-Din_t = 24.31;
+Din_t = 23.31;
 Dout_t = 29.49;
 L_t1 = 3;
 L_t = 37.31-19.48-L_t1;
@@ -179,6 +182,10 @@ plot(nodes(:,1),nodes(:,2),'ko','markersize',3);
 % segments and nodes 
 
 % first line nubmer of nodes / number of segments 
+num_through_thickness = 4;
+
+
+
 
 
 

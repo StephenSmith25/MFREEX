@@ -28,7 +28,7 @@
 #include "Boundary/Displacement/setUpBC.h"
 #include "Boundary/Displacement/enforceBC.h"
 #include "Integration/SCNI/scni_update_B.h"
-
+#include "PostProcess/saveDisp.h"
 
 
 const char * MATERIAL = "BUCKLEY";
@@ -41,12 +41,15 @@ const char opt[20] = "pYDq22a0.7";
 
 // time step parameters
 const double TMAX = 0.4;
-double delta_t = 3e-7;
+double delta_t = 4e-7;
 
 // Meshfree parameters
-const double dmax = 2.5;
+const double dmax = 3;
 const int is_stabalised = 0;
-const int is_constant_support_size = 0;
+const int is_constant_support_size = 1;
+
+
+const int WRITE_FREQ = 5000;
 
 int main(int argc, char** argv) {
 
@@ -79,7 +82,7 @@ int main(int argc, char** argv) {
 	matParams->ve[6] = (67.47); // Cv
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
-	matParams->ve[9] = 1.8e9; // Kb
+	matParams->ve[9] = 1.80e9; // Kb
 	matParams->ve[10] = 6e8;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
@@ -812,14 +815,13 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 
 		// update nodal positions
-		writeFreq = 100;
-		if ( n % writeFreq == 0 ){
+		if ( n % WRITE_FREQ == 0 ){
 			char filename[50];
-			snprintf(filename, 50, "displacement_%d%s",fileCounter,".txt");
-			mat2csv(updatedNodes,"./Displacement",filename);
+			snprintf(filename, 50, "displacement_%d%s",fileCounter,".csv");
+			saveDisp(updatedNodes,state_n_1,"./Displacement",filename);
 
-			snprintf(filename, 50, "srRod_%d%s",fileCounter,".txt");
-			mat2csv(srNodes,"./srRod",filename);
+			snprintf(filename, 50, "srRod_%d%s",fileCounter,".csv");
+			disp2csv(srNodes,"./srRod",filename);
 
 			fp = fopen("pressureTime.txt","a");
 			fprintf(fp,"%lf %lf\n",t_n_1,pre_n_1);

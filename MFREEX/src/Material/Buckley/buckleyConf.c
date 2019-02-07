@@ -192,6 +192,10 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 	// update maximum network stre
 
 	stateNew->lambdaNMax = sqrt(v_max(eigValB,&index));
+
+	stateNew->lambdaNMax = stateNew->Bbar->me[2][2];
+
+
 	m_copy(stateNew->Bbar,stateOld->Bbar);
 	stateOld->lambdaNMax = stateNew->lambdaNMax;
 
