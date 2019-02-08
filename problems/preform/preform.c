@@ -36,7 +36,7 @@ const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
 // Meshing
-const char opt[20] = "pYDq0a0.5";
+const char opt[20] = "pYDq25a0.5";
 
 
 // time step parameters
@@ -574,8 +574,8 @@ int main(int argc, char** argv) {
 
 
 	/*  Explicit Loop */
-	while ( t_n < TMAX)
-	//while ( n < 10000 )
+	//while ( t_n < TMAX)
+	while ( n < 10000 )
 	{
 
 		/*  Update time step */
