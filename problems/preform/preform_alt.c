@@ -572,6 +572,8 @@ int main(int argc, char** argv) {
 	VEC * disp_r = v_get(num_dof);
 
 
+	omp_set_num_threads(8);
+#pragma omp parralel 
 
 	/*  Explicit Loop */
 	while ( t_n < TMAX)

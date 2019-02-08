@@ -13,6 +13,7 @@ OPTION(PROBLEM_BIAXIAL "Compile biaxial program" ON)
 OPTION(PROBLEM_TUBE "Compile tube program" ON)
 OPTION(PROBLEM_CYLINDER "Compile cylinder program" ON)
 OPTION(PROBLEM_TAYLOR_BAR "Compile cylinder program" ON)
+OPTION(PROBLEM_TEST "Compile TEST program" ON)
 
 
 add_subdirectory(lib)
@@ -47,3 +48,8 @@ endif(PROBLEM_CYLINDER)
 if(PROBLEM_TAYLOR_BAR)
 	add_subdirectory(problems/taylor_bar)
 endif(PROBLEM_TAYLOR_BAR)	
+
+
+if(PROBLEM_TEST)
+	add_subdirectory(problems/test)
+endif(PROBLEM_TEST)	
