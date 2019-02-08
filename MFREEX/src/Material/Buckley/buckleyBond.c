@@ -35,12 +35,16 @@ int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * p
 
 
 
-	MAT * Sb_n = stateOld->Sb_R;
-	MAT * Sb_n_1 = stateNew->Sb_R;
-	MAT * d = stateNew->dbar;
+	MAT * Sb_n = stateOld->Sb;
+	MAT * Sb_n_1 = stateNew->Sb;
+	MAT * d = stateNew->Dbar;
+	MAT * deltaSb = stateOld->m_temp3;
+
+	m_zero(deltaSb);
 
 
 	double tauOCT = sqrt (  (1.000/3.00) * contraction(Sb_n,Sb_n)  ) ;
+	tauOCT = 0;
 	double alpha_sig = 1;
 	
 	double sigma_m = stateOld->mSigma;
@@ -48,13 +52,13 @@ int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * p
 	 {
 	 	sigma_m = 0;
  	}
-	sigma_m = 0;
 
 	if ( tauOCT == 0){
 		alpha_sig = 1;
 	}else{
 		alpha_sig = ( Vs*tauOCT/(2*R*temperature) ) * exp ( -Vp * sigma_m/(R*temperature) ) / ( sinh ( Vs * tauOCT/(2*R*temperature)) ) ; 
 	}
+	alpha_sig = 1;
 	
 	//alpha_sig = 0.4;
 	// alpha_s
@@ -68,8 +72,13 @@ int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * p
 
 	stateNew->tau = tau;
 
+	MAT * mat1 = stateNew->m_temp1;
+	MAT * mat2 = stateNew->m_temp2;
 
 	double sbFactor = 1 - exp(-dt/tau);
+
+
+
 	// mat1 = 2Gb*D*tau
 	sm_mlt(2*Gb*tau,d,stateNew->m_temp1);
 
@@ -78,10 +87,24 @@ int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * p
 
 	// deltaSb = ( 1- exp(-dt/tau)) * ( 2G*D*tau - Sb_n)
 	// stress increment in material frame
-	sm_mlt(sbFactor,stateNew->m_temp2,stateNew->m_temp2);
+	sm_mlt(sbFactor,stateNew->m_temp2,deltaSb);
 
 
-	m_add(Sb_n,stateNew->m_temp2,Sb_n_1);
+	// Green rate
+	m_mlt(stateNew->Omega,Sb_n,mat1);
+	// s*W'
+	m_mlt(Sb_n,stateNew->Omega,mat2);
+	m_sub(mat1,mat2,mat1);
+	sm_mlt(dt,mat1,mat1);
+	m_add(Sb_n,mat1,mat1);
+
+
+	//Sb* = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
+
+
+	m_add(deltaSb,mat1,Sb_n_1);
+
+	//m_add(Sb_n,deltaSb,Sb_n_1);
 
 
 	// m_foutput(stdout, stateNew->omega);

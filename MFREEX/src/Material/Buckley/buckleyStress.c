@@ -5,6 +5,9 @@
 #include "Deformation/rotate_tensor.h"
 #include "symmeig_small.h"
 #include "dsyevc3.h"
+#include "dsyevh3.h"
+#include "dsyevq3.h"
+
 int 
 buckleyStress(state_variables * stateNew, 
 	state_variables * stateOld,
@@ -25,8 +28,6 @@ buckleyStress(state_variables * stateNew,
 			/* ------------------------------------------*/
 			// Find deviatoric part of the deformation 
 			m_copy(stateNew->D,stateNew->Dbar);
-			
-
 
 			if ( dim == 2)
 			{
@@ -67,6 +68,9 @@ buckleyStress(state_variables * stateNew,
 
 			dsyevc3(stateNew->Vdot->me, stateNew->lambdaDot->ve);
 
+
+			//dsyevq3(stateNew->Dbar->me,stateNew->eigVecDBar->me,stateNew->eigValDBar->ve);
+
 // 			tracecatch(
 // 			symmeig(stateNew->Dbar,stateNew->eigVecDBar,stateNew->eigValDBar);,
 // 			"Eigen values of D in internalForce");
@@ -91,9 +95,9 @@ buckleyStress(state_variables * stateNew,
 			// Conformational stress
 			buckleyConf(stateNew,stateOld, matParams,dt);
 
-			// rotate unrotated stress back into n+1 configuration
-			m_mlt(stateNew->R,stateNew->Sb_R,stateNew->m_temp1);
-			mmtr_mlt(stateNew->m_temp1,stateNew->R,stateNew->Sb);
+			// // rotate unrotated stress back into n+1 configuration
+			// m_mlt(stateNew->R,stateNew->Sb_R,stateNew->m_temp1);
+			// mmtr_mlt(stateNew->m_temp1,stateNew->R,stateNew->Sb);
 
 
 			// // rotate unrotated stress back into n+1 configuration

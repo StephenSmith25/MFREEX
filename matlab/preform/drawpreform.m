@@ -20,14 +20,14 @@ vDim = Dout_b/2 -Rin_bot -thickness_bot;
 % middle
 L_m = 97.18-37.31-11.25;
 % top
-Din_t = 23.31;
+Din_t = 24.31;
 Dout_t = 29.49;
 L_t1 = 3;
 L_t = 37.31-19.48-L_t1;
 
 
 N1 = 45;
-N2 = 20;
+N2 = 25;
 
 
 
@@ -127,7 +127,7 @@ for i = 1:length(nodes)
 end
 
 segments(1:(ntheta + N1+N2),3) = 2;
-segments((ntheta+(N1+N2)):((ntheta+(N1+N2+(N3)-1))+ N4-2),3) = 5;
+segments((ntheta+(N1+N2)):((ntheta+(N1+N2+(N3-1)-1+N3))+ N4-2),3) = 5;
 segments(end:-1:end-(N5-2),3) = 4;
 
 

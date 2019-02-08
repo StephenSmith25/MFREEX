@@ -155,8 +155,13 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 
 				snprintf(filename, 50, "strain_%d%s",print_count,".txt");
 				mat2csv(stateNew[i]->F,"./History/Strain",filename);
-				snprintf(filename, 50, "Stress_%d%s",print_count,".txt");
-				mat2csv(stateNew[i]->sigma,"./History/Stress",filename);
+				//snprintf(filename, 50, "Stress_%d%s",print_count,".txt");
+				//mat2csv(stateNew[i]->sigma,"./History/Stress",filename);
+
+				snprintf(filename, 50, "Bond_Stress_%d%s",print_count,".txt");
+				mat2csv(stateNew[i]->Sb,"./History/Stress",filename);
+				snprintf(filename, 50, "Conformational_Stress_%d%s",print_count,".txt");
+				mat2csv(stateNew[i]->Sc,"./History/Stress",filename);
 				stateNew[i]->F->me[2][1] = 0;
 				++print_count;
 
@@ -168,15 +173,15 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			/* -----------------Damping -----------------*/
 			/* ------------------------------------------*/
 
-			double b1 = 0;
-			double b2 = 0;
-			double Le = sqrt(scni[i]->area);
+			double b1 = 0.06;
+			double b2 = 1.44;
+			double Le = 2.42;
 			double Cd = 1400;
 			double div_v = stateNew[i]->div_v;
-			double qv = 0;
+			double qv =  rho*Le*b1*Cd * div_v;
 			if ( div_v < 0)
 			{
-				qv = rho*Le*(b2 * (Le/1000) * pow(div_v,2) - b1*Cd * div_v);
+				qv += rho*Le*(b2 * (Le/1000) * pow(div_v,2)) ;
 			}
 
 

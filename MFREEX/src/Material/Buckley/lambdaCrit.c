@@ -25,27 +25,63 @@ double lambdaCrit(double critLambda_n, state_variables * state, VEC * para, doub
 
 	double critLambda = 1;
 	int  index = 0;
-	double theta = 0;
 	int dim = lambdaDot->max_dim;
 
 
-	double maxSr = v_max(state->lambdaDot,&index);
+
+	double V1,V2,V3 = 0;
+
+	V1 = state->Vdot->me[1][1];
+	V2 = state->Vdot->me[2][2];
+
+	double maxSr = max(V1,V2);
+	//double maxSr = v_max(state->lambdaDot,&index);
 	if ( maxSr == 0){
 		maxSr = 0.01; 
 	}
 
 
 
-	// // find xi 
-	// double xi = ( 2.00 * theta + 1.00)/(theta +2.00);
-	// if ( xi > 1){
-	// 	xi = 1;
-	// }else if( xi < -1) {
-	// 	xi = -1;
-	// }else{
-	// 	// do nothing
-	// }
-	double xi = 1.00;
+
+	MAT * d = state->dbar;
+	double D1 = d->me[1][1];
+	double D2 = d->me[2][2];
+
+
+	//  D1 = d->me[0][0];
+	// D2 = d->me[1][1];
+
+
+
+	double theta = 0;
+	if ( D1 >= D2)
+	{
+		if ( D1 == 0 )
+		{
+			theta = 0;
+		}else{
+			theta = D2/D1;
+		}
+	}else {
+		if ( D2 == 0)
+		{
+			theta = 0;
+		}else{
+			theta = D1/D2;
+		}
+	}
+
+
+	// find xi 
+	double xi = ( 2.00 * theta + 1.00)/(theta +2.00);
+	if ( xi > 1){
+		xi = 1;
+	}else if( xi < -1) {
+		xi = -1;
+	}else{
+		// do nothing
+	}
+
 
 	// update critical network stretch 
 	double C1 = para->ve[26];
@@ -61,17 +97,17 @@ double lambdaCrit(double critLambda_n, state_variables * state, VEC * para, doub
 	double critLambda_a = k * shifted_temperature + b;
 
 
-	// if ( (D2 < 0) && ( D1 < 0) ){
-	// 	// don't update the value
-	// 	critLambda = critLambda_n;
-	// }else{
-	// 	// update the value
-	// 	critLambda = critLambda_a; 
-	// }
+	if ( (D2 < 0) && ( D1 < 0) ){
+		// don't update the value
+		critLambda = critLambda_n;
+	}else{
+		// update the value
+		critLambda = critLambda_a; 
+	}
 
 
 
-	critLambda = critLambda_a; 
+	//critLambda = critLambda_a; 
 
 
 	return critLambda;

@@ -36,12 +36,12 @@ const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
 // Meshing
-const char opt[20] = "pYDq22a0.7";
+const char opt[20] = "pYDq15a0.6";
 
 
 // time step parameters
 const double TMAX = 0.4;
-double delta_t = 2e-7;
+double delta_t = 4e-7;
 
 // Meshfree parameters
 const double dmax = 2;
@@ -49,7 +49,7 @@ const int is_stabalised = 0;
 const int is_constant_support_size = 1;
 
 
-const int WRITE_FREQ = 5000;
+const int WRITE_FREQ = 1000;
 
 int main(int argc, char** argv) {
 
@@ -151,7 +151,7 @@ int main(int argc, char** argv) {
 	for ( int i = 0 ; i < numPointsRod ; i++){
 		double theta = -PI/2.00 + (PI/2/(numPointsRod-1))*i;
 		srNodes->me[i][0] = stretchRodRad*cos(theta);
-		srNodes->me[i][1] = 9.21+stretchRodRad*sin(theta);
+		srNodes->me[i][1] = 9+stretchRodRad*sin(theta);
 		srNodes_O->me[i][0] = srNodes->me[i][0];
 		srNodes_O->me[i][1] = srNodes->me[i][1];
 	}
@@ -595,11 +595,11 @@ int main(int argc, char** argv) {
 
 		if ( disp_rod < DISP_ROD_MAX){
 		/*  Update stretch rod */
-			disp_rod = a0*pow(t_n_1,7) + a1*pow(t_n_1,6) + a2*pow(t_n_1,5) + a3*pow(t_n_1,4) + a4*pow(t_n_1,3) + a5*pow(t_n_1,2) +
-			a6*pow(t_n_1,1) + a7;
-			v_rod = 7*a0*pow(t_n_1,6) + 6*a1*pow(t_n_1,5) + 5*a2*pow(t_n_1,4) + 
-			4*a3*pow(t_n_1,3) + 3*a4*pow(t_n_1,2) + 2*a5*pow(t_n_1,1) +
-			a6;
+			double x = t_n_1*smoothstep(t_n_1,0.005,0);
+
+			disp_rod = a0*pow(x,7) + a1*pow(x,6) + a2*pow(x,5) + a3*pow(x,4) + a4*pow(x,3) + a5*pow(x,2) +
+			a6*pow(x,1) + a7;
+		
 			//disp_rod = vRod*t_n_1;
 
 			for ( int i = 0 ; i < srNodes->m ; i++){

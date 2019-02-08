@@ -49,46 +49,62 @@ double gammaV(state_variables * state, double maxLambdaN,double critLambda,
 
 	// find theta 
 	int index = 0;
-	double theta = 0;
 
 
-	double maxSr = state->Vdot->me[2][2];
+	//double maxSr = state->Vdot->me[2][2];
+
+	double V1,V2,V3 = 0;
+	V1 = state->Vdot->me[1][1];
+	V2 = state->Vdot->me[2][2];
+
+	double maxSr = max(V1,V2);
+
+
+
 	//double maxSr = v_max(state->lambdaDot,&index);
-	if ( maxSr == 0){
+	if ( maxSr <= 0.01){
 		maxSr = 0.01; 
 	}
 
-	// // double D1 = state->eigValDBar->ve[2];
-	// // double D2 = state->eigValDBar->ve[1];
-	// // //find the strain rate
-	// double D1 = 0;
-	// double D2 = 0;
-	// if ( IS_AXI == 1){
-	// 	D1 = state->d->me[1][1]; 
-	// 	D2 = state->d->me[2][2];
-	// }else{
-	// 	D1 = state->d->me[0][0];
-	// 	D2 = state->d->me[1][1];
+	MAT * d = state->dbar;
+	double D1 = d->me[1][1];
+	double D2 = d->me[2][2];
 
-	// }
-	// // find theta, the ratio of in plane natural strain rate
-	// if ( D1 == 0){
-	// 	theta = 0;
-	// }else{
-	// 	theta = D2/D1;
-	// }
+	// 
+
+	// D1 = d->me[0][0];
+	// D2 = d->me[1][1];
+	double theta = 0;
+	if ( D1 >= D2)
+	{
+		if ( D1 == 0 )
+		{
+			theta = 0;
+		}else{
+			theta = D2/D1;
+		}
+	}else {
+		if ( D2 == 0)
+		{
+			theta = 0;
+		}else{
+			theta = D1/D2;
+		}
+	}
 
 
-	// // find xi 
-	// double xi = ( 2 * theta + 1)/(theta +2);
-	// if ( xi > 1){
-	// 	xi = 1;
-	// }else if( xi < 0 ) {
-	// 	xi = 0.001;
-	// }else{
-	// 	// do nothing
-	// }
-	double xi = 1.00;
+
+
+	// find xi 
+	double xi = ( 2 * theta + 1)/(theta +2);
+	if ( xi > 1){
+		xi = 1;
+	}else if( xi < 0 ) {
+		xi = 0.001;
+	}else{
+		// do nothing
+	}
+
 
 
 	double log2sr = log(maxSr)/log(2);

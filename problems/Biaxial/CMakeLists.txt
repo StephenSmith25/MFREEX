@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(biaxial)
 
 
-
+include_directories(${Eigen_SOURCE_DIR}/include)
 include_directories(${EFSFLIB_SOURCE_DIR}/lib/include)
 include_directories(${Meschach_SOURCE_DIR})
 include_directories(${CVLIB_SOURCE_DIR}/lib/include)

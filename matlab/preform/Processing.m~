@@ -33,9 +33,7 @@ hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal 
 hold on
-plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
-hold on
-plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
+plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(1)),'.csv');
@@ -55,16 +53,13 @@ ylim([-170,ymax])
 filename = strcat(path,'displacement_',num2str(plotFiles(5)),'.csv');
 disp = csvread(filename,1);
 subplot(1,3,2)       % add first plot in 2 x 2 grid
-plot(disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
+plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 hold on
-plot(-disp(:,1),disp(:,2),'k.','markersize',3) % line plot
+plot(-disp(:,1),disp(:,2),'k.','markersize',5) % line plot
 hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
 hold on
-plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
-hold on
-plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
 %plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(5)),'.csv');
@@ -81,17 +76,15 @@ disp = csvread(filename,1);
 
 
 subplot(1,3,3)       % add first plot in 2 x 2 grid
-plot(disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
+plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 hold on
-plot(-disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
+plot(-disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 
 hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
 hold on
-plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
-hold on
-plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
+%plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(10)),'.csv');
 disp = csvread(filename,1);
@@ -110,7 +103,7 @@ figure
 plot(m(:,1),m(:,2),'k-','linewidth',3);
 xlabel('time');
 ylabel('Pressure');
-xlim([0,0.6])
+xlim([0,0.4])
 ylim([0,0.9])
 
 b = csvread("Experimental/N4T100_exp_pressure.csv");
@@ -194,7 +187,7 @@ for i = 1:length(plotFiles)
     [R U V] = poldecomp(F);
     
     
-    true_strain = logm(U);
+    true_strain = logm(V);
 
     
     hoop_strain(i) =true_strain(3,3);
@@ -414,45 +407,39 @@ d = dir(displacementdir);
 d1 = dir([displacementdir,'*.txt']);
 numFiles = size(d,1)/2 -3 ;
 
-
+plotFiles = ceil(linspace(1,numFiles,100)); 
 for i = 1:length(plotFiles)
     
     
 
-    filename = strcat('Bond_Stress_',num2str(plotFiles(i)),'.txt');
+    filename = strcat('Stress_',num2str(plotFiles(i)),'.txt');
 
     stress = csvread(filename);
-    hoop_stress_bond(i) = stress(3,3);
-    axial_stress_bond(i) = stress(2,2);
-    radial_stress_bond(i) = stress(1,1);
-    shear_stress_bond(i) = stress(1,2);
-
-    filename = strcat('Conformational_Stress_',num2str(plotFiles(i)),'.txt');
-
-    stress = csvread(filename);
-    hoop_stress_conf(i) = stress(3,3);
-    axial_stress_conf(i) = stress(2,2);
-    radial_stress_conf(i) = stress(1,1);
-     shear_stress_conf(i) = stress(1,2);
+    hoop_stress(i) = stress(3,3);
+    axial_stress(i) = stress(2,2);
+    radial_stress(i) = stress(1,1);
+    shear_stress(i) = stress(1,2);
 
   
 end
 
 figure
-subplot(1,2,1)
-hold on 
-plot(time,hoop_stress_conf,'r');
+plot(hoop_stress,time,'k.')
 hold on
-plot(time,hoop_stress_bond,'b');
+plot(axial_stress,time,'b.')
 hold on
-plot(time,shear_stress_bond,'m')
+plot(radial_stress,time,'m.')
 hold on
-plot(time,shear_stress_conf,'g')
+plot(shear_stress,time,'g.')
+set(stress,'MenuBar','none')
+set(gca,'DataAspectRatioMode','auto')
+set(gca,'Position',[0 0 1 1])
 %set axis
 set(gca, 'FontName', 'cmr12')
 % set x tics and y tics
 set(gca,...
 'Units','normalized',...
+'FontUnits','points',...
 'FontWeight','normal',...
 'FontSize',14,... % size ofiguref numbers on axis
 'FontName','cmr14') % font name
@@ -460,65 +447,142 @@ set(gca,'TickLabelInterpreter', 'latex');
 
 % Y label
 ylabel({'Cauchy Stress '},...
+'FontUnits','points',...
 'interpreter','latex',...
 'FontSize',14,... % font size
 'FontName','cmr14')
 % X label
 xlabel('Time',...
+'FontUnits','points',...
 'interpreter','latex',...
 'FontWeight','normal',...
 'FontSize',14,... % font size
 'FontName','cmr14')
 % legend
 
-legend({ 'Hoop (Conf)','Hoop (Bond)','Shear (Bond)', 'Shear (Conf)' },... % { 'legend1', 'legend2',...}
+legend({ 'Hoop','Axial','r', 'Shear (Conf)' },... % { 'legend1', 'legend2',...}
+'FontUnits','points',...
 'interpreter','latex',...
 'FontSize',12,...
 'FontName','cmr14',...
 'Location','SouthEast')
 
-grid on 
 
-subplot(1,2,2)
-plot(time,axial_stress_conf,'r');
-hold on
-plot(time,axial_stress_bond,'b');
-
-%set axis
-set(gca, 'FontName', 'cmr12')
-% set x tics and y tics
-set(gca,...
-'Units','normalized',...
-'FontWeight','normal',...
-'FontSize',14,... % size ofiguref numbers on axis
-'FontName','cmr14') % font name
-set(gca,'TickLabelInterpreter', 'latex');
-
-% Y label
-ylabel({'Cauchy Stress '},...
-'interpreter','latex',...
-'FontSize',14,... % font size
-'FontName','cmr14')
-% X label
-xlabel('Time',...
-'interpreter','latex',...
-'FontWeight','normal',...
-'FontSize',14,... % font size
-'FontName','cmr14')
-% legend
-
-legend({ 'Axial (Conf)','Axial (Bond)' },... % { 'legend1', 'legend2',...}
-'interpreter','latex',...
-'FontSize',12,...
-'FontName','cmr14',...
-'Location','SouthEast')
-
-grid on 
-
-
-
-print -dpng2 stress.png
-
-
-
- end
+% for i = 1:length(plotFiles)
+%     
+%     
+% 
+%     filename = strcat('Bond_Stress_',num2str(plotFiles(i)),'.txt');
+% 
+%     stress = csvread(filename);
+%     hoop_stress_bond(i) = stress(3,3);
+%     axial_stress_bond(i) = stress(2,2);
+%     radial_stress_bond(i) = stress(1,1);
+%     shear_stress_bond(i) = stress(1,2);
+% 
+%     filename = strcat('Conformational_Stress_',num2str(plotFiles(i)),'.txt');
+% 
+%     stress = csvread(filename);
+%     hoop_stress_conf(i) = stress(3,3);
+%     axial_stress_conf(i) = stress(2,2);
+%     radial_stress_conf(i) = stress(1,1);
+%      shear_stress_conf(i) = stress(1,2);
+% 
+%   
+% end
+% 
+% stress = figure('Position', get(0, 'Screensize'));
+% set(stress,'MenuBar','none')
+% set(gca,'DataAspectRatioMode','auto')
+% set(gca,'Position',[0 0 1 1])
+% subplot(1,2,1)
+% hold on 
+% plot(time,hoop_stress_conf,'r');
+% hold on
+% plot(time,hoop_stress_bond,'b');
+% hold on
+% plot(time,shear_stress_bond,'m')
+% hold on
+% plot(time,shear_stress_conf,'g')
+% %set axis
+% set(gca, 'FontName', 'cmr12')
+% % set x tics and y tics
+% set(gca,...
+% 'Units','normalized',...
+% 'FontUnits','points',...
+% 'FontWeight','normal',...
+% 'FontSize',14,... % size ofiguref numbers on axis
+% 'FontName','cmr14') % font name
+% set(gca,'TickLabelInterpreter', 'latex');
+% 
+% % Y label
+% ylabel({'Cauchy Stress '},...
+% 'FontUnits','points',...
+% 'interpreter','latex',...
+% 'FontSize',14,... % font size
+% 'FontName','cmr14')
+% % X label
+% xlabel('Time',...
+% 'FontUnits','points',...
+% 'interpreter','latex',...
+% 'FontWeight','normal',...
+% 'FontSize',14,... % font size
+% 'FontName','cmr14')
+% % legend
+% 
+% legend({ 'Hoop (Conf)','Hoop (Bond)','Shear (Bond)', 'Shear (Conf)' },... % { 'legend1', 'legend2',...}
+% 'FontUnits','points',...
+% 'interpreter','latex',...
+% 'FontSize',12,...
+% 'FontName','cmr14',...
+% 'Location','SouthEast')
+% 
+% grid on 
+% 
+% subplot(1,2,2)
+% plot(time,axial_stress_conf,'r');
+% hold on
+% plot(time,axial_stress_bond,'b');
+% 
+% %set axis
+% set(gca, 'FontName', 'cmr12')
+% % set x tics and y tics
+% set(gca,...
+% 'Units','normalized',...
+% 'FontUnits','points',...
+% 'FontWeight','normal',...
+% 'FontSize',14,... % size ofiguref numbers on axis
+% 'FontName','cmr14') % font name
+% set(gca,'TickLabelInterpreter', 'latex');
+% 
+% % Y label
+% ylabel({'Cauchy Stress '},...
+% 'FontUnits','points',...
+% 'interpreter','latex',...
+% 'FontSize',14,... % font size
+% 'FontName','cmr14')
+% % X label
+% xlabel('Time',...
+% 'FontUnits','points',...
+% 'interpreter','latex',...
+% 'FontWeight','normal',...
+% 'FontSize',14,... % font size
+% 'FontName','cmr14')
+% % legend
+% 
+% legend({ 'Axial (Conf)','Axial (Bond)' },... % { 'legend1', 'legend2',...}
+% 'FontUnits','points',...
+% 'interpreter','latex',...
+% 'FontSize',12,...
+% 'FontName','cmr14',...
+% 'Location','SouthEast')
+% 
+% grid on 
+% 
+% 
+% 
+% print -dpng2 stress.png
+% 
+% 
+% 
+% end

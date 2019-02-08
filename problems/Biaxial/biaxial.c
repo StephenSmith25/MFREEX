@@ -19,7 +19,9 @@
 #include "Integration/gMat.h"
 #include "Deformation/velocity_grad.h"
 #include "symmeig_small.h"
-
+#include "dsyevh3.h"
+#include "dsyevv3.h"
+#include "dsyevq3.h"
 
 // material
 const char * MATERIAL = "BUCKLEY";
@@ -29,7 +31,7 @@ const int PLASTIC_MATERIAL = 0;
 // deformaton
 const int SR = 4;
 const double TEMPERATURE = 85;
-char * DEFORMATION_MODE = "SIMPLE_SHEAR";
+char * DEFORMATION_MODE = "BIAXIAL";
 const int DIM = 3;
 const int IS_AXI = 0;
 
@@ -281,58 +283,26 @@ int main(void)
 	test->me[2][2] = 3;
 
 
-
-	// MAT * Q = m_get(3,3); 
-
-
-
-	// printf("TESTING EIGEN VALUES \n \n \n ");
-	// printf("Test = \n");
-	// m_foutput(stdout, test);
-	// symmeig(test, Q, eigVals);
-
-
-	// v_foutput(stdout, eigVals);
-	// m_foutput(stdout, Q);
-	// printf("TESTING MY IMPLEMENTATION\n");
-
-	// // printf("Test = \n");
-	// // m_foutput(stdout, test);
-
-	// m_zero(Q);
-	// symmeig_small(test, Q, eigVals);
-
-	// MAT *A;
-
-
-	// v_foutput(stdout, eigVals);
-	// m_foutput(stdout, Q);
-
-
 	MAT * Q = m_get(3,3); 
 
 	VEC * eigVals = v_get(3);
 
-	double test_1[3][3];
+	
+	dsyevq3(test->me, Q->me, eigVals->ve);
+
+	MAT * temp = m_get(3,3);
+	MAT * temp_1 = m_get(3,3);
 
 
-	test_1[0][0] = 1;
-	test_1[0][1] = 1;
-	test_1[0][2] = 0;
+	temp->me[0][0] = eigVals->ve[0];
+	temp->me[1][1] = eigVals->ve[1];
+	temp->me[2][2] = eigVals->ve[2];
 
-	test_1[1][0] = 1;
-	test_1[1][1] = 0;
-	test_1[1][2] = 1;
-
-	test_1[2][0] = 0;
-	test_1[2][1] = 1;
-	test_1[2][2] = 1;
-
-	double Q_1[3][3];
+	m_mlt(Q,temp,temp_1);
+	mmtr_mlt(temp_1,Q,temp);
 
 
-	//dsyevv3(test->base, Q->base, eigVals->ve);
-
+	m_foutput(stdout, temp);
 	v_foutput(stdout, eigVals);
 
 	m_foutput(stdout, Q);

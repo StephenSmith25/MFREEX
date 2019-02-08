@@ -1,7 +1,8 @@
 clear all
 close all
 
-PLOT_GRAPHS = true;
+PLOT_STRAIN = true;
+PLOT_STRESS = true;
 
 path = './../../build/bin/preform/Displacement/';
 pathSR = './../../build/bin/preform/srRod/';
@@ -113,15 +114,15 @@ ylabel('Pressure');
 xlim([0,0.6])
 ylim([0,0.9])
 
-b = csvread("Experimental/N4T100_exp_pressure.csv");
+b = csvread("Experimental/N2T100_exp_pressure.csv");
 hold on
-plot(b(:,1),b(:,2)/1000,'b--')
+plot(b(:,1),b(:,2),'b--')
 
 
-c = csvread("Experimental/N4T100_fe_pressure.csv");
+c = csvread("Experimental/N2T100_fe_pressure.csv");
 
 hold on
-plot(c(:,1),c(:,2)/1000,'r--')
+plot(c(:,1),c(:,2),'r--')
 
 legend('Mesh-free','Experiemntal','FE (Abaqus)')
 ylabel('Pressure (MPa)')
@@ -166,7 +167,7 @@ print -dpng2 pressure.png
 
 set(gcf, 'Color', 'w');
 
-if ( PLOT_GRAPHS)
+if ( PLOT_STRAIN)
 
 path = './../../build/bin/preform/History/Strain';
 
@@ -331,71 +332,70 @@ grid on
 
 
 print -dpng2 strain.png
-
-figure 
-subplot(1,2,1);
-plot(time,crit_lambda,'k-');
-hold on
-plot(time,max_lambda_n,'b-');
-
-%set axis
-set(gca, 'FontName', 'cmr12')
-% set x tics and y tics
-set(gca,...
-'Units','normalized',...
-'FontUnits','points',...
-'FontWeight','normal',...
-'FontSize',14,... % size ofiguref numbers on axis
-'FontName','cmr14') % font name
-set(gca,'TickLabelInterpreter', 'latex');
-
-% Y label
-ylabel({'Critical Network Stretch ($\lambda$)'},...
-'FontUnits','points',...
-'interpreter','latex',...
-'FontSize',14,... % font size
-'FontName','cmr14')
-% X label
-xlabel('Time (s)',...
-'FontUnits','points',...
-'interpreter','latex',...
-'FontWeight','normal',...
-'FontSize',14,... % font size
-'FontName','cmr14')
-
-
- 
-subplot(1,2,2);
-plot(time,gamma,'k-');
-%set axis
-set(gca, 'FontName', 'cmr12')
-% set x tics and y tics
-set(gca,...
-'Units','normalized',...
-'FontUnits','points',...
-'FontWeight','normal',...
-'FontSize',14,... % size ofiguref numbers on axis
-'FontName','cmr14') % font name
-set(gca,'TickLabelInterpreter', 'latex');
-
-% Y label
-ylabel({'Viscosity ($\gamma$) Pa'},...
-'FontUnits','points',...
-'interpreter','latex',...
-'FontSize',14,... % font size
-'FontName','cmr14')
-% X label
-xlabel('Time (s)',...
-'FontUnits','points',...
-'interpreter','latex',...
-'FontWeight','normal',...
-'FontSize',14,... % font size
-'FontName','cmr14')
-
-
-
+end
+% figure 
+% subplot(1,2,1);
+% plot(time,crit_lambda,'k-');
+% hold on
+% plot(time,max_lambda_n,'b-');
+% 
+% %set axis
+% set(gca, 'FontName', 'cmr12')
+% % set x tics and y tics
+% set(gca,...
+% 'Units','normalized',...
+% 'FontUnits','points',...
+% 'FontWeight','normal',...
+% 'FontSize',14,... % size ofiguref numbers on axis
+% 'FontName','cmr14') % font name
+% set(gca,'TickLabelInterpreter', 'latex');
+% 
+% % Y label
+% ylabel({'Critical Network Stretch ($\lambda$)'},...
+% 'FontUnits','points',...
+% 'interpreter','latex',...
+% 'FontSize',14,... % font size
+% 'FontName','cmr14')
+% % X label
+% xlabel('Time (s)',...
+% 'FontUnits','points',...
+% 'interpreter','latex',...
+% 'FontWeight','normal',...
+% 'FontSize',14,... % font size
+% 'FontName','cmr14')
+% 
+% 
+%  
+% subplot(1,2,2);
+% plot(time,gamma,'k-');
+% %set axis
+% set(gca, 'FontName', 'cmr12')
+% % set x tics and y tics
+% set(gca,...
+% 'Units','normalized',...
+% 'FontUnits','points',...
+% 'FontWeight','normal',...
+% 'FontSize',14,... % size ofiguref numbers on axis
+% 'FontName','cmr14') % font name
+% set(gca,'TickLabelInterpreter', 'latex');
+% 
+% % Y label
+% ylabel({'Viscosity ($\gamma$) Pa'},...
+% 'FontUnits','points',...
+% 'interpreter','latex',...
+% 'FontSize',14,... % font size
+% 'FontName','cmr14')
+% % X label
+% xlabel('Time (s)',...
+% 'FontUnits','points',...
+% 'interpreter','latex',...
+% 'FontWeight','normal',...
+% 'FontSize',14,... % font size
+% 'FontName','cmr14')
+% 
 
 
+if ( PLOT_STRESS)
 
 
 % legend
@@ -519,6 +519,5 @@ grid on
 
 print -dpng2 stress.png
 
+end
 
-
- end

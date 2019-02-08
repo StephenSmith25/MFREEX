@@ -159,7 +159,7 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 
 	// tracecatch(symmeig(stateNew->Bbar,eigVecB,eigValB);,	
 	// "Eigen values of Bbar in Buckley conf");
-	dsyevh3(stateNew->Bbar->me,eigVecB->me,eigValB->ve);
+	dsyevq3(stateNew->Bbar->me,eigVecB->me,eigValB->ve);
 
 
 	// 		printf("for loop print\n");
@@ -194,9 +194,18 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 
 	// update maximum network stre
 
-	stateNew->lambdaNMax = sqrt(v_max(eigValB,&index));
+	//stateNew->lambdaNMax = sqrt(v_max(eigValB,&index));
 
-	stateNew->lambdaNMax = sqrt(stateNew->Bbar->me[2][2]);
+
+	double B1, B2, B3, Bmax = 0;
+	B1 = stateNew->Bbar->me[0][0];
+	B2 = stateNew->Bbar->me[1][1];
+	B3 = stateNew->Bbar->me[2][2];
+
+
+	Bmax = max(B1,B2);
+	Bmax = max(Bmax,B3);
+	stateNew->lambdaNMax = sqrt(Bmax);
 
 
 	m_copy(stateNew->Bbar,stateOld->Bbar);
