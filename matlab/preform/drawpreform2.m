@@ -10,6 +10,8 @@ Din_b = (13.97+14.43)/2;
 Dout_b = (23.19+22.50)/2;
 
 
+
+
 Rin_bot = Din_b/2;
 Rout_bot = Dout_b/2;
 
@@ -23,8 +25,8 @@ L_t1 = 3;
 L_t = 37.31-19.48-L_t1;
 
 
-N1 = 45;
-N2 = 25;
+N1 = 70;
+N2 = 30;
 
 
 
@@ -48,7 +50,7 @@ N4 = 4;
 N5 = 5;
 % Left wall
 %% traction nodes
-nodes(count:1:count+N1-1,:) = [linspace(Din_b/2,Din_b/2,N1)',linspace(0,L_m-1,N1)'];
+nodes(count:1:count+N1-1,:) = [linspace(Din_b/2,Din_b/2,N1)',linspace(0,L_m-0.5,N1)'];
 count = count + N1 ;
 nodes(count:1:count+N2-1,:) = [linspace(Din_b/2,Din_t/2,N2)',linspace(L_m,L_t+L_m,N2)'];
 count = count + N2;
@@ -66,7 +68,7 @@ count = count + N3;
 nodes(count:1:count+N2-1,:) = [linspace(Dout_t/2,Dout_b/2,N2)',linspace(L_t+L_m,L_m,N2)'];
 count = count + N2;
 % right wall
-nodes(count:1:count+N1-1,:) = [linspace(Dout_b/2,Dout_b/2,N1)',linspace(L_m-1,0,N1)'];
+nodes(count:1:count+N1-1,:) = [linspace(Dout_b/2,Dout_b/2,N1)',linspace(L_m-0.5,0,N1)'];
 
 
 
@@ -104,8 +106,8 @@ boundaryNodes(end:-1:end-(N5-2),2) = 4;
 %%  Geoemtric measures ( Change these for different geometries) 
 % bottom
 
-Din_b = (13.97+14.43)/2 +1.5;
-Dout_b = (23.19+22.50)/2  -1.5;
+Din_b = (13.97+14.43)/2 +2.5;
+Dout_b = (23.19+22.50)/2  -3;
 
 
 
@@ -116,19 +118,16 @@ Rout_bot = (Dout_b/2);
 % middle
 L_m = 97.18-37.31-11.25;
 % top
-Din_t = 24.31   +1;
-Dout_t = 29.49  -1  ;
+Din_t = 24.31   +1.5;
+Dout_t = 29.49  -2  ;
 L_t1 = 3;
 L_t = 37.31-19.48-L_t1 ;
 
 
-N1 = 45;
-N2 = 25;
 
 
 
 % Draw it
-ntheta = 15;
 % starting from 0,0
 nodes1 = [];
 count = 1;
@@ -141,12 +140,10 @@ for i = 1:length(theta)
     count = count +1;
     
 end
-N3 = 5;
-N4 = 4;
-N5 = 3;
+
 % Left wall
 %% traction nodes
-nodes1(count:1:count+N1-1,:) = [linspace(Din_b/2,Din_b/2,N1)',linspace(0,L_m-1,N1)'];
+nodes1(count:1:count+N1-1,:) = [linspace(Din_b/2,Din_b/2,N1)',linspace(0,L_m-0.5,N1)'];
 count = count + N1 ;
 nodes1(count:1:count+N2-1,:) = [linspace(Din_b/2,Din_t/2,N2)',linspace(L_m,L_t+L_m,N2)'];
 count = count + N2;
@@ -161,7 +158,7 @@ count = count + N3;
 nodes1(count:1:count+N2-1,:) = [linspace(Dout_t/2,Dout_b/2,N2)',linspace(L_t+L_m,L_m,N2)'];
 count = count + N2;
 % right wall
-nodes1(count:1:count+N1-1,:) = [linspace(Dout_b/2,Dout_b/2,N1)',linspace(L_m-1,0,N1)'];
+nodes1(count:1:count+N1-1,:) = [linspace(Dout_b/2,Dout_b/2,N1)',linspace(L_m-0.5,0,N1)'];
 % 
 % 
 % 
@@ -176,77 +173,74 @@ for i = 1:length(theta)
     count = count +1;
 end
 
-Din_b = (13.97+14.43)/2 +3.5;
-Dout_b = (23.19+22.50)/2  -3.5;
-
-
-
-Rin_bot = (Din_b/2) ;
-Rout_bot = (Dout_b/2);
-
-
-% middle
-L_m = 97.18-37.31-11.25;
-% top
-Din_t = 24.31   +2;
-Dout_t = 29.49  -2  ;
-L_t1 = 3;
-L_t = 37.31-19.48-L_t1 ;
-
-
-N1 = 45;
-N2 = 25;
-
-
-
-% Draw it
-ntheta = 15;
-% starting from 0,0
-
-
-theta = linspace(-85,0,ntheta);
-
-for i = 1:length(theta)
-    nodes1(count,:) = [Rin_bot*cosd(theta(i)),  Rin_bot*sind(theta(i))];
-    count = count +1;
-    
-end
-N3 = 5;
-N4 = 4;
-N5 = 3;
-% Left wall
-%% traction nodes
-nodes1(count:1:count+N1-1,:) = [linspace(Din_b/2,Din_b/2,N1)',linspace(0,L_m-1,N1)'];
-count = count + N1 ;
-nodes1(count:1:count+N2-1,:) = [linspace(Din_b/2,Din_t/2,N2)',linspace(L_m,L_t+L_m,N2)'];
-count = count + N2;
-nodes1(count:1:count+N3-1,:) = [linspace(Din_t/2,Din_t/2,N3)',linspace(L_m+L_t,L_t+L_m+L_t1-0.5,N3)'];
-count = count + N3;
-% 
-height = nodes1(end,2);
-%% Outside nodes
-% right wall
-nodes1(count:1:count+N3-1,:) = [linspace(Dout_t/2,Dout_t/2,N3)',linspace(height,L_t+L_m,N3)'];
-count = count + N3;
-nodes1(count:1:count+N2-1,:) = [linspace(Dout_t/2,Dout_b/2,N2)',linspace(L_t+L_m,L_m,N2)'];
-count = count + N2;
-% right wall
-nodes1(count:1:count+N1-1,:) = [linspace(Dout_b/2,Dout_b/2,N1)',linspace(L_m-1,0,N1)'];
+% Din_b = (13.97+14.43)/2 +3.5;
+% Dout_b = (23.19+22.50)/2  -3.5;
 % 
 % 
 % 
-%
+% Rin_bot = (Din_b/2) ;
+% Rout_bot = (Dout_b/2);
 % 
-count = count + N1;
+% 
+% % middle
+% L_m = 97.18-37.31-11.25;
+% % top
+% Din_t = 24.31   +2;
+% Dout_t = 29.49  -2  ;
+% L_t1 = 3;
+% L_t = 37.31-19.48-L_t1 ;
+% 
+% 
+% 
+% 
+% 
+% % Draw it
+% % starting from 0,0
+% 
+% 
+% theta = linspace(-85,0,ntheta);
+% 
+% for i = 1:length(theta)
+%     nodes1(count,:) = [Rin_bot*cosd(theta(i)),  Rin_bot*sind(theta(i))];
+%     count = count +1;
+%     
+% end
 
-theta = linspace(0,-85,ntheta);
+% % Left wall
+% %% traction nodes
+% nodes1(count:1:count+N1-1,:) = [linspace(Din_b/2,Din_b/2,N1)',linspace(0,L_m-1,N1)'];
+% count = count + N1 ;
+% nodes1(count:1:count+N2-1,:) = [linspace(Din_b/2,Din_t/2,N2)',linspace(L_m,L_t+L_m,N2)'];
+% count = count + N2;
+% nodes1(count:1:count+N3-1,:) = [linspace(Din_t/2,Din_t/2,N3)',linspace(L_m+L_t,L_t+L_m+L_t1-0.5,N3)'];
+% count = count + N3;
+% % 
+% height = nodes1(end,2);
+% %% Outside nodes
+% % right wall
+% nodes1(count:1:count+N3-1,:) = [linspace(Dout_t/2,Dout_t/2,N3)',linspace(height,L_t+L_m,N3)'];
+% count = count + N3;
+% nodes1(count:1:count+N2-1,:) = [linspace(Dout_t/2,Dout_b/2,N2)',linspace(L_t+L_m,L_m,N2)'];
+% count = count + N2;
+% % right wall
+% nodes1(count:1:count+N1-1,:) = [linspace(Dout_b/2,Dout_b/2,N1)',linspace(L_m-1,0,N1)'];
+% % 
+% % 
+% % 
+% %
+% % 
+% count = count + N1;
+% 
+% theta = linspace(0,-85,ntheta);
+% 
+% for i = 1:length(theta)
+%     nodes1(count,:) = [Rout_bot*cosd(theta(i)), Rout_bot*sind(theta(i))];
+%     count = count +1;
+% end
 
-for i = 1:length(theta)
-    nodes1(count,:) = [Rout_bot*cosd(theta(i)), Rout_bot*sind(theta(i))];
-    count = count +1;
-end
+
+
 [~,ib] = unique(nodes1,'rows');
-
 ib = sort(ib);
 nodes1 = nodes1(ib,:);
 % 

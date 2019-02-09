@@ -44,7 +44,6 @@ int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * p
 
 
 	double tauOCT = sqrt (  (1.000/3.00) * contraction(Sb_n,Sb_n)  ) ;
-	tauOCT = 0;
 	double alpha_sig = 1;
 	
 	double sigma_m = stateOld->mSigma;
@@ -58,9 +57,9 @@ int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * p
 	}else{
 		alpha_sig = ( Vs*tauOCT/(2*R*temperature) ) * exp ( -Vp * sigma_m/(R*temperature) ) / ( sinh ( Vs * tauOCT/(2*R*temperature)) ) ; 
 	}
-	alpha_sig = 1;
-	
-	//alpha_sig = 0.4;
+
+	alpha_sig = 1.00;
+
 	// alpha_s
 	double alpha_s = exp ( Cv / ( temperature - vogel_T) - Cv / ( star_T - vogel_T) );	
 	// alpha_T

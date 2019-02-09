@@ -44,7 +44,7 @@ const double TMAX = 0.4;
 double delta_t = 4e-7;
 
 // Meshfree parameters
-const double dmax = 2;
+const double dmax = 1.6;
 const int is_stabalised = 0;
 const int is_constant_support_size = 1;
 
@@ -151,7 +151,7 @@ int main(int argc, char** argv) {
 	for ( int i = 0 ; i < numPointsRod ; i++){
 		double theta = -PI/2.00 + (PI/2/(numPointsRod-1))*i;
 		srNodes->me[i][0] = stretchRodRad*cos(theta);
-		srNodes->me[i][1] =10.2+stretchRodRad*sin(theta);
+		srNodes->me[i][1] =10.1+stretchRodRad*sin(theta);
 		srNodes_O->me[i][0] = srNodes->me[i][0];
 		srNodes_O->me[i][1] = srNodes->me[i][1];
 	}
@@ -602,7 +602,7 @@ int main(int argc, char** argv) {
 
 		if ( disp_rod < DISP_ROD_MAX){
 		/*  Update stretch rod */
-			double x = t_n_1*smoothstep(t_n_1,0.005,0);
+			double x = t_n_1*smoothstep(t_n_1,0.01,0);
 
 			disp_rod = a0*pow(x,7) + a1*pow(x,6) + a2*pow(x,5) + a3*pow(x,4) + a4*pow(x,3) + a5*pow(x,2) +
 			a6*pow(x,1) + a7;
@@ -627,8 +627,8 @@ int main(int argc, char** argv) {
 
 			if (distanceProj > 0){
 
-				f1Cor = 1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-				f2Cor = 1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+				f1Cor = 0.5*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+				f2Cor = 0.5*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
 
 
 				for ( int k = 0 ; k < neighbours->max_dim ; k++){

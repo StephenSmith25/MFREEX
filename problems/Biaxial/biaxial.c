@@ -50,7 +50,7 @@ int main(void)
 	VEC * matParams = v_get(31);
 	matParams->ve[0] = 2.814e-3; // VS
 	matParams->ve[1] = 0.526e-3; // VP
-	matParams->ve[2] = 1.81e6; // mu*_0
+	matParams->ve[2] = 1.71e6; // mu*_0
 	matParams->ve[3] = 328.76; // Tinf
 	matParams->ve[4] = 358.15; // T*
 	matParams->ve[5] = matParams->ve[4]; // Tf*
@@ -58,7 +58,7 @@ int main(void)
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
 	matParams->ve[9] = 1.8e9; // Kb
-	matParams->ve[10] = 6e8;// Gb
+	matParams->ve[10] = 6e7;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
 	matParams->ve[14] = 0.001;// eta_c
