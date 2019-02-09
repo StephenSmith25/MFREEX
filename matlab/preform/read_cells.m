@@ -1,7 +1,7 @@
 clear all
 close all 
 
-fileID = fopen("./../../build/bin/preform/cells1.txt");
+fileID = fopen("./../../build/bin/preform/cells.txt");
 
 
 tline = fgetl(fileID);
@@ -26,10 +26,8 @@ for i = 1:num_verticies
 end
 
 
-figure
-plot(verticies(:,1),verticies(:,2),'b*')
 
-axis equal
+
 
 tline = fgetl(fileID);
 C = strsplit(tline);

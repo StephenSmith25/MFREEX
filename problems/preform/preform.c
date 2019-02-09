@@ -29,7 +29,7 @@
 #include "Boundary/Displacement/enforceBC.h"
 #include "Integration/SCNI/scni_update_B.h"
 #include "PostProcess/saveDisp.h"
-
+#include "input/read_input_points.h"
 
 const char * MATERIAL = "BUCKLEY";
 const int BUCKLEY_MATERIAL = 1;
@@ -151,7 +151,7 @@ int main(int argc, char** argv) {
 	for ( int i = 0 ; i < numPointsRod ; i++){
 		double theta = -PI/2.00 + (PI/2/(numPointsRod-1))*i;
 		srNodes->me[i][0] = stretchRodRad*cos(theta);
-		srNodes->me[i][1] = 9+stretchRodRad*sin(theta);
+		srNodes->me[i][1] =10.2+stretchRodRad*sin(theta);
 		srNodes_O->me[i][0] = srNodes->me[i][0];
 		srNodes_O->me[i][1] = srNodes->me[i][1];
 	}
@@ -191,12 +191,15 @@ int main(int argc, char** argv) {
 
 	char fileName[30] = "preform";
 	double * points_out ;
-	int * boundaryNodes;
-	int numBoundary;
+	int * boundaryNodes = NULL;
+	int numBoundary = 0;
 	int * nodalMarkers;
-	int  numnodes;
+	int  numnodes = 0;;
 	double * temperatures;
-	trigen(&points_out,&boundaryNodes,opt,fileName,&numnodes,&numBoundary,&nodalMarkers,&temperatures);	
+
+	read_input_points(fileName,&points_out, &boundaryNodes, &nodalMarkers, &temperatures,&numnodes, &numBoundary);
+
+
 
 
 	MAT * xI = m_get(numnodes,dim);
@@ -207,7 +210,7 @@ int main(int argc, char** argv) {
 		xI->me[i][1] = points_out[2*i+1];
 
 	}
-
+	m_foutput(stdout, xI);
 	fp = fopen("boundary.txt","w");
 	for (int i = 0; i < numBoundary; ++i)
 	{
@@ -346,13 +349,12 @@ int main(int argc, char** argv) {
 		inv_nodal_mass->ve[i] = 1.00/nodal_mass->ve[i];
 	}
 	printf("total mass = %lf (g) \n", v_sum(nodal_mass)*1000);
-	v_foutput(stdout,nodal_mass);
 	
 	/* ------------------------------------------*/
 	/* ------------Boundaries--------------------*/
 	/* ------------------------------------------*/
 
-
+	m_foutput(stdout, xI);
 
 	// Traction
 	IVEC * traction_nodes ;
@@ -361,11 +363,14 @@ int main(int argc, char** argv) {
 	m_foutput(stdout,pB->coords);
 	pB->is_axi = is_AXI;
 
+
 	// /*  EB1  */
 	EBC * eb1 = malloc(1*sizeof(EBC));
 	eb1->dofFixed = 3;
 	getBoundary(&eb1->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,5);
-	iv_addNode(eb1->nodes,traction_nodes->ive[0],'s');
+	//iv_addNode(eb1->nodes,traction_nodes->ive[0],'s');
+	iv_addNode(eb1->nodes,traction_nodes->ive[traction_nodes->max_dim -1  ],'s');
+
 	int num_nodes_eb1 = eb1->nodes->max_dim;
 	setUpBC(eb1,inv_nodal_mass,&mfree);
 	
@@ -374,13 +379,16 @@ int main(int argc, char** argv) {
 	EBC * eb2 = malloc(1*sizeof(EBC));
 	eb2->dofFixed = 1;
 	getBoundary(&eb2->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,4);
-	iv_addNode(eb2->nodes,traction_nodes->ive[traction_nodes->max_dim - 1],'e');
+	//iv_addNode(eb2->nodes,traction_nodes->ive[traction_nodes->max_dim - 1],'e');
+	iv_addNode(eb2->nodes,traction_nodes->ive[0],'e');
+
 	int num_nodes_eb2 = eb2->nodes->max_dim;
 	setUpBC(eb2,inv_nodal_mass,&mfree);
 
-
-
 	m_foutput(stdout,eb1->coords);
+
+
+	m_foutput(stdout,eb2->coords);
 
 
 
@@ -390,7 +398,7 @@ int main(int argc, char** argv) {
 	MAT * contact_nodes_coords = m_get(numB3,dim);
 
 	for ( int i = 0 ; i < numB3 ; i++){
-		eb3_nodes->ive[i] = traction_nodes->ive[traction_nodes->max_dim -1 - i];
+		eb3_nodes->ive[i] = traction_nodes->ive[ i];
 		contact_nodes_coords->me[i][0] = mfree.nodes->me[eb3_nodes->ive[i]][0];
 		contact_nodes_coords->me[i][1] = mfree.nodes->me[eb3_nodes->ive[i]][1];
 
@@ -401,7 +409,6 @@ int main(int argc, char** argv) {
 		"linear", "quartic", 2, 1, &mfree);
 	m_foutput(stdout,contact_nodes_coords);
 
-	
 	/* ------------------------------------------*/
 	/* -----------Transformation matrix----------*/
 	/* ------------------------------------------*/
@@ -574,8 +581,8 @@ int main(int argc, char** argv) {
 
 
 	/*  Explicit Loop */
-	//while ( t_n < TMAX)
-	while ( n < 10000 )
+	while ( t_n < TMAX)
+	//while ( n < 10000 )
 	{
 
 		/*  Update time step */
@@ -695,7 +702,7 @@ int main(int argc, char** argv) {
 		/*  Update pressure load */
 
 		update_pressure_boundary(pB, updatedNodes);
-		assemble_pressure_load(Fext_n_1, -pre_n_1, pB);
+		assemble_pressure_load(Fext_n_1, pre_n_1, pB);
 
 		/* ------------------------------------------*/
 		/* ------------Find Internal Force-----------*/

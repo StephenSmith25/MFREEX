@@ -19,9 +19,6 @@ include_directories(${triangulate_SOURCE_DIR}/include)
 link_directories(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 
 
-configure_file(preform.segs preform.segs COPYONLY)
-configure_file(preform.nodes preform.nodes COPYONLY)
-
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin/preform)
 
 find_package(OpenMP)
@@ -51,8 +48,8 @@ target_link_libraries(preform CVLIB MFREEX Eigen EFSFLIB util triangulate mescha
 add_custom_command(
         TARGET preform POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_CURRENT_SOURCE_DIR}/preform.segs
-                ${EXECUTABLE_OUTPUT_PATH}/preform.segs)
+                ${CMAKE_CURRENT_SOURCE_DIR}/preform.boundary
+                ${EXECUTABLE_OUTPUT_PATH}/preform.boundary)
 add_custom_command(
         TARGET preform POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
