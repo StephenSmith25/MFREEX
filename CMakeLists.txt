@@ -6,14 +6,14 @@ project(MFREEX)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # Whether to compile test program
-OPTION(PROBLEM_BEAM "Compile Beam program" ON)
-OPTION(PROBLEM_BEAM_UL "Compile updated lagrangian version of Beam program" ON)
+OPTION(PROBLEM_BEAM "Compile Beam program" OFF)
+OPTION(PROBLEM_BEAM_UL "Compile updated lagrangian version of Beam program" OFF)
 OPTION(PROBLEM_PREFORM "Compile preform program" ON)
 OPTION(PROBLEM_BIAXIAL "Compile biaxial program" ON)
-OPTION(PROBLEM_TUBE "Compile tube program" ON)
-OPTION(PROBLEM_CYLINDER "Compile cylinder program" ON)
-OPTION(PROBLEM_TAYLOR_BAR "Compile cylinder program" ON)
-OPTION(PROBLEM_TEST "Compile TEST program" ON)
+OPTION(PROBLEM_TUBE "Compile tube program" OFF)
+OPTION(PROBLEM_CYLINDER "Compile cylinder program" OFF)
+OPTION(PROBLEM_TAYLOR_BAR "Compile cylinder program" OFF)
+OPTION(PROBLEM_TEST "Compile TEST program" OFF)
 
 
 add_subdirectory(lib)

@@ -38,8 +38,6 @@ SET(GCC_COVERAGE_COMPILE_FLAGS "-O3 -std=c99")
 add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
 
-
-
 add_executable(preform preform.c)
 target_link_libraries(preform CVLIB MFREEX Eigen EFSFLIB util triangulate meschach m gpc)
 
@@ -55,3 +53,15 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E copy
                 ${CMAKE_CURRENT_SOURCE_DIR}/preform.nodes
                 ${EXECUTABLE_OUTPUT_PATH}/preform.nodes)
+
+# copy input files to location
+add_custom_command(
+        TARGET preform POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_CURRENT_SOURCE_DIR}/run.sh
+                ${EXECUTABLE_OUTPUT_PATH}/run.sh)
+add_custom_command(
+        TARGET preform POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_CURRENT_SOURCE_DIR}/run_hpc.sh
+                ${EXECUTABLE_OUTPUT_PATH}/run_hpc.sh)

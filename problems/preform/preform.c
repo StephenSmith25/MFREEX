@@ -707,7 +707,10 @@ int main(int argc, char** argv) {
 
 		/*  Update pressure load */
 
-		update_pressure_boundary(pB, updatedNodes);
+		if ( n % 10000 == 0)
+		{
+			update_pressure_boundary(pB, updatedNodes);
+		}
 		assemble_pressure_load(Fext_n_1, pre_n_1, pB);
 
 		/* ------------------------------------------*/

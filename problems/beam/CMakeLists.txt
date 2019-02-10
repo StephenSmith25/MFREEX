@@ -28,7 +28,9 @@ if (OPENMP_FOUND)
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
-find_package (Threads)
+
+SET(GCC_COVERAGE_COMPILE_FLAGS "-O3 -std=c99")
+add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
 
 add_executable(beam beam.c)
