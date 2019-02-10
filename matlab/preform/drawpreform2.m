@@ -26,12 +26,12 @@ L_t = 37.31-19.48-L_t1;
 
 
 N1 = 70;
-N2 = 30;
+N2 = 35;
 
 
 
 % Draw it
-ntheta = 15;
+ntheta = 20;
 % starting from 0,0
 nodes = [];
 count = 1;

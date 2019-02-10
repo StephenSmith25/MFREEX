@@ -44,7 +44,7 @@ const double TMAX = 0.4;
 double delta_t = 4e-7;
 
 // Meshfree parameters
-const double dmax = 1.6;
+const double dmax = 3;
 const int is_stabalised = 0;
 const int is_constant_support_size = 1;
 
@@ -145,9 +145,9 @@ int main(int argc, char** argv) {
 	double stretchRodRad = 5.5;
 	int numPointsRod = 15;
 
-	MAT * srNodes = m_get(numPointsRod+1,2);
+	MAT * srNodes = m_get(numPointsRod+2,2);
 
-	MAT * srNodes_O = m_get(numPointsRod+1,2);
+	MAT * srNodes_O = m_get(numPointsRod+2,2);
 	for ( int i = 0 ; i < numPointsRod ; i++){
 		double theta = -PI/2.00 + (PI/2/(numPointsRod-1))*i;
 		srNodes->me[i][0] = stretchRodRad*cos(theta);
@@ -159,6 +159,12 @@ int main(int argc, char** argv) {
 	srNodes->me[numPointsRod][1] = 70;
 	srNodes_O->me[numPointsRod][0] = stretchRodRad;
 	srNodes_O->me[numPointsRod][1] = 70;
+
+	srNodes->me[numPointsRod+1][0] = 0;
+	srNodes->me[numPointsRod+1][1] = 70;
+	srNodes_O->me[numPointsRod+1][0] = 0;
+	srNodes_O->me[numPointsRod+1][1] = 70;
+
 
 	/*  Stretch rod */
 	double dRodStop = 135; /*  130 mm  */
