@@ -110,7 +110,7 @@ int trigen(double ** output_points, int ** boundary, char * options, char * file
 
 	printf("%s\n",nodesFile );
 	printf("%s\n",segsFile );
-
+	int i;
 
 
 	tri in = malloc(sizeof(struct triangulateio ));
@@ -138,7 +138,7 @@ int trigen(double ** output_points, int ** boundary, char * options, char * file
 		in->pointattributelist = NULL;
 	}
 	in->pointlist = malloc(in->numberofpoints*2*sizeof(double));
-	for ( int i = 0 ; i < in->numberofpoints ;i++){
+	for ( i = 0 ; i < in->numberofpoints ;i++){
 		if (fgets(buf,sizeof(buf),fp) != NULL)
 			token = strtok(buf,s);
 		in->pointlist[2*i] = atof(token);
@@ -157,7 +157,7 @@ int trigen(double ** output_points, int ** boundary, char * options, char * file
 		in->numberofsegments = atoi(buf);
 	in->segmentlist = malloc(2*in->numberofsegments*sizeof(int));
 	in->segmentmarkerlist = malloc(in->numberofsegments*sizeof(int));
-	for ( int i = 0 ; i < in->numberofsegments ;i++){
+	for ( i = 0 ; i < in->numberofsegments ;i++){
 		if (fgets(buf,sizeof(buf),fp) != NULL)
 			token = strtok(buf,s);
 		in->segmentlist[2*i] = atoi(token);
@@ -219,7 +219,7 @@ int trigen(double ** output_points, int ** boundary, char * options, char * file
 	// prepare output points
 	int * boundaryPoints = malloc((out->numberofsegments)*sizeof(int));
 
-	for (size_t i = 0; i < out->numberofsegments; i++) {
+	for (i = 0; i < out->numberofsegments; i++) {
 		boundaryPoints[i] = connected_segments[2*i] -1 ;
 		/* code */
 	}
@@ -239,7 +239,7 @@ int trigen(double ** output_points, int ** boundary, char * options, char * file
 
 	(*pointmarkers) = malloc(out->numberofpoints*sizeof(int));
 
-	for ( int i = 0 ; i < out->numberofpoints ; i++)
+	for ( i = 0 ; i < out->numberofpoints ; i++)
 	{
 		(*pointmarkers)[i] = out->pointmarkerlist[i];
 
