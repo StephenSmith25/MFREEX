@@ -28,6 +28,8 @@ endif()
 
 find_package (Threads)
 
+SET(GCC_COVERAGE_COMPILE_FLAGS "-O3 -std=c99")
+add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
 add_executable(tube tube.c)
 target_link_libraries(tube CVLIB MFREEX EFSFLIB triangulate meschach m gpc util)

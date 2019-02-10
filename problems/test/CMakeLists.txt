@@ -18,6 +18,9 @@ endif()
 
 find_package (Threads)
 
+SET(GCC_COVERAGE_COMPILE_FLAGS "-O3 -std=c99")
+add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
+
 
 add_executable(test test.c)
 target_link_libraries(test meschach m)
