@@ -71,7 +71,7 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 
 
 	// set number of threads
-	omp_set_num_threads(8);
+	omp_set_num_threads(16);
 
 	int i;
 #pragma omp parallel 
