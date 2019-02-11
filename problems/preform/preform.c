@@ -44,7 +44,7 @@ const double TMAX = 0.4;
 double delta_t = 4e-7;
 
 // Meshfree parameters
-const double dmax = 3;
+const double dmax = 2;
 const int is_stabalised = 0;
 const int is_constant_support_size = 1;
 
@@ -707,7 +707,7 @@ int main(int argc, char** argv) {
 
 		/*  Update pressure load */
 
-		if ( n % 10000 == 0)
+		if ( n % 500 == 0)
 		{
 			update_pressure_boundary(pB, updatedNodes);
 		}
@@ -888,8 +888,12 @@ int main(int argc, char** argv) {
 		// update iteration counter
 		double t_min = 0;
 		n++	;
-		printf("%i  \t  %lf %10.2E %lf %lf %lf %lf %10.2E %lf \n",n,t_n,Wbal,
-			pre_n_1,disp_rod,v_rod,volume/1e3,delta_t,mfree.di->ve[0]);
+
+
+
+		if ( n % writeFreq == 0)
+			printf("%i  \t  %lf %10.2E %lf %lf %lf %lf %10.2E %lf \n",n,t_n,Wbal,
+				pre_n_1,disp_rod,v_rod,volume/1e3,delta_t,mfree.di->ve[0]);
 
 
 

@@ -1,14 +1,12 @@
-#!/bin/sh
-#$ -pe smp-verbose 8 -o ~/Meshfree/meshfree.out.$JOB_ID
-#$ -M ssmith54@qub.ac.uk –m bea
-START=$(date +%s)
-echo Running preform program	
-rm -r Displacement
-rm -r History
-rm -r srRod
-mkdir History
-./preform
+#!/bin/bash
+#$ -pe smp-verbose 8 -o ~/Meshfree/preform.out_$JOB_ID
+echo Running preform program    
+mkdir ~/Meshfree/$JOB_ID
+rm -r ~/Meshfree/$JOB_ID/Displacement
+rm -r ~/Meshfree/$JOB_ID/History
+rm -r ~/Meshfree/$JOB_ID/srRod
+mkdir ~/Meshfree/$JOB_ID/History
+cp ~/MFREEX-master/build/bin/preform/preform.nodes ~/Meshfree/$JOB_ID/preform.nodes
+cp ~/MFREEX-master/build/bin/preform/preform.boundary ~/Meshfree/$JOB_ID/preform.boundary
+cd ~/Meshfree/$JOB_ID; ~/MFREEX-master/build/bin/preform/preform
 echo Finished running preform program 
-END=$(date +%s)
-DIFF=$(( $END - $START ))
-echo "It took $DIFF seconds"

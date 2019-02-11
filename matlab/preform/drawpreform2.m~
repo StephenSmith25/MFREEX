@@ -5,7 +5,7 @@ close all;
 
 %% RADII
 
-% bot diameter
+//
 DIN_BOT = 13.97;
 DOUT_BOT = 22.50;
 
@@ -33,7 +33,6 @@ TOTAL_LENGTH = 97.18;
 NUM_NODES_THICKNESS = 3;
 
 
-
 %% LENGTHS
 % middle
 L_m = TOTAL_LENGTH -37.31-11.25;
@@ -57,7 +56,7 @@ Dout_t = DOUT_TOP;
 
 %% NUMBER OF NODES
 N1 = 70;
-N2 = 30;
+N2 = 35;
 ntheta = 20;
 
 
