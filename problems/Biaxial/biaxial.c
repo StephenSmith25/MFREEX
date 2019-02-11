@@ -31,14 +31,14 @@ const int PLASTIC_MATERIAL = 0;
 // deformaton
 const int SR = 4;
 const double TEMPERATURE = 85;
-char * DEFORMATION_MODE = "SIMPLE_SHEAR";
+char * DEFORMATION_MODE = "BIAXIAL";
 const int DIM = 3;
 const int IS_AXI = 0;
 
 // time step
 const double DT = 1e-5;
 const double TMAX = 10;
-const double PEAK_STRAIN = 5;
+const double PEAK_STRAIN = 3;
 
 
 int main(void)

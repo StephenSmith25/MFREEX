@@ -38,7 +38,7 @@ const int PLASTIC_MATERIAL = 0;
 
 // time step parameters
 const double TMAX = 0.4;
-double delta_t = 2e-7;
+double delta_t = 4e-7;
 
 // Meshfree parameters
 const double dmax = 2;
@@ -46,7 +46,7 @@ const int is_stabalised = 0;
 const int is_constant_support_size = 1;
 
 
-const int WRITE_FREQ = 1000;
+const int WRITE_FREQ = 100;
 
 int main(int argc, char** argv) {
 
@@ -530,7 +530,6 @@ int main(int argc, char** argv) {
 
 	VEC * v_correct = v_get(num_dof);
 	// How often to write outputs
-	int writeFreq = 1000;
 	int fileCounter = 0;
 
 	// time step counter;
@@ -887,7 +886,7 @@ int main(int argc, char** argv) {
 
 
 
-		if ( n % writeFreq == 0)
+		if ( n % WRITE_FREQ == 0)
 			printf("%i  \t  %lf %10.2E %lf %lf %lf %lf %10.2E %lf \n",n,t_n,Wbal,
 				pre_n_1,disp_rod,v_rod,volume/1e3,delta_t,mfree.di->ve[0]);
 

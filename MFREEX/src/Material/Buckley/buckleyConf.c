@@ -74,7 +74,7 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 		Ds = m_zero(Ds);
 	}
 
-
+	m_zero(Ds);
 
 	// // //APPROACH 1 CASE 1
 	// // network rate of deformation tensor 
@@ -197,17 +197,17 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 
 
 
-	double B1, B2, B3, Bmax = 0;
-	B1 = stateNew->Bbar->me[0][0];
-	B2 = stateNew->Bbar->me[1][1];
-	B3 = stateNew->Bbar->me[2][2];
+	// double B1, B2, B3, Bmax = 0;
+	// B1 = stateNew->Bbar->me[0][0];
+	// B2 = stateNew->Bbar->me[1][1];
+	// B3 = stateNew->Bbar->me[2][2];
 
 
-	Bmax = max(B1,B2);
-	Bmax = max(Bmax,B3);
-	stateNew->lambdaNMax = sqrt(Bmax);
+	// Bmax = max(B1,B2);
+	// Bmax = max(Bmax,B3);
+	// stateNew->lambdaNMax = sqrt(Bmax);
 
-	//stateNew->lambdaNMax = sqrt(v_max(eigValB,&index));
+	stateNew->lambdaNMax = sqrt(v_max(eigValB,&index));
 
 	m_copy(stateNew->Bbar,stateOld->Bbar);
 	stateOld->lambdaNMax = stateNew->lambdaNMax;

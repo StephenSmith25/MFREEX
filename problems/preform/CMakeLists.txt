@@ -54,14 +54,3 @@ add_custom_command(
                 ${CMAKE_CURRENT_SOURCE_DIR}/preform.nodes
                 ${EXECUTABLE_OUTPUT_PATH}/preform.nodes)
 
-# copy input files to location
-add_custom_command(
-        TARGET preform POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_CURRENT_SOURCE_DIR}/run.sh
-                ${EXECUTABLE_OUTPUT_PATH}/run.sh)
-add_custom_command(
-        TARGET preform POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_CURRENT_SOURCE_DIR}/run_hpc.sh
-                ${EXECUTABLE_OUTPUT_PATH}/run_hpc.sh)

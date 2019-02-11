@@ -121,7 +121,8 @@ double gammaV(state_variables * state, double maxLambdaN,double critLambda,
 	if ( maxLambdaN >= critLambda ){
 		gamma_n_1 = 1e30;
 	}else{
-		gamma_n_1 = gamma0/ ( 1.000 - (maxLambdaN/critLambda)) ; 
+		gamma_n_1 = gamma0 * ( critLambda - 1) / ( critLambda - maxLambdaN);
+		// ( 1.000 - (maxLambdaN/critLambda)) ; 
 	}
 
 
