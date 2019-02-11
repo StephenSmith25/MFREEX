@@ -62,16 +62,12 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 	}else{
 		Ds = m_zero(Ds);
 	}
-	double traceDs = (1.00/3.00)*(Ds->me[0][0] + Ds->me[1][1] + Ds->me[2][2]);
 
-	Ds->me[0][0] = Ds->me[0][0] - traceDs;
-	Ds->me[1][1] = Ds->me[1][1] - traceDs;
-	Ds->me[2][2] = Ds->me[2][2] - traceDs;
 
 	m_zero(Ds);
 
 	// calculate updated network strains 
-	MAT * d_total = stateNew->d;
+	MAT * d_total = stateNew->dbar;
 
 	MAT * D_n = stateNew->m_temp4;
 
