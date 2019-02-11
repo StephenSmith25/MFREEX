@@ -148,7 +148,7 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			/* ------------------------------------------*/
 
 
-			if ((i == 192) && (call_count % 100 == 0)) {
+			if ((i == 182) && (call_count % 100 == 0)) {
 
 
 				stateNew[i]->F->me[2][1] = t_n_1;

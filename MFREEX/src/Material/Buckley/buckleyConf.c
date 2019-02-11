@@ -30,16 +30,7 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 {
 
 
-
-
-	MAT * intermediate1 = stateNew->m_temp1;
-	MAT * intermediate2 = stateNew->m_temp2;
-	MAT * intermediate3 = stateNew->m_temp3;
-
-
-	MAT * Dn = stateOld->Dn;
-	MAT * Ds = stateOld->m_temp1;
-	MAT * relSpin = stateOld->m_temp2;
+	MAT * Ds = stateNew->m_temp1;
 	VEC * Sc_n_1p = stateNew->v_temp1;
 
 
@@ -48,7 +39,7 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 
 	MAT * eigVecB = stateNew->eigVecVBar;
 	VEC * eigValB = stateNew->eigValVBar;
-	MAT * Sc_n_1 = stateNew->Sc;
+	MAT * Sc_n_1 = stateNew->Sc_R;
 
 	double Jacobian = stateNew->Jacobian;
 	double gamma_n_1;
@@ -61,11 +52,9 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 
 
 		if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
-
-
 			gamma_n_1 = gammaV(stateNew,stateOld->lambdaNMax,
 				stateNew->critLambdaBar,para, deltaT);
-			sm_mlt(1.0000/gamma_n_1,stateOld->Sc,Ds);
+			sm_mlt(1.0000/gamma_n_1,stateOld->Sc_R,Ds);
 
 		}else{
 			Ds = m_zero(Ds);
@@ -73,121 +62,40 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 	}else{
 		Ds = m_zero(Ds);
 	}
+	double traceDs = (1.00/3.00)*(Ds->me[0][0] + Ds->me[1][1] + Ds->me[2][2]);
+
+	Ds->me[0][0] = Ds->me[0][0] - traceDs;
+	Ds->me[1][1] = Ds->me[1][1] - traceDs;
+	Ds->me[2][2] = Ds->me[2][2] - traceDs;
 
 	m_zero(Ds);
 
-	// // //APPROACH 1 CASE 1
-	// // network rate of deformation tensor 
-	m_sub(stateNew->W,stateNew->Omega,relSpin);
-	m_sub(stateNew->Dbar,Ds,Dn);
+	// calculate updated network strains 
+	MAT * d_total = stateNew->d;
 
+	MAT * D_n = stateNew->m_temp4;
 
-	//Fixed material frame rate of deformation
-	//BnCr = Dn_n*Bn_n + Bn_n*Dn_n;
-	m_add(Dn,relSpin,intermediate1);
-	m_sub(Dn,relSpin,intermediate2);
+	m_sub(d_total,Ds,D_n);
 
-
-	m_mlt(intermediate1,stateOld->Bbar,intermediate3);
-	m_mlt(stateOld->Bbar,intermediate2,intermediate1);
-
-	MAT * BnCr = stateOld->m_temp1;
-	MAT * BnDot = stateOld->m_temp2;
-	MAT * deltaB = stateOld->m_temp3;
-
-	m_add(intermediate1,intermediate3,BnCr);
+	MAT * delta_ep = stateNew->m_temp3;
+	sm_mlt(deltaT,D_n,delta_ep);
+	m_add(stateOld->ep_n,delta_ep,stateNew->ep_n);
 
 
 
-	//Material time derivative of B  ( Green-Naghdi )
-	m_mlt(stateNew->Omega,stateOld->Bbar,intermediate1);
-	m_mlt(stateOld->Bbar,stateNew->Omega,intermediate2);
-
-	m_sub(intermediate1,intermediate2,BnDot);
-
-
-
-	m_add(BnCr,BnDot,BnDot);
-	sm_mlt(deltaT,BnDot,deltaB);
-	// Update B
-	m_add(stateOld->Bbar,deltaB,stateNew->Bbar);
-
-
-
-	//Material time derivative of B  ( Truesdell )
-	// m_mlt(stateNew->L,stateOld->Bbar,intermediate1);
-	// m_mlt(stateOld->Bbar,stateNew->L,intermediate2);
-	// m_sub(intermediate1,intermediate2,BnDot);
-	// m_add(BnCr,BnDot,BnDot);
-	// sm_mlt(deltaT,BnDot,deltaB);
-
-
-
-	//APPROACH 2, with spin
-	// m_sub(stateNew->Lbar,stateNew->Omega,stateNew->temp);
-	// m_sub(stateNew->temp,Ds,stateNew->temp);
-	// sm_mlt(deltaT,stateNew->temp,intermediate1);
-
-
-
-	// m_sub(stateNew->Dbar,Ds,Dn);
-	// sm_mlt(deltaT,Dn,intermediate1);
-	// m_ident(intermediate2);
-	// m_add(intermediate2,intermediate1,intermediate1);
-	// m_mlt(intermediate1,stateOld->Fn,stateNew->Fn);
-
-	// //Spin components
-	// m_mlt(stateNew->Omega,stateOld->Fn,intermediate1);
-	// sm_mlt(deltaT,intermediate1,intermediate1);
-	// m_add(stateNew->Fn,intermediate1,stateNew->Fn);
-
-
-	// method 2, no rotation
-	// m_sub(stateNew->Dbar,Ds,Dn);
-	// sm_mlt(deltaT,Dn,intermediate1);
-	// m_ident(intermediate2);
-	// m_add(intermediate2,intermediate1,intermediate1);
-	// m_mlt(intermediate1,stateOld->Fn,stateNew->Fn);
-
-
-
-
-
-	//mmtr_mlt(stateNew->Fn, stateNew->Fn, stateNew->Bbar);
-	//m_copy(stateNew->Fn,stateOld->Fn);
-	
-	// Eigen Value process
-
-	// tracecatch(symmeig(stateNew->Bbar,eigVecB,eigValB);,	
-	// "Eigen values of Bbar in Buckley conf");
-	dsyevq3(stateNew->Bbar->me,eigVecB->me,eigValB->ve);
-
-
-	// 		printf("for loop print\n");
-
-	// 		for ( int i = 0 ; i < 3 ; i++)
-	// 		{
-	// 			for ( int j = 0 ; j < 3 ; j++)
-	// 			{
-	// 				printf("%lf ",eigVecB->me[i][j]);
-	// 			}
-	// 			printf("\n");
-	// 		}
-	// // find edwards vilgis stress
-
+	dsyevq3(stateNew->ep_n->me,eigVecB->me,eigValB->ve);
 
 
 	edwardsVilgis(Sc_n_1p,eigValB,para, Jacobian, stateNew->temperature);
 
 
 	// Find /\, such that /\ = Q^T * A * Q;
-
 	for ( int i = 0 ; i < Sc_n_1p->max_dim ; i++)
 	{
 		Sc_n_1->me[i][i] = Sc_n_1p->ve[i];
 	}
 
-
+	MAT * intermediate1 = stateOld->m_temp1;
 	// rotate stress to global coordinates 
 	m_mlt(eigVecB,Sc_n_1,intermediate1);
 	mmtr_mlt(intermediate1,eigVecB,Sc_n_1);
@@ -207,9 +115,15 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 	// Bmax = max(Bmax,B3);
 	// stateNew->lambdaNMax = sqrt(Bmax);
 
-	stateNew->lambdaNMax = sqrt(v_max(eigValB,&index));
+	//stateNew->lambdaNMax = exp(v_max(eigValB,&index));
+	double lambda1 = exp(eigValB->ve[0]);
+	double lambda2 = exp(eigValB->ve[1]);
+	double lambda3 = exp(eigValB->ve[2]);
 
-	m_copy(stateNew->Bbar,stateOld->Bbar);
+	stateNew->lambdaNMax = max(lambda1,lambda2);
+	stateNew->lambdaNMax = max(stateNew->lambdaNMax,lambda3);
+
+	m_copy(stateNew->ep_n,stateOld->ep_n);
 	stateOld->lambdaNMax = stateNew->lambdaNMax;
 
 

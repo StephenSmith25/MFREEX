@@ -17,7 +17,7 @@ trueStress_E = M(:,4);
 nominalStress_E = trueStress_E./trueStrain_E;
 plot(nominalStrain_E,trueStress_E,'b+')
 
-
+% 
 % M = csvread('./BiaxialData/simul_sr16_t105_4x4.txt');
 % nominalStrain_E = M(:,3);
 % trueStrain_E = M(:,2);
