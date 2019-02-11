@@ -5,7 +5,7 @@ close all;
 
 %% RADII
 
-//
+% bot diameter
 DIN_BOT = 13.97;
 DOUT_BOT = 22.50;
 
@@ -33,6 +33,7 @@ TOTAL_LENGTH = 97.18;
 NUM_NODES_THICKNESS = 3;
 
 
+
 %% LENGTHS
 % middle
 L_m = TOTAL_LENGTH -37.31-11.25;
@@ -55,8 +56,10 @@ Dout_t = DOUT_TOP;
 
 
 %% NUMBER OF NODES
-N1 = 70;
-N2 = 35;
+N1_a = 50
+N1_b = 30;
+N1 = N1_a + N1_b;
+N2 = 30;
 ntheta = 20;
 
 
@@ -80,8 +83,10 @@ N4 = 4;
 N5 = 5;
 % Left wall
 %% traction nodes
-nodes(count:1:count+N1-1,:) = [linspace(Din_b/2,Din_b/2,N1)',linspace(0,L_m-0.5,N1)'];
-count = count + N1 ;
+nodes(count:1:count+N1_a-1,:) = [linspace(Din_b/2,Din_b/2,N1_a)',linspace(0,(5/6)*L_m,N1_a)'];
+count = count + N1_a;
+nodes(count:1:count+N1_b-1,:) = [linspace(Din_b/2,Din_b/2,N1_b)',linspace((5/6)*L_m,L_m,N1_b)'];
+count = count + N1_b;
 nodes(count:1:count+N2-1,:) = [linspace(Din_b/2,Din_t/2,N2)',linspace(L_m,L_t+L_m,N2)'];
 count = count + N2;
 nodes(count:1:count+N3-1,:) = [linspace(Din_t/2,Din_t/2,N3)',linspace(L_m+L_t,L_t+L_m+L_t1,N3)'];
@@ -160,8 +165,10 @@ end
 
 % Left wall
 %% traction nodes
-nodes1(count:1:count+N1-1,:) = [linspace(Din_b/2,Din_b/2,N1)',linspace(0,L_m-0.5,N1)'];
-count = count + N1 ;
+%% traction nodes
+nodes(count:1:count+N1_a-1,:) = [linspace(Din_b/2,Din_b/2,N1_a)',linspace(0,(5/6)*L_m,N1_a)'];
+count = count + N1_a;
+nodes(count:1:count+N1_b-1,:) = [linspace(Din_b/2,Din_b/2,N1_b)',linspace((5/6)*L_m,L_m,N1_b)'];
 nodes1(count:1:count+N2-1,:) = [linspace(Din_b/2,Din_t/2,N2)',linspace(L_m,L_t+L_m,N2)'];
 count = count + N2;
 nodes1(count:1:count+N3-1,:) = [linspace(Din_t/2,Din_t/2,N3)',linspace(L_m+L_t,L_t+L_m+L_t1-0.5,N3)'];

@@ -31,14 +31,14 @@ const int PLASTIC_MATERIAL = 0;
 // deformaton
 const int SR = 4;
 const double TEMPERATURE = 85;
-char * DEFORMATION_MODE = "BIAXIAL";
+char * DEFORMATION_MODE = "SIMPLE_SHEAR";
 const int DIM = 3;
 const int IS_AXI = 0;
 
 // time step
 const double DT = 1e-5;
 const double TMAX = 10;
-const double PEAK_STRAIN = 3;
+const double PEAK_STRAIN = 5;
 
 
 int main(void)
@@ -58,7 +58,7 @@ int main(void)
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
 	matParams->ve[9] = 1.8e9; // Kb
-	matParams->ve[10] = 6e7;// Gb
+	matParams->ve[10] = 6e8;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
 	matParams->ve[14] = 0.001;// eta_c

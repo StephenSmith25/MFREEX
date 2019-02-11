@@ -35,18 +35,15 @@ const char * MATERIAL = "BUCKLEY";
 const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
-// Meshing
-const char opt[20] = "pYDq25a0.5";
-
 
 // time step parameters
 const double TMAX = 0.4;
 double delta_t = 4e-7;
 
 // Meshfree parameters
-const double dmax = 2;
+const double dmax = 3;
 const int is_stabalised = 0;
-const int is_constant_support_size = 1;
+const int is_constant_support_size = 0;
 
 
 const int WRITE_FREQ = 1000;
@@ -375,7 +372,7 @@ int main(int argc, char** argv) {
 	eb1->dofFixed = 3;
 	getBoundary(&eb1->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,5);
 	//iv_addNode(eb1->nodes,traction_nodes->ive[0],'s');
-	iv_addNode(eb1->nodes,traction_nodes->ive[traction_nodes->max_dim -1  ],'s');
+	//iv_addNode(eb1->nodes,traction_nodes->ive[traction_nodes->max_dim -1  ],'s');
 
 	int num_nodes_eb1 = eb1->nodes->max_dim;
 	setUpBC(eb1,inv_nodal_mass,&mfree);
@@ -706,11 +703,10 @@ int main(int argc, char** argv) {
 		pre_n_1 = ((P0*(volume - volumeInitial) + 1000*massAir*rLine*tLine)/(volume+vDead));
 
 		/*  Update pressure load */
+		update_pressure_boundary(pB, updatedNodes);
 
-		if ( n % 500 == 0)
-		{
-			update_pressure_boundary(pB, updatedNodes);
-		}
+
+
 		assemble_pressure_load(Fext_n_1, pre_n_1, pB);
 
 		/* ------------------------------------------*/

@@ -56,7 +56,9 @@ Dout_t = DOUT_TOP;
 
 
 %% NUMBER OF NODES
-N1 = 70;
+N1_a = 50;
+N1_b = 14;
+N1 = N1_a + N1_b;
 N2 = 30;
 ntheta = 20;
 
@@ -81,8 +83,10 @@ N4 = 4;
 N5 = 5;
 % Left wall
 %% traction nodes
-nodes(count:1:count+N1-1,:) = [linspace(Din_b/2,Din_b/2,N1)',linspace(0,L_m-0.5,N1)'];
-count = count + N1 ;
+nodes(count:1:count+N1_a-1,:) = [linspace(Din_b/2,Din_b/2,N1_a)',linspace(0,(5/6)*L_m,N1_a)'];
+count = count + N1_a;
+nodes(count:1:count+N1_b-1,:) = [linspace(Din_b/2,Din_b/2,N1_b)',linspace((5/6)*L_m,L_m,N1_b)'];
+count = count + N1_b;
 nodes(count:1:count+N2-1,:) = [linspace(Din_b/2,Din_t/2,N2)',linspace(L_m,L_t+L_m,N2)'];
 count = count + N2;
 nodes(count:1:count+N3-1,:) = [linspace(Din_t/2,Din_t/2,N3)',linspace(L_m+L_t,L_t+L_m+L_t1,N3)'];
@@ -128,8 +132,8 @@ nodes = nodes(ib,:);
 
 % boundary nodes
 boundaryNodes = linspace(1,length(nodes),length(nodes))';
-boundaryNodes(1:(ntheta + N1+N2)-1,2) = 2;
-boundaryNodes((ntheta+(N1+N2)):((ntheta+(N1+N2+(N3-1)-1+N3))+ N4-2),2) = 5;
+boundaryNodes(1:(ntheta + N1+N2 -4 ),2) = 2;
+boundaryNodes((ntheta+(N1+N2)-3):((ntheta+(N1+N2+(N3-3)-1+N3))+ N4-2),2) = 5;
 boundaryNodes(end:-1:end-(N5-2),2) = 4;
 
 %%  Geoemtric measures ( Change these for different geometries) 
@@ -161,8 +165,10 @@ end
 
 % Left wall
 %% traction nodes
-nodes1(count:1:count+N1-1,:) = [linspace(Din_b/2,Din_b/2,N1)',linspace(0,L_m-0.5,N1)'];
-count = count + N1 ;
+nodes1(count:1:count+N1_a-1,:) = [linspace(Din_b/2,Din_b/2,N1_a)',linspace(0,(5/6)*L_m,N1_a)'];
+count = count + N1_a;
+nodes1(count:1:count+N1_b-1,:) = [linspace(Din_b/2,Din_b/2,N1_b)',linspace((5/6)*L_m,L_m,N1_b)'];
+count = count+N1_b;
 nodes1(count:1:count+N2-1,:) = [linspace(Din_b/2,Din_t/2,N2)',linspace(L_m,L_t+L_m,N2)'];
 count = count + N2;
 nodes1(count:1:count+N3-1,:) = [linspace(Din_t/2,Din_t/2,N3)',linspace(L_m+L_t,L_t+L_m+L_t1-0.5,N3)'];
