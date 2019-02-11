@@ -1,7 +1,7 @@
 clear all
 close all
 
-PLOT_GRAPHS = true;
+PLOT_GRAPHS = false;
 
 path = './../../build/bin/preform/Displacement/';
 pathSR = './../../build/bin/preform/srRod/';

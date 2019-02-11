@@ -74,7 +74,9 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 		Ds = m_zero(Ds);
 	}
 
+	Ds = m_zero(Ds);
 
+	
 	// // //APPROACH 1 CASE 1
 	// // network rate of deformation tensor 
 	m_sub(stateNew->W,stateNew->Omega,relSpin);

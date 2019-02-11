@@ -58,7 +58,7 @@ int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * p
 		alpha_sig = ( Vs*tauOCT/(2*R*temperature) ) * exp ( -Vp * sigma_m/(R*temperature) ) / ( sinh ( Vs * tauOCT/(2*R*temperature)) ) ; 
 	}
 
-	alpha_sig = 1.00;
+
 
 	// alpha_s
 	double alpha_s = exp ( Cv / ( temperature - vogel_T) - Cv / ( star_T - vogel_T) );	
