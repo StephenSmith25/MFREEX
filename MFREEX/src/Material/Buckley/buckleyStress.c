@@ -84,7 +84,7 @@ buckleyStress(state_variables * stateNew,
 			stateNew->critLambdaBar =lambdaCrit(stateOld->critLambdaBar,stateNew,
 				matParams, stateNew->temperature, dt);
 
-			//stateNew->critLambdaBar = 2.7;
+			stateNew->critLambdaBar = 2.7;
 
 			/* ------------------------------------------*/
 			/* ------------- --Update Stress--------------*/
