@@ -29,9 +29,15 @@ const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
 // deformaton
+<<<<<<< HEAD
 const int SR = 4;
 const double TEMPERATURE = 85;
 char * DEFORMATION_MODE = "SIMPLE_SHEAR";
+=======
+const int SR = 16;
+const double TEMPERATURE = 105;
+char * DEFORMATION_MODE = "BIAXIAL";
+>>>>>>> changing_conformational_algorithm
 const int DIM = 3;
 const int IS_AXI = 0;
 
@@ -58,7 +64,7 @@ int main(void)
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
 	matParams->ve[9] = 1.8e9; // Kb
-	matParams->ve[10] = 6e8;// Gb
+	matParams->ve[10] = 1e7;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
 	matParams->ve[14] = 0.001;// eta_c

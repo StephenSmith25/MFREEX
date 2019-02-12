@@ -148,7 +148,7 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			/* ------------------------------------------*/
 
 
-			if ((i == 192) && (call_count % 100 == 0)) {
+			if ((i == 182) && (call_count % 100 == 0)) {
 
 
 				stateNew[i]->F->me[2][1] = t_n_1;
@@ -173,8 +173,8 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			/* -----------------Damping -----------------*/
 			/* ------------------------------------------*/
 
-			double b1 = 0.06;
-			double b2 = 1.44;
+			double b1 = 0.01;
+			double b2 = 1.2;
 			double Le = 2.42;
 			double Cd = 1400;
 			double div_v = stateNew[i]->div_v;

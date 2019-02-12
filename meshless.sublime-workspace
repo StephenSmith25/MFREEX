@@ -4,12 +4,472 @@
 		"selected_items":
 		[
 			[
+				"max",
+				"maxLambdaN\tdouble maxLambdaN"
+			],
+			[
+				"write",
+				"writeFreq\tint writeFreq"
+			],
+			[
+				"V",
+				"Vdot\tMAT * Vdot"
+			],
+			[
 				"state",
-				"stateNew"
+				"state_n_1"
+			],
+			[
+				"qv",
+				"qv\tdouble qv"
+			],
+			[
+				"div",
+				"div_v\tdouble div_v"
+			],
+			[
+				"V_",
+				"V_n_1\tMAT * V_n_1"
+			],
+			[
+				"l",
+				"lambda_1"
+			],
+			[
+				"B",
+				"B_sqr\tMAT * B_sqr"
+			],
+			[
+				"m",
+				"m_temp2\tMAT * m_temp2"
+			],
+			[
+				"stat",
+				"stateOld\tstate_variables * stateOld"
+			],
+			[
+				"la",
+				"lambda_3"
+			],
+			[
+				"lam",
+				"lambda_2"
+			],
+			[
+				"lamda",
+				"lambda_3"
+			],
+			[
+				"m_te",
+				"m_temp1\tMAT * m_temp1"
+			],
+			[
+				"b",
+				"B\tMAT * B"
+			],
+			[
+				"eig",
+				"eigValB\tVEC * eigValB"
+			],
+			[
+				"eigV",
+				"eigVecB\tMAT * eigVecB"
+			],
+			[
+				"Q",
+				"Q\tdouble [3][3] Q"
+			],
+			[
+				"A",
+				"A_in"
+			],
+			[
+				"h",
+				"h"
+			],
+			[
+				"src",
+				"src"
+			],
+			[
+				"l1",
+				"l1_eq_l3\tdouble l1_eq_l3"
+			],
+			[
+				"sym",
+				"symmeig_small\tint symmeig_small(const MAT *A, MAT *Q, VEC *Out)"
+			],
+			[
+				"tri",
+				"trieig\tVEC * trieig(VEC *a, VEC *b, MAT *Q)"
+			],
+			[
+				"l1_e",
+				"l1_eq_l3\tdouble l1_eq_l3"
+			],
+			[
+				"lq",
+				"l1_eq_l2\tdouble l1_eq_l2"
+			],
+			[
+				"to",
+				"TOL_IS_EQUAL"
+			],
+			[
+				"TOL",
+				"TOL_IS_EQUAL"
+			],
+			[
+				"TOLERANCE_IS",
+				"TOLERANCE_IS_COL_ZERO\tdouble TOLERANCE_IS_COL_ZERO"
+			],
+			[
+				"TOLERANCE_I",
+				"TOLERANCE_IS_B_ZERO\tdouble TOLERANCE_IS_B_ZERO"
+			],
+			[
+				"TOLERANCE_",
+				"TOLERANCE_IS_NORMAL\tdouble TOLERANCE_IS_NORMAL"
+			],
+			[
+				"TO",
+				"TOLERANCE_2\tdouble TOLERANCE_2"
+			],
+			[
+				"lamb",
+				"lambda_1\tdouble lambda_1"
+			],
+			[
+				"tol",
+				"TOLERANCE_2"
+			],
+			[
+				"symm",
+				"symmeig_small"
+			],
+			[
+				"A_",
+				"A_lambda3"
+			],
+			[
+				"A_lam",
+				"A_lambda2\tdouble [3][3] A_lambda2"
+			],
+			[
+				"n1",
+				"n1\tdouble [3][3] n1"
+			],
+			[
+				"ata",
+				"atan\tdouble atan(double __x)"
+			],
+			[
+				"lambda",
+				"lambda_1\tdouble lambda_1"
+			],
+			[
+				"atan",
+				"atan2\tdouble atan2(double __y, double __x)"
+			],
+			[
+				"vm_m",
+				"vm_mlt\tVEC * vm_mlt(const MAT *A, const VEC *x, VEC *out)"
+			],
+			[
+				"m_",
+				"m_temp4\tMAT * m_temp4"
+			],
+			[
+				"inter",
+				"intermediate1"
+			],
+			[
+				"m_tem",
+				"m_temp3\tMAT * m_temp3"
+			],
+			[
+				"w",
+				"W\tMAT * W"
+			],
+			[
+				"sig",
+				"sigplot\tdouble sigplot"
+			],
+			[
+				"defo",
+				"DEFORMATION_MODE\tchar * DEFORMATION_MODE"
+			],
+			[
+				"GRA",
+				"GRAD_U\tMAT * GRAD_U"
+			],
+			[
+				"delta",
+				"delta_t"
+			],
+			[
+				"is_a",
+				"is_AXI\tint is_AXI"
+			],
+			[
+				"new",
+				"new_material_state\tstate_variables ** new_material_state(double *temperatures, int num_nodes, int is_buckley, int is_plastic, int dim, int is_AXI)"
+			],
+			[
+				"m_temp",
+				"m_temp2\tMAT * m_temp2"
+			],
+			[
+				"is",
+				"is_plastic\tint is_plastic"
+			],
+			[
+				"temp",
+				"temperature"
+			],
+			[
+				"invF",
+				"invF_n_a"
+			],
+			[
+				"incre",
+				"incremental_deformation_gradient\tMAT * incremental_deformation_gradient(state_variables *stateNew, state_variables *stateOld, double alpha)"
+			],
+			[
+				"Deformation",
+				"Deformation/velocity_grad.h\t/home/stephen/Documents/Meshless/MFREEX/include"
+			],
+			[
+				"Gra",
+				"GRAD_U"
+			],
+			[
+				"state_",
+				"state_variables\tstate_variables"
+			],
+			[
+				"v_temp",
+				"v_temp3\tVEC * v_temp3"
+			],
+			[
+				"v_tem",
+				"v_temp1\tVEC * v_temp1"
+			],
+			[
+				"eb1",
+				"eb1_nodes\tIVEC * eb1_nodes"
+			],
+			[
+				"Fcon",
+				"Fcont_n_1\tVEC * Fcont_n_1"
+			],
+			[
+				"Fc",
+				"Fcont_n_1\tVEC * Fcont_n_1"
+			],
+			[
+				"dis",
+				"distanceProj"
+			],
+			[
+				"deltaT",
+				"deltaT"
+			],
+			[
+				"ri",
+				"rigidPlate"
+			],
+			[
+				"cont",
+				"contact_nodes\tIVEC * contact_nodes"
+			],
+			[
+				"cotac",
+				"contact_nodes_coords\tMAT * contact_nodes_coords"
+			],
+			[
+				"num_",
+				"NUM_NODES_R\tconst double NUM_NODES_R"
+			],
+			[
+				"num",
+				"NUM_NODES_R\tconst double NUM_NODES_R"
+			],
+			[
+				"rig",
+				"RIGID_PLATE_WIDTH\tconst double RIGID_PLATE_WIDTH"
+			],
+			[
+				"rigid",
+				"rigidPlate\tMAT * rigidPlate"
+			],
+			[
+				"vel",
+				"INITIAL_BAR_VELOCITY"
+			],
+			[
+				"the",
+				"theoretical_area\tconst double theoretical_area"
+			],
+			[
+				"PI",
+				"PI\tPI"
+			],
+			[
+				"bo",
+				"boundaryNodes_out"
+			],
+			[
+				"boundar",
+				"boundaryNodes_out\tint * boundaryNodes_out"
+			],
+			[
+				"bound",
+				"boundaryNodes_out\tint * boundaryNodes_out"
+			],
+			[
+				"boun",
+				"boundaryNodes_out\tint * boundaryNodes_out"
+			],
+			[
+				"Fe",
+				"Fext_n_1\tVEC * Fext_n_1"
+			],
+			[
+				"mater",
+				"materialParameters\tVEC * materialParameters"
+			],
+			[
+				"seg",
+				"segment_weights"
+			],
+			[
+				"nodal",
+				"nodalMarkers"
+			],
+			[
+				"po",
+				"pointmarkerlist\tint * pointmarkerlist"
+			],
+			[
+				"numberof",
+				"numberofpoints\tint numberofpoints"
+			],
+			[
+				"del",
+				"delta_ep_dev\tMAT * delta_ep_dev"
+			],
+			[
+				"de",
+				"delta_ep_dev\tMAT * delta_ep_dev"
+			],
+			[
+				"delt",
+				"delta_ep_dev"
+			],
+			[
+				"sigma",
+				"mSigma\tdouble mSigma"
 			],
 			[
 				"D",
-				"Ds\tMAT * Ds"
+				"D_b\tMAT * D_b"
+			],
+			[
+				"D_",
+				"D_b\tMAT * D_b"
+			],
+			[
+				"Sc",
+				"Sc_R\tMAT * Sc_R"
+			],
+			[
+				"SC",
+				"Sc_R\tMAT * Sc_R"
+			],
+			[
+				"eij",
+				"eij_sij"
+			],
+			[
+				"mu",
+				"mu_0\tdouble mu_0"
+			],
+			[
+				"true",
+				"true_strain\tMAT * true_strain"
+			],
+			[
+				"tr",
+				"true_strain\tMAT * true_strain"
+			],
+			[
+				"delta_",
+				"delta_ep_true"
+			],
+			[
+				"in",
+				"intermediate2\tMAT * intermediate2"
+			],
+			[
+				"int",
+				"intermediate2\tMAT * intermediate2"
+			],
+			[
+				"dt",
+				"dt"
+			],
+			[
+				"Sb_",
+				"Sb_n_1"
+			],
+			[
+				"log",
+				"log2sr"
+			],
+			[
+				"gam",
+				"gamma_n_1"
+			],
+			[
+				"lambd",
+				"lambdaDot\tVEC * lambdaDot"
+			],
+			[
+				"ind",
+				"indx_2\tint indx_2"
+			],
+			[
+				"n",
+				"n"
+			],
+			[
+				"MAX_D",
+				"MAX_D1_D2\tdouble MAX_D1_D2"
+			],
+			[
+				"dim",
+				"dim\tint dim"
+			],
+			[
+				"C11",
+				"C11"
+			],
+			[
+				"m_invers",
+				"m_inverse_small\tMAT * m_inverse_small(MAT *A, MAT *out)"
+			],
+			[
+				"m_f",
+				"m_foutput\tvoid m_foutput(FILE *fp, const MAT *A)"
+			],
+			[
+				"CH",
+				"CHsolve\tVEC * CHsolve(const MAT *A, const VEC *b, VEC *x)"
+			],
+			[
+				"Ch",
+				"CHfactor\tMAT * CHfactor(MAT *A)"
 			],
 			[
 				"eigVal",
@@ -48,472 +508,12 @@
 				"intermediate1\tMAT * intermediate1"
 			],
 			[
-				"int",
-				"intermediate1"
-			],
-			[
-				"inter",
-				"intermediate2\tMAT * intermediate2"
-			],
-			[
 				"L",
 				"Lbar\tMAT * Lbar"
 			],
 			[
-				"B",
-				"Bbar\tMAT * Bbar"
-			],
-			[
 				"Sb",
 				"Sb_n_1"
-			],
-			[
-				"Fbar",
-				"Fbardot\tMAT * Fbardot"
-			],
-			[
-				"Fb",
-				"Fbardot\tMAT * Fbardot"
-			],
-			[
-				"max",
-				"maxStrain\tdouble maxStrain"
-			],
-			[
-				"invF",
-				"invFbar\tMAT * invFbar"
-			],
-			[
-				"stress",
-				"stressVoigt\tVEC * stressVoigt"
-			],
-			[
-				"matPar",
-				"materialParameters"
-			],
-			[
-				"axi",
-				"is_AXI\tint is_AXI"
-			],
-			[
-				"shape",
-				"shape_function_container\tshape_function_container"
-			],
-			[
-				"lam",
-				"lambda_max\tdouble lambda_max"
-			],
-			[
-				"num_nu",
-				"num_neighbours_J\tdouble num_neighbours_J"
-			],
-			[
-				"s11",
-				"S11_hyd\tdouble S11_hyd"
-			],
-			[
-				"Ja",
-				"jacobian\tdouble jacobian"
-			],
-			[
-				"s33",
-				"S33_hyd\tdouble S33_hyd"
-			],
-			[
-				"S22",
-				"S22_hyd"
-			],
-			[
-				"S11",
-				"S11_hyd\tdouble S11_hyd"
-			],
-			[
-				"eb",
-				"eb1\tEBC * eb1"
-			],
-			[
-				"TR",
-				"TRANS_B\tchar TRANS_B"
-			],
-			[
-				"nodal",
-				"nodal_mass\tVEC * nodal_mass"
-			],
-			[
-				"cr",
-				"critLambdaBar\tdouble critLambdaBar"
-			],
-			[
-				"star",
-				"star_mu0"
-			],
-			[
-				"V",
-				"Vp"
-			],
-			[
-				"Vs",
-				"Vs"
-			],
-			[
-				"R",
-				"R"
-			],
-			[
-				"W",
-				"W\tMAT * W"
-			],
-			[
-				"Bn",
-				"BnCr\tMAT * BnCr"
-			],
-			[
-				"print",
-				"print_count"
-			],
-			[
-				"t_n",
-				"t_n_1"
-			],
-			[
-				"invM",
-				"invMass\tVEC * invMass"
-			],
-			[
-				"FI",
-				"FIXED_BOUNDARY\tBOUNDARY_TYPE FIXED_BOUNDARY"
-			],
-			[
-				"P",
-				"P_b2"
-			],
-			[
-				"delta",
-				"delta_F\tMAT * delta_F"
-			],
-			[
-				"Jaco",
-				"Jacobian"
-			],
-			[
-				"write",
-				"writeFreq\tint writeFreq"
-			],
-			[
-				"area",
-				"area_sum"
-			],
-			[
-				"neigh",
-				"neighbours_n2\tIVEC * neighbours_n2"
-			],
-			[
-				"in",
-				"index\tint index"
-			],
-			[
-				"check",
-				"checkPoint\tint checkPoint"
-			],
-			[
-				"pre_n",
-				"pre_n_1\tdouble pre_n_1"
-			],
-			[
-				"delt",
-				"delta_t"
-			],
-			[
-				"stat",
-				"state_n\tstate_Buckley ** state_n"
-			],
-			[
-				"scn",
-				"_scni_obj\tSCNI_OBJ * _scni_obj"
-			],
-			[
-				"seg",
-				"seg_length"
-			],
-			[
-				"Fext",
-				"Fext_n_1\tVEC * Fext_n_1"
-			],
-			[
-				"pre",
-				"pre_n\tdouble pre_n"
-			],
-			[
-				"Fex",
-				"Fext_n_1\tVEC * Fext_n_1"
-			],
-			[
-				"upda",
-				"updatedNodes\tMAT * updatedNodes"
-			],
-			[
-				"tractio",
-				"traction_nodes\tIVEC * traction_nodes"
-			],
-			[
-				"num",
-				"num_neighbours_n2\tint num_neighbours_n2"
-			],
-			[
-				"nei",
-				"neighbours_n2\tIVEC * neighbours_n2"
-			],
-			[
-				"sf",
-				"sf_list\tshape_function ** sf_list"
-			],
-			[
-				"contact",
-				"contact_nodes_coords"
-			],
-			[
-				"stretc",
-				"STRETCHROD_VELOCITY\tdouble STRETCHROD_VELOCITY"
-			],
-			[
-				"update",
-				"Update_Stretch_Rod\tint Update_Stretch_Rod(Rigid_Body *sr, const double velocity, const double dt)"
-			],
-			[
-				"Rig",
-				"Rigid_Body\tRigid_Body"
-			],
-			[
-				"Rigi",
-				"Rigid_Body"
-			],
-			[
-				"ci",
-				"critLambdaBar"
-			],
-			[
-				"sta",
-				"stateNew"
-			],
-			[
-				"mat",
-				"matParams"
-			],
-			[
-				"is",
-				"is_axi"
-			],
-			[
-				"J",
-				"Jacobian"
-			],
-			[
-				"delta_ep_",
-				"delta_ep_true\tMAT * delta_ep_true"
-			],
-			[
-				"delta_ep",
-				"delta_ep_vol"
-			],
-			[
-				"delta_cau",
-				"delta_cauchy_hyd"
-			],
-			[
-				"h",
-				"hyd_Stress\tMAT * hyd_Stress"
-			],
-			[
-				"cau",
-				"cauchy_hyd"
-			],
-			[
-				"Jac",
-				"Jacobian_n_1\tdouble Jacobian_n_1"
-			],
-			[
-				"stres",
-				"stress_cauchy_hyd\tMAT * stress_cauchy_hyd"
-			],
-			[
-				"Jacobian_",
-				"Jacobian_n_1"
-			],
-			[
-				"svd",
-				"svd\tVEC * svd(MAT *A, MAT *U, MAT *V, VEC *out)"
-			],
-			[
-				"m",
-				"me\tdouble ** me"
-			],
-			[
-				"Defor",
-				"Deformation/poldec.h\t/home/stephen/Documents/Meshless/MFREEX/include"
-			],
-			[
-				"Sc",
-				"Sc_n_1p\tVEC * Sc_n_1p"
-			],
-			[
-				"div",
-				"div_v\tdouble div_v"
-			],
-			[
-				"m_get",
-				"m_get_vars\tint m_get_vars(int m, int n, ...)"
-			],
-			[
-				"dim_",
-				"dim_s\tint dim_s"
-			],
-			[
-				"veloc",
-				"velocity_grad\tint velocity_grad(MAT *L, MAT *D, MAT *W, MAT *Fdot, MAT *invF)"
-			],
-			[
-				"Deformato",
-				"Deformation/velocity_grad.h\t/home/stephen/Documents/Meshless/MFREEX/include"
-			],
-			[
-				"Deformation",
-				"Deformation/velocity_grad.h\t/home/stephen/Documents/Meshless/MFREEX/include"
-			],
-			[
-				"ve",
-				"VELOCITY_GRAD_h_"
-			],
-			[
-				"nu",
-				"num_nodes\tint num_nodes"
-			],
-			[
-				"cell",
-				"cell_sf_index\tIVEC * cell_sf_index"
-			],
-			[
-				"sfI",
-				"cell_sf_index\tIVEC * cell_sf_index"
-			],
-			[
-				"find",
-				"findInt\tint findInt(int a, int *b, int size_b)"
-			],
-			[
-				"dim",
-				"dim_B"
-			],
-			[
-				"numB",
-				"numB3"
-			],
-			[
-				"Mat",
-				"matParams"
-			],
-			[
-				"mfre",
-				"meshfreeDomain\tmeshfreeDomain"
-			],
-			[
-				"Bounda",
-				"Boundary/Traction/Pressure/new_pressure_load.h\t/home/stephen/Documents/Meshless/MFREEX/include"
-			],
-			[
-				"trac",
-				"traction_nodes"
-			],
-			[
-				"s",
-				"scni\tMSCNI ** scni"
-			],
-			[
-				"st",
-				"stabalised_B\tMAT ** stabalised_B"
-			],
-			[
-				"stab",
-				"stabalised_B"
-			],
-			[
-				"mscn",
-				"mscni_obj\tMSCNI_OBJ * mscni_obj"
-			],
-			[
-				"msc",
-				"mscni_obj\tMSCNI_OBJ * mscni_obj"
-			],
-			[
-				"MSC",
-				"MSCNI_OBJ\tMSCNI_OBJ"
-			],
-			[
-				"sv",
-				"svk_params\tVEC * svk_params"
-			],
-			[
-				"num_cell",
-				"num_cell_verticies\tint num_cell_verticies"
-			],
-			[
-				"SC",
-				"SCNI_OBJ"
-			],
-			[
-				"celL",
-				"cell_sf_index\tIVEC * cell_sf_index"
-			],
-			[
-				"bI_n",
-				"bI_n_test\tMAT * bI_n_test"
-			],
-			[
-				"B_i",
-				"bI_test\tMAT * bI_test"
-			],
-			[
-				"num_ce",
-				"num_cells\tint num_cells"
-			],
-			[
-				"a",
-				"area\tdouble area"
-			],
-			[
-				"mltad",
-				"ms_mltadd\tMAT * ms_mltadd(MAT *A, MAT *B, double s, MAT *out)"
-			],
-			[
-				"len",
-				"length_index"
-			],
-			[
-				"staba",
-				"stabalised_volumes"
-			],
-			[
-				"tri",
-				"tri_index\tint [3] tri_index"
-			],
-			[
-				"nuM_",
-				"num_cell_verticies\tint num_cell_verticies"
-			],
-			[
-				"vor",
-				"voronoi\tvoronoi_diagram * voronoi"
-			],
-			[
-				"vo",
-				"voronoi\tvoronoi_diagram * voronoi"
-			],
-			[
-				"delta_t",
-				"delta_t_min\tdouble delta_t_min"
-			],
-			[
-				"delta_t_min",
-				"delta_t_min_i\tdouble delta_t_min_i"
 			]
 		]
 	},
@@ -523,25 +523,24 @@
 			"file": "problems/preform/preform.c",
 			"settings":
 			{
-				"buffer_size": 25872,
+				"buffer_size": 25431,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "problems/Biaxial/biaxial.c",
+			"file": "MFREEX/src/Force/Internal/internalForce_Inelastic.c",
 			"settings":
 			{
-				"buffer_size": 4109,
-				"encoding": "UTF-8",
+				"buffer_size": 6560,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "MFREEX/src/Deformation/velocity_grad.c",
+			"file": "problems/preform/CMakeLists.txt",
 			"settings":
 			{
-				"buffer_size": 2165,
+				"buffer_size": 1565,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -550,25 +549,31 @@
 			"file": "MFREEX/src/Material/Buckley/gamma.c",
 			"settings":
 			{
-				"buffer_size": 2195,
-				"encoding": "UTF-8",
+				"buffer_size": 2486,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "MFREEX/src/Material/Buckley/buckleyStress.c",
+			"file": "MFREEX/include/PostProcess/saveDisp.h",
 			"settings":
 			{
-				"buffer_size": 6663,
-				"encoding": "UTF-8",
+				"buffer_size": 280,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "MFREEX/src/Material/Buckley/lambdaCrit.c",
+			"file": "MFREEX/src/Material/Buckley/edwardsVilgis.c",
 			"settings":
 			{
-				"buffer_size": 1956,
+				"buffer_size": 1812,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "problems/Biaxial/biaxial.c",
+			"settings":
+			{
+				"buffer_size": 7609,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -577,34 +582,7 @@
 			"file": "MFREEX/src/Material/Buckley/buckleyBond.c",
 			"settings":
 			{
-				"buffer_size": 2942,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "MFREEX/src/Material/Buckley/buckleyConf.c",
-			"settings":
-			{
-				"buffer_size": 3635,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "MFREEX/include/Material/material.h",
-			"settings":
-			{
-				"buffer_size": 1110,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "MFREEX/src/Material/Buckley/new_Buckley_State.c",
-			"settings":
-			{
-				"buffer_size": 1987,
+				"buffer_size": 3464,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -800,24 +778,7 @@
 	[
 		"/home/stephen/Documents/Meshless",
 		"/home/stephen/Documents/Meshless/MFREEX",
-		"/home/stephen/Documents/Meshless/MFREEX/include",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Boundary/Displacement",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Boundary/Traction",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Boundary/Traction/Pressure",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Deformation",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Force",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Force/Internal",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Integration",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Material",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Material/Buckley",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Material/Hyperelastic",
 		"/home/stephen/Documents/Meshless/MFREEX/src",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Bmat",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/Displacement",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/Traction",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/Traction/Cavity",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/Traction/Pressure",
 		"/home/stephen/Documents/Meshless/MFREEX/src/Deformation",
 		"/home/stephen/Documents/Meshless/MFREEX/src/Force",
 		"/home/stephen/Documents/Meshless/MFREEX/src/Force/Internal",
@@ -826,42 +787,129 @@
 		"/home/stephen/Documents/Meshless/MFREEX/src/Material",
 		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley",
 		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Hyperelastic",
+		"/home/stephen/Documents/Meshless/MFREEX/src/PostProcess",
 		"/home/stephen/Documents/Meshless/problems",
 		"/home/stephen/Documents/Meshless/problems/Biaxial",
-		"/home/stephen/Documents/Meshless/problems/beam",
-		"/home/stephen/Documents/Meshless/problems/beamUL",
+		"/home/stephen/Documents/Meshless/problems/arch",
 		"/home/stephen/Documents/Meshless/problems/preform"
 	],
 	"file_history":
 	[
+		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/buckleyConf.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/PostProcess/saveDisp.c",
+		"/home/stephen/Documents/set_up_remote.sh",
+		"/home/stephen/Documents/Meshless/problems/preform/run_hpc.sh",
+		"/home/stephen/Documents/Meshless/problems/preform/run.sh",
+		"/home/stephen/Documents/Meshless/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/problems/beam/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/python/preform/plot.py",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Force/Internal/internalForce_Inelastic.c",
+		"/home/stephen/Documents/Meshless/lib/Eigen/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/problems/Biaxial/biaxial.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Deformation/update_Polar_Decomposition.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/buckleyStress.c",
+		"/home/stephen/.bashrc",
+		"/home/stephen/Documents/Meshless/lib/Eigen/src/dsyevh3.c",
+		"/home/stephen/Documents/Meshless/lib/Eigen/include/dsyevh3.h",
+		"/home/stephen/Documents/Meshless/.clang_complete",
+		"/home/stephen/Documents/Meshless/MFREEX/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/problems/preform/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/lib/Meschach/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/lib/Eigen/include/dsyevq3.h",
+		"/home/stephen/Documents/Meshless/lib/util/src/symmeig_small.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Material/material.c",
+		"/home/stephen/Documents/Meshless/lib/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/problems/Biaxial/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/lib/Eigen/src/dsyevq3.c",
+		"/home/stephen/Documents/Meshless/lib/clipped_voronoi/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/lib/Eigen/src/dsytrd3.c",
+		"/home/stephen/Documents/Meshless/lib/Eigen/include/dsyevc3.h",
+		"/home/stephen/Documents/Meshless/lib/Eigen/src/dsyevc3.c",
+		"/home/stephen/Documents/Meshless/lib/Meschach/matrix.h",
+		"/home/stephen/Documents/Meshless/lib/Eigen/src/dsyevv3.c",
+		"/home/stephen/Documents/Meshless/lib/Eigen/include/dsytrd3.h",
+		"/home/stephen/Documents/Meshless/lib/Eigen/dsyevv3.c",
+		"/home/stephen/Documents/Meshless/problems/preform/preform.c",
+		"/home/stephen/Documents/3x3-C/Makefile",
+		"/home/stephen/Documents/Meshless/lib/Eigen/dsyevj3.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Integration/SCNI/scni_update_B.c",
+		"/home/stephen/Documents/Meshless/lib/3x3/Makefile",
+		"/home/stephen/Documents/Meshless/lib/3x3/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/lib/EigenValues/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/lib/Meschach/matop.c",
+		"/home/stephen/Documents/Meshless/lib/efsflib/lib/src/setDomain.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/buckleyBond.c",
+		"/home/stephen/Documents/Meshless/lib/Meschach/MACHINES/RS6000/machine.c",
+		"/home/stephen/Documents/Meshless/lib/Meschach/symmeig.c",
+		"/home/stephen/Documents/Meshless/lib/Meschach/hessen.c",
+		"/home/stephen/Documents/Meshless/lib/Meschach/arch/symmeig.c",
+		"/usr/include/x86_64-linux-gnu/bits/mathcalls.h",
+		"/home/stephen/Documents/Meshless/lib/util/include/symmeig_small.h",
+		"/home/stephen/Documents/Meshless/input/test.inp",
+		"/home/stephen/Documents/Meshless/lib/util/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/lib/Meschach/arch/matrix.h",
+		"/home/stephen/Documents/Meshless/lib/Meschach/meminfo.h",
+		"/home/stephen/Documents/Meshless/MFREEX/include/Material/material.h",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Deformation/velocity_grad.c",
+		"/home/stephen/Documents/Meshless/problems/taylor_bar/taylor_bar.c",
 		"/home/stephen/Documents/Meshless/MFREEX/include/Deformation/velocity_grad.h",
+		"/home/stephen/Documents/Meshless/lib/util/src/m_inverse_small.c",
+		"/home/stephen/Documents/Meshless/lib/util/include/m_inverse_small.h",
+		"/home/stephen/Documents/Meshless/MFREEX/include/Deformation/incremental_deformation_gradient.h",
 		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/lambdaCrit.c",
+		"/home/stephen/Documents/Meshless/MFREEX/include/Material/Buckley/lambdaCrit.h",
+		"/home/stephen/Documents/Meshless/MFREEX/include/Material/Buckley/gamma.h",
+		"/home/stephen/Documents/Meshless/MFREEX/include/Deformation/update_Polar_Decomposition.h",
+		"/home/stephen/Documents/Meshless/problems/tube/tube.c",
+		"/home/stephen/Documents/Meshless/problems/Cylinder/cylinder.c",
+		"/home/stephen/Documents/Meshless/MFREEX/include/Force/Internal/internalForce_Inelastic.h",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Force/Internal/internalForce_hyperelastic.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Force/Internal/internalForce_Buckley.c",
+		"/home/stephen/Documents/Meshless/MFREEX/include/Material/Buckley/buckleyConf.h",
+		"/home/stephen/Documents/Meshless/MFREEX/include/Material/Buckley/buckleyStress.h",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/gamma.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Deformation/incremental_deformation_gradient.c",
+		"/home/stephen/Documents/Meshless/MFREEX/include/Material/Buckley/buckleyBond.h",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/new_Buckley_State.c",
+		"/home/stephen/Documents/Meshless/MFREEX/include/Deformation/rotate_tensor.h",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Deformation/rotate_tensor.c",
+		"/home/stephen/Documents/Meshless/MFREEX/include/Force/Internal/internalForce_Buckley.h",
+		"/home/stephen/Documents/Meshless/problems/Cylinder/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/problems/taylor_bar/CMakeLists.txt",
+		"/home/stephen/Documents/Meshless/lib/util/src/meshgrid.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/Contact/contactDetection.c",
+		"/home/stephen/Documents/Meshless/build/bin/taylor_bar/run.sh",
+		"/home/stephen/Documents/Meshless/MFREEX/include/Boundary/Contact/contactDetection.h",
+		"/home/stephen/Documents/Meshless/lib/util/include/meshgrid.h",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Integration/SCNI/generate_scni.c",
+		"/home/stephen/Documents/Meshless/lib/clipped_voronoi/lib/src/generate_voronoi.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/Traction/Pressure/pressure_load.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Hyperelastic/mooneyRivlin.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Hyperelastic/cubicRivlin.c",
+		"/home/stephen/Documents/Meshless/MFREEX/include/Boundary/Traction/Pressure/pressure_load.h",
+		"/home/stephen/Documents/Meshless/build/bin/cylinder/run.sh",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/Displacement/enforceBC.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/Displacement/setUpBC.c",
+		"/home/stephen/Documents/Meshless/MFREEX/include/Boundary/Displacement/setUpBC.h",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/edwardsVilgis.c",
+		"/home/stephen/Documents/Meshless/lib/triangulate/src/trigen.c",
+		"/home/stephen/Documents/Meshless/MFREEX/include/Material/Buckley/edwardsVilgis.h",
+		"/home/stephen/Documents/Meshless/lib/util/src/contraction.c",
+		"/home/stephen/Documents/software/Meshfree/Problems/preform/preform.c",
+		"/home/stephen/Documents/Meshless/lib/Meschach/arch/vecop.c",
+		"/home/stephen/Documents/Meshless/lib/Meschach/arch/chfactor.c",
+		"/home/stephen/Documents/Meshless/lib/Meschach/arch/solve.c",
+		"/home/stephen/Documents/Meshless/lib/Meschach/arch/matrix2.h",
+		"/home/stephen/Documents/Meshless/MFREEX/include/Force/Internal/internalForce_hyperelastic.h",
+		"/home/stephen/Documents/Meshless/MFREEX/include/Force/Internal/internalForce_hyperelastic_S.h",
+		"/home/stephen/Documents/Meshless/lib/Meschach/arch/matop.c",
 		"/home/stephen/Documents/Meshless/MFREEX/src/Integration/defgrad.c",
 		"/home/stephen/Documents/Meshless/MFREEX/include/Integration/defgrad.h",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Force/Internal/internalForce_Buckley.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/buckleyStress.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/gamma.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/Traction/Pressure/pressure_load.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/Displacement/enforceBC.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/new_Buckley_State.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Integration/SCNI/generate_scni.c",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Material/Buckley/buckleyStress.h",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Material/Buckley/edwardsVilgis.h",
 		"/home/stephen/Documents/Meshless/lib/Meschach/lufactor.c",
-		"/home/stephen/Documents/Meshless/lib/Meschach/symmeig.c",
-		"/home/stephen/Documents/software/Meshfree/Problems/preform/preform.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Integration/SCNI/scni_update_B.c",
-		"/home/stephen/Documents/Meshless/lib/Meschach/arch/symmeig.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/buckleyConf.c",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Material/Buckley/buckleyBond.h",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/buckleyBond.c",
 		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Hyperelastic/yeoh.c",
 		"/home/stephen/Documents/Meshless/lib/util/src/matmul.c",
 		"/home/stephen/Documents/Meshless/problems/beam/beam.c",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Force/Internal/internalForce_hyperelastic.h",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Force/Internal/internalForce_hyperelastic.c",
 		"/home/stephen/Documents/Meshless/problems/beamUL/beam.c",
-		"/home/stephen/Documents/Meshless/problems/Biaxial/biaxial.c",
 		"/home/stephen/Documents/Meshless/MFREEX/src/Force/Internal/internalForce_hyperelastic_S.c",
 		"/home/stephen/Documents/Meshless/lib/util/include/matmul.h",
 		"/home/stephen/Documents/Meshless/build/bin/preform/run.sh",
@@ -872,96 +920,9 @@
 		"/home/stephen/Documents/Meshless/MFREEX/include/Material/Hyperelastic/hyperelastic_materials.h",
 		"/home/stephen/Documents/software/Meshfree/src/yeoh.c",
 		"/home/stephen/Documents/Meshless/MFREEX/include/Boundary/Displacement/enforceBC.h",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Boundary/Displacement/setUpBC.h",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/Displacement/setUpBC.c",
 		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/Displacement/essential_boundary.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Deformation/velocity_grad.c",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Force/Internal/internalForce_Buckley.h",
 		"/home/stephen/Documents/software/Meshfree/src/externalForce.c",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Boundary/Traction/Cavity/cavityVolume.h",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Boundary/Displacement/essential_boundary.h",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/Traction/Cavity/cavityVolume.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Bmat/generate_Bmat.c",
-		"/home/stephen/Documents/software/Meshfree/src/updateTraction.c",
-		"/home/stephen/Documents/Meshless/meshless.sublime-project",
-		"/home/stephen/Documents/Meshless/.clang_complete",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Boundary/Contact/contactDetection.h",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/Contact/contactDetection.c",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Boundary/Traction/Pressure/pressure_load.h",
-		"/home/stephen/Documents/Meshless/problems/preform/preform.c",
-		"/home/stephen/Documents/Meshless/lib/efsflib/lib/include/meshfree_structs.h",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Domain/Rigid/New_Rigid_Body.c",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Domain/Rigid/New_Rigid_Body.h",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Geometry/Location.h",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Geometry/node.h",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Domain/Rigid/Rigid_Body.h",
-		"/home/stephen/Documents/Meshless/problems/preform/Stretch_Rod.c",
-		"/home/stephen/Documents/Meshless/problems/preform/Stretch_Rod.h",
-		"/home/stephen/Documents/Meshless/problems/preform/Stretch_Rod.geom",
-		"/home/stephen/Documents/software/feature/src/cartvect.cpp",
-		"/home/stephen/Documents/software/feature/src/nodes.cpp",
-		"/home/stephen/Documents/software/feature/src/geometry.cpp",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Material/Buckley/new_Buckley_State.h",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Material/material.h",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Deformation/poldec.c",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Material/Buckley/gamma.h",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/edwardsVilgis.c",
-		"/home/stephen/Documents/Meshless/problems/Biaxial/CMakeLists.txt",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Material/Buckley/lambdaCrit.h",
-		"/home/stephen/Documents/Meshless/lib/Meschach/CMakeLists.txt",
-		"/home/stephen/Documents/Meshless/lib/Meschach/makefile",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Material/Buckley/buckleyConf.h",
-		"/home/stephen/Documents/Meshless/CMakeLists.txt",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Integration/gMat.h",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Integration/gMat.c",
-		"/home/stephen/Documents/Meshless/lib/Meschach/matop.c",
-		"/home/stephen/Documents/Meshless/lib/Meschach/matrix.h",
-		"/home/stephen/Documents/Meshless/lib/util/include/singular_value_decomposition.h",
-		"/home/stephen/Documents/Meshless/lib/util/src/singular_value_decomposition.c",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Deformation/poldec.h",
-		"/home/stephen/Documents/Meshless/lib/Meschach/svd.c",
-		"/home/stephen/Documents/Meshless/lib/Meschach/machine.h",
-		"/home/stephen/Documents/Meshless/lib/Meschach/machine.c",
-		"/home/stephen/Documents/Meshless/lib/Meschach/dmacheps.c",
-		"/home/stephen/Documents/Meshless/lib/util/src/svd.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/Traction/Cavity/flowRate.c",
-		"/home/stephen/Documents/Meshless/lib/util/include/m_inverse_small.h",
-		"/home/stephen/Documents/Meshless/lib/util/src/m_inverse_small.c",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Boundary/Traction/Pressure/new_pressure_load.h",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Integration/SCNI/generate_mscni.h",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Integration/SCNI/generate_scni.h",
-		"/home/stephen/Documents/Meshless/problems/Preform/CMakeLists.txt",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/Traction/Pressure/new_pressure_load.c",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Material/Buckley/new_Buckley.h",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/cavityVolume.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/iv_addNode.c",
-		"/home/stephen/Documents/software/Meshfree/src/setUpTraction.c",
-		"/home/stephen/Documents/Meshless/lib/triangulate/src/trigen.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Boundary/getBoundary.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/BC/getBoundary.c",
-		"/home/stephen/Documents/Meshless/MFREEX/include/BC/getBoundary.h",
-		"/home/stephen/Documents/software/Meshfree/src/getBoundary.c",
-		"/home/stephen/Documents/Meshless/build/bin/beam/run.sh",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Integration/SCNI/mscni_update_B.c",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Integration/SCNI/mscni_update_B.h",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Integration/SCNI/generate_mscni.c",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Force/Internal/internalForce_hyperelastic_S.h",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Integration/SCNI/mscni_update_b.c",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Integration/SCNI/scni_update_B.h",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Integration/gradient_stabilisation.h",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Integration/gradient_stabilisation.c",
-		"/home/stephen/Documents/Meshless/lib/clipped_voronoi/lib/include/generate_voronoi.h",
-		"/home/stephen/Documents/Meshless/lib/clipped_voronoi/lib/src/generate_voronoi.c",
-		"/home/stephen/Documents/Meshless/lib/efsflib/lib/src/mls_shapefunction.c",
-		"/home/stephen/Documents/Meshless/lib/clipped_voronoi/lib/src/clipVoronoi.c",
-		"/home/stephen/Documents/Meshless/problems/beamUL/CMakeLists.txt",
-		"/home/stephen/Documents/Meshless/lib/efsflib/lib/src/neighbours.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Hyperelastic/SVK.c",
-		"/home/stephen/Documents/Meshless/lib/efsflib/lib/include/v_outer_product.h",
-		"/home/stephen/Desktop/SVK.c",
-		"/home/stephen/Documents/Meshless/lib/clipped_voronoi/lib/src/callVoronoi.c",
-		"/home/stephen/Documents/Meshless/MFREEX/include/Bmat/generate_Bmat.h",
-		"/home/stephen/Documents/Meshless/.gitignore"
+		"/home/stephen/Documents/Meshless/MFREEX/include/Boundary/Traction/Cavity/cavityVolume.h"
 	],
 	"find":
 	{
@@ -979,6 +940,33 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"intel",
+			".o",
+			"repeat",
+			"m_fout",
+			"internalForce",
+			"pressure",
+			"m_fout",
+			"is_axi",
+			"deltaT",
+			"beam",
+			"nodalMarker",
+			"invF",
+			"stateNew->d",
+			"delta_V",
+			"stateNew->d",
+			"output",
+			"out",
+			"output",
+			"out",
+			"output",
+			"true_strain",
+			"free",
+			"stateNew->F",
+			"m_inverse",
+			"bar",
+			"inverse",
+			"peakst",
 			"statenew",
 			"L",
 			"critlam",
@@ -1079,25 +1067,7 @@
 			"builtin",
 			"points",
 			"auto",
-			"points",
-			"write",
-			"segmentlist",
-			"segment",
-			"refine",
-			"triangulateio",
-			"triangulate",
-			"REAL",
-			"return",
-			"node",
-			"dof",
-			"<class Element",
-			"cout",
-			"resize",
-			"computephider",
-			"amder",
-			"phidermatr",
-			"computephider",
-			"cout"
+			"points"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1105,6 +1075,7 @@
 		"regex": false,
 		"replace_history":
 		[
+			".c",
 			"h",
 			"biaxial",
 			"Fbardot",
@@ -1123,7 +1094,7 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 3,
 			"sheets":
 			[
 				{
@@ -1132,15 +1103,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 25872,
+						"buffer_size": 25431,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								6589,
-								6589
+								2482,
+								2482
 							]
 						],
 						"settings":
@@ -1149,27 +1120,27 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 4503.0,
+						"translation.y": 1056.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
 					"buffer": 1,
-					"file": "problems/Biaxial/biaxial.c",
+					"file": "MFREEX/src/Force/Internal/internalForce_Inelastic.c",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4109,
+						"buffer_size": 6560,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3851,
-								3851
+								5062,
+								5062
 							]
 						],
 						"settings":
@@ -1178,39 +1149,40 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2166.0,
+						"translation.y": 3964.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
 					"buffer": 2,
-					"file": "MFREEX/src/Deformation/velocity_grad.c",
+					"file": "problems/preform/CMakeLists.txt",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2165,
+						"buffer_size": 1565,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1669,
-								1669
+								1293,
+								1293
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"translate_tabs_to_spaces": false
+							"syntax": "Packages/CMake/CMake.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 171.0,
+						"translation.y": 198.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
@@ -1219,15 +1191,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2195,
+						"buffer_size": 2486,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1362,
-								1362
+								2325,
+								2325
 							]
 						],
 						"settings":
@@ -1235,86 +1207,85 @@
 							"syntax": "Packages/C++/C.sublime-syntax",
 							"translate_tabs_to_spaces": false
 						},
-						"translation.x": -0.0,
-						"translation.y": 969.0,
+						"translation.x": 0.0,
+						"translation.y": 1980.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "MFREEX/include/PostProcess/saveDisp.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 280,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								185,
+								185
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "MFREEX/src/Material/Buckley/edwardsVilgis.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1812,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 924.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
-					"file": "MFREEX/src/Material/Buckley/buckleyStress.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6663,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								5447,
-								5447
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 2964.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "MFREEX/src/Material/Buckley/lambdaCrit.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1956,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1956,
-								1956
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 627.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 7,
-					"type": "text"
-				},
-				{
 					"buffer": 6,
-					"file": "MFREEX/src/Material/Buckley/buckleyBond.c",
+					"file": "problems/Biaxial/biaxial.c",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2942,
+						"buffer_size": 7609,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								204,
-								204
+								1051,
+								1051
 							]
 						],
 						"settings":
@@ -1323,27 +1294,27 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 456.0,
+						"translation.y": 198.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
 					"buffer": 7,
-					"file": "MFREEX/src/Material/Buckley/buckleyConf.c",
+					"file": "MFREEX/src/Material/Buckley/buckleyBond.c",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3635,
+						"buffer_size": 3464,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2674,
-								2674
+								1292,
+								1292
 							]
 						],
 						"settings":
@@ -1352,68 +1323,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1539.0,
+						"translation.y": 726.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 8,
-					"file": "MFREEX/include/Material/material.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1110,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1082,
-								1082
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 798.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 8,
-					"type": "text"
-				},
-				{
-					"buffer": 9,
-					"file": "MFREEX/src/Material/Buckley/new_Buckley_State.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1987,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1937,
-								1937
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 684.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 9,
+					"stack_index": 7,
 					"type": "text"
 				}
 			]
@@ -1421,7 +1334,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 27.0
+		"height": 35.0
 	},
 	"input":
 	{
@@ -1524,7 +1437,7 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 445.0,
+	"side_bar_width": 444.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

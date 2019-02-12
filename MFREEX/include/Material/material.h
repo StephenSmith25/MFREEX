@@ -88,6 +88,7 @@ typedef struct state_variables
 	// Conformational branch network left cauchy green tensor
 	MAT * Bbar;
 	MAT * Dn;
+	MAT * ep_n;
 	// Network stretch
 	VEC * lambdaNBar;
 
