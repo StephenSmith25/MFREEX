@@ -51,17 +51,17 @@ double gammaV(state_variables * state, double maxLambdaN,double critLambda,
 	int index = 0;
 
 
-	//double maxSr = state->Vdot->me[2][2];
+	// //double maxSr = state->Vdot->me[2][2];
 
-	double V1,V2,V3 = 0;
-	V1 = state->Vdot->me[1][1];
-	V2 = state->Vdot->me[2][2];
+	// double V1,V2,V3 = 0;
+	// V1 = state->Vdot->me[1][1];
+	// V2 = state->Vdot->me[2][2];
 
-	double maxSr = max(V1,V2);
+	// double maxSr = max(V1,V2);
 
 
 
-	//double maxSr = v_max(state->lambdaDot,&index);
+	double maxSr = v_max(state->lambdaDot,&index);
 	if ( maxSr <= 0.01){
 		maxSr = 0.01; 
 	}
@@ -70,10 +70,12 @@ double gammaV(state_variables * state, double maxLambdaN,double critLambda,
 	double D1 = d->me[1][1];
 	double D2 = d->me[2][2];
 
-	// 
 
-	// D1 = d->me[0][0];
-	// D2 = d->me[1][1];
+	//D1 = d->me[0][0];
+	//D2 = d->me[1][1];
+
+
+
 	double theta = 0;
 	if ( D1 >= D2)
 	{
@@ -114,6 +116,8 @@ double gammaV(state_variables * state, double maxLambdaN,double critLambda,
 
 
 	double shiftTemperature = temperature * pow(10, ( ( shiftTSlope*log2sr ) / ( shiftTIntercept + log2sr) )* pow(expFactor,2-2*xi));
+	//shiftTemperature = temperature;
+
 	gamma0 = exp( Cs/(shiftTemperature - Tinf) - Cs/(starT - Tinf));
 	gamma0 = gamma0*refGamma;
 
@@ -121,9 +125,9 @@ double gammaV(state_variables * state, double maxLambdaN,double critLambda,
 	if ( maxLambdaN >= critLambda ){
 		gamma_n_1 = 1e30;
 	}else{
-		//gamma_n_1 = gamma0 * ( critLambda - 1) / ( critLambda - maxLambdaN);
+		gamma_n_1 = gamma0 * ( critLambda - 1) / ( critLambda - maxLambdaN);
 		// ( 1.000 - (maxLambdaN/critLambda)) ; 
-		gamma_n_1 = gamma0/( 1 - maxLambdaN/critLambda);
+		//gamma_n_1 = gamma0/( 1 - maxLambdaN/critLambda);
 	}
 
 

@@ -60,31 +60,14 @@ buckleyStress(state_variables * stateNew,
 			/* ----------Eigen value routines------------*/
 			/* ------------------------------------------*/
 
-			//Get priciple nominal strain rates 
-			// tracecatch(
-			// symmeig(stateNew->Vdot, stateNew->m_temp1, stateNew->lambdaDot);,
-			// "Eigen values of V in internalForce");
-
 
 			dsyevc3(stateNew->Vdot->me, stateNew->lambdaDot->ve);
-
-
-			//dsyevq3(stateNew->Dbar->me,stateNew->eigVecDBar->me,stateNew->eigValDBar->ve);
-
-// 			tracecatch(
-// 			symmeig(stateNew->Dbar,stateNew->eigVecDBar,stateNew->eigValDBar);,
-// 			"Eigen values of D in internalForce");
-			
-// 			PERM * order = px_get(dim);
-// 			stateNew->eigValDBar = v_sort(stateNew->eigValDBar, order);
-// 			px_free(order);
-
 
 			// update critical network stretch 
 			stateNew->critLambdaBar =lambdaCrit(stateOld->critLambdaBar,stateNew,
 				matParams, stateNew->temperature, dt);
 
-			stateNew->critLambdaBar = 2.7;
+			//stateNew->critLambdaBar = 2.7;
 
 			/* ------------------------------------------*/
 			/* ------------- --Update Stress--------------*/

@@ -29,13 +29,13 @@ double lambdaCrit(double critLambda_n, state_variables * state, VEC * para, doub
 
 
 
-	double V1,V2,V3 = 0;
+	// double V1,V2,V3 = 0;
 
-	V1 = state->Vdot->me[1][1];
-	V2 = state->Vdot->me[2][2];
+	// V1 = state->Vdot->me[1][1];
+	// V2 = state->Vdot->me[2][2];
 
-	double maxSr = max(V1,V2);
-	//double maxSr = v_max(state->lambdaDot,&index);
+	// double maxSr = max(V1,V2);
+	double maxSr = v_max(state->lambdaDot,&index);
 	if ( maxSr == 0){
 		maxSr = 0.01; 
 	}
@@ -93,7 +93,7 @@ double lambdaCrit(double critLambda_n, state_variables * state, VEC * para, doub
 
 	double shift_factor = pow(10,(C1*(maxSr-1)/(C2 + maxSr -1))*pow(beta,2-2*xi));
 	double shifted_temperature = temperature*shift_factor;
-
+	shifted_temperature = temperature;
 	double critLambda_a = k * shifted_temperature + b;
 
 
@@ -104,10 +104,6 @@ double lambdaCrit(double critLambda_n, state_variables * state, VEC * para, doub
 		// update the value
 		critLambda = critLambda_a; 
 	}
-
-
-
-	//critLambda = critLambda_a; 
 
 
 	return critLambda;
