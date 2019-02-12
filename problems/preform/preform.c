@@ -87,25 +87,25 @@ int main(int argc, char** argv) {
 	matParams->ve[15] = 1.8098e17;// Ns_c
 	matParams->ve[16] = 1.38e-17;// boltzmann constant kB
 	// slippage
-	// matParams->ve[17] = 100;// lambdaCrit
-	// matParams->ve[18] = 383.15;// Ts 
-	// matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
-	// matParams->ve[20] = 10612;// Cs 10612
-	// matParams->ve[21] = 95.48;// Tinf 95.48
-	// matParams->ve[22] = 0.1565;// C1
-	// matParams->ve[23] = 39.937;// C2
-	// matParams->ve[24] = 0.9878;// beta
-	// matParams->ve[25] = 0.33;// poissons ratio
-
 	matParams->ve[17] = 100;// lambdaCrit
 	matParams->ve[18] = 383.15;// Ts 
-	matParams->ve[19] = 0.359e6;// gamma0_ref = 0.653
-	matParams->ve[20] = 7307.8;// Cs 10612
-	matParams->ve[21] = 152.95;// Tinf 95.48
+	matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
+	matParams->ve[20] = 10612;// Cs 10612
+	matParams->ve[21] = 95.48;// Tinf 95.48
 	matParams->ve[22] = 0.1565;// C1
 	matParams->ve[23] = 39.937;// C2
 	matParams->ve[24] = 0.9878;// beta
 	matParams->ve[25] = 0.33;// poissons ratio
+
+	// matParams->ve[17] = 100;// lambdaCrit
+	// matParams->ve[18] = 383.15;// Ts 
+	// matParams->ve[19] = 0.359e6;// gamma0_ref = 0.653
+	// matParams->ve[20] = 7307.8;// Cs 10612
+	// matParams->ve[21] = 152.95;// Tinf 95.48
+	// matParams->ve[22] = 0.1565;// C1
+	// matParams->ve[23] = 39.937;// C2
+	// matParams->ve[24] = 0.9878;// beta
+	// matParams->ve[25] = 0.33;// poissons ratio
 
 
 	

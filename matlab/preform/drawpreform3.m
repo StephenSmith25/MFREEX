@@ -238,8 +238,6 @@ for i = 1:length(boundaryNodes)
     
 end
 
-nodes(:,3) = 97.45;
-
 
 %% write files
 dlmwrite('../../problems/preform/preform.nodes',[length(nodes),1],'delimiter',' ')
