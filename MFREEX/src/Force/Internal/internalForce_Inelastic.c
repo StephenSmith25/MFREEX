@@ -122,7 +122,8 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			m_inverse_small(stateNew[i]->F, stateNew[i]->invF);
 
 			// Find Jacobian at n+1
-			stateNew[i]->Jacobian = determinant(stateNew[i]->F);
+			stateNew[i]->Jacobian = stateOld[i]->Jacobian + stateOld[i]->Jacobian*stateNew[i]->div_v*DT;
+			//stateNew[i]->Jacobian = determinant(stateNew[i]->F);
 
 
 			//------------------------------------------//
@@ -148,7 +149,7 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			/* ------------------------------------------*/
 
 
-			if ((i == 181) && (call_count % 100 == 0)) {
+			if ((i == 150) && (call_count % 100 == 0)) {
 
 
 				stateNew[i]->F->me[2][1] = t_n_1;
@@ -173,8 +174,8 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			/* -----------------Damping -----------------*/
 			/* ------------------------------------------*/
 
-			double b1 = 0.01;
-			double b2 = 1.2;
+			double b1 = 0.06;
+			double b2 = 1.44;
 			double Le = 2.42;
 			double Cd = 1400;
 			double div_v = stateNew[i]->div_v;

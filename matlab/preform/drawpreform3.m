@@ -30,7 +30,7 @@ THICKNESS_TOP = (DOUT_TOP - DIN_TOP)/2;
 TOTAL_LENGTH = 97.18;
 
 % number of nodes through the thickness
-NUM_NODES_THICKNESS = 3;
+NUM_NODES_THICKNESS = 4;
 
 
 
@@ -56,12 +56,14 @@ Dout_t = DOUT_TOP;
 
 
 %% NUMBER OF NODES
-N1_a = 50;
-N1_b = 14;
+N1_a = 35;
+N1_b = 10;
 N1 = N1_a + N1_b;
-N2 = 30;
-ntheta = 20;
-
+N2 = 20;
+ntheta = 15;
+N3 = 5;
+N4 = 4;
+N5 = 5;
 
 
 
@@ -78,9 +80,7 @@ for i = 1:length(theta)
     
 end
 nodes;
-N3 = 5;
-N4 = 4;
-N5 = 5;
+
 % Left wall
 %% traction nodes
 nodes(count:1:count+N1_a-1,:) = [linspace(Din_b/2,Din_b/2,N1_a)',linspace(0,(5/6)*L_m,N1_a)'];
@@ -103,11 +103,10 @@ count = count + N3;
 nodes(count:1:count+N2-1,:) = [linspace(Dout_t/2,Dout_b/2,N2)',linspace(L_t+L_m,L_m,N2)'];
 count = count + N2;
 % right wall
-nodes(count:1:count+N1-1,:) = [linspace(Dout_b/2,Dout_b/2,N1)',linspace(L_m-0.5,0,N1)'];
-
-
-
-count = count + N1;
+nodes(count:1:count+N1_b-1,:) = [linspace(Dout_b/2,Dout_b/2,N1_b)',linspace(L_m,(5/6)*L_m,N1_b)'];
+count = count + N1_b;
+nodes(count:1:count+N1_a-1,:) = [linspace(Dout_b/2,Dout_b/2,N1_a)',linspace((5/6)*L_m,0,N1_a)'];
+count = count + N1_a;
 
 theta = linspace(0,-90,ntheta);
 

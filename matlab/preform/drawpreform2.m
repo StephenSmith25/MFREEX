@@ -104,11 +104,11 @@ nodes;
 %% traction nodes
 nodes(count:1:count+N7-1,:) = [linspace(Din_b/2,Din_b/2,N7)',linspace(height_bot,0,N7)'];
 count = count + N7;
-nodes(count:1:count+N1_a-1,:) = [linspace(Din_b/2,Din_b/2,N1_a)',linspace(0,(5/6)*L_m,N1_a)'];
+nodes(count:1:count+N1_a-1,:) = [linspace(Din_b/2,Din_m/2,N1_a)',linspace(0,(5/6)*L_m,N1_a)'];
 count = count + N1_a;
-nodes(count:1:count+N1_b-1,:) = [linspace(Din_b/2,Din_b/2,N1_b)',linspace((5/6)*L_m,L_m,N1_b)'];
+nodes(count:1:count+N1_b-1,:) = [linspace(Din_m/2,Din_m/2,N1_b)',linspace((5/6)*L_m,L_m,N1_b)'];
 count = count + N1_b;
-nodes(count:1:count+N2-1,:) = [linspace(Din_b/2,Din_t/2,N2)',linspace(L_m,L_t+L_m,N2)'];
+nodes(count:1:count+N2-1,:) = [linspace(Din_m/2,Din_t/2,N2)',linspace(L_m,L_t+L_m,N2)'];
 count = count + N2;
 nodes(count:1:count+N3-1,:) = [linspace(Din_t/2,Din_t/2,N3)',linspace(L_m+L_t,L_t+L_m+L_t1,N3)'];
 count = count + N3;
@@ -121,10 +121,10 @@ count = count + N4;
 % right wall
 nodes(count:1:count+N3-1,:) = [linspace(Dout_t/2,Dout_t/2,N3)',linspace(height,L_t+L_m,N3)'];
 count = count + N3;
-nodes(count:1:count+N2-1,:) = [linspace(Dout_t/2,Dout_b/2,N2)',linspace(L_t+L_m,L_m,N2)'];
+nodes(count:1:count+N2-1,:) = [linspace(Dout_t/2,Dout_m/2,N2)',linspace(L_t+L_m,L_m,N2)'];
 count = count + N2;
 % right wall
-nodes(count:1:count+N1-1,:) = [linspace(Dout_b/2,Dout_b/2,N1)',linspace(L_m,0,N1)'];
+nodes(count:1:count+N1-1,:) = [linspace(Dout_m/2,Dout_b/2,N1)',linspace(L_m,0,N1)'];
 count = count + N1;
 
 
@@ -182,7 +182,7 @@ Rin_bot = BOT_BOT_DIAMETER(i+1)/2;
 
 theta_max = asind((height_bot)/(Rin_bot));
 
-theta = linspace(-90,theta_max,ntheta);
+theta = linspace(-85,theta_max,ntheta);
 
 
 for i = 1:length(theta)
@@ -196,11 +196,11 @@ R_stop = Rin_bot*cosd(theta(end));
 %% traction nodes
 nodes1(count:1:count+N7-1,:) = [linspace(R_stop,Din_b/2,N7)',linspace(height,0,N7)'];
 count = count +N7;
-nodes1(count:1:count+N1_a-1,:) = [linspace(Din_b/2,Din_b/2,N1_a)',linspace(0,(5/6)*L_m,N1_a)'];
+nodes1(count:1:count+N1_a-1,:) = [linspace(Din_b/2,Din_m/2,N1_a)',linspace(0,(5/6)*L_m,N1_a)'];
 count = count + N1_a;
-nodes1(count:1:count+N1_b-1,:) = [linspace(Din_b/2,Din_b/2,N1_b)',linspace((5/6)*L_m,L_m,N1_b)'];
+nodes1(count:1:count+N1_b-1,:) = [linspace(Din_m/2,Din_m/2,N1_b)',linspace((5/6)*L_m,L_m,N1_b)'];
 count = count+N1_b;
-nodes1(count:1:count+N2-1,:) = [linspace(Din_b/2,Din_t/2,N2)',linspace(L_m,L_t+L_m,N2)'];
+nodes1(count:1:count+N2-1,:) = [linspace(Din_m/2,Din_t/2,N2)',linspace(L_m,L_t+L_m,N2)'];
 count = count + N2;
 nodes1(count:1:count+N3-1,:) = [linspace(Din_t/2,Din_t/2,N3)',linspace(L_m+L_t,L_t+L_m+L_t1-0.5,N3)'];
 count = count + N3;

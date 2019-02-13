@@ -93,7 +93,6 @@ double lambdaCrit(double critLambda_n, state_variables * state, VEC * para, doub
 
 	double shift_factor = pow(10,(C1*(maxSr-1)/(C2 + maxSr -1))*pow(beta,2-2*xi));
 	double shifted_temperature = temperature*shift_factor;
-	shifted_temperature = temperature;
 	double critLambda_a = k * shifted_temperature + b;
 
 

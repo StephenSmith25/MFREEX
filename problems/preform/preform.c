@@ -35,13 +35,14 @@ const char * MATERIAL = "BUCKLEY";
 const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
-
+//
+const double VELOCITY_ROD = -500;
 // time step parameters
 const double TMAX = 0.4;
 double delta_t = 4e-7;
 
 // Meshfree parameters
-const double dmax = 3;
+const double dmax = 3.5;
 const int is_stabalised = 0;
 const int is_constant_support_size = 1;
 
@@ -580,7 +581,8 @@ int main(int argc, char** argv) {
 
 	// stretch rod displacment 
 	double disp_rod = 0;
-
+	double disp_rod_n_1 = 0;
+	double disp_rod_n = 0;
 
 	// timing parameters
 	struct timeval start3, end3;
@@ -614,18 +616,19 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 		__zero__(Fcont_n_1->ve, num_dof);
 
-		if ( disp_rod < DISP_ROD_MAX){
+		if ( disp_rod_n < DISP_ROD_MAX){
 		/*  Update stretch rod */
 			double x = t_n_1*smoothstep(t_n_1,0.01,0);
 
-			disp_rod = a0*pow(x,7) + a1*pow(x,6) + a2*pow(x,5) + a3*pow(x,4) + a4*pow(x,3) + a5*pow(x,2) +
-			a6*pow(x,1) + a7;
-		
-			//disp_rod = vRod*t_n_1;
+			disp_rod_n_1 = a0*pow(x,7) + a1*pow(x,6) + a2*pow(x,5) + a3*pow(x,4) + a4*pow(x,3) + a5*pow(x,2) +a6*pow(x,1) + a7;
 
+			//disp_rod_n_1 = disp_rod_n +delta_t*smoothstep(t_n_1,0.001,0)*VELOCITY_ROD;
+	
+			//disp_rod = vRod*t_n_1;
 			for ( int i = 0 ; i < srNodes->m ; i++){
 	
-				srNodes->me[i][1] = srNodes_O->me[i][1] - disp_rod;
+				//srNodes->me[i][1] = srNodes_O->me[i][1] + disp_rod_n_1;
+				srNodes->me[i][1] = srNodes_O->me[i][1] - disp_rod_n_1;
 
 			}
 		}
@@ -767,72 +770,7 @@ int main(int argc, char** argv) {
 			v_n_1->ve[eb2->nodes->ive[i]*2] = 0;
 		}
 
-		// if ( n == 80000  || n == 90000)
-		// {	
-		// 	mfree.nodes = updatedNodes;
-		// 	int digits;
-		// 	if ( n < 10000){
-		// 		digits = 7;
-		// 	}else{
-		// 		digits = 7;
-		// 	}
-		// 	double fac = pow(10, digits);
 
-
-
-		// 	for ( int k = 0 ; k < num_dof ; k++)
-		// 	{
-		// 		double x = updatedNodes->base[k];
-  //   			updatedNodes->base[k] = round(x*fac)/fac;
-		// 	}
-	
-		// 	// setDomain(&mfree,constant_support_size, dmax);
-		// 	voronoi_diagram * vor_1 = generate_voronoi(updatedNodes->base, boundaryNodes, mfree.num_nodes, numBoundary, 2);
-
-		// 	//setDomain(&mfree,constant_support_size, dmax);
-
-		// 	scni_update_B(_scni_obj, disp_inc, vor_1, &mfree, is_AXI);
-
-		// 	v_copy(d_n_1,disp_r);
-
-		// 	FILE * fp;
-		// 	fp = fopen("cells1.txt","w");
-		// 	print_voronoi_diagram(fp,vor_1);
-		// 	fclose(fp);
-
-		// 	// for ( int i = 0 ; i < numB3 ; i++){
-		// 	// contact_nodes_coords->me[i][0] = mfree.nodes->me[eb3_nodes->ive[i]][0];
-		// 	// contact_nodes_coords->me[i][1] = mfree.nodes->me[eb3_nodes->ive[i]][1];
-
-		// 	// }
-
-		// 	// phi_contact = mls_shapefunction(contact_nodes_coords, 
-		// 	// "linear", "cubic", 2, 1, &mfree);
-
-		// 	// pB->sf_traction = mls_shapefunction(pB->coords, 
-		// 	// "linear", "cubic", 2, 1, &mfree);
-
-		// 	// free_voronoi_diagram(vor_1);
-
-		// 	// shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes, "linear", "cubic", 2, 1, &mfree);
-		// 	// m_zero(Lambda);
-
-		// 	// // u = Lambda * u_g
-		// 	// for ( int i = 0 ; i < mfree.num_nodes ; i++)
-		// 	// {
-		// 	// 	VEC * phi = sf_nodes->sf_list[i]->phi;
-		// 	// 	IVEC * neighbours  = sf_nodes->sf_list[i]->neighbours;
-		// 	// 	for ( int k = 0 ; k < neighbours->max_dim ; k++)
-		// 	// 	{
-		// 	// 		Lambda->me[2*i][2*neighbours->ive[k]] += phi->ve[k]; 
-		// 	// 		Lambda->me[2*i+1][2*neighbours->ive[k]+1] += phi->ve[k]; 
-		// 	// 	}
-		// 	// }
-		// 	// free_shapefunction_container(sf_nodes);
-
-
-
-		// }
 		/* ------------------------------------------*/
 		/* --------------Write outputs---------------*/
 		/* ------------------------------------------*/
@@ -892,6 +830,7 @@ int main(int argc, char** argv) {
 		//v_copy(v_n_1,v_n);
 		v_copy(a_n_1,a_n);
 		pre_n = pre_n_1;
+		disp_rod_n = disp_rod_n_1;
 		// update iteration counter
 		double t_min = 0;
 		n++	;
@@ -900,7 +839,7 @@ int main(int argc, char** argv) {
 
 		if ( n % WRITE_FREQ == 0)
 			printf("%i  \t  %lf %10.2E %lf %lf %lf %lf %10.2E %lf \n",n,t_n,Wbal,
-				pre_n_1,disp_rod,v_rod,volume/1e3,delta_t,mfree.di->ve[0]);
+				pre_n_1,disp_rod_n,v_rod,volume/1e3,delta_t,mfree.di->ve[0]);
 
 
 
