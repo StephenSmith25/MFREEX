@@ -523,34 +523,7 @@
 			"file": "/home/stephen/Documents/remote_belinda/MFREEX-master/problems/preform/preform.c",
 			"settings":
 			{
-				"buffer_size": 24168,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/stephen/Documents/remote_belinda/MFREEX-master/MFREEX/src/Material/Buckley/edwardsVilgis.c",
-			"settings":
-			{
-				"buffer_size": 1812,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/stephen/Documents/remote_belinda/MFREEX-master/MFREEX/src/Material/Buckley/buckleyStress.c",
-			"settings":
-			{
-				"buffer_size": 5127,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/stephen/Documents/remote_belinda/MFREEX-master/MFREEX/src/Force/Internal/internalForce_Inelastic.c",
-			"settings":
-			{
-				"buffer_size": 6657,
+				"buffer_size": 24207,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -744,26 +717,18 @@
 	},
 	"expanded_folders":
 	[
-		"/home/stephen/Documents/remote_belinda/MFREEX-master",
-		"/home/stephen/Documents/remote_belinda/MFREEX-master/MFREEX",
-		"/home/stephen/Documents/remote_belinda/MFREEX-master/MFREEX/src",
-		"/home/stephen/Documents/remote_belinda/MFREEX-master/MFREEX/src/Force",
-		"/home/stephen/Documents/remote_belinda/MFREEX-master/MFREEX/src/Force/Internal",
-		"/home/stephen/Documents/remote_belinda/MFREEX-master/MFREEX/src/Material",
-		"/home/stephen/Documents/remote_belinda/MFREEX-master/MFREEX/src/Material/Buckley",
-		"/home/stephen/Documents/remote_belinda/MFREEX-master/problems",
-		"/home/stephen/Documents/remote_belinda/MFREEX-master/problems/preform"
+		"/home/stephen/Documents/remote_belinda/MFREEX-master"
 	],
 	"file_history":
 	[
-		"/home/stephen/Documents/Meshless/MFREEX/src/Force/Internal/internalForce_Inelastic.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/buckleyStress.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/lambdaCrit.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/gamma.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/edwardsVilgis.c",
-		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/buckleyConf.c",
 		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/buckleyBond.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Force/Internal/internalForce_Inelastic.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/gamma.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/buckleyStress.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/buckleyConf.c",
 		"/home/stephen/Documents/Meshless/problems/preform/preform.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/edwardsVilgis.c",
+		"/home/stephen/Documents/Meshless/MFREEX/src/Material/Buckley/lambdaCrit.c",
 		"/home/stephen/Documents/Meshless/problems/Biaxial/biaxial.c",
 		"/home/stephen/Documents/Meshless/MFREEX/include/Material/Buckley/lambdaCrit.h",
 		"/home/stephen/Documents/Meshless/MFREEX/src/PostProcess/saveDisp.c",
@@ -1064,15 +1029,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 24168,
+						"buffer_size": 24207,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1818,
-								1818
+								17066,
+								17066
 							]
 						],
 						"settings":
@@ -1081,97 +1046,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": -0.0,
-						"translation.y": 1254.0,
+						"translation.y": 13266.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "/home/stephen/Documents/remote_belinda/MFREEX-master/MFREEX/src/Material/Buckley/edwardsVilgis.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1812,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1049,
-								1049
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 660.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "/home/stephen/Documents/remote_belinda/MFREEX-master/MFREEX/src/Material/Buckley/buckleyStress.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5127,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2612,
-								2612
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 66.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "/home/stephen/Documents/remote_belinda/MFREEX-master/MFREEX/src/Force/Internal/internalForce_Inelastic.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6657,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3248,
-								3248
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1650.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
 					"type": "text"
 				}
 			]

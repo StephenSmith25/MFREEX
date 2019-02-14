@@ -644,8 +644,8 @@ int main(int argc, char** argv) {
 
 			if (distanceProj > 0){
 
-				f1Cor = 0.5*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-				f2Cor = 0.5*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+				f1Cor = 0.1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+				f2Cor = 0.1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
 
 
 				for ( int k = 0 ; k < neighbours->max_dim ; k++){

@@ -76,8 +76,6 @@ int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * p
 
 	double sbFactor = 1 - exp(-dt/tau);
 
-
-
 	// mat1 = 2Gb*D*tau
 	sm_mlt(2*Gb*tau,d,stateNew->m_temp1);
 
