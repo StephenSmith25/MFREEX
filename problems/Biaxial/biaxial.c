@@ -29,8 +29,8 @@ const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
 // deformaton
-const int SR = 16;
-const double TEMPERATURE = 105;
+const int SR = 4;
+const double TEMPERATURE = 85;
 char * DEFORMATION_MODE = "BIAXIAL";
 const int DIM = 3;
 const int IS_AXI = 0;
@@ -57,7 +57,7 @@ int main(void)
 	matParams->ve[6] = (67.47); // Cv
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
-	matParams->ve[9] = 3e9; // Kb
+	matParams->ve[9] = 1.8e9; // Kb
 	matParams->ve[10] = 6e8;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
@@ -77,15 +77,15 @@ int main(void)
 
 
 
-	matParams->ve[17] = 100;// lambdaCrit
-	matParams->ve[18] = 383.15;// Ts 
-	matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
-	matParams->ve[20] = 10612;// Cs 10612
-	matParams->ve[21] = 95.48;// Tinf 95.48
-	matParams->ve[22] = 0.1565;// C1
-	matParams->ve[23] = 39.937;// C2
-	matParams->ve[24] = 0.9878;// beta
-	matParams->ve[25] = 0.33;// poissons ratio
+	// matParams->ve[17] = 100;// lambdaCrit
+	// matParams->ve[18] = 383.15;// Ts 
+	// matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
+	// matParams->ve[20] = 10612;// Cs 10612
+	// matParams->ve[21] = 95.48;// Tinf 95.48
+	// matParams->ve[22] = 0.1565;// C1
+	// matParams->ve[23] = 39.937;// C2
+	// matParams->ve[24] = 0.9878;// beta
+	// matParams->ve[25] = 0.33;// poissons ratio
 
 
 	// crit lambda properties

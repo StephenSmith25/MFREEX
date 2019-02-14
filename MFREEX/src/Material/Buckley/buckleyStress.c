@@ -78,14 +78,14 @@ buckleyStress(state_variables * stateNew,
 			buckleyConf(stateNew,stateOld, matParams,dt);
 
 			// rotate unrotated stress back into n+1 configuration
-			m_mlt(stateNew->R,stateNew->Sb_R,stateNew->m_temp1);
-			mmtr_mlt(stateNew->m_temp1,stateNew->R,stateNew->Sb);
+			// m_mlt(stateNew->R,stateNew->Sb_R,stateNew->m_temp1);
+			// mmtr_mlt(stateNew->m_temp1,stateNew->R,stateNew->Sb);
 
 
 			// rotate unrotated stress back into n+1 configuration
 			m_mlt(stateNew->R,stateNew->Sc_R,stateNew->m_temp1);
 			mmtr_mlt(stateNew->m_temp1,stateNew->R,stateNew->Sc);
-			//sm_mlt((1.00)/stateNew->Jacobian,stateNew->Sc,stateNew->Sc);
+			sm_mlt((1.00)/stateNew->Jacobian,stateNew->Sc,stateNew->Sc);
 
 			// Hydrostatic stress
 			stateNew->mSigma = log(stateNew->Jacobian)*Kb;

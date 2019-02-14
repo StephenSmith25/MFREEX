@@ -58,7 +58,7 @@ int edwardsVilgis(VEC * stress, VEC * lambda_in, VEC * para, double Jacobian, do
 	for ( int k = 0 ; k < 3 ; k++){
 
 
-		stress->ve[k] = (1000/Jacobian)*(  
+		stress->ve[k] = (1000)*(  
 		2*D*alpha*alpha*lambda[k] * (E*xi/(zeta*zeta) - 1.00/zeta)
 		+ D*E * 2*lambda[k] / (zeta*pow((1+eta*lambda[k]),2))
 		+ D * eta*lambda[k]/(1+eta*lambda[k])   
