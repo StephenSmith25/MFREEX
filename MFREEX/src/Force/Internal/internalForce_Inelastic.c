@@ -174,8 +174,8 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			/* -----------------Damping -----------------*/
 			/* ------------------------------------------*/
 
-			double b1 = 0.1;
-			double b2 = 1.6;
+			double b1 = 0.06;
+			double b2 = 1.44;
 			double Le = 3;
 			double Cd = 1400;
 			double div_v = stateNew[i]->div_v;

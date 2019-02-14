@@ -39,7 +39,7 @@ const int PLASTIC_MATERIAL = 0;
 const double VELOCITY_ROD = -500;
 // time step parameters
 const double TMAX = 0.4;
-double delta_t = 4e-7;
+double delta_t = 5e-7;
 
 // Meshfree parameters
 const double dmax = 3;
@@ -88,25 +88,25 @@ int main(int argc, char** argv) {
 	matParams->ve[15] = 1.8098e17;// Ns_c
 	matParams->ve[16] = 1.38e-17;// boltzmann constant kB
 	// slippage
-	matParams->ve[17] = 100;// lambdaCrit
-	matParams->ve[18] = 383.15;// Ts 
-	matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
-	matParams->ve[20] = 10612;// Cs 10612
-	matParams->ve[21] = 95.48;// Tinf 95.48
-	matParams->ve[22] = 0.1565;// C1
-	matParams->ve[23] = 39.937;// C2
-	matParams->ve[24] = 0.9878;// beta
-	matParams->ve[25] = 0.33;// poissons ratio
-
 	// matParams->ve[17] = 100;// lambdaCrit
 	// matParams->ve[18] = 383.15;// Ts 
-	// matParams->ve[19] = 0.359e6;// gamma0_ref = 0.653
-	// matParams->ve[20] = 7307.8;// Cs 10612
-	// matParams->ve[21] = 152.95;// Tinf 95.48
+	// matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
+	// matParams->ve[20] = 10612;// Cs 10612
+	// matParams->ve[21] = 95.48;// Tinf 95.48
 	// matParams->ve[22] = 0.1565;// C1
 	// matParams->ve[23] = 39.937;// C2
 	// matParams->ve[24] = 0.9878;// beta
 	// matParams->ve[25] = 0.33;// poissons ratio
+
+	matParams->ve[17] = 100;// lambdaCrit
+	matParams->ve[18] = 383.15;// Ts 
+	matParams->ve[19] = 0.359e6;// gamma0_ref = 0.653
+	matParams->ve[20] = 7307.8;// Cs 10612
+	matParams->ve[21] = 152.95;// Tinf 95.48
+	matParams->ve[22] = 0.1565;// C1
+	matParams->ve[23] = 39.937;// C2
+	matParams->ve[24] = 0.9878;// beta
+	matParams->ve[25] = 0.33;// poissons ratio
 
 
 	
