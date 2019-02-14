@@ -182,7 +182,7 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			double qv =  rho*Le*b1*Cd * div_v;
 			if ( div_v < 0)
 			{
-				qv += rho*Le*(b2 * (Le/1000) * pow(div_v,2)) ;
+				qv += rho*Le*(b2 * (Le/1000) * pow(div_v,2)) - rho*Le*b1*Cd * div_v ;
 			}
 
 

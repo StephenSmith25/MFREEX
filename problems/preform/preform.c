@@ -38,8 +38,8 @@ const int PLASTIC_MATERIAL = 0;
 //
 const double VELOCITY_ROD = -500;
 // time step parameters
-const double TMAX = 0.4;
-double delta_t = 5e-7;
+const double TMAX = 0.25;
+double delta_t = 4e-7;
 
 // Meshfree parameters
 const double dmax = 3;

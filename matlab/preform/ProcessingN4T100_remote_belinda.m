@@ -1,9 +1,9 @@
 clear all
 close all
 
-PLOT_GRAPHS = false;
-JOB_ID = string(296731);
-
+PLOT_GRAPHS = true;
+JOB_ID = string(296756);
+TMAX = 0.25;
 
 path = strcat('/home/stephen/Documents/remote_belinda/Meshfree/',JOB_ID,'/Displacement/');
 pathSR = strcat('/home/stephen/Documents/remote_belinda/Meshfree/',JOB_ID,'/srRod/');
@@ -20,7 +20,7 @@ numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
 
-plot_point =165;
+plot_point =191;
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.csv');
 disp = csvread(filename,1);
 
@@ -116,7 +116,7 @@ figure
 plot(m(:,1),m(:,2),'k-','linewidth',3);
 xlabel('time');
 ylabel('Pressure');
-xlim([0,0.6])
+xlim([0,TMAX])
 ylim([0,0.9])
 
 b = csvread("Experimental/N4T100_exp_pressure.csv");
@@ -173,13 +173,13 @@ print -dpng2 pressure.png
 set(gcf, 'Color', 'w');
 
 if ( PLOT_GRAPHS)
-
-path = './../../build/bin/preform/History/Strain';
+    
+path = strcat('/home/stephen/Documents/remote_belinda/Meshfree/',JOB_ID,'/History/');
+path_strain = strcat(path,'Strain/');
 
 addpath(path)
-displacementdir = path ;
+displacementdir = path_strain ;
 d = dir(displacementdir);
-d1 = dir([displacementdir,'*.txt']);
 numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,100));
@@ -187,7 +187,7 @@ for i = 1:length(plotFiles)
     
     
 
-    filename = strcat('./../../build/bin/preform/History/Strain/strain_',num2str(plotFiles(i)),'.txt');
+    filename = strcat(path_strain,'strain_',num2str(plotFiles(i)),'.txt');
 
     strain = csvread(filename);
     
@@ -200,7 +200,7 @@ for i = 1:length(plotFiles)
     [R U V] = poldecomp(F);
     
     
-    true_strain = logm(U);
+    true_strain = logm(V);
 
     
     hoop_strain(i) =true_strain(3,3);
@@ -230,7 +230,7 @@ subplot(1,2,1)
 plot(time,(axial_strain),'k','linewidth',2);
 % hold on
 % plot(time,log(1+shear_strain),'k');
-xlim([0,0.4])
+xlim([0,TMAX])
 
 c = csvread("Experimental/N4100_exp_strain_axial.csv");
 
@@ -299,7 +299,7 @@ c = csvread("Experimental/N4100_fe_strain_hoop.csv");
 hold on
 plot(c(:,1),c(:,2),'r--')
 
-xlim([0,0.4])
+xlim([0,TMAX])
 
 
 %set axis

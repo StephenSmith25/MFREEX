@@ -2,6 +2,8 @@ clear all
 close all
 
 PLOT_GRAPHS = true;
+TMAX = 0.25;
+
 
 path = './../../build/bin/preform/Displacement/';
 pathSR = './../../build/bin/preform/srRod/';
@@ -110,7 +112,7 @@ figure
 plot(m(:,1),m(:,2),'k-','linewidth',3);
 xlabel('time');
 ylabel('Pressure');
-xlim([0,0.6])
+xlim([0,TMAX])
 ylim([0,0.9])
 
 b = csvread("Experimental/N4T100_exp_pressure.csv");
@@ -224,7 +226,7 @@ subplot(1,2,1)
 plot(time,(axial_strain),'k','linewidth',2);
 % hold on
 % plot(time,log(1+shear_strain),'k');
-xlim([0,0.4])
+xlim([0,TMAX])
 
 c = csvread("Experimental/N4100_exp_strain_axial.csv");
 
@@ -293,7 +295,7 @@ c = csvread("Experimental/N4100_fe_strain_hoop.csv");
 hold on
 plot(c(:,1),c(:,2),'r--')
 
-xlim([0,0.4])
+xlim([0,TMAX])
 
 
 %set axis
