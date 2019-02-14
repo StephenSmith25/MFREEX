@@ -77,23 +77,23 @@ int main(void)
 
 
 
-	// matParams->ve[17] = 100;// lambdaCrit
-	// matParams->ve[18] = 383.15;// Ts 
-	// matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
-	// matParams->ve[20] = 10612;// Cs 10612
-	// matParams->ve[21] = 95.48;// Tinf 95.48
-	// matParams->ve[22] = 0.1565;// C1
-	// matParams->ve[23] = 39.937;// C2
-	// matParams->ve[24] = 0.9878;// beta
-	// matParams->ve[25] = 0.33;// poissons ratio
+	matParams->ve[17] = 100;// lambdaCrit
+	matParams->ve[18] = 383.15;// Ts 
+	matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
+	matParams->ve[20] = 10612;// Cs 10612
+	matParams->ve[21] = 95.48;// Tinf 95.48
+	matParams->ve[22] = 0.1565;// C1
+	matParams->ve[23] = 39.937;// C2
+	matParams->ve[24] = 0.9878;// beta
+	matParams->ve[25] = 0.33;// poissons ratio
 
 
 	// crit lambda properties
-	matParams->ve[26] = -0.0111; // C1
-	matParams->ve[27] = 3.627; // C2
-	matParams->ve[28] = 0.9856; // BETA
-	matParams->ve[29] = -0.0356; // k
-	matParams->ve[30] = 15.393; // b 
+	// matParams->ve[26] = -0.0111; // C1
+	// matParams->ve[27] = 3.627; // C2
+	// matParams->ve[28] = 0.9856; // BETA
+	// matParams->ve[29] = -0.0356; // k
+	// matParams->ve[30] = 15.393; // b 
 
 
 

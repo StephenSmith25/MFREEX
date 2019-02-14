@@ -11,8 +11,8 @@ DOUT_BOT = 22.50;
 
 
 % mid diameter
-DOUT_MID = 23.19;
-DIN_MID = 14.43;
+DOUT_MID = 23.01;
+DIN_MID = 14.61;
 
 
 % top diamter
@@ -30,7 +30,7 @@ THICKNESS_BOT_BOT = 3.2;
 TOTAL_LENGTH = 97.18;
 
 % number of nodes through the thickness
-NUM_NODES_THICKNESS = 4;
+NUM_NODES_THICKNESS = 3;
 
 R_REDUCED_BOT = (THICKNESS_BOT - THICKNESS_BOT_BOT);
 
@@ -54,7 +54,8 @@ Dout_m = DOUT_MID;
 
 Rin_bot = Din_b/2 + (3/4)*R_REDUCED_BOT;
 Rout_bot = Dout_b/2 - (1/4)*R_REDUCED_BOT; 
-
+Rin_bot_s = Rin_bot;
+Rout_bot_s = Rout_bot;
 
 
 Din_t = DIN_TOP;
@@ -62,7 +63,7 @@ Dout_t = DOUT_TOP;
 
 
 %% NUMBER OF NODES
-N1_a =40;
+N1_a =50;
 N1_b = 12;
 N1 = N1_a + N1_b;
 N2 = 22;
@@ -124,9 +125,10 @@ count = count + N3;
 nodes(count:1:count+N2-1,:) = [linspace(Dout_t/2,Dout_m/2,N2)',linspace(L_t+L_m,L_m,N2)'];
 count = count + N2;
 % right wall
-nodes(count:1:count+N1-1,:) = [linspace(Dout_m/2,Dout_b/2,N1)',linspace(L_m,0,N1)'];
-count = count + N1;
-
+nodes(count:1:count+N1_b-1,:) = [linspace(Dout_m/2,Dout_m/2,N1_b)',linspace(L_m,(5/6)*L_m,N1_b)'];
+count = count + N1_b;
+nodes(count:1:count+N1_a-1,:) = [linspace(Dout_m/2,Dout_b/2,N1_a)',linspace((5/6)*L_m,0,N1_a)'];
+count = count + N1_a;
 
 % bottom joining portion
 theta_min = asind(height_bot/Rout_bot);
@@ -159,7 +161,7 @@ nodes = nodes(ib,:);
 % boundary nodes
 boundaryNodes = linspace(1,length(nodes),length(nodes))';
 boundaryNodes(1:(ntheta + N1+N2 -5 ),2) = 2;
-boundaryNodes((ntheta+(N1+N2)-4):((ntheta+(N1+N2+(N3-3)-1+N3))+ N4-2),2) = 5;
+boundaryNodes((ntheta+(N1+N2)-4):((ntheta+(N1+N2+(N3-4)-1+N3))+ N4-2),2) = 5;
 boundaryNodes(end:-1:end-(N5-2),2) = 4;
 
 %%  Geoemtric measures ( Change these for different geometries) 

@@ -42,7 +42,7 @@ const double TMAX = 0.4;
 double delta_t = 4e-7;
 
 // Meshfree parameters
-const double dmax = 3.5;
+const double dmax = 2.5;
 const int is_stabalised = 0;
 const int is_constant_support_size = 1;
 
