@@ -149,13 +149,16 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			/* ------------------------------------------*/
 
 
-			if ((i == 160) && (call_count % 100 == 0)) {
+			if ((i == 125) && (call_count % 100 == 0)) {
 
 
 				stateNew[i]->F->me[2][1] = t_n_1;
 
 				snprintf(filename, 50, "strain_%d%s",print_count,".txt");
 				mat2csv(stateNew[i]->F,"./History/Strain",filename);
+
+
+				
 				//snprintf(filename, 50, "Stress_%d%s",print_count,".txt");
 				//mat2csv(stateNew[i]->sigma,"./History/Stress",filename);
 
@@ -175,7 +178,7 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			/* ------------------------------------------*/
 
 			double b1 = 0;
-			double b2 = 0;
+			double b2 = 1.44;
 			double Le = 3;
 			double Cd = 1400;
 			double div_v = stateNew[i]->div_v;

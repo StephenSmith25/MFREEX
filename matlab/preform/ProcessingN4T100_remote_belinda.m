@@ -2,8 +2,8 @@ clear all
 close all
 
 PLOT_GRAPHS = true;
-JOB_ID = string(296763);
-TMAX = 0.25;
+JOB_ID = string(296961);
+TMAX = 0.4;
 
 path = strcat('/home/stephen/Documents/remote_belinda/Meshfree/',JOB_ID,'/Displacement/');
 pathSR = strcat('/home/stephen/Documents/remote_belinda/Meshfree/',JOB_ID,'/srRod/');
@@ -20,7 +20,7 @@ numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
 
-plot_point =191;
+plot_point =221;
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.csv');
 disp = csvread(filename,1);
 
@@ -85,9 +85,9 @@ disp = csvread(filename,1);
 
 
 subplot(1,3,3)       % add first plot in 2 x 2 grid
-plot(disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
+plot(disp(:,1),disp(:,2),'k.','markersize',2.5)           % line plot
 hold on
-plot(-disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
+plot(-disp(:,1),disp(:,2),'k.','markersize',2.5)           % line plot
 
 hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
@@ -405,27 +405,25 @@ xlabel('Time (s)',...
 
 
 % legend
-path = './../../build/bin/preform/History/Stress';
+path = strcat('/home/stephen/Documents/remote_belinda/Meshfree/',JOB_ID,'/History/');
+
+
+
+path_stress = strcat(path,'Stress/');
 
 
 
 
 
-
-
-
-addpath(path)
+addpath(path_stress)
 displacementdir = path ;
 d = dir(displacementdir);
-d1 = dir([displacementdir,'*.txt']);
 numFiles = size(d,1)/2 -3 ;
 
 
 for i = 1:length(plotFiles)
     
-    
-
-    filename = strcat('Bond_Stress_',num2str(plotFiles(i)),'.txt');
+     filename = strcat(path_stress,'Bond_Stress_',num2str(plotFiles(i)),'.txt');
 
     stress = csvread(filename);
     hoop_stress_bond(i) = stress(3,3);
@@ -433,7 +431,7 @@ for i = 1:length(plotFiles)
     radial_stress_bond(i) = stress(1,1);
     shear_stress_bond(i) = stress(1,2);
 
-    filename = strcat('Conformational_Stress_',num2str(plotFiles(i)),'.txt');
+     filename = strcat(path_stress,'Conformational_Stress_',num2str(plotFiles(i)),'.txt');
 
     stress = csvread(filename);
     hoop_stress_conf(i) = stress(3,3);

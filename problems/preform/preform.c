@@ -181,7 +181,7 @@ int main(int argc, char** argv) {
 	double tStop = 0.5;
 	double tRampRod = 1e-9;
 	double vRod = 0;
-	const double DISP_ROD_MAX = 132 ; // 132;
+	const double DISP_ROD_MAX = 80 ; // 132;
 
 
 

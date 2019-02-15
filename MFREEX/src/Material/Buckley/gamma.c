@@ -35,98 +35,39 @@ double gammaV(state_variables * state, double maxLambdaN,double critLambda,
 	double shiftTIntercept = para->ve[23];
 	double expFactor = para->ve[24];
 	double gamma0 = 0;
-	VEC * lambdaDot = state->lambdaDot;
-	MAT * Dbar = state->Dbar;
 
-
-	int dim = Dbar->m;
 	double temperature = state->temperature;
 
-	double gamma_n = state->gamma;
 
+	double gamma_n = state->gamma;
 	// initialise gamma 
 	double gamma_n_1 = 0; 
 
-	// find theta 
-	int index = 0;
+	// Find maximum strain rate 
 
+	double V1 = state->Vdot->me[0][0];
+	double V2 = state->Vdot->me[1][1];
+	double V3 = state->Vdot->me[2][2];
 
-	// //double maxSr = state->Vdot->me[2][2];
-
-	// double V1,V2,V3 = 0;
-	// V1 = state->Vdot->me[1][1];
-	// V2 = state->Vdot->me[2][2];
-
-	// double maxSr = max(V1,V2);
-
-
-
-	double maxSr = v_max(state->lambdaDot,&index);
-	if ( maxSr <= 0.01){
-		maxSr = 0.01; 
-	}
-
-	MAT * d = state->dbar;
-	double D1 = d->me[1][1];
-	double D2 = d->me[2][2];
-
-
-	//D1 = d->me[0][0];
-	//D2 = d->me[1][1];
-
-
-
-	double theta = 0;
-	if ( D1 >= D2)
-	{
-		if ( D1 == 0 )
-		{
-			theta = 0;
-		}else{
-			theta = D2/D1;
-		}
-	}else {
-		if ( D2 == 0)
-		{
-			theta = 0;
-		}else{
-			theta = D1/D2;
-		}
-	}
-
-
-
-
-	// find xi 
-	double xi = ( 2 * theta + 1)/(theta +2);
-	if ( xi > 1){
-		xi = 1;
-	}else if( xi < 0 ) {
-		xi = 0.001;
-	}else{
-		// do nothing
-	}
-
-
+	double maxSr = max(V1,V2);
+	maxSr = max(maxSr,V3);
 
 	double log2sr = log(maxSr)/log(2);
 	if ( maxSr < 0.01){
-		log2sr = 0.01;
+		log2sr = 0;
 	}
 
 
-	double shiftTemperature = temperature * pow(10, ( ( shiftTSlope*log2sr ) / ( shiftTIntercept + log2sr) )* pow(expFactor,2-2*xi));
-	//shiftTemperature = temperature;
-
+	double shiftTemperature = temperature * 
+	pow(10, ( ( shiftTSlope*log2sr ) / ( shiftTIntercept + log2sr)));
+	// //shiftTemperature = temperature;
 	gamma0 = exp( Cs/(shiftTemperature - Tinf) - Cs/(starT - Tinf));
 	gamma0 = gamma0*refGamma;
 
 
 	if ( maxLambdaN >= critLambda ){
-		gamma_n_1 = 1e30;
+		gamma_n_1 = 1e50;
 	}else{
-		//gamma_n_1 = gamma0 * ( critLambda - 1) / ( critLambda - maxLambdaN);
-		//( 1.000 - (maxLambdaN/critLambda)) ; 
 		gamma_n_1 = gamma0/( 1 - maxLambdaN/critLambda);
 	}
 

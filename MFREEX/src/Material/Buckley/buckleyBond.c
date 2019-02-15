@@ -35,8 +35,8 @@ int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * p
 
 
 
-	MAT * Sb_n = stateOld->Sb;
-	MAT * Sb_n_1 = stateNew->Sb;
+	MAT * Sb_n = stateOld->Sb_R;
+	MAT * Sb_n_1 = stateNew->Sb_R;
 	MAT * d = stateNew->dbar;
 	MAT * deltaSb = stateOld->m_temp3;
 
@@ -71,74 +71,21 @@ int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * p
 
 	stateNew->tau = tau;
 
-
-
-	/* Jaumann rate*/
-	MAT * mat1 = stateOld->m_temp1 ;
-	MAT * mat2 = stateOld->m_temp2;
-
-
-	double sbFactor = 1 - exp(-dt/tau);
-	// mat1 = 2Gb*D*tau
-	sm_mlt(2*Gb*tau,stateNew->Dbar,mat1);
-
-	// 2Gb*D*tau - Sb_n
-	m_sub(mat1,stateOld->Sb,deltaSb);
-
- 	// corrotational stress increment
-	sm_mlt(sbFactor,deltaSb, deltaSb);
-
-	// Jaumann rate
-	m_mlt(stateNew->W,Sb_n,mat1);	
- 	m_mlt(Sb_n,stateNew->W,mat2);
-	m_sub(mat1,mat2,mat1);	
-	sm_mlt(dt,mat1,mat1);
-
-	// update total stress
-	m_add(Sb_n,mat1,Sb_n_1);
-	m_add(Sb_n_1,deltaSb,Sb_n_1);
-
-
-// 	// Green rate
-// 	//W*s
-// 	m_mlt(stateNew->Omega,Sb_n,mat1);
-// 	// s*W'
-// 	m_mlt(Sb_n,stateNew->Omega,mat2);
-// 	m_sub(mat1,mat2,mat1);
-// 	sm_mlt(dt,mat1,mat1);
-// 	m_add(Sb_n,mat1,mat1);
-// 	//Sb* = Sb_n + deltaSb + (WSb_n - Sb_n W)dt
-// 	m_add(deltaSb,mat1,Sb_n_1);
-
-
-
-// 	// m_mlt(stateNew->W,Sb_n_1,mat1);
-// 	// m_mlt(Sb_n_1,stateNew->W,mat2);
-// 	// m_sub(mat1,mat2,mat1);	
-// 	// sm_mlt(0.5*dt,mat1,mat1);
-
-// 	// m_add(Sb_n_1,mat1,Sb_n_1);
-
-
-
 	/* Rotation neutralised method */
 
-	// MAT * mat1 = stateNew->m_temp1;
-	// MAT * mat2 = stateNew->m_temp2;
+	double sbFactor = 1 - exp(-dt/tau);
 
-	// double sbFactor = 1 - exp(-dt/tau);
+	// mat1 = 2Gb*D*tau
+	sm_mlt(2*Gb*tau,d,stateNew->m_temp1);
 
-	// // mat1 = 2Gb*D*tau
-	// sm_mlt(2*Gb*tau,d,stateNew->m_temp1);
+	// 2Gb*D*tau - Sb_n
+	m_sub(stateNew->m_temp1,Sb_n,stateNew->m_temp2);
 
-	// // 2Gb*D*tau - Sb_n
-	// m_sub(stateNew->m_temp1,Sb_n,stateNew->m_temp2);
-
-	// // deltaSb = ( 1- exp(-dt/tau)) * ( 2G*D*tau - Sb_n)
-	// sm_mlt(sbFactor,stateNew->m_temp2,deltaSb);
+	// deltaSb = ( 1- exp(-dt/tau)) * ( 2G*D*tau - Sb_n)
+	sm_mlt(sbFactor,stateNew->m_temp2,deltaSb);
 
 
-	// m_add(deltaSb,Sb_n,Sb_n_1);
+	m_add(deltaSb,Sb_n,Sb_n_1);
 
 
 

@@ -2,33 +2,68 @@ clear all
 close all
 
 PLOT_GRAPHS = true;
-JOB_ID = string(296828);
 TMAX = 0.25;
 
-path = strcat('/home/stephen/Documents/remote_belinda/Meshfree/',JOB_ID,'/Displacement/');
-pathSR = strcat('/home/stephen/Documents/remote_belinda/Meshfree/',JOB_ID,'/srRod/');
 
-boundaryNodesfile = strcat('/home/stephen/Documents/remote_belinda/Meshfree/',JOB_ID,'/boundary.txt');
-
-boundaryNodes = csvread(boundaryNodesfile);
+path = './../../build/bin/preform/Displacement/';
+pathSR = './../../build/bin/preform/srRod/';
+boundaryNodes = csvread('./../../build/bin/preform/boundary.txt');
 boundaryNodes = [boundaryNodes;boundaryNodes(1)];
 
 addpath(path)
 displacementdir = path ;
 d = dir(displacementdir);
+d1 = dir([displacementdir,'*.csv']);
 numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
 
-plot_point =191;
+plot_point =111;
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.csv');
 disp = csvread(filename,1);
 
 
 
+% draw mould
+Radius_mould = 20;
+Height_mould = 30;
+Radius_out = 10;
+radius_bot_mould = 40;
+thickness_mould = 5;
+mould_length = 160;
+
+height = 77;
+mould_nodes = [];
+mould_nodes = [mould_nodes ; [Radius_out,height+5]   ];
+mould_nodes = [mould_nodes ; [Radius_out,height-10]   ];
+mould_nodes = [mould_nodes ; [Radius_out+Radius_mould,height-10-Radius_mould]   ];
+mould_nodes = [mould_nodes ; [Radius_out+Radius_mould,height-mould_length]   ];
+mould_nodes = [mould_nodes ; [0,height-mould_length]   ];
+
+
+mould_nodes = [mould_nodes ; [0,height-mould_length-thickness_mould]   ];
+mould_nodes = [mould_nodes ; [Radius_out+Radius_mould+thickness_mould,height-mould_length-thickness_mould]   ];
+mould_nodes = [mould_nodes ; [Radius_out+Radius_mould+thickness_mould,height-10-Radius_mould]   ];
+mould_nodes = [mould_nodes ; [Radius_out+thickness_mould,height-10]   ];
+mould_nodes = [mould_nodes ; [Radius_out+thickness_mould,height+5]   ];
+
+
+
+
+
 
 figure
+
+
+
+
 subplot(1,3,1)       % add first plot in 2 x 2 grid
+
+hold on 
+fill(mould_nodes(:,1),mould_nodes(:,2),'w');
+hold on
+fill(-mould_nodes(:,1),mould_nodes(:,2),'w');
+hold on
 plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
@@ -59,6 +94,12 @@ ylim([-170,ymax])
 filename = strcat(path,'displacement_',num2str(plotFiles(5)),'.csv');
 disp = csvread(filename,1);
 subplot(1,3,2)       % add first plot in 2 x 2 grid
+hold on 
+fill(mould_nodes(:,1),mould_nodes(:,2),'w');
+hold on
+fill(-mould_nodes(:,1),mould_nodes(:,2),'w');
+hold on
+
 plot(disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'k.','markersize',3) % line plot
@@ -68,7 +109,7 @@ axis equal
 hold on
 plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
 hold on
-%plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
+plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
 %plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(5)),'.csv');
@@ -85,6 +126,13 @@ disp = csvread(filename,1);
 
 
 subplot(1,3,3)       % add first plot in 2 x 2 grid
+
+hold on 
+fill(mould_nodes(:,1),mould_nodes(:,2),'w');
+hold on
+fill(-mould_nodes(:,1),mould_nodes(:,2),'w');
+hold on
+
 plot(disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
@@ -93,9 +141,9 @@ hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
 hold on
-%plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
+plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
-%plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
+plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(10)),'.csv');
 disp = csvread(filename,1);
@@ -106,11 +154,16 @@ plot(-disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 xlim([-50,50])
 ylim([-170,ymax])
 
+
+
+
+
+
+
+
 print -dpng2 Displacement.png
 
-file_pressure = strcat('/home/stephen/Documents/remote_belinda/Meshfree/',JOB_ID,'/pressureTime.txt');
-
-m = dlmread(file_pressure,' ');
+m = dlmread('./../../build/bin/preform/pressureTime.txt',' ');
 %m(ceil(length(m)/4):end,:) = smoothdata(m(ceil(length(m)/4):end,:))
 figure
 plot(m(:,1),m(:,2),'k-','linewidth',3);
@@ -173,13 +226,13 @@ print -dpng2 pressure.png
 set(gcf, 'Color', 'w');
 
 if ( PLOT_GRAPHS)
-    
-path = strcat('/home/stephen/Documents/remote_belinda/Meshfree/',JOB_ID,'/History/');
-path_strain = strcat(path,'Strain/');
+
+path = './../../build/bin/preform/History/Strain';
 
 addpath(path)
-displacementdir = path_strain ;
+displacementdir = path ;
 d = dir(displacementdir);
+d1 = dir([displacementdir,'*.txt']);
 numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,100));
@@ -187,7 +240,7 @@ for i = 1:length(plotFiles)
     
     
 
-    filename = strcat(path_strain,'strain_',num2str(plotFiles(i)),'.txt');
+    filename = strcat('./../../build/bin/preform/History/Strain/strain_',num2str(plotFiles(i)),'.txt');
 
     strain = csvread(filename);
     
@@ -338,78 +391,11 @@ grid on
 
 print -dpng2 strain.png
 
-figure 
-subplot(1,2,1);
-plot(time,crit_lambda,'k-');
-hold on
-plot(time,max_lambda_n,'b-');
-
-%set axis
-set(gca, 'FontName', 'cmr12')
-% set x tics and y tics
-set(gca,...
-'Units','normalized',...
-'FontUnits','points',...
-'FontWeight','normal',...
-'FontSize',14,... % size ofiguref numbers on axis
-'FontName','cmr14') % font name
-set(gca,'TickLabelInterpreter', 'latex');
-
-% Y label
-ylabel({'Critical Network Stretch ($\lambda$)'},...
-'FontUnits','points',...
-'interpreter','latex',...
-'FontSize',14,... % font size
-'FontName','cmr14')
-% X label
-xlabel('Time (s)',...
-'FontUnits','points',...
-'interpreter','latex',...
-'FontWeight','normal',...
-'FontSize',14,... % font size
-'FontName','cmr14')
-
-
- 
-subplot(1,2,2);
-plot(time,gamma,'k-');
-%set axis
-set(gca, 'FontName', 'cmr12')
-% set x tics and y tics
-set(gca,...
-'Units','normalized',...
-'FontUnits','points',...
-'FontWeight','normal',...
-'FontSize',14,... % size ofiguref numbers on axis
-'FontName','cmr14') % font name
-set(gca,'TickLabelInterpreter', 'latex');
-
-% Y label
-ylabel({'Viscosity ($\gamma$) Pa'},...
-'FontUnits','points',...
-'interpreter','latex',...
-'FontSize',14,... % font size
-'FontName','cmr14')
-% X label
-xlabel('Time (s)',...
-'FontUnits','points',...
-'interpreter','latex',...
-'FontWeight','normal',...
-'FontSize',14,... % font size
-'FontName','cmr14')
-
-
-
-
 
 
 
 % legend
 path = './../../build/bin/preform/History/Stress';
-
-
-
-
 
 
 
