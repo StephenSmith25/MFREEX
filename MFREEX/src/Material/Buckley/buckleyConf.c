@@ -19,7 +19,7 @@
 #include "dsyevq3.h"
 #include "dsyevv3.h"
 #include "dsyevh3.h"
-
+#include "matop_3x3.h"
 #include "symmeig_small.h"
 
 static int call_count_2 = 0;
@@ -87,7 +87,7 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 
 
 	// rotate stress to global coordinates 
-	m_mlt(eigVecB,Sc_n_1,intermediate1);
+	m_mlt_3x3(eigVecB,Sc_n_1,intermediate1);
 	mmtr_mlt(intermediate1,eigVecB,Sc_n_1);
 
 

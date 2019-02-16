@@ -68,6 +68,8 @@ nodes = nodes(ib,:);
 boundaryNodes = linspace(1,length(nodes),length(nodes))';
 boundaryNodes(1:(ntheta + N1  ),2) = 2;
 boundaryNodes((ntheta+(N1)-6):((ntheta+(N1+ N2-2)+5)),2) = 5;
+boundaryNodes(((ntheta+(N1+ N2-2)+5)):end-(N3-2),2) = 6;
+
 boundaryNodes(end:-1:end-(N3-2),2) = 4;
 
 %%  Geoemtric measures ( Change these for different geometries) 
@@ -152,6 +154,12 @@ for i = 1:length(boundaryNodes)
         color = 'go';
         hold on
         plot(nodes(boundaryNodes(i,1),1),nodes(boundaryNodes(i,1),2),color);
+        
+    elseif ( boundaryNodes(i,2)  == 6)
+        color = 'mo';
+        hold on
+        plot(nodes(boundaryNodes(i,1),1),nodes(boundaryNodes(i,1),2),color);   
+        
         
     else
       

@@ -22,15 +22,15 @@
 #include "dsyevh3.h"
 #include "dsyevv3.h"
 #include "dsyevq3.h"
-
+#include "matop_3x3.h"
 // material
 const char * MATERIAL = "BUCKLEY";
 const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
 // deformaton
-const int SR = 4;
-const double TEMPERATURE = 85;
+const int SR = 16;
+const double TEMPERATURE = 105;
 char * DEFORMATION_MODE = "BIAXIAL";
 const int DIM = 3;
 const int IS_AXI = 0;
@@ -88,12 +88,12 @@ int main(void)
 	// matParams->ve[25] = 0.33;// poissons ratio
 
 
-	// crit lambda properties
-	// matParams->ve[26] = -0.0111; // C1
-	// matParams->ve[27] = 3.627; // C2
-	// matParams->ve[28] = 0.9856; // BETA
-	// matParams->ve[29] = -0.0356; // k
-	// matParams->ve[30] = 15.393; // b 
+	//crit lambda properties
+	matParams->ve[26] = -0.0111; // C1
+	matParams->ve[27] = 3.627; // C2
+	matParams->ve[28] = 0.9856; // BETA
+	matParams->ve[29] = -0.0356; // k
+	matParams->ve[30] = 15.393; // b 
 
 
 
@@ -238,21 +238,63 @@ int main(void)
 
 
 
-
-
+	printf("testing matrix multiplication\n");
 	gettimeofday(&end, NULL);
 	double delta = ((end.tv_sec  - start.tv_sec) * 1000000u + 
 		end.tv_usec - start.tv_usec) / 1.e6;
 
-	// get time taken to run
 	printf("buckley took %lf seconds to run\n", delta);
 
 
 
+	MAT * test = m_get(3,3);
+	MAT * test_1 = m_get(3,3);
+
+	for ( int i = 0 ;i < 3 ;i ++)
+	{
+		for ( int j = 0 ; j < 3 ; j++)
+		{
+			test->me[i][j] = (i+1)*(j+1)*(i+1);
+			test_1->me[i][j] = (i+1)*(j+1)*(i+1)*(j+1)*(i+3);
+
+		}
+	}
+	MAT * out = m_get(3,3);
+
+
+	printf("testing matrix multiplication\n");
+	gettimeofday(&start, NULL);
+
+
+	for ( int i = 0 ;i < 1e6 ; i++)
+	{
+
+		m_mlt_3x3(test, test_1, out);
+
+	}
+
+	m_foutput(stdout, out);
+	gettimeofday(&end, NULL);
+	delta = ((end.tv_sec  - start.tv_sec) * 1000000u + 
+		end.tv_usec - start.tv_usec) / 1.e6;
+	// get time taken to run
+	printf("matrix multiplication took %lf seconds to run\n", delta);
 
 
 
 
+
+
+
+	m_mlt(test, test_1, out);
+	m_foutput(stdout, out);
+
+
+
+
+	// gettimeofday(&end, NULL);
+	// delta = ((end.tv_sec  - start.tv_sec) * 1000000u + 
+	// 	end.tv_usec - start.tv_usec) / 1.e6;
 
 
 
@@ -281,67 +323,67 @@ int main(void)
 
 	//test some eigen value computations
 
-	MAT * test = m_get(3,3);
-	test->me[0][0] = 3;
-	test->me[0][1] = 2;
-	test->me[0][2] = 4;
+	// MAT * test = m_get(3,3);
+	// test->me[0][0] = 3;
+	// test->me[0][1] = 2;
+	// test->me[0][2] = 4;
 
-	test->me[1][0] = 2;
-	test->me[1][1] = 0;
-	test->me[1][2] = 2;
+	// test->me[1][0] = 2;
+	// test->me[1][1] = 0;
+	// test->me[1][2] = 2;
 
-	test->me[2][0] = 4;
-	test->me[2][1] = 2;
-	test->me[2][2] = 3;
+	// test->me[2][0] = 4;
+	// test->me[2][1] = 2;
+	// test->me[2][2] = 3;
 
 
-	MAT * Q = m_get(3,3); 
+	// MAT * Q = m_get(3,3); 
 
-	VEC * eigVals = v_get(3);
+	// VEC * eigVals = v_get(3);
 
 	
-	dsyevq3(test->me, Q->me, eigVals->ve);
+	// dsyevq3(test->me, Q->me, eigVals->ve);
 
-	MAT * temp = m_get(3,3);
-	MAT * temp_1 = m_get(3,3);
-
-
-	temp->me[0][0] = eigVals->ve[0];
-	temp->me[1][1] = eigVals->ve[1];
-	temp->me[2][2] = eigVals->ve[2];
-
-	m_mlt(Q,temp,temp_1);
-	mmtr_mlt(temp_1,Q,temp);
+	// MAT * temp = m_get(3,3);
+	// MAT * temp_1 = m_get(3,3);
 
 
-	m_foutput(stdout, temp);
-	v_foutput(stdout, eigVals);
+	// temp->me[0][0] = eigVals->ve[0];
+	// temp->me[1][1] = eigVals->ve[1];
+	// temp->me[2][2] = eigVals->ve[2];
 
-	m_foutput(stdout, Q);
-
-	// MAT * m_temp = m_get(3,3);
-	// MAT * m_temp1 = m_get(3,3);
-
-
-	// MAT * D = m_get(3,3);
-
-	// D->me[0][0] = eigVals->ve[0];
-	// D->me[1][1] = eigVals->ve[1];
-	// D->me[2][2] = eigVals->ve[2];
-
-	// m_mlt(test,Q,m_temp1);
-	// m_mlt(Q,D,m_temp);
-
-	// m_sub(m_temp1,m_temp,m_temp);
-
-	// m_foutput(stdout, m_temp);
+	// m_mlt(Q,temp,temp_1);
+	// mmtr_mlt(temp_1,Q,temp);
 
 
+	// m_foutput(stdout, temp);
+	// v_foutput(stdout, eigVals);
+
+	// m_foutput(stdout, Q);
+
+	// // MAT * m_temp = m_get(3,3);
+	// // MAT * m_temp1 = m_get(3,3);
 
 
-	PERM * order = px_get(3);
-	v_sort(eigVals, order);
-	px_free(order);
+	// // MAT * D = m_get(3,3);
+
+	// // D->me[0][0] = eigVals->ve[0];
+	// // D->me[1][1] = eigVals->ve[1];
+	// // D->me[2][2] = eigVals->ve[2];
+
+	// // m_mlt(test,Q,m_temp1);
+	// // m_mlt(Q,D,m_temp);
+
+	// // m_sub(m_temp1,m_temp,m_temp);
+
+	// // m_foutput(stdout, m_temp);
+
+
+
+
+	// PERM * order = px_get(3);
+	// v_sort(eigVals, order);
+	// px_free(order);
 
 
 	exit(0);

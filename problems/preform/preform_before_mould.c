@@ -31,7 +31,7 @@
 #include "PostProcess/saveDisp.h"
 #include "input/read_input_points.h"
 
-char * MATERIAL = "BUCKLEY";
+const char * MATERIAL = "BUCKLEY";
 const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
@@ -176,16 +176,12 @@ int main(int argc, char** argv) {
 	srNodes_O->me[numPointsRod+1][1] = 70;
 
 
+	/*  Stretch rod */
+	double dRodStop = 135; /*  130 mm  */
+	double tStop = 0.5;
+	double tRampRod = 1e-9;
+	double vRod = 0;
 
-	/* ------------------------------------------*/
-	/* ---------------Mould----------------*/
-	/* ------------------------------------------*/
-	int numPoints_mould = 2;
-	MAT * mould_Nodes = m_get(numPoints_mould,2);
-	mould_Nodes->me[0][0] = 22.5;
-	mould_Nodes->me[0][1] = 55.75;
-	mould_Nodes->me[1][0] = 22.5;
-	mould_Nodes->me[1][1] = -83;
 
 
 
@@ -428,24 +424,6 @@ int main(int argc, char** argv) {
 		"linear", "quartic", 2, 1, &mfree);
 	m_foutput(stdout,contact_nodes_coords);
 
-
-	IVEC * eb4_nodes ;
-	getBoundary(&eb4_nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,6);
-	int num_nodes_eb4 = eb4_nodes->max_dim;
-
-	MAT * contact_mould_nodes_coords = m_get(num_nodes_eb4 ,dim);
-
-	for ( int i = 0 ; i < num_nodes_eb4 ; i++){
-		contact_mould_nodes_coords->me[i][0] = mfree.nodes->me[eb4_nodes->ive[i]][0];
-		contact_mould_nodes_coords->me[i][1] = mfree.nodes->me[eb4_nodes->ive[i]][1];
-
-	}
-		// get shape function and contact nodes
-	shape_function_container * phi_contact_mould = mls_shapefunction(contact_mould_nodes_coords, 
-		"linear", "cubic", 2, 1, &mfree);
-
-	m_foutput(stdout,contact_mould_nodes_coords);
-
 	/* ------------------------------------------*/
 	/* -----------Transformation matrix----------*/
 	/* ------------------------------------------*/
@@ -637,9 +615,6 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 		__zero__(Fcont_n_1->ve, num_dof);
 
-		// STRETCH ROD 
-		// update stretch rod position
-
 		if ( disp_rod_n < DISP_ROD_MAX){
 		/*  Update stretch rod */
 			double x = t_n_1*smoothstep(t_n_1,0.01,0);
@@ -654,8 +629,7 @@ int main(int argc, char** argv) {
 
 			}
 		}
-		// STRETCH ROD CONTACT CONDITIONS
-
+	
 		for ( int i = 0 ; i < eb3_nodes->max_dim ; i++){
 
 			neighbours = phi_contact->sf_list[i]->neighbours;
@@ -667,34 +641,8 @@ int main(int argc, char** argv) {
 
 			if (distanceProj > 0){
 
-				f1Cor = 0.5*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-				f2Cor = 0.5*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-
-
-				for ( int k = 0 ; k < neighbours->max_dim ; k++){
-					Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
-					Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
-				}
-
-			}
-
-
-		}
-
-		// MOULD CONTACT CONDITIONS
-		for ( int i = 0 ; i < eb4_nodes->max_dim ; i++){
-
-			neighbours = phi_contact_mould->sf_list[i]->neighbours;
-			phi = phi_contact_mould->sf_list[i]->phi;
-			testPoint->me[0][0] = updatedNodes->me[eb4_nodes->ive[i]][0];
-			testPoint->me[0][1] = updatedNodes->me[eb4_nodes->ive[i]][1];
-
-			distanceProj = contactDetection(testPoint,mould_Nodes,msNormal);
-
-			if (distanceProj > 0){
-
-				f1Cor = 0.5*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
-				f2Cor = 0.5*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
+				f1Cor = 0.1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+				f2Cor = 0.1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
 
 
 				for ( int k = 0 ; k < neighbours->max_dim ; k++){
@@ -788,17 +736,13 @@ int main(int argc, char** argv) {
 		/*  Balance of forces */
 		__sub__(Fext_n_1->ve, Fint_n_1->ve, Fnet_n_1->ve,num_dof);
 
-
-		/* -----------------------------------------------*/
-		/* ---------------Update Acceleration-------------*/
-		/* -----------------------------------------------*/
-
+		/*  Find acceleration */
 		for ( int i = 0 ; i < numnodes  ; i++ )
 		{
 			a_n_1->ve[2*i] = Fnet_n_1->ve[2*i]*inv_nodal_mass->ve[i];
 			a_n_1->ve[2*i+1] = Fnet_n_1->ve[2*i+1]*inv_nodal_mass->ve[i];
 		}
-	
+
 		/*  Integer time step velocity */
 		v_mltadd(v_n_h,a_n_1,0.5*delta_t,v_n_1);	
 

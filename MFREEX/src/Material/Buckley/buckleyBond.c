@@ -47,6 +47,8 @@ int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * p
 	double alpha_sig = 1;
 	
 	double sigma_m = stateOld->mSigma;
+
+
 	// if (sigma_m < 0)
 	//  {
 	//  	sigma_m = 0;

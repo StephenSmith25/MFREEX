@@ -1,7 +1,7 @@
 clear all
 close all
 
-PLOT_GRAPHS = true;
+PLOT_GRAPHS = false;
 TMAX = 0.25;
 
 
@@ -25,9 +25,9 @@ disp = csvread(filename,1);
 
 
 % draw mould
-Radius_mould = 20;
+Radius_mould = 11.25;
 Height_mould = 30;
-Radius_out = 10;
+Radius_out = 11.25;
 radius_bot_mould = 40;
 thickness_mould = 5;
 mould_length = 160;
@@ -141,21 +141,47 @@ hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
 hold on
-plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
+fill(disp(boundaryNodes,1),disp(boundaryNodes,2),'g-')
 hold on
-plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
+fill(-disp(boundaryNodes,1),disp(boundaryNodes,2),'g')
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(10)),'.csv');
 disp = csvread(filename,1);
 hold on
-plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
+fill(disp(:,1),disp(:,2),'r')          % line plot
 hold on
-plot(-disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
+fill(-disp(:,1),disp(:,2),'r-')         % line plot
 xlim([-50,50])
 ylim([-170,ymax])
 
 
 
+figure
+
+filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.csv');
+disp = csvread(filename,1);
+
+hold on 
+fill(mould_nodes(:,1),mould_nodes(:,2),'w');
+hold on
+fill(-mould_nodes(:,1),mould_nodes(:,2),'w');
+hold on
+
+hold on
+hold on
+fill(disp(boundaryNodes,1),disp(boundaryNodes,2),'g-')
+hold on
+fill(-disp(boundaryNodes,1),disp(boundaryNodes,2),'g')
+hold on
+filename = strcat(pathSR,'srRod_',num2str(plotFiles(10)),'.csv');
+disp = csvread(filename,1);
+hold on
+fill(disp(:,1),disp(:,2),'r')          % line plot
+hold on
+fill(-disp(:,1),disp(:,2),'r-')         % line plot
+xlim([-50,50])
+ylim([-140,ymax])
+axis equal
 
 
 

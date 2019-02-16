@@ -39,7 +39,7 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 
 	}
 
-		// Get dimensions of working vectors and matricies
+	// Get dimensions of working vectors and matricies
 	int dim_piola = 0;
 	int dim_strain = 0;
 	int dim_cauchy = 0;
@@ -56,8 +56,6 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 	}
 
 
-
-
 	// loop over all integration points
 
 	SCNI ** scni = scni_obj->scni;
@@ -71,7 +69,7 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 
 
 	// set number of threads
-	omp_set_num_threads(16);
+	omp_set_num_threads(8);
 
 	int i;
 #pragma omp parallel 
@@ -82,7 +80,6 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 		VEC * stressVoigt = v_get(dim_piola);
 		VEC * sigma = v_get(dim_cauchy);
 		VEC * fIntTemp = v_get(Fint->max_dim);
-
 
 		// Gmat matrix
 		MAT * G = m_get(dim_piola,dim_cauchy);
@@ -98,14 +95,13 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 		MAT * Sb_n_1;
 
 
-#pragma omp for nowait schedule(dynamic,4) 
+#pragma omp for nowait schedule(dynamic,2) 
 		for(i = 0 ; i < num_int_points ; i++){
 
 
 
 			B = scni[i]->B;
 			neighbours = scni[i]->sfIndex;
-			F_r = scni[i]->F_r;
 			int num_neighbours = neighbours->max_dim;
 
 			/* ------------------------------------------*/
@@ -113,7 +109,7 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			/* ------------------------------------------*/
 			
 			/*  Find deformation gradient */
-			get_defgrad(stateNew[i]->F, B, neighbours,F_r,disp);
+			get_defgrad(stateNew[i]->F, B, neighbours,scni[i]->F_r,disp);
 
 			/*  Find Rate of deformation tensors at n+h*/
 			velocity_grad(stateNew[i],stateOld[i],DT,0.500);
@@ -149,7 +145,7 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			/* ------------------------------------------*/
 
 
-			if ((i == 125) && (call_count % 100 == 0)) {
+			if ((i == 110) && (call_count % 1000 == 0)) {
 
 
 				stateNew[i]->F->me[2][1] = t_n_1;
@@ -158,7 +154,7 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 				mat2csv(stateNew[i]->F,"./History/Strain",filename);
 
 
-				
+
 				//snprintf(filename, 50, "Stress_%d%s",print_count,".txt");
 				//mat2csv(stateNew[i]->sigma,"./History/Stress",filename);
 
@@ -168,6 +164,7 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 				mat2csv(stateNew[i]->Sc,"./History/Stress",filename);
 				stateNew[i]->F->me[2][1] = 0;
 				++print_count;
+
 
 
 			}
@@ -226,11 +223,10 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			//-------------------------------------------------//
 			//            Assemble Internal Force              //
 			//-------------------------------------------------//
-
-			vm_mlt(scni[i]->B,stressVoigt,scni[i]->fInt);
+			vm_mlt(B,stressVoigt,scni[i]->fInt);
 			for ( int k = 0 ; k < num_neighbours; k++){
-				fIntTemp->ve[2*scni[i]->sfIndex->ive[k]] += intFactor * scni[i]->fInt->ve[2*k];
-				fIntTemp->ve[2*scni[i]->sfIndex->ive[k]+1] += intFactor * scni[i]->fInt->ve[2*k+1];
+				fIntTemp->ve[2*neighbours->ive[k]] += intFactor * scni[i]->fInt->ve[2*k];
+				fIntTemp->ve[2*neighbours->ive[k]+1] += intFactor * scni[i]->fInt->ve[2*k+1];
 			}
 
 
@@ -252,10 +248,10 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 	#pragma omp critical
 		{
 			__add__(fIntTemp->ve, Fint->ve, Fint->ve, Fint->max_dim);
-			if ( delta_t_min_i < delta_t_min)
-			{
-				delta_t_min = delta_t_min_i;
-			}
+			// if ( delta_t_min_i < delta_t_min)
+			// {
+			// 	delta_t_min = delta_t_min_i;
+			// }
 		}
 
 	/*  Free allocated memory */

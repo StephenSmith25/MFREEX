@@ -31,12 +31,15 @@ double lambdaCrit(double critLambda_n, state_variables * state, VEC * para, doub
 
 	// Find maximum strain rate 
 
-	double V1 = state->Vdot->me[0][0];
-	double V2 = state->Vdot->me[1][1];
-	double V3 = state->Vdot->me[2][2];
+	// double V1 = state->Vdot->me[0][0];
+	// double V2 = state->Vdot->me[1][1];
+	// double V3 = state->Vdot->me[2][2];
 
-	double maxSr = max(V1,V2);
-	maxSr = max(maxSr,V3);
+	// double maxSr = max(V1,V2);
+	// maxSr = max(maxSr,V3);
+
+		double maxSr = v_max(state->lambdaDot, &index);
+
 	if ( maxSr == 0){
 	 	maxSr = 0.01; 
 	}
