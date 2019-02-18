@@ -2,12 +2,13 @@ clear all
 close all
 
 PLOT_GRAPHS = false;
-TMAX = 0.25;
+TMAX = 0.35;
 
 
 path = './../../build/bin/preform/Displacement/';
 pathSR = './../../build/bin/preform/srRod/';
 boundaryNodes = csvread('./../../build/bin/preform/boundary.txt');
+
 boundaryNodes = [boundaryNodes;boundaryNodes(1)];
 
 addpath(path)
@@ -22,30 +23,33 @@ plot_point =111;
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.csv');
 disp = csvread(filename,1);
 
-
-
 % draw mould
-Radius_mould = 11.25;
+Radius_mould = 24;
 Height_mould = 30;
-Radius_out = 11.25;
-radius_bot_mould = 40;
 thickness_mould = 5;
-mould_length = 160;
+mould_length = 180;
+height = 74.2650;
+Radius_out = 11.25;
 
-height = 77;
+top_point = 48.920;
+
+
+
 mould_nodes = [];
 mould_nodes = [mould_nodes ; [Radius_out,height+5]   ];
-mould_nodes = [mould_nodes ; [Radius_out,height-10]   ];
-mould_nodes = [mould_nodes ; [Radius_out+Radius_mould,height-10-Radius_mould]   ];
+mould_nodes = [mould_nodes ; [Radius_out,68.92]   ];
+mould_nodes = [mould_nodes ; [Radius_out+Radius_mould,top_point]   ];
 mould_nodes = [mould_nodes ; [Radius_out+Radius_mould,height-mould_length]   ];
 mould_nodes = [mould_nodes ; [0,height-mould_length]   ];
 
 
 mould_nodes = [mould_nodes ; [0,height-mould_length-thickness_mould]   ];
 mould_nodes = [mould_nodes ; [Radius_out+Radius_mould+thickness_mould,height-mould_length-thickness_mould]   ];
-mould_nodes = [mould_nodes ; [Radius_out+Radius_mould+thickness_mould,height-10-Radius_mould]   ];
-mould_nodes = [mould_nodes ; [Radius_out+thickness_mould,height-10]   ];
+mould_nodes = [mould_nodes ; [Radius_out+Radius_mould+thickness_mould,top_point]   ];
+mould_nodes = [mould_nodes ; [Radius_out+thickness_mould,68.92]   ];
 mould_nodes = [mould_nodes ; [Radius_out+thickness_mould,height+5]   ];
+mould_nodes = [mould_nodes ; [Radius_out,height+5]   ];
+
 
 
 
@@ -76,6 +80,17 @@ plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
 hold on
 plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
 
+
+boundary_nodes_xy = disp(boundaryNodes,1:2);
+Rout = max(disp(:,1));
+height = max(disp(:,2));
+
+ix = find( boundary_nodes_xy(:,1) == Rout);
+iy = ix(find(boundary_nodes_xy(ix,2) == height));
+
+boundary_nodes = boundaryNodes(iy:end-2);
+
+
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(1)),'.csv');
 disp = csvread(filename,1);
@@ -100,6 +115,8 @@ hold on
 fill(-mould_nodes(:,1),mould_nodes(:,2),'w');
 hold on
 
+
+
 plot(disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'k.','markersize',3) % line plot
@@ -107,9 +124,9 @@ hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
 hold on
-plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
+plot(disp(boundary_nodes,1),disp(boundary_nodes,2),'b-')
 hold on
-plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
+plot(-disp(boundary_nodes,1),disp(boundary_nodes,2),'b-')
 %plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(5)),'.csv');
@@ -136,14 +153,13 @@ hold on
 plot(disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
-
+hold on
+plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
+hold on
+plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
 hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
-hold on
-fill(disp(boundaryNodes,1),disp(boundaryNodes,2),'g-')
-hold on
-fill(-disp(boundaryNodes,1),disp(boundaryNodes,2),'g')
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(10)),'.csv');
 disp = csvread(filename,1);
@@ -156,34 +172,56 @@ ylim([-170,ymax])
 
 
 
-figure
-
-filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.csv');
-disp = csvread(filename,1);
-
-hold on 
-fill(mould_nodes(:,1),mould_nodes(:,2),'w');
-hold on
-fill(-mould_nodes(:,1),mould_nodes(:,2),'w');
-hold on
-
-hold on
-hold on
-fill(disp(boundaryNodes,1),disp(boundaryNodes,2),'g-')
-hold on
-fill(-disp(boundaryNodes,1),disp(boundaryNodes,2),'g')
-hold on
-filename = strcat(pathSR,'srRod_',num2str(plotFiles(10)),'.csv');
-disp = csvread(filename,1);
-hold on
-fill(disp(:,1),disp(:,2),'r')          % line plot
-hold on
-fill(-disp(:,1),disp(:,2),'r-')         % line plot
-xlim([-50,50])
-ylim([-140,ymax])
-axis equal
-
-
+% 
+% figure
+% filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.csv');
+% 
+% 
+% disp = csvread(filename,1);
+% 
+% disp = disp(boundary_nodes,1:2);
+% 
+% boundary_nodes = reshape(boundary_nodes,2,(length(boundary_nodes))/2)';
+% 
+% boundary_nodes = boundary_nodes - iy;
+% 
+% 
+% 
+% 
+%  
+%  mould_nodes_index = zeros(5,2);
+% for i = 1:5
+%     mould_nodes_index(i,:) = [i,i+1];
+%     
+%     if ( i == length(mould_nodes))
+%         mould_nodes_index(i,:) = [i,1];
+%     end
+% end
+% 
+%  num_revolves = 32;
+% [tri, xyz] = bfRevolve(mould_nodes_index, mould_nodes, num_revolves);
+% 
+% for i = 1:length(mould_nodes_index) 
+%     for j = 1:round(num_revolves/2)
+%         tri_mod((i-1)*num_revolves/2 + j,:) = tri((i-1)*num_revolves + j,:);  
+%     end
+%     
+%     end
+% s = trisurf(tri_mod, xyz(:,1),xyz(:,2),xyz(:,3),'FaceColor','y');
+% 
+% 
+% 
+% [tri, xyz] = bfRevolve(boundary_nodes, disp(:,1:2), num_revolves);
+% 
+% % display the surface
+% hold on
+% trisurf(tri, xyz(:,1),xyz(:,2),xyz(:,3),'FaceColor','c');
+% 
+% axis equal
+% axis([-40 40 -40 40 -100 77])
+% 
+% 
+% %axis equal
 
 
 
@@ -279,7 +317,7 @@ for i = 1:length(plotFiles)
     [R U V] = poldecomp(F);
     
     
-    true_strain = logm(V);
+    true_strain = logm(U);
 
     
     hoop_strain(i) =true_strain(3,3);

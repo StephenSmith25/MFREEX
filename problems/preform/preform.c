@@ -36,16 +36,16 @@ const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
 // time step parameters
-const double TMAX = 0.25;
+const double TMAX = 0.4;
 double delta_t = 4e-7;
 
 // Meshfree parameters
-const double dmax = 3;
+const double dmax = 2;
 const int is_stabalised = 0;
 const int is_constant_support_size = 1;
 
 // stretch rod
-const double DISP_ROD_MAX = 80 ; // 132;
+const double DISP_ROD_MAX = 100 ; // 132;
 
 
 const int WRITE_FREQ = 100;
@@ -180,12 +180,17 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 	/* ---------------Mould----------------*/
 	/* ------------------------------------------*/
-	int numPoints_mould = 2;
-	MAT * mould_Nodes = m_get(numPoints_mould,2);
-	mould_Nodes->me[0][0] = 22.5;
-	mould_Nodes->me[0][1] = 55.75;
-	mould_Nodes->me[1][0] = 22.5;
-	mould_Nodes->me[1][1] = -83;
+	int numPoints_mould = 4;
+	MAT * mould_Nodes = m_get(numPoints_mould,4);
+
+	mould_Nodes->me[0][0] = 11.25;
+	mould_Nodes->me[0][1] = 68.920;
+	mould_Nodes->me[1][0] = 35.25;
+	mould_Nodes->me[1][1] = 48.920;
+	mould_Nodes->me[2][0] = mould_Nodes->me[1][0];
+	mould_Nodes->me[2][1] = -105.7350;
+	mould_Nodes->me[3][0] = 0;
+	mould_Nodes->me[3][1] = mould_Nodes->me[2][1];
 
 
 
@@ -431,6 +436,7 @@ int main(int argc, char** argv) {
 
 	IVEC * eb4_nodes ;
 	getBoundary(&eb4_nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,6);
+		iv_addNode(eb4_nodes,eb2->nodes->ive[0],'e');
 	int num_nodes_eb4 = eb4_nodes->max_dim;
 
 	MAT * contact_mould_nodes_coords = m_get(num_nodes_eb4 ,dim);

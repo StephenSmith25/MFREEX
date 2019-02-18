@@ -11,7 +11,7 @@ Radius_out = 22.50/2;
 length_preform = 70;
 length_wall = length_preform - Radius_in;
 
-NUM_NODES_THICKNESS=4;
+NUM_NODES_THICKNESS=5;
 %% NUMBER OF NODES
 N1 = 60;
 N2 = 5;
@@ -68,7 +68,7 @@ nodes = nodes(ib,:);
 boundaryNodes = linspace(1,length(nodes),length(nodes))';
 boundaryNodes(1:(ntheta + N1  ),2) = 2;
 boundaryNodes((ntheta+(N1)-6):((ntheta+(N1+ N2-2)+5)),2) = 5;
-boundaryNodes(((ntheta+(N1+ N2-2)+5)):end-(N3-2),2) = 6;
+boundaryNodes(((ntheta+(N1+ N2-2)+6)):end-(N3-2),2) = 6;
 
 boundaryNodes(end:-1:end-(N3-2),2) = 4;
 
@@ -125,6 +125,7 @@ end
 for i = round ((length(nodes)+1)/2):length(nodes)
    nodes(i,3) = interp1q(tempProfile(:,1),tempProfile(:,2),nodes(i,2));
 end
+
 figure
 plot(nodes(:,1),nodes(:,2),'k.');
 hold on
@@ -180,27 +181,30 @@ dlmwrite('../../problems/preform/preform.boundary',boundaryNodes,'-append',.....
     'delimiter',' ')
 
 
+
 % draw mould
-Radius_mould = 20;
+Radius_mould = 11.25;
 Height_mould = 30;
 radius_bot_mould = 40;
 thickness_mould = 5;
+mould_length = 160;
+height = 74.2650;
 
-height = max(nodes(:,2));
+
 mould_nodes = [];
 mould_nodes = [mould_nodes ; [Radius_out,height+5]   ];
-mould_nodes = [mould_nodes ; [Radius_out,height-10]   ];
-mould_nodes = [mould_nodes ; [Radius_out+Radius_mould,height-Radius_mould]   ];
-mould_nodes = [mould_nodes ; [Radius_out+Radius_mould,-50]   ];
-mould_nodes = [mould_nodes ; [0,-50]   ];
+mould_nodes = [mould_nodes ; [Radius_out,68.92]   ];
+mould_nodes = [mould_nodes ; [Radius_out+Radius_mould,68.92-Radius_mould]   ];
+mould_nodes = [mould_nodes ; [Radius_out+Radius_mould,height-mould_length]   ];
+mould_nodes = [mould_nodes ; [0,height-mould_length]   ];
 
 
-mould_nodes = [mould_nodes ; [0,-50-thickness_mould]   ];
-mould_nodes = [mould_nodes ; [Radius_out+Radius_mould+thickness_mould,-50-thickness_mould]   ];
-mould_nodes = [mould_nodes ; [Radius_out+Radius_mould+thickness_mould,height-Radius_mould]   ];
-mould_nodes = [mould_nodes ; [Radius_out+thickness_mould,height-10]   ];
+mould_nodes = [mould_nodes ; [0,height-mould_length-thickness_mould]   ];
+mould_nodes = [mould_nodes ; [Radius_out+Radius_mould+thickness_mould,height-mould_length-thickness_mould]   ];
+mould_nodes = [mould_nodes ; [Radius_out+Radius_mould+thickness_mould,68.92-Radius_mould]   ];
+mould_nodes = [mould_nodes ; [Radius_out+thickness_mould,68.92]   ];
 mould_nodes = [mould_nodes ; [Radius_out+thickness_mould,height+5]   ];
-
+mould_nodes = [mould_nodes ; [Radius_out,height+5]   ];
 
 
 hold on 

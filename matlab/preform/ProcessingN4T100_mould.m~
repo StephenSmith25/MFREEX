@@ -2,10 +2,13 @@ clear all
 close all
 
 PLOT_GRAPHS = true;
+TMAX = 0.35;
+
 
 path = './../../build/bin/preform/Displacement/';
 pathSR = './../../build/bin/preform/srRod/';
 boundaryNodes = csvread('./../../build/bin/preform/boundary.txt');
+
 boundaryNodes = [boundaryNodes;boundaryNodes(1)];
 
 addpath(path)
@@ -16,15 +19,55 @@ numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
 
-plot_point =128;
+plot_point =111;
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.csv');
 disp = csvread(filename,1);
+
+% draw mould
+Radius_mould = 24;
+Height_mould = 30;
+thickness_mould = 5;
+mould_length = 180;
+height = 74.2650;
+Radius_out = 11.25;
+
+top_point = 48.920;
+
+
+
+mould_nodes = [];
+mould_nodes = [mould_nodes ; [Radius_out,height+5]   ];
+mould_nodes = [mould_nodes ; [Radius_out,68.92]   ];
+mould_nodes = [mould_nodes ; [Radius_out+Radius_mould,top_point]   ];
+mould_nodes = [mould_nodes ; [Radius_out+Radius_mould,height-mould_length]   ];
+mould_nodes = [mould_nodes ; [0,height-mould_length]   ];
+
+
+mould_nodes = [mould_nodes ; [0,height-mould_length-thickness_mould]   ];
+mould_nodes = [mould_nodes ; [Radius_out+Radius_mould+thickness_mould,height-mould_length-thickness_mould]   ];
+mould_nodes = [mould_nodes ; [Radius_out+Radius_mould+thickness_mould,68.92-Radius_mould]   ];
+mould_nodes = [mould_nodes ; [Radius_out+thickness_mould,68.92]   ];
+mould_nodes = [mould_nodes ; [Radius_out+thickness_mould,height+5]   ];
+mould_nodes = [mould_nodes ; [Radius_out,height+5]   ];
+
+
+
 
 
 
 
 figure
+
+
+
+
 subplot(1,3,1)       % add first plot in 2 x 2 grid
+
+hold on 
+fill(mould_nodes(:,1),mould_nodes(:,2),'w');
+hold on
+fill(-mould_nodes(:,1),mould_nodes(:,2),'w');
+hold on
 plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
@@ -36,6 +79,17 @@ hold on
 plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
 hold on
 plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
+
+
+boundary_nodes_xy = disp(boundaryNodes,1:2);
+Rout = max(disp(:,1));
+height = max(disp(:,2));
+
+ix = find( boundary_nodes_xy(:,1) == Rout);
+iy = ix(find(boundary_nodes_xy(ix,2) == height));
+
+boundary_nodes = boundaryNodes(iy:end-2);
+
 
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(1)),'.csv');
@@ -55,6 +109,14 @@ ylim([-170,ymax])
 filename = strcat(path,'displacement_',num2str(plotFiles(5)),'.csv');
 disp = csvread(filename,1);
 subplot(1,3,2)       % add first plot in 2 x 2 grid
+hold on 
+fill(mould_nodes(:,1),mould_nodes(:,2),'w');
+hold on
+fill(-mould_nodes(:,1),mould_nodes(:,2),'w');
+hold on
+
+
+
 plot(disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'k.','markersize',3) % line plot
@@ -62,9 +124,9 @@ hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
 hold on
-plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
+plot(disp(boundary_nodes,1),disp(boundary_nodes,2),'b-')
 hold on
-plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
+plot(-disp(boundary_nodes,1),disp(boundary_nodes,2),'b-')
 %plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(5)),'.csv');
@@ -81,26 +143,87 @@ disp = csvread(filename,1);
 
 
 subplot(1,3,3)       % add first plot in 2 x 2 grid
+
+hold on 
+fill(mould_nodes(:,1),mould_nodes(:,2),'w');
+hold on
+fill(-mould_nodes(:,1),mould_nodes(:,2),'w');
+hold on
+
 plot(disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
-
+hold on
+plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
+hold on
+plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b--')
 hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
 hold on
-plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
-hold on
-plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
-hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(10)),'.csv');
 disp = csvread(filename,1);
 hold on
-plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
+fill(disp(:,1),disp(:,2),'r')          % line plot
 hold on
-plot(-disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
+fill(-disp(:,1),disp(:,2),'r-')         % line plot
 xlim([-50,50])
 ylim([-170,ymax])
+
+
+
+% 
+% figure
+% filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.csv');
+% 
+% 
+% disp = csvread(filename,1);
+% 
+% disp = disp(boundary_nodes,1:2);
+% 
+% boundary_nodes = reshape(boundary_nodes,2,(length(boundary_nodes))/2)';
+% 
+% boundary_nodes = boundary_nodes - iy;
+% 
+% 
+% 
+% 
+%  
+%  mould_nodes_index = zeros(5,2);
+% for i = 1:5
+%     mould_nodes_index(i,:) = [i,i+1];
+%     
+%     if ( i == length(mould_nodes))
+%         mould_nodes_index(i,:) = [i,1];
+%     end
+% end
+% 
+%  num_revolves = 32;
+% [tri, xyz] = bfRevolve(mould_nodes_index, mould_nodes, num_revolves);
+% 
+% for i = 1:length(mould_nodes_index) 
+%     for j = 1:round(num_revolves/2)
+%         tri_mod((i-1)*num_revolves/2 + j,:) = tri((i-1)*num_revolves + j,:);  
+%     end
+%     
+%     end
+% s = trisurf(tri_mod, xyz(:,1),xyz(:,2),xyz(:,3),'FaceColor','y');
+% 
+% 
+% 
+% [tri, xyz] = bfRevolve(boundary_nodes, disp(:,1:2), num_revolves);
+% 
+% % display the surface
+% hold on
+% trisurf(tri, xyz(:,1),xyz(:,2),xyz(:,3),'FaceColor','c');
+% 
+% axis equal
+% axis([-40 40 -40 40 -100 77])
+% 
+% 
+% %axis equal
+
+
 
 print -dpng2 Displacement.png
 
@@ -110,7 +233,7 @@ figure
 plot(m(:,1),m(:,2),'k-','linewidth',3);
 xlabel('time');
 ylabel('Pressure');
-xlim([0,0.6])
+xlim([0,TMAX])
 ylim([0,0.9])
 
 b = csvread("Experimental/N4T100_exp_pressure.csv");
@@ -194,7 +317,7 @@ for i = 1:length(plotFiles)
     [R U V] = poldecomp(F);
     
     
-    true_strain = logm(V);
+    true_strain = logm(U);
 
     
     hoop_strain(i) =true_strain(3,3);
@@ -224,7 +347,7 @@ subplot(1,2,1)
 plot(time,(axial_strain),'k','linewidth',2);
 % hold on
 % plot(time,log(1+shear_strain),'k');
-xlim([0,0.4])
+xlim([0,TMAX])
 
 c = csvread("Experimental/N4100_exp_strain_axial.csv");
 
@@ -293,7 +416,7 @@ c = csvread("Experimental/N4100_fe_strain_hoop.csv");
 hold on
 plot(c(:,1),c(:,2),'r--')
 
-xlim([0,0.4])
+xlim([0,TMAX])
 
 
 %set axis
@@ -341,7 +464,7 @@ path = './../../build/bin/preform/History/Stress';
 
 
 
-adpath(path)
+addpath(path)
 displacementdir = path ;
 d = dir(displacementdir);
 d1 = dir([displacementdir,'*.txt']);
