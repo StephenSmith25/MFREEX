@@ -50,7 +50,6 @@ double contactDetection(MAT * point, MAT * masterNodes,MAT  * msNormal){
 		double dot2 = masterDist[0]*eA[0] + masterDist[1]*eA[1];
 
 
-
 		segLength = sqrt(pow(eA[0],2) + pow(eA[1],2));
 		segNormal[0] = eA[1]/segLength;
 		segNormal[1] = -eA[0]/segLength;
@@ -60,7 +59,6 @@ double contactDetection(MAT * point, MAT * masterNodes,MAT  * msNormal){
 		}
 
 	}else if ( closestNode == (masterNodes->m -1)){
-
 
 		closestSeg = closestNode - 1;
 
@@ -177,10 +175,9 @@ double contactDetection(MAT * point, MAT * masterNodes,MAT  * msNormal){
 	}else{
 		double closestPoint[2] = {masterNodes->me[closestNode][0],masterNodes->me[closestNode][1]};
 		closestDistance = sqrt(   pow(closestPoint[0] - point->me[0][0],2)   + pow(closestPoint[1] - point->me[0][1],2)     );
-
 		double vec2slave[2] = {closestPoint[0]-point->me[0][0],closestPoint[1]-point->me[0][1]};
-		delta = vec2slave[0]*segNormal[0] + vec2slave[1]*segNormal[1];
-	}
+	delta = vec2slave[0]*segNormal[0] + vec2slave[1]*segNormal[1];
+		}
 
 
 	/*  point lies between closestSegNode and closestNode */

@@ -15,7 +15,7 @@ d = dir(displacementdir);
 d1 = dir([displacementdir,'*.csv']);
 numFiles = size(d,1) -3 ;
 
-plotFiles = ceil(linspace(1,numFiles,150));
+plotFiles = ceil(linspace(1,numFiles,200));
 
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.csv');
 disp = csvread(filename,1);
@@ -57,9 +57,14 @@ for i = 1:num_loops
     
     plot(i,i+1,'r.');
     filename = strcat(path,'displacement_',num2str(plotFiles(i)),'.csv');
+    
     disp = csvread(filename,1);
+    filename = strcat(pathSR,'srRod_',num2str(plotFiles(i)),'.csv');
+disp_1 = csvread(filename,1);
+
    fill(disp(boundaryNodes,1),disp(boundaryNodes,2),'r',-disp(boundaryNodes,1),disp(boundaryNodes,2),'r', ....
-      mould_nodes(:,1),mould_nodes(:,2),[0.5,0.5,0.5],-mould_nodes(:,1),mould_nodes(:,2),[0.5,0.5,0.5]);
+      mould_nodes(:,1),mould_nodes(:,2),[0.5,0.5,0.5],-mould_nodes(:,1),mould_nodes(:,2),[0.5,0.5,0.5], ....
+      disp_1(:,1),disp_1(:,2),'g',-disp_1(:,1),disp_1(:,2),'g')   ;
 
   
 
@@ -76,7 +81,7 @@ for i = 1:num_loops
 end
 
 v = VideoWriter('newfile.avi','Motion JPEG AVI');
-v.Quality = 95;
+v.Quality = 100;
 open(v)
 writeVideo(v,F)
 close(v)

@@ -124,9 +124,9 @@ hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal
 hold on
-plot(disp(boundary_nodes,1),disp(boundary_nodes,2),'b-')
+plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
-plot(-disp(boundary_nodes,1),disp(boundary_nodes,2),'b-')
+plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 %plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(5)),'.csv');

@@ -40,7 +40,7 @@ const double TMAX = 0.4;
 double delta_t = 4e-7;
 
 // Meshfree parameters
-const double dmax = 2;
+const double dmax = 3;
 const int is_stabalised = 0;
 const int is_constant_support_size = 1;
 
@@ -48,7 +48,7 @@ const int is_constant_support_size = 1;
 const double DISP_ROD_MAX = 100 ; // 132;
 
 
-const int WRITE_FREQ = 100;
+const int WRITE_FREQ = 200;
 
 int main(int argc, char** argv) {
 
@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
 	for ( int i = 0 ; i < numPointsRod ; i++){
 		double theta = -PI/2.00 + (PI/2/(numPointsRod-1))*i;
 		srNodes->me[i][0] = stretchRodRad*cos(theta);
-		srNodes->me[i][1] =10.2+stretchRodRad*sin(theta);
+		srNodes->me[i][1] =10.3+stretchRodRad*sin(theta);
 		srNodes_O->me[i][0] = srNodes->me[i][0];
 		srNodes_O->me[i][1] = srNodes->me[i][1];
 	}
@@ -180,17 +180,19 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 	/* ---------------Mould----------------*/
 	/* ------------------------------------------*/
-	int numPoints_mould = 4;
-	MAT * mould_Nodes = m_get(numPoints_mould,4);
+	int numPoints_mould = 5;
+	MAT * mould_Nodes = m_get(numPoints_mould,2);
 
 	mould_Nodes->me[0][0] = 11.25;
-	mould_Nodes->me[0][1] = 68.920;
-	mould_Nodes->me[1][0] = 35.25;
-	mould_Nodes->me[1][1] = 48.920;
-	mould_Nodes->me[2][0] = mould_Nodes->me[1][0];
-	mould_Nodes->me[2][1] = -105.7350;
-	mould_Nodes->me[3][0] = 0;
-	mould_Nodes->me[3][1] = mould_Nodes->me[2][1];
+	mould_Nodes->me[0][1] = 80;
+	mould_Nodes->me[1][0] = 11.25;
+	mould_Nodes->me[1][1] = 68.920;
+	mould_Nodes->me[2][0] = 35.25;
+	mould_Nodes->me[2][1] = 48.920;
+	mould_Nodes->me[3][0] = mould_Nodes->me[2][0];
+	mould_Nodes->me[3][1] = -105.7350;
+	mould_Nodes->me[4][0] = 0;
+	mould_Nodes->me[4][1] = mould_Nodes->me[3][1];
 
 
 
@@ -477,6 +479,7 @@ int main(int argc, char** argv) {
 
 	free_shapefunction_container(sf_nodes);
 
+
 	/* ------------------------------------------*/
 	/* --------------Cavity pressure-------------*/
 	/* ------------------------------------------*/
@@ -625,7 +628,7 @@ int main(int argc, char** argv) {
 
 	/*  Explicit Loop */
 	while ( t_n < TMAX)
-	//while ( n < 10000)
+	//while ( n < 1)
 	{
 
 		/*  Update time step */
@@ -645,7 +648,6 @@ int main(int argc, char** argv) {
 
 		// STRETCH ROD 
 		// update stretch rod position
-
 		if ( disp_rod_n < DISP_ROD_MAX){
 		/*  Update stretch rod */
 			double x = t_n_1*smoothstep(t_n_1,0.01,0);
@@ -668,13 +670,11 @@ int main(int argc, char** argv) {
 			phi = phi_contact->sf_list[i]->phi;
 			testPoint->me[0][0] = updatedNodes->me[eb3_nodes->ive[i]][0];
 			testPoint->me[0][1] = updatedNodes->me[eb3_nodes->ive[i]][1];
-
 			distanceProj = contactDetection(testPoint,srNodes,msNormal);
-
 			if (distanceProj > 0){
 
-				f1Cor = 0.5*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-				f2Cor = 0.5*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+				f1Cor = 1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+				f2Cor = 1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
 
 
 				for ( int k = 0 ; k < neighbours->max_dim ; k++){
@@ -699,8 +699,9 @@ int main(int argc, char** argv) {
 
 			if (distanceProj > 0){
 
-				f1Cor = 0.5*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
-				f2Cor = 0.5*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
+
+				f1Cor = 1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
+				f2Cor = 1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
 
 
 				for ( int k = 0 ; k < neighbours->max_dim ; k++){
@@ -828,6 +829,7 @@ int main(int argc, char** argv) {
 
 		// update nodal positions
 		if ( n % WRITE_FREQ == 0 ){
+
 			char filename[50];
 			snprintf(filename, 50, "displacement_%d%s",fileCounter,".csv");
 			saveDisp(updatedNodes,state_n_1,"./Displacement",filename);
