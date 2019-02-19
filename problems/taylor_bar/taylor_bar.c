@@ -27,6 +27,7 @@
 #include "Boundary/Displacement/setUpBC.h"
 #include "Boundary/Displacement/enforceBC.h"
 #include "Integration/SCNI/scni_update_B.h"
+#include "Force/Internal/internalForce_Inelastic.h"
 
 // problem
 
@@ -34,7 +35,7 @@ const int dim = 2;
 const int is_AXI = 1;
 
 // Loading
-const double INITIAL_BAR_VELOCITY = -300; // 300 m/s
+const double INITIAL_BAR_VELOCITY = -370; // 300 m/s
 
 // model
 const double radius = 0.391/100; // 0.391cm
@@ -45,7 +46,7 @@ const double NUM_NODES_Z = 30;
 
 // MATERIAL
 const double YIELD_STRESS = 0.29e9; // Pa
-const double mu = 0.3; // poisson ratio
+const double nu = 0.3; // poisson ratio
 const double E = 78.2e9; // Pa
 const double rho = 2700; // kg/m^3
 
@@ -58,12 +59,13 @@ const double dmax = 2;
 const int constant_support_size = 1;
 const int is_stabalised = 0;
 
-// Define the rigid plate
-const double RIGID_PLATE_WIDTH = 0.5/100;
 
 
 // writing files
-const int  writeFreq = 100;
+const int  writeFreq = 2000;
+
+
+char * MATERIAL = "J2";
 
 
 
@@ -80,17 +82,16 @@ int main(int argc, char** argv) {
 
 	/*////////////////////////////////////////////////////////// */
 	/*////////////////////////////////////////////////////////// */
+	double lamdba = E*nu/((1.00+nu)*(1.00-2.00*nu));
+	double mu = E/(2.00*(1.00+nu));
 
 
+	VEC * materialParameters = v_get(3);
+	materialParameters->ve[0] = lamdba;
+	materialParameters->ve[1] = mu;
+	materialParameters->ve[2] = YIELD_STRESS;
 
-
-	char * material = "cubic_rivlin";
-
-	VEC * materialParameters = v_get(4);
-	materialParameters->ve[0] = 0.373e9;
-	materialParameters->ve[1] = -0.031e9;
-	materialParameters->ve[2] = 0.005e9;
-	materialParameters->ve[3] = 1e9;
+	v_foutput(stdout, materialParameters);
 
 
 	/*////////////////////////////////////////////////////////// */
@@ -129,14 +130,6 @@ int main(int argc, char** argv) {
 	fp = fopen("cells.txt","w");
 	print_voronoi_diagram(fp,vor);
 	fclose(fp);
-
-	m_foutput(stdout, xI);
-	// Rigid plate
-	MAT * rigidPlate = m_get(2,2);
-	rigidPlate->me[0][0] = 0;
-	rigidPlate->me[1][0] = RIGID_PLATE_WIDTH;
-	// rigidPlate->me[2][0] = 2*RIGID_PLATE_WIDTH/3.00;
-	// rigidPlate->me[3][0] = RIGID_PLATE_WIDTH;
 
 
 	/* ------------------------------------------*/
@@ -289,13 +282,22 @@ int main(int argc, char** argv) {
 	setUpBC(eb2,inv_nodal_mass,&mfree);
 
 
+	/* ------------------------------------------*/
+	/* --------------State storage---------------*/
+	/* ------------------------------------------*/
 
-	printf("contact nodes = ");
-	m_foutput(stdout, contact_nodes_coords);
-		// get shape function and contact nodes
-	shape_function_container * phi_contact = mls_shapefunction(contact_nodes_coords, 
-		"linear", "quartic", 2, 1, &mfree);
-	m_foutput(stdout,contact_nodes_coords);
+	printf("creating state storage\n");
+
+	state_variables ** state_n = new_material_state(NULL, mfree.num_nodes, 
+		0 , 
+		1 , 
+		dim, is_AXI);
+	state_variables ** state_n_1 = new_material_state(NULL, mfree.num_nodes, 
+		0 , 
+		1 , 
+		dim, is_AXI);
+
+	printf("finished creating state storage\n");
 
 
 	/*////////////////////////////////////////////////////////// */
@@ -344,7 +346,7 @@ int main(int argc, char** argv) {
 
 	for ( int i = 0 ; i < numnodes ; i++)
 	{
-		v_n_mh->ve[2*i+1 ] = INITIAL_BAR_VELOCITY;
+		v_n->ve[2*i+1 ] = INITIAL_BAR_VELOCITY;
 	}
 
 
@@ -367,12 +369,36 @@ int main(int argc, char** argv) {
 	double Wkin = 0;
 	double Wbal = 0;
 
-	// Contact
-	MAT * testPoint = m_get(1,dim);
-	double distanceProj = 0.00;
-	MAT * msNormal = m_get(1,dim);
-	double f1Cor = 0.00;
-	double f2Cor = 0.00;
+	
+
+	// get kinematically admissable velocity field
+	// Find acceleration
+
+	// 
+	sv_mlt(1.00/(deltaT),v_n,a_n);
+	v_zero(v_n);
+
+	// predict configuration
+	v_mltadd(v_n,a_n,0.5*deltaT,v_n_h);
+	v_mltadd(d_n,v_n_h,deltaT,d_n_1);
+
+
+	// Find accceleration corrections
+
+	/*  Make a time step  */ 
+	v_mltadd(v_n_mh,a_n,deltaT,v_n_h);
+	v_mltadd(d_n,v_n_h,deltaT,d_n_1);
+	__add__(nodes_X->base, d_n_1->ve, updatedNodes->base, num_dof);
+
+	/*  Implement contact BCs */
+	enforceBC(eb2,d_n_1); 
+	// find velocity correction
+	sv_mlt(1.00/(deltaT),eb2->uCorrect2,v_correct);
+	for ( int k = 0 ; k < v_correct->max_dim; k++){
+		v_n_mh->ve[2*k+1] += v_correct->ve[k];
+	}
+
+
 	/*  Iteration counter */
 	int n= 0;
 
@@ -381,14 +407,14 @@ int main(int argc, char** argv) {
 		int fileCounter = 1;
 
 
-	
+	iv_foutput(stdout, eb2->nodes);
 	/*  For writing to file */
 	fp = fopen("loadDisp.txt","w");
 	fprintf(fp,"%lf %lf\n",0.00,0.00);
 	fclose(fp);
 
 	//while ( t_n < tMax){
-	while ( n < 1000000){
+	while ( n < 100 ){
 
 		/*  Update time step */
 		t_n_1 = t_n + deltaT;
@@ -401,7 +427,7 @@ int main(int argc, char** argv) {
 		__add__(nodes_X->base, d_n_1->ve, updatedNodes->base, num_dof);
 
 
-		/*  Implement BCs */
+		/*  Implement symmetry BCs */
 		enforceBC(eb1,d_n_1); 
 		// find velocity correction
 		sv_mlt(1.00/(deltaT),eb1->uCorrect1,v_correct);
@@ -409,17 +435,12 @@ int main(int argc, char** argv) {
 			v_n_h->ve[2*k] += v_correct->ve[k];
 		}
 
-		// if ( n % 1000 == 0)
-		// {
-		// 	v_foutput(stdout, V_n)
-		// }
-
-		/*  Implement BCs */
+		/*  Implement contact BCs */
 		enforceBC(eb2,d_n_1); 
 		// find velocity correction
 		sv_mlt(1.00/(deltaT),eb2->uCorrect2,v_correct);
 		for ( int k = 0 ; k < v_correct->max_dim; k++){
-			//v_n_h->ve[2*k+1] += v_correct->ve[k];
+			v_n_h->ve[2*k+1] += v_correct->ve[k];
 		}
 
 
@@ -430,9 +451,11 @@ int main(int argc, char** argv) {
 
 		// Find internal force
 
-		double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, v_n_h,
-		 materialParameters, "cubic_rivlin", is_AXI, dim,t_n_1);
-
+	
+		internalForce_Inelastic(Fint_n_1, _scni_obj,
+		d_n_1, v_n_h,
+		materialParameters, state_n_1, state_n,
+		mfree.IS_AXI, dim,deltaT,t_n_1, MATERIAL);
 
 
 

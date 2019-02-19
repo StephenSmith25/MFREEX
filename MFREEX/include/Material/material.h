@@ -47,6 +47,7 @@ typedef struct state_variables
 
 	// Stress
 	MAT * sigma;
+	MAT * sigma_R;
 
 
 	// rotated tensors
@@ -65,7 +66,11 @@ typedef struct state_variables
 	MAT * alpha;
 	MAT * back_stress;
 	MAT * eta;
-	MAT * Deps;
+	MAT * d_el;
+	MAT * d_pl;
+	MAT * S_trial;
+
+	double Deps;
 
 
 	/* ------------------------------------------*/

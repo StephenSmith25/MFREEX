@@ -26,10 +26,10 @@ if (OPENMP_FOUND)
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
-SET(GCC_COVERAGE_COMPILE_FLAGS "-O3 -std=c99")
+SET(GCC_COVERAGE_COMPILE_FLAGS "-O3 -g -std=c99")
 add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
 add_executable(taylor_bar taylor_bar.c)
-target_link_libraries(taylor_bar CVLIB MFREEX EFSFLIB triangulate meschach m gpc util)
+target_link_libraries(taylor_bar CVLIB MFREEX Eigen EFSFLIB triangulate meschach m gpc util)
 
 

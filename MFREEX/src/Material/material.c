@@ -66,12 +66,15 @@ state_variables ** new_material_state(double * temperatures, int num_Points, int
 
 		// Stress
 		state[i]->sigma = m_get(dim_s,dim_s);
+		state[i]->sigma_R = m_get(dim_s,dim_s);
 
 
 
 		// Material temperature
-		state[i]->temperature = temperatures[i]+273.15;
-
+		if ( temperatures != NULL)
+		{
+			state[i]->temperature = temperatures[i]+273.15;
+		}
 
 
 		/* ------------------------------------------*/
@@ -131,9 +134,14 @@ state_variables ** new_material_state(double * temperatures, int num_Points, int
 		/* ------------------------------------------*/
 		/* ---------------Plasticity-----------------*/
 		/* ------------------------------------------*/
-		if ( is_plastic == 0)
+		if ( is_plastic == 1)
 		{
+			state[i]->S_trial = m_get(dim_s,dim_s);
+			state[i]->d_pl = m_get(dim_s,dim_s);
+			state[i]->d_el = m_get(dim_s,dim_s);
 
+			state[i]->gamma = 0;
+			state[i]->Deps = 0;
 			// do nothing for now
 		}
 

@@ -13,9 +13,9 @@ length_wall = length_preform - Radius_in;
 
 NUM_NODES_THICKNESS=4;
 %% NUMBER OF NODES
-N1 = 80;
+N1 = 90;
 N2 = 5;
-N3 = 5;
+N3 = 6;
 ntheta = 20;
 
 % starting from 0,0
@@ -67,8 +67,15 @@ nodes = nodes(ib,:);
 % boundary nodes
 boundaryNodes = linspace(1,length(nodes),length(nodes))';
 boundaryNodes(1:(ntheta + N1  ),2) = 2;
-boundaryNodes((ntheta+(N1)-6):((ntheta+(N1+ N2-2)+5)),2) = 5;
-boundaryNodes(((ntheta+(N1+ N2-2)+6)):end-(N3-2),2) = 6;
+%boundaryNodes((ntheta+(N1)-6):((ntheta+(N1+ N2-2)+5)),2) = 5;
+
+
+ix = find(nodes(boundaryNodes(:,1),2) >= height - 5)
+boundaryNodes(ix,2) = 5;
+
+
+
+boundaryNodes(ix(end)+1:end-(N3-2),2) = 6;
 
 boundaryNodes(end:-1:end-(N3-2),2) = 4;
 
@@ -85,10 +92,10 @@ for i = 1:NUM_NODES_THICKNESS
 Rin_bot = RADIUS(i+1) ;
 
 
-theta = linspace(-85,0,ntheta);
+theta = linspace(-90,0,ntheta);
 
-for i = 1:length(theta)
-    nodes1(count,:) = [Rin_bot*cosd(theta(i)),  Rin_bot*sind(theta(i))];
+for i = 1:length(theta)-1
+    nodes1(count,:) = [Rin_bot*cosd(theta(i+1)),  Rin_bot*sind(theta(i+1))];
     count = count +1;
     
 end

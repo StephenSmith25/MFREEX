@@ -17,13 +17,15 @@ plotFiles = ceil(linspace(1,numFiles,10));
 filename = strcat(path,'/displacement_',num2str(plotFiles(1)),'.txt');
 disp = csvread(filename);
 figure
-subplot(2,3,1)       % add first plot in 2 x 2 grid
+subplot(1,3,1)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 hold on
 plot(-disp(:,1), disp(:,2),'k.');
 
 plate_width = 3*max(disp(:,1)) ;
 hold on
+axis equal
+
 plot([-plate_width,plate_width],[0,0],'r');
 
 max_Y = max(disp(:,2));
@@ -31,9 +33,8 @@ min_Y = min(disp(:,2));
 
 max_X = max(disp(:,2));
 min_X = -max(disp(:,2));
-ylim([min_Y - 0.1*max_Y,2*max_Y])
+ylim([min_Y - 0.1*max_Y,1.2*max_Y])
 xlim([-plate_width - 0.1*plate_width,plate_width + 0.1*plate_width])
-
 
 
 
@@ -42,7 +43,7 @@ filename = strcat(path,'/displacement_',num2str(plotFiles(2)),'.txt');
 disp = csvread(filename);
 
 
-subplot(2,3,2)       % add first plot in 2 x 2 grid
+subplot(1,3,2)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
  
 
@@ -50,17 +51,21 @@ hold on
 plot(-disp(:,1), disp(:,2),'k.');
 hold on
 plot([-plate_width,plate_width],[0,0],'r');
-ylim([min_Y - 0.1*max_Y,2*max_Y])
+
+axis equal
+
+
+ylim([min_Y - 0.1*max_Y,1.2*max_Y])
 xlim([-plate_width - 0.1*plate_width,plate_width + 0.1*plate_width])
 
     
 
 % third plot
-filename = strcat(path,'/displacement_',num2str(plotFiles(4)),'.txt');
+filename = strcat(path,'/displacement_',num2str(plotFiles(10)),'.txt');
 disp = csvread(filename);
 
 
-subplot(2,3,3)       % add first plot in 2 x 2 grid
+subplot(1,3,3)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 
 hold on
@@ -68,61 +73,77 @@ plot(-disp(:,1), disp(:,2),'k.');
 
 hold on
 plot([-plate_width,plate_width],[0,0],'r');
-
-ylim([min_Y - 0.1*max_Y,2*max_Y])
+axis equal
+ylim([min_Y - 0.1*max_Y,1.2*max_Y])
 xlim([-plate_width - 0.1*plate_width,plate_width + 0.1*plate_width])
 
+% legend
+path = './../../build/bin/taylor_bar/History/Stress';
 
 
-% fourth plot
-filename = strcat(path,'/displacement_',num2str(plotFiles(7)),'.txt');
-disp = csvread(filename);
 
-subplot(2,3,4)       % add first plot in 2 x 2 grid
-plot(disp(:,1),disp(:,2),'k.')           % line plot
 
+addpath(path)
+displacementdir = path ;
+d = dir(displacementdir);
+d1 = dir([displacementdir,'*.txt']);
+numFiles = size(d,1)/2 -3 ;
+
+
+for i = 1:length(plotFiles)
+    
+    
+
+    filename = strcat('Stress_',num2str(plotFiles(i)),'.txt');
+
+    stress = csvread(filename);
+    hoop_stress(i) = stress(3,3);
+    axial_stress(i) = stress(2,2);
+    radial_stress(i) = stress(1,1);
+    shear_stress(i) = stress(1,2);
+
+ 
+
+  
+end
+
+time = [1:1:length(hoop_stress)];
+
+figure
+hold on 
+plot(time,hoop_stress,'g');
+hold on 
+plot(time,radial_stress,'m');
 hold on
-plot(-disp(:,1), disp(:,2),'k.');
 
+plot(time,axial_stress,'r');
 hold on
-plot([-plate_width,plate_width],[0,0],'r');
-ylim([min_Y - 0.1*max_Y,2*max_Y])
-xlim([-plate_width - 0.1*plate_width,plate_width + 0.1*plate_width])
+%set axis
+set(gca, 'FontName', 'cmr12')
+% set x tics and y tics
+set(gca,...
+'Units','normalized',...
+'FontWeight','normal',...
+'FontSize',14,... % size ofiguref numbers on axis
+'FontName','cmr14') % font name
+set(gca,'TickLabelInterpreter', 'latex');
 
+% Y label
+ylabel({'Cauchy Stress '},...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% X label
+xlabel('Time',...
+'interpreter','latex',...
+'FontWeight','normal',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% legend
 
-
-filename = strcat(path,'/displacement_',num2str(plotFiles(8)),'.txt');
-disp = csvread(filename);
-
-% 5th plot
-subplot(2,3,5)       % add first plot in 2 x 2 grid
-plot(disp(:,1),disp(:,2),'k.')           % line plot
-
-
-hold on
-plot(-disp(:,1), disp(:,2),'k.');
-
-hold on
-plot([-plate_width,plate_width],[0,0],'r');
-
-ylim([min_Y - 0.1*max_Y,2*max_Y])
-xlim([-plate_width - 0.1*plate_width,plate_width + 0.1*plate_width])
-
-
-
-% 6th plot
-filename = strcat(path,'/displacement_',num2str(plotFiles(9)),'.txt');
-disp = csvread(filename);
-
-
-subplot(2,3,6)       % add first plot in 2 x 2 grid
-plot(disp(:,1),disp(:,2),'k.')           % line plot
-
-hold on
-plot(-disp(:,1), disp(:,2),'k.');
-
-hold on
-plot([-plate_width,plate_width],[0,0],'r');
-xlim([-plate_width - 0.1*plate_width,plate_width + 0.1*plate_width])
-
-ylim([min_Y - 0.1*max_Y,2*max_Y])
+legend({ 'Hoop, Radial, Axial' },... % { 'legend1', 'legend2',...}
+'interpreter','latex',...
+'FontSize',12,...
+'FontName','cmr14',...
+'Location','SouthEast')
+%
