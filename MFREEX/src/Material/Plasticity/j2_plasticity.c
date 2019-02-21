@@ -87,20 +87,31 @@ int j2_plasticity(state_variables * stateNew, state_variables * stateOld, VEC * 
 	} else if ( f >= 0 )
 	{
 
-		// Find normal to the yield surface
-		double R = ROOT_2_OVER_3*sigma_yield;
 
 		// Find normal to the yield surface
-		sm_mlt((1.00/R),S_trial,Q);
+		sm_mlt((1.00/norm_trial_state),S_trial,Q);
 
 		// Find plastic consistencey parameter
-		double norm_trial_state = contraction(S_trial,S_trial);
 		double delta_gamma = (1.00/(2*mu))*(f);
 
 		sm_mlt(delta_gamma*2*mu,Q,delta_sigma);
 		m_sub(sigma_n_1_t,delta_sigma,sigma_n_1);
 
 		// Find increment in plastic strain
+
+			// Find deviatoric trial stress
+		double trace_sigma= sigma_n_1->me[0][0]+sigma_n_1->me[1][1] + sigma_n_1->me[2][2];
+		m_ident(ident);
+		sm_mlt(trace_sigma*(1.00/3.00),ident,ident);
+
+		m_sub(sigma_n_1,ident,S_trial);
+
+
+		norm_trial_state = sqrt(contraction(S_trial,S_trial));
+		// Yield function, find if material is yielding
+		// effective stress
+		f = norm_trial_state - ROOT_2_OVER_3*sigma_yield;
+
 
 	}
 
@@ -114,23 +125,6 @@ int j2_plasticity(state_variables * stateNew, state_variables * stateOld, VEC * 
 	mmtr_mlt(stateNew->m_temp1,stateNew->R,stateNew->sigma);
 
 
-	// Find deviatoric trial stress
-	trace_sigma_trial = sigma_n_1->me[0][0]+sigma_n_1->me[1][1] + sigma_n_1->me[2][2];
-	m_ident(ident);
-	sm_mlt(trace_sigma_trial*(1.00/3.00),ident,ident);
-
-	m_sub(sigma_n_1,ident,S_trial);
-
-
-	norm_trial_state = sqrt(contraction(S_trial,S_trial));
-	// Yield function, find if material is yielding
-	// effective stress
-	f = norm_trial_state - ROOT_2_OVER_3*sigma_yield;
-
-
-
-	printf("norm_trial_state = %10.2E \n", norm_trial_state);
-	printf("f = %10.2E \n",f);
 
 	return 0;
 }

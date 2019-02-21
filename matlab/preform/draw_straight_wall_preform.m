@@ -13,7 +13,7 @@ length_wall = length_preform - Radius_in;
 
 NUM_NODES_THICKNESS=4;
 %% NUMBER OF NODES
-N1 = 90;
+N1 = 70;
 N2 = 5;
 N3 = 6;
 ntheta = 20;
@@ -67,15 +67,15 @@ nodes = nodes(ib,:);
 % boundary nodes
 boundaryNodes = linspace(1,length(nodes),length(nodes))';
 boundaryNodes(1:(ntheta + N1  ),2) = 2;
-boundaryNodes((ntheta+(N1)-6):((ntheta+(N1+ N2-2)+5)),2) = 5;
+%boundaryNodes((ntheta+(N1)-6):((ntheta+(N1+ N2-2)+5)),2) = 5;
 
 
 ix = find(nodes(boundaryNodes(:,1),2) >= height - 5)
-boundaryNodes(ix,2) = 
+boundaryNodes(ix,2) = 5;
 
 
 
-boundaryNodes(((ntheta+(N1+ N2-2)+6)):end-(N3-2),2) = 6;
+boundaryNodes(ix(end)+1:end-(N3-2),2) = 6;
 
 boundaryNodes(end:-1:end-(N3-2),2) = 4;
 
@@ -190,33 +190,36 @@ dlmwrite('../../problems/preform/preform.boundary',boundaryNodes,'-append',.....
 
 
 % draw mould
-Radius_mould = 11.25;
+Radius_mould = 24;
 Height_mould = 30;
-radius_bot_mould = 40;
 thickness_mould = 5;
-mould_length = 160;
+mould_length = 180;
 height = 74.2650;
+Radius_out = 11.25;
+
+top_point = 48.920;
+
 
 
 mould_nodes = [];
 mould_nodes = [mould_nodes ; [Radius_out,height+5]   ];
 mould_nodes = [mould_nodes ; [Radius_out,68.92]   ];
-mould_nodes = [mould_nodes ; [Radius_out+Radius_mould,68.92-Radius_mould]   ];
+mould_nodes = [mould_nodes ; [Radius_out+Radius_mould,top_point]   ];
 mould_nodes = [mould_nodes ; [Radius_out+Radius_mould,height-mould_length]   ];
 mould_nodes = [mould_nodes ; [0,height-mould_length]   ];
 
 
 mould_nodes = [mould_nodes ; [0,height-mould_length-thickness_mould]   ];
 mould_nodes = [mould_nodes ; [Radius_out+Radius_mould+thickness_mould,height-mould_length-thickness_mould]   ];
-mould_nodes = [mould_nodes ; [Radius_out+Radius_mould+thickness_mould,68.92-Radius_mould]   ];
+mould_nodes = [mould_nodes ; [Radius_out+Radius_mould+thickness_mould,top_point]   ];
 mould_nodes = [mould_nodes ; [Radius_out+thickness_mould,68.92]   ];
 mould_nodes = [mould_nodes ; [Radius_out+thickness_mould,height+5]   ];
 mould_nodes = [mould_nodes ; [Radius_out,height+5]   ];
 
 
-hold on 
-plot(mould_nodes(:,1),mould_nodes(:,2),'b.');
 
-C = rand(3,1);
+% hold on 
+% plot(mould_nodes(:,1),mould_nodes(:,2),'b.');
+% 
 hold on 
-fill(mould_nodes(:,1),mould_nodes(:,2),'b');
+fill(mould_nodes(:,1),mould_nodes(:,2),'w');

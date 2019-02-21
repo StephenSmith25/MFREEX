@@ -1,14 +1,14 @@
-#include "Force/Internal/internalForce_Inelastic.h"
+#include "Force/Internal/internalForce_Inelastic_Buckley.h"
 #include "Deformation/update_Polar_Decomposition.h"
 #include "Deformation/rotate_tensor.h"
 #include "Material/Buckley/buckleyStress.h"
-#include "Material/Plasticity/j2_plasticity.h"
+
 
 static int call_count;
 static int print_count = 1;
 
 double 
-internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
+internalForce_Inelastic_Buckley(VEC * Fint, SCNI_OBJ * scni_obj,
 	VEC * disp, VEC * velocity,
 	VEC * matParams, 
 	state_variables ** stateNew, 
@@ -24,33 +24,20 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 	__zero__(Fint->ve,Fint->max_dim);
 	double rho;
 
-
-	double lambda;
-	double mu;
-
-
 	// create pointer to correct material function
 	int (*mat_func_ptr)(state_variables *,state_variables * ,VEC *, double) = NULL;
 
-	int mat = -1;
 	if ( strcmp (Material, "BUCKLEY") == 0 )
 	{
 		mat_func_ptr = &buckleyStress;
 		rho = matParams->ve[31];
-		mat = 1;
-
 
 	}else if( strcmp(Material, "J2") == 0 )
 	{
-		mat_func_ptr = &j2_plasticity;
-		rho = 2700;
-		lambda =  matParams->ve[0];
-		mu = matParams->ve[1];
+		//mat_func_ptr = &yeoh;
 
-		mat = 2;
 
 	}
-
 
 	// Get dimensions of working vectors and matricies
 	int dim_piola = 0;
@@ -82,7 +69,7 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 
 
 	// set number of threads
-	omp_set_num_threads(4);
+	omp_set_num_threads(8);
 
 	int i;
 #pragma omp parallel 
@@ -158,31 +145,23 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			/* ------------------------------------------*/
 
 
-			if ((i == 0) && (call_count % 1000 == 0)) {
+			if ((i == 130) && (call_count % 1000 == 0)) {
 
 
 				stateNew[i]->F->me[2][1] = t_n_1;
-
-
 
 				snprintf(filename, 50, "strain_%d%s",print_count,".txt");
 				mat2csv(stateNew[i]->F,"./History/Strain",filename);
 
 
-				if ( mat == 1)
-				{
-					snprintf(filename, 50, "Bond_Stress_%d%s",print_count,".txt");
-					mat2csv(stateNew[i]->Sb,"./History/Stress",filename);
-					snprintf(filename, 50, "Conformational_Stress_%d%s",print_count,".txt");
-					mat2csv(stateNew[i]->Sc,"./History/Stress",filename);
-				}
 
-				if ( mat == 2)
-				{
-					snprintf(filename, 50, "Stress_%d%s",print_count,".txt");
-					mat2csv(stateNew[i]->sigma,"./History/Stress",filename);
-				}
-		
+				//snprintf(filename, 50, "Stress_%d%s",print_count,".txt");
+				//mat2csv(stateNew[i]->sigma,"./History/Stress",filename);
+
+				snprintf(filename, 50, "Bond_Stress_%d%s",print_count,".txt");
+				mat2csv(stateNew[i]->Sb,"./History/Stress",filename);
+				snprintf(filename, 50, "Conformational_Stress_%d%s",print_count,".txt");
+				mat2csv(stateNew[i]->Sc,"./History/Stress",filename);
 				stateNew[i]->F->me[2][1] = 0;
 				++print_count;
 
@@ -194,51 +173,22 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			/* ------------------------------------------*/
 			/* -----------------Damping -----------------*/
 			/* ------------------------------------------*/
+
+			double b1 = 0;
+			double b2 = 1.44;
+			double Le = 3;
+			double Cd = 1400;
 			double div_v = stateNew[i]->div_v;
-			double b1,b2,Le,Cd,qv,delta_t;
-			if ( mat == 1){
-				b1 = 0;
-				b2 = 1.44;
-				Le = 3;
-				Cd = 1400;
-
-				
-				qv =  rho*Le*b1*Cd * div_v;
-
-				if ( div_v < 0)
-				{
-					qv += rho*Le*(b2 * (Le/1000) * pow(div_v,2)) ;
-				}
-
-
-
-			}else if ( mat == 2)
+			double qv =  rho*Le*b1*Cd * div_v;
+			if ( div_v < 0)
 			{
-				b1 = 0;
-				b2 = 0;
-				Le = 0.000809;
-				Cd = sqrt(((lambda+2*mu)/rho));
-				qv = 0;
-				double eta = 0;
-				if ( div_v < 0)
-				{
-					qv = rho*Le*(b2 * (Le) * pow(div_v,2))  -   b1*div_v*rho*Le*Cd;
-					eta = b1 -b2*b2*Le*(1/Cd)*div_v;
-
-				}
-
-				delta_t = (1e-10)*(sqrt(1+eta*eta)-eta); 
-
-				if ( delta_t <delta_t_min_i )
-				{
-					delta_t_min_i = delta_t;
-				}
-
+				qv += rho*Le*(b2 * (Le/1000) * pow(div_v,2)) - rho*Le*b1*Cd * div_v ;
 			}
-			// if ( i == 0 || i == 30 || i == 60 || i==90 || i==120 || i==150 || i == 180 || i == 210 || i == 240 || i==270 )
-			// {
-			// printf("div_v = %lf \n",div_v);
-			// }
+
+
+
+
+
 			/* ------------------------------------------*/
 			/* --------------Internal Force--------------*/
 			/* ------------------------------------------*/
@@ -256,19 +206,12 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			//         Get Voigt Piola Kirchoff stress         //
 			//-------------------------------------------------//
 
-			if ( mat == 1){
-				
-				sigma->ve[0] = (stateNew[i]->sigma->me[0][0])/1e6 + qv;
-				sigma->ve[1] = (stateNew[i]->sigma->me[1][1])/1e6 + qv;
-				sigma->ve[2] = stateNew[i]->sigma->me[0][1]/1e6;
-				sigma->ve[3] = (stateNew[i]->sigma->me[2][2])/1e6 + qv;
 
-			}else if ( mat == 2){
-				sigma->ve[0] = (stateNew[i]->sigma->me[0][0]) + qv;
-				sigma->ve[1] = (stateNew[i]->sigma->me[1][1]) + qv;
-				sigma->ve[2] = stateNew[i]->sigma->me[0][1];
-				sigma->ve[3] = (stateNew[i]->sigma->me[2][2]) + qv;	
-			}
+			sigma->ve[0] = (stateNew[i]->sigma->me[0][0])/1e6 + qv;
+			sigma->ve[1] = (stateNew[i]->sigma->me[1][1])/1e6 + qv;
+			sigma->ve[2] = stateNew[i]->sigma->me[0][1]/1e6;
+			sigma->ve[3] = (stateNew[i]->sigma->me[2][2])/1e6 + qv;
+
 
 
 			/*  Internal force vectors */
@@ -305,10 +248,10 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 	#pragma omp critical
 		{
 			__add__(fIntTemp->ve, Fint->ve, Fint->ve, Fint->max_dim);
-			if ( delta_t_min_i < delta_t_min)
-			{
-				delta_t_min = delta_t_min_i;
-			}
+			// if ( delta_t_min_i < delta_t_min)
+			// {
+			// 	delta_t_min = delta_t_min_i;
+			// }
 		}
 
 	/*  Free allocated memory */
@@ -325,6 +268,6 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 
 
 
-	return delta_t_min;
+	return 0.000;
 }
 

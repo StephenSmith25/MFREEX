@@ -47,7 +47,7 @@ mould_nodes = [mould_nodes ; [Radius_out+thickness_mould,68.92]   ];
 mould_nodes = [mould_nodes ; [Radius_out+thickness_mould,height+5]   ];
 mould_nodes = [mould_nodes ; [Radius_out,height+5]   ];
 
-
+mould_nodes =zeros(3,2);
 
 num_loops = length(plotFiles);
 

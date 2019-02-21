@@ -35,14 +35,14 @@ const int dim = 2;
 const int is_AXI = 1;
 
 // Loading
-const double INITIAL_BAR_VELOCITY = -370; // 300 m/s
+const double INITIAL_BAR_VELOCITY = -373; // 300 m/s
 
 // model
 const double radius = 0.391/100; // 0.391cm
 const double height = 2.346/100; // 2.346cm;
 const double start_height = 0;
-const double NUM_NODES_R = 10;
-const double NUM_NODES_Z = 30;
+const double NUM_NODES_R = 11;
+const double NUM_NODES_Z = 31;
 
 // MATERIAL
 const double YIELD_STRESS = 0.29e9; // Pa
@@ -52,10 +52,10 @@ const double rho = 2700; // kg/m^3
 
 // time step
 const double tMax = 10;
-const double deltaT = 1e-9;
+double deltaT = 1e-11;
 
 // Meshfree
-const double dmax = 2;
+const double dmax = 4;
 const int constant_support_size = 1;
 const int is_stabalised = 0;
 
@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
 	int num_boundary ;
 	int * boundaryNodes;
 
-	MAT * xI = meshgrid(0.00, radius, NUM_NODES_R, start_height, 
+	MAT * xI = meshgrid(0, radius, NUM_NODES_R, start_height, 
 		height+start_height, NUM_NODES_Z, &boundaryNodes, &num_boundary);
 
 
@@ -346,7 +346,7 @@ int main(int argc, char** argv) {
 
 	for ( int i = 0 ; i < numnodes ; i++)
 	{
-		v_n->ve[2*i+1 ] = INITIAL_BAR_VELOCITY;
+		v_n_mh->ve[2*i+1 ] = INITIAL_BAR_VELOCITY;
 	}
 
 
@@ -371,33 +371,39 @@ int main(int argc, char** argv) {
 
 	
 
-	// get kinematically admissable velocity field
-	// Find acceleration
+	// // get kinematically admissable velocity field
+	// // Find acceleration
+	// v_copy(v_n,v_n_mh);
 
-	// 
-	sv_mlt(1.00/(deltaT),v_n,a_n);
-	v_zero(v_n);
+	// // 
+	// sv_mlt(1.00/(deltaT),v_n,a_n);
+	// v_zero(v_n);
 
-	// predict configuration
-	v_mltadd(v_n,a_n,0.5*deltaT,v_n_h);
-	v_mltadd(d_n,v_n_h,deltaT,d_n_1);
+	// // predict configuration
+	// v_mltadd(v_n,a_n,0.5*deltaT,v_n_h);
+	// v_mltadd(d_n,v_n_h,deltaT,d_n_1);
 
 
-	// Find accceleration corrections
+	// // Find accceleration corrections
 
-	/*  Make a time step  */ 
-	v_mltadd(v_n_mh,a_n,deltaT,v_n_h);
-	v_mltadd(d_n,v_n_h,deltaT,d_n_1);
-	__add__(nodes_X->base, d_n_1->ve, updatedNodes->base, num_dof);
+	// /*  Make a time step  */ 
+	// v_mltadd(v_n_mh,a_n,deltaT,v_n_h);
+	// v_mltadd(d_n,v_n_h,deltaT,d_n_1);
+	// __add__(nodes_X->base, d_n_1->ve, updatedNodes->base, num_dof);
 
-	/*  Implement contact BCs */
-	enforceBC(eb2,d_n_1); 
-	// find velocity correction
-	sv_mlt(1.00/(deltaT),eb2->uCorrect2,v_correct);
-	for ( int k = 0 ; k < v_correct->max_dim; k++){
-		v_n_mh->ve[2*k+1] += v_correct->ve[k];
-	}
+	// /*  Implement contact BCs */
+	// enforceBC(eb2,d_n_1); 
 
+	// v_copy(v_n,v_n_mh);
+	// // find velocity correction
+	// sv_mlt(1.00/(deltaT),eb2->uCorrect2,v_correct);
+	// for ( int k = 0 ; k < v_correct->max_dim; k++){
+	// 	v_n_mh->ve[2*k+1] += v_correct->ve[k];
+	// }
+
+
+	// v_foutput(stdout, v_n_mh);
+	// (0);
 
 	/*  Iteration counter */
 	int n= 0;
@@ -406,15 +412,15 @@ int main(int argc, char** argv) {
 	/*  File write counter */
 		int fileCounter = 1;
 
+	iv_foutput(stdout, eb1_nodes);
 
-	iv_foutput(stdout, eb2->nodes);
 	/*  For writing to file */
 	fp = fopen("loadDisp.txt","w");
 	fprintf(fp,"%lf %lf\n",0.00,0.00);
 	fclose(fp);
 
-	//while ( t_n < tMax){
-	while ( n < 100 ){
+	while ( t_n < tMax){
+	//while ( n < 1 ){
 
 		/*  Update time step */
 		t_n_1 = t_n + deltaT;
@@ -427,21 +433,22 @@ int main(int argc, char** argv) {
 		__add__(nodes_X->base, d_n_1->ve, updatedNodes->base, num_dof);
 
 
-		/*  Implement symmetry BCs */
+		// /*  Implement symmetry BCs */
 		enforceBC(eb1,d_n_1); 
-		// find velocity correction
-		sv_mlt(1.00/(deltaT),eb1->uCorrect1,v_correct);
-		for ( int k = 0 ; k < v_correct->max_dim; k++){
-			v_n_h->ve[2*k] += v_correct->ve[k];
-		}
+		// // find velocity correction
+		// sv_mlt(1.00/(deltaT),eb1->uCorrect1,v_correct);
+		// for ( int k = 0 ; k < v_correct->max_dim; k++){
+		// 	//v_n_h->ve[2*k] += v_correct->ve[k];
+		// }
+
 
 		/*  Implement contact BCs */
 		enforceBC(eb2,d_n_1); 
 		// find velocity correction
 		sv_mlt(1.00/(deltaT),eb2->uCorrect2,v_correct);
-		for ( int k = 0 ; k < v_correct->max_dim; k++){
-			v_n_h->ve[2*k+1] += v_correct->ve[k];
-		}
+		// for ( int k = 0 ; k < v_correct->max_dim; k++){
+		// 	v_n_h->ve[2*k+1] += v_correct->ve[k];
+		// }
 
 
 		// find new nodal positions
@@ -452,7 +459,7 @@ int main(int argc, char** argv) {
 		// Find internal force
 
 	
-		internalForce_Inelastic(Fint_n_1, _scni_obj,
+		double delta_t_min = internalForce_Inelastic(Fint_n_1, _scni_obj,
 		d_n_1, v_n_h,
 		materialParameters, state_n_1, state_n,
 		mfree.IS_AXI, dim,deltaT,t_n_1, MATERIAL);
@@ -519,6 +526,7 @@ int main(int argc, char** argv) {
 		v_copy(v_n_1,v_n);
 		v_copy(a_n_1,a_n);
 		t_n = t_n_1;
+		deltaT = 0.8*delta_t_min;
 		// update iteration counter
 		n++	;
 

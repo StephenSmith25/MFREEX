@@ -12,7 +12,7 @@
 #include "mls_shapefunction.h"
 #include "setDomain.h"
 #include "smoothstep.h"
-#include "Force/Internal/internalForce_Inelastic.h"
+#include "Force/Internal/internalForce_Inelastic_Buckley.h"
 #include "Force/Internal/internalForce_hyperelastic.h"
 #include "Boundary/Displacement/essential_boundary.h"
 #include "mat2csv.h"
@@ -47,6 +47,8 @@ const int is_constant_support_size = 1;
 // stretch rod
 const double DISP_ROD_MAX = 100 ; // 132;
 
+// 
+const int WITH_MOULD = 0;
 
 const int WRITE_FREQ = 200;
 
@@ -686,7 +688,7 @@ int main(int argc, char** argv) {
 
 
 		}
-
+		if ( WITH_MOULD == 1){
 		// MOULD CONTACT CONDITIONS
 		for ( int i = 0 ; i < eb4_nodes->max_dim ; i++){
 
@@ -712,6 +714,7 @@ int main(int argc, char** argv) {
 			}
 
 
+		}
 		}
 
 
@@ -782,7 +785,7 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 		__sub__(d_n_1->ve, disp_r->ve,disp_inc->ve, num_dof);
 
-		internalForce_Inelastic(Fint_n_1, _scni_obj,
+		internalForce_Inelastic_Buckley(Fint_n_1, _scni_obj,
 		disp_inc, v_n_h,
 		matParams, state_n_1, state_n,
 		mfree.IS_AXI, dim,delta_t,t_n_1, MATERIAL);

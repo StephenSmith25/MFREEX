@@ -1,7 +1,7 @@
 clear all
 close all
 
-PLOT_GRAPHS = false;
+PLOT_GRAPHS = true;
 TMAX = 0.35;
 
 
@@ -19,7 +19,7 @@ numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
 
-plot_point =111;
+plot_point =131;
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.csv');
 disp = csvread(filename,1);
 
@@ -317,7 +317,7 @@ for i = 1:length(plotFiles)
     [R U V] = poldecomp(F);
     
     
-    true_strain = logm(U);
+    true_strain = logm(V);
 
     
     hoop_strain(i) =true_strain(3,3);

@@ -11,8 +11,8 @@ DOUT_BOT = 22.50;
 
 
 % mid diameter
-DOUT_MID = 23.01;
-DIN_MID = 14.61;
+DOUT_MID = 23.19;
+DIN_MID = 14.8844;
 
 
 % top diamter
