@@ -62,7 +62,7 @@ double gammaV(state_variables * state, double maxLambdaN,double critLambda,
 
 	double shiftTemperature = temperature * 
 	pow(10, ( ( shiftTSlope*log2sr ) / ( shiftTIntercept + log2sr)));
-	// //shiftTemperature = temperature;
+	//shiftTemperature = temperature;
 	gamma0 = exp( Cs/(shiftTemperature - Tinf) - Cs/(starT - Tinf));
 	gamma0 = gamma0*refGamma;
 

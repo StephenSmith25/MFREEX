@@ -11,7 +11,7 @@
 #include <assert.h>
 #include <omp.h>
 
-shape_function_container * mls_shapefunction(MAT * compute_points, char * basis, char * weight, int dim, int compute, meshfreeDomain * mfree);
+shape_function_container * mls_shapefunction(MAT * compute_points, int compute, meshfreeDomain * mfree);
 int free_shapefunction_container(shape_function_container * sf);
 
 #endif

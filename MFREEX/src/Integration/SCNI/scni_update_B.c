@@ -51,13 +51,12 @@ int scni_update_B(SCNI_OBJ * scni, VEC * disp, voronoi_diagram * voronoi, meshfr
 
 
 	// get shape function at verticies
-	shape_function_container * sf_verticies = mls_shapefunction(cell_verticies, "linear", "cubic", 2, 1, Mfree);
+	shape_function_container * sf_verticies = mls_shapefunction(cell_verticies, 1, Mfree);
 
-	// shape_function_container * sf_nodes = mls_shapefunction(nodes, "quadratic", "quartic", 2, 3, Mfree);
 	shape_function_container * sf_nodes;
 
 	if ( is_AXI ==1){
-		sf_nodes = mls_shapefunction(nodes, "linear", "cubic", 2, 2, Mfree);
+		sf_nodes = mls_shapefunction(nodes, 2, Mfree);
 	}
 
 

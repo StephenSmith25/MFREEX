@@ -131,8 +131,8 @@ internalForce_Inelastic(VEC * Fint, SCNI_OBJ * scni_obj,
 			m_inverse_small(stateNew[i]->F, stateNew[i]->invF);
 
 			// Find Jacobian at n+1
-			stateNew[i]->Jacobian = stateOld[i]->Jacobian + stateOld[i]->Jacobian*stateNew[i]->div_v*DT;
-			//stateNew[i]->Jacobian = determinant(stateNew[i]->F);
+			//stateNew[i]->Jacobian = stateOld[i]->Jacobian + stateOld[i]->Jacobian*stateNew[i]->div_v*DT;
+			stateNew[i]->Jacobian = determinant(stateNew[i]->F);
 
 
 			//------------------------------------------//

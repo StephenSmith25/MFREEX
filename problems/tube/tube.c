@@ -27,6 +27,9 @@
 #include "Boundary/Displacement/enforceBC.h"
 #include "Integration/SCNI/scni_update_B.h"
 
+char * basis_type = "linear";
+char * weight = "cubic";
+char * kernel_shape = "radial";
 
 int main(int argc, char** argv) {
 
@@ -186,8 +189,13 @@ int main(int argc, char** argv) {
 	VEC * dI = v_get(xI->m);
 
 	// meshfree domain
-	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI};
-	setDomain(&mfree,constant_support_size, dmax);
+	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI,
+		.weight_function = weight, .kernel_shape = kernel_shape, 
+		.basis_type = basis_type,.is_constant_support_size = constant_support_size,
+		.dmax_radial = dmax};
+	
+	setDomain(&mfree);
+
 
 	v_foutput(stdout,mfree.di);
 
@@ -257,8 +265,7 @@ int main(int argc, char** argv) {
 	VEC * nodal_mass = v_get(mfree.num_nodes);
 	VEC * inv_nodal_mass = v_get(mfree.num_nodes);
 	// get shape function and contact nodes
-	shape_function_container * phi_nodes = mls_shapefunction(mfree.nodes, 
-		"linear", "cubic", 2, 1, &mfree);
+	shape_function_container * phi_nodes = mls_shapefunction(mfree.nodes, 1, &mfree);
 
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
@@ -331,7 +338,7 @@ int main(int argc, char** argv) {
 	m_foutput(stdout,pB->coords);
 
 
-	shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes, "linear", "cubic", 2, 1, &mfree);
+	shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes, 1, &mfree);
 
 	MAT * Lambda = m_get(2*mfree.num_nodes, 2*mfree.num_nodes);
 

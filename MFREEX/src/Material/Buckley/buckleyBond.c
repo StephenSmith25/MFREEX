@@ -49,10 +49,10 @@ int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * p
 	double sigma_m = stateOld->mSigma;
 
 
-	// if (sigma_m < 0)
-	//  {
-	//  	sigma_m = 0;
- // 	}
+	if (sigma_m < 0)
+	 {
+	 	sigma_m = 0;
+ 	}
 
 	if ( tauOCT == 0){
 		alpha_sig = 1;
@@ -68,6 +68,8 @@ int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * p
 	double alpha_T = exp ( (H0/R) * ( 1/temperature - 1/star_T) );
 	
 
+	
+
 	// tau = tau_s * alpha_s * alpha_T * alpha_sig ;
 	double tau = (star_mu0/(2*Gb))*alpha_sig*alpha_s*alpha_T;
 
@@ -77,6 +79,13 @@ int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * p
 
 	double sbFactor = 1 - exp(-dt/tau);
 
+	// using delta_Ubar to find 
+	m_zero(stateNew->m_temp1);
+	m_zero(stateNew->m_temp2);
+
+
+	//sm_mlt(2*Gb*tau/dt,stateNew->delta_ep_bar,stateNew->m_temp1);
+
 	// mat1 = 2Gb*D*tau
 	sm_mlt(2*Gb*tau,d,stateNew->m_temp1);
 
@@ -85,6 +94,7 @@ int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * p
 
 	// deltaSb = ( 1- exp(-dt/tau)) * ( 2G*D*tau - Sb_n)
 	sm_mlt(sbFactor,stateNew->m_temp2,deltaSb);
+
 
 
 	m_add(deltaSb,Sb_n,Sb_n_1);

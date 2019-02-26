@@ -17,6 +17,13 @@
 #include "mat2csv.h"
 #include "trigen.h"
 
+char * basis_type = "linear";
+char * weight = "cubic";
+char * kernel_shape = "radial";
+int constant_support_size = 1;
+int is_AXI = 0;
+
+
 int main(void )
 {
 
@@ -121,19 +128,21 @@ int main(void )
 	// shape function parameters
 	double dmax = 1.8;
 	int constant_support_size = 1;
-	char * basis = "quadratic";
-	char * weight = "cubic";
 	int compute = 3;
 	VEC * dI = v_get(xI->m);
 
 	// meshfree domain
-	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim};
-	setDomain(&mfree,constant_support_size, dmax);
+	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI,
+		.weight_function = weight, .kernel_shape = kernel_shape, 
+		.basis_type = basis_type,.is_constant_support_size = constant_support_size,
+		.dmax_radial = dmax};
+	
+	setDomain(&mfree);
 
 
 	// get transformation matrix at nodal points
 
-	shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes, "linear", "cubic", 2, 1, &mfree);
+	shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes,1, &mfree);
 
 	MAT * Lambda = m_get(2*mfree.num_nodes, 2*mfree.num_nodes);
 
@@ -256,8 +265,7 @@ int main(void )
 
 	}
 	// get shape function and traction nodes 
-	shape_function_container * phi_traction = mls_shapefunction(traction_nodes_coords, 
-		"linear", "quartic", 2, 1, &mfree);
+	shape_function_container * phi_traction = mls_shapefunction(traction_nodes_coords, 1, &mfree);
 
 	/* ------------------------------------------*/
 	/* ----------------Mass Vector---------------*/

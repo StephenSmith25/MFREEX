@@ -4,13 +4,31 @@
 #include "matrix.h"
 #include "matrix2.h"
 
+
+enum SUPPORT_TYPE {RADIAL,RECTANGULAR,ELLIPTICAL};
+
+
+
 typedef struct meshfreeDomain
 {
 	MAT * nodes;
 	VEC * di;
+	MAT * di_tensor;
+
+	double dmax_radial ;
+	double * dmax_tensor;
+	double dmax_elliptical;
+
+	char * kernel_shape;
+	char * basis_type;
+	char * weight_function;
+
+
+	enum SUPPORT_TYPE kernel_support;
 	int num_nodes;
 	int dim;
 	int IS_AXI;
+	int is_constant_support_size;
 } meshfreeDomain;
 
 typedef struct shape_function{

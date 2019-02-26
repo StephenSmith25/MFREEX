@@ -33,6 +33,7 @@ typedef struct state_variables
 	MAT * U;
 	MAT * V;
 	MAT * R;
+	MAT * delta_R;
 	MAT * Vdot;
 
 
@@ -84,11 +85,15 @@ typedef struct state_variables
 	MAT * eigVecVBar;
 	VEC * lambdaDot;
 	MAT * dbar;
-
+	MAT * EP_bar;
 	// Isochoric components
 	MAT * Dbar;
 	MAT * Lbar;
 	MAT * Fbar;
+	MAT * Vbar;
+	MAT * Ubar;
+	MAT * delta_Ubar;
+	MAT * delta_ep_bar;
 
 	// Conformational branch network left cauchy green tensor
 	MAT * Bbar;

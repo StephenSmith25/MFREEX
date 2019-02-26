@@ -56,7 +56,7 @@ int mscni_update_B(MSCNI_OBJ * mscni_obj,  VEC * disp, voronoi_diagram * voronoi
 
 
 	// get shape function at verticies
-	shape_function_container * sf_verticies = mls_shapefunction(cell_verticies, "linear", "cubic", 2, 1, Mfree);
+	shape_function_container * sf_verticies = mls_shapefunction(cell_verticies, 1, Mfree);
 	int num_cells = voronoi->num_cells;
 
 	MSCNI ** mscni_ = mscni_obj->scni;
@@ -89,7 +89,7 @@ int mscni_update_B(MSCNI_OBJ * mscni_obj,  VEC * disp, voronoi_diagram * voronoi
 	}
 
 
-	shape_function_container * sf_nodes = mls_shapefunction(centers, "linear", "cubic", 2, 1, Mfree);
+	shape_function_container * sf_nodes = mls_shapefunction(centers, 1, Mfree);
 	omp_set_num_threads(3);
 
 	register int i;

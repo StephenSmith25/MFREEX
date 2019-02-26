@@ -37,12 +37,23 @@ const int PLASTIC_MATERIAL = 0;
 
 // time step parameters
 const double TMAX = 0.4;
-double delta_t = 4e-7;
+double delta_t = 5e-7;
 
 // Meshfree parameters
-const double dmax = 3;
+const double dmax = 2.5;
+const double dmax_x =4;
+const double dmax_y =3;
+
+
+
+char * basis_type = "linear";
+char * weight = "cubic";
+char * kernel_shape = "rectangular";
+
+
+
 const int is_stabalised = 0;
-const int is_constant_support_size = 1;
+const int is_constant_support_size = 0;
 
 // stretch rod
 const double DISP_ROD_MAX = 100 ; // 132;
@@ -90,25 +101,25 @@ int main(int argc, char** argv) {
 	matParams->ve[15] = 1.8098e17;// Ns_c
 	matParams->ve[16] = 1.38e-17;// boltzmann constant kB
 	// slippage
-	// matParams->ve[17] = 100;// lambdaCrit
-	// matParams->ve[18] = 383.15;// Ts 
-	// matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
-	// matParams->ve[20] = 10612;// Cs 10612
-	// matParams->ve[21] = 95.48;// Tinf 95.48
-	// matParams->ve[22] = 0.1565;// C1
-	// matParams->ve[23] = 39.937;// C2
-	// matParams->ve[24] = 0.9878;// beta
-	// matParams->ve[25] = 0.33;// poissons ratio
-
 	matParams->ve[17] = 100;// lambdaCrit
 	matParams->ve[18] = 383.15;// Ts 
-	matParams->ve[19] = 0.359e6;// gamma0_ref = 0.653
-	matParams->ve[20] = 7307.8;// Cs 10612
-	matParams->ve[21] = 152.95;// Tinf 95.48
+	matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
+	matParams->ve[20] = 10612;// Cs 10612
+	matParams->ve[21] = 95.48;// Tinf 95.48
 	matParams->ve[22] = 0.1565;// C1
 	matParams->ve[23] = 39.937;// C2
 	matParams->ve[24] = 0.9878;// beta
 	matParams->ve[25] = 0.33;// poissons ratio
+
+	// matParams->ve[17] = 100;// lambdaCrit
+	// matParams->ve[18] = 383.15;// Ts 
+	// matParams->ve[19] = 0.359e6;// gamma0_ref = 0.653
+	// matParams->ve[20] = 7307.8;// Cs 10612
+	// matParams->ve[21] = 152.95;// Tinf 95.48
+	// matParams->ve[22] = 0.1565;// C1
+	// matParams->ve[23] = 39.937;// C2
+	// matParams->ve[24] = 0.9878;// beta
+	// matParams->ve[25] = 0.33;// poissons ratio
 
 
 	
@@ -163,7 +174,8 @@ int main(int argc, char** argv) {
 	for ( int i = 0 ; i < numPointsRod ; i++){
 		double theta = -PI/2.00 + (PI/2/(numPointsRod-1))*i;
 		srNodes->me[i][0] = stretchRodRad*cos(theta);
-		srNodes->me[i][1] =10.3+stretchRodRad*sin(theta);
+		// either 10.3 or 9
+		srNodes->me[i][1] =9+stretchRodRad*sin(theta);
 		srNodes_O->me[i][0] = srNodes->me[i][0];
 		srNodes_O->me[i][1] = srNodes->me[i][1];
 	}
@@ -276,14 +288,22 @@ int main(int argc, char** argv) {
 	// shape function parameters
 	VEC * dI = v_get(xI->m);
 
-	// meshfree domain
-	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI};
-	setDomain(&mfree,is_constant_support_size, dmax);
+	double dmax_tensor[dim];
+	dmax_tensor[0] = dmax_x;
+	dmax_tensor[1] = dmax_y;
 
-	v_foutput(stdout,mfree.di);
+	// meshfree domain
+	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI,
+		.weight_function = weight, .kernel_shape = kernel_shape, 
+		.basis_type = basis_type,.is_constant_support_size = is_constant_support_size,
+		.dmax_radial = dmax, .dmax_tensor = dmax_tensor};
+	
+	setDomain(&mfree);
+
+	//v_foutput(stdout,mfree.di);
+	m_foutput(stdout,mfree.di_tensor);
 
 	
-
 	/* ------------------------------------------*/
 	/* ------------------SCNI--------------------*/
 	/* ------------------------------------------*/
@@ -348,8 +368,7 @@ int main(int argc, char** argv) {
 	VEC * nodal_mass = v_get(mfree.num_nodes);
 	VEC * inv_nodal_mass = v_get(mfree.num_nodes);
 	// get shape function and contact nodes
-	shape_function_container * phi_nodes = mls_shapefunction(mfree.nodes, 
-		"linear", "cubic", 2, 1, &mfree);
+	shape_function_container * phi_nodes = mls_shapefunction(mfree.nodes, 1, &mfree);
 
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
@@ -433,8 +452,7 @@ int main(int argc, char** argv) {
 	}
 
 		// get shape function and contact nodes
-	shape_function_container * phi_contact = mls_shapefunction(contact_nodes_coords, 
-		"linear", "quartic", 2, 1, &mfree);
+	shape_function_container * phi_contact = mls_shapefunction(contact_nodes_coords,1, &mfree);
 	m_foutput(stdout,contact_nodes_coords);
 
 
@@ -451,8 +469,7 @@ int main(int argc, char** argv) {
 
 	}
 		// get shape function and contact nodes
-	shape_function_container * phi_contact_mould = mls_shapefunction(contact_mould_nodes_coords, 
-		"linear", "cubic", 2, 1, &mfree);
+	shape_function_container * phi_contact_mould = mls_shapefunction(contact_mould_nodes_coords,  1, &mfree);
 
 	m_foutput(stdout,contact_mould_nodes_coords);
 
@@ -461,7 +478,7 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 
 
-	shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes, "linear", "cubic", 2, 1, &mfree);
+	shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes, 1, &mfree);
 
 	MAT * Lambda = m_get(2*mfree.num_nodes, 2*mfree.num_nodes);
 
@@ -652,10 +669,10 @@ int main(int argc, char** argv) {
 		// update stretch rod position
 		if ( disp_rod_n < DISP_ROD_MAX){
 		/*  Update stretch rod */
-			double x = t_n_1*smoothstep(t_n_1,0.01,0);
+			double x = t_n_1*smoothstep(t_n_1,0.001,0);
 
 			disp_rod_n_1 = a0*pow(x,7) + a1*pow(x,6) + a2*pow(x,5) + a3*pow(x,4) + a4*pow(x,3) + a5*pow(x,2) +a6*pow(x,1) + a7;
-
+			disp_rod_n_1 = disp_rod_n_1;
 	
 			for ( int i = 0 ; i < srNodes->m ; i++){
 	
@@ -675,8 +692,8 @@ int main(int argc, char** argv) {
 			distanceProj = contactDetection(testPoint,srNodes,msNormal);
 			if (distanceProj > 0){
 
-				f1Cor = 1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-				f2Cor = 1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+				f1Cor = (2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+				f2Cor = (2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
 
 
 				for ( int k = 0 ; k < neighbours->max_dim ; k++){
@@ -702,8 +719,8 @@ int main(int argc, char** argv) {
 			if (distanceProj > 0){
 
 
-				f1Cor = 1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
-				f2Cor = 1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
+				f1Cor = (2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
+				f2Cor = (2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
 
 
 				for ( int k = 0 ; k < neighbours->max_dim ; k++){
@@ -893,8 +910,9 @@ int main(int argc, char** argv) {
 
 
 		if ( n % WRITE_FREQ == 0)
-			printf("%i  \t  %lf %10.2E %lf %lf %lf %lf %10.2E %lf \n",n,t_n,Wbal,
-				pre_n_1,disp_rod_n,v_rod,volume/1e3,delta_t,mfree.di->ve[0]);
+			printf("%i  \t  %lf %10.2E %lf %lf %lf %lf %10.2E  %lf %lf %lf \n",n,t_n,Wbal,
+				pre_n_1,disp_rod_n,v_rod,volume/1e3,delta_t,mfree.di->ve[0],mfree.di_tensor->me[130][0],mfree.di_tensor->me[130][1]
+				);
 
 
 

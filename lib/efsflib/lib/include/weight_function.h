@@ -7,8 +7,11 @@
 #include "quartic_spline.h"
 #include <math.h>
 #include "cubic_spline.h"
+#include "meshfree_structs.h"
 
-int weight_function (VEC * weights, double * xS, double dI, char * type, int compute, int dim );
+
+int weight_function (VEC * weights, double  * xS, double * dI_i, char * type, enum SUPPORT_TYPE support, 
+ int compute, int dim);
 
 
 #endif 

@@ -43,17 +43,72 @@ buckleyStress(state_variables * stateNew,
 			m_add(stateNew->Dbar,stateNew->W,stateNew->Lbar);
 
 			// remove rotation from D to get d
+			m_zero(stateNew->m_temp1);
 			un_rotate_tensor(stateNew->Dbar, stateNew->R, 
 				stateNew->m_temp1, stateNew->dbar);
 
 
+			// // Find U, and then delta U
+			// m_zero(stateNew->m_temp1);
+			// mtrm_mlt(stateNew->R, stateNew->V, stateNew->m_temp1);
+			// m_mlt(stateNew->m_temp1,stateNew->R,stateNew->U);
+
+			// // Find ubar
+			// sm_mlt(pow(stateOld->Jacobian,-1.00/3.00),stateNew->U,stateNew->Ubar);
+
+			// // now find ep_bar
+			// m_zero(stateNew->m_temp1);
+			// v_zero(stateNew->v_temp1);
+			// m_zero(stateNew->m_temp2);
+			// m_zero(stateNew->m_temp3);
+
+			// dsyevq3(stateNew->Ubar->me,stateNew->m_temp1->me,stateNew->v_temp1->ve);
+
+			// double ep_1 = log(stateNew->v_temp1->ve[0]);
+			// double ep_2 = log(stateNew->v_temp1->ve[1]);
+			// double ep_3 = log(stateNew->v_temp1->ve[2]);
+			// stateNew->m_temp3->me[0][0] = ep_1;
+			// stateNew->m_temp3->me[1][1] = ep_2;
+			// stateNew->m_temp3->me[2][2] = ep_3;
+
+
+
+			// // rotate strain to global coordinates
+			// m_mlt(stateNew->m_temp1,stateNew->m_temp3,stateNew->m_temp2);
+			// mmtr_mlt(stateNew->m_temp2,stateNew->m_temp1,stateNew->EP_bar);
+
+			// // Find deltaU
+			// // m_zero(stateNew->m_temp2);
+			// // m_zero(stateNew->m_temp2);
+
+			// m_sub(stateNew->EP_bar,stateOld->EP_bar,stateNew->delta_ep_bar);
+
+
+			// m_inverse_small(stateOld->Ubar,stateNew->m_temp2);
+			// m_mlt(stateNew->Ubar,stateNew->m_temp2,stateNew->delta_Ubar);
+
+			//m_zero(stateNew->m_temp1);
+			// m_mlt(stateOld->R, stateNew->delta_Ubar, stateNew->m_temp1);
+			// mmtr_mlt(stateNew->m_temp1,stateOld->R,stateNew->delta_Ubar);
+
+
+			// // delta ep = ln(delta U ) approx U-I
+			// MAT * ident = stateOld->m_temp4;
+			// m_ident(ident);
+			// m_sub(stateNew->delta_Ubar,ident,stateNew->delta_ep_bar);
 	
 			// Find Vbar dot
+			m_zero(stateNew->m_temp1);
+			m_zero(stateNew->m_temp2);
+
 			sm_mlt(pow(stateOld->Jacobian,-1.00/3.00)/dt,stateOld->V,stateNew->m_temp1);
 			sm_mlt(pow(stateNew->Jacobian,-1.00/3.00)/dt,stateNew->V,stateNew->m_temp2);
 			m_sub(stateNew->m_temp2,stateNew->m_temp1,stateNew->Vdot);
-			mtrm_mlt(stateNew->R,stateNew->Vdot,stateNew->m_temp1);
-			m_mlt(stateNew->m_temp1,stateNew->R,stateNew->Vdot);
+
+			// m_zero(stateNew->m_temp1);
+			// m_zero(stateNew->m_temp2);
+			// mtrm_mlt(stateNew->R,stateNew->Vdot,stateNew->m_temp1);
+			// m_mlt(stateNew->m_temp1,stateNew->R,stateNew->Vdot);
 
 
 			/* ------------------------------------------*/
@@ -78,11 +133,13 @@ buckleyStress(state_variables * stateNew,
 			buckleyConf(stateNew,stateOld, matParams,dt);
 
 			// rotate unrotated stress back into n+1 configuration
+			m_zero(stateNew->m_temp1);
 			m_mlt(stateNew->R,stateNew->Sb_R,stateNew->m_temp1);
 			mmtr_mlt(stateNew->m_temp1,stateNew->R,stateNew->Sb);
 
 
 			// rotate unrotated stress back into n+1 configuration
+			m_zero(stateNew->m_temp1);
 			m_mlt(stateNew->R,stateNew->Sc_R,stateNew->m_temp1);
 			mmtr_mlt(stateNew->m_temp1,stateNew->R,stateNew->Sc);
 			sm_mlt((1.00)/stateNew->Jacobian,stateNew->Sc,stateNew->Sc);
@@ -109,7 +166,8 @@ buckleyStress(state_variables * stateNew,
 
 
 			// UPDATE PREVIOUS TIME STEP VARAIBLES
-			m_copy(stateNew->Sb,stateOld->Sb);			
+			m_copy(stateNew->Sb,stateOld->Sb);		
+			m_copy(stateNew->EP_bar,stateOld->EP_bar);	
 			m_copy(stateNew->Sc,stateOld->Sc);	
 			m_copy(stateNew->Sb_R,stateOld->Sb_R);			
 			m_copy(stateNew->Sc_R,stateOld->Sc_R);	

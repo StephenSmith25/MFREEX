@@ -56,7 +56,7 @@ MSCNI_OBJ * generate_mscni(voronoi_diagram * voronoi, char * type, int is_stabal
 
 
 	// get shape function at verticies
-	shape_function_container * sf_verticies = mls_shapefunction(cell_verticies, "linear", "cubic", 2, 1, Mfree);
+	shape_function_container * sf_verticies = mls_shapefunction(cell_verticies, 1, Mfree);
 	int num_cells = voronoi->num_cells;
 
 	MSCNI ** mscni_  = malloc(num_cells*sizeof(MSCNI*));
@@ -86,7 +86,7 @@ MSCNI_OBJ * generate_mscni(voronoi_diagram * voronoi, char * type, int is_stabal
 	}
 
 
-	shape_function_container * sf_nodes = mls_shapefunction(centers, "linear", "cubic", 2, 1, Mfree);
+	shape_function_container * sf_nodes = mls_shapefunction(centers, 1, Mfree);
 	omp_set_num_threads(4);
 
 #pragma omp parallel

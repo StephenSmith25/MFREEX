@@ -30,6 +30,18 @@
 
 /*  Function definitions */
 
+int constant_support_size = 0;
+char * basis_type = "linear";
+char * weight = "cubic";
+char * kernel_shape = "rectangular";
+
+// Meshfree parameters
+const double dmax = 2.5;
+const double dmax_x = 1.5;
+const double dmax_y = 1.5;
+	double tMax = 1;
+
+
 int main(int argc, char** argv) {
 
 	/*////////////////////////////////////////////////////////// */
@@ -71,7 +83,6 @@ int main(int argc, char** argv) {
 	/*  Time step variables */
 
 	double deltaT = 5e-7;
-	double tMax = 0.8;
 
 	int dim = 2;
 	int is_AXI = 0;
@@ -80,12 +91,12 @@ int main(int argc, char** argv) {
 
 	/*  Meshfree Paramters */
 	double dMax = 2;
-	double dMax_x = 2.5;
-	double dMax_y = 2.5;	
+	double dMax_x = 2.0;
+	double dMax_y = 2.0;	
 
 
 	/*  Loading parameters */
-	double pressure = 200;
+	double pressure = 230;
 
 	/*  Plotting parameters */
 
@@ -109,7 +120,7 @@ int main(int argc, char** argv) {
 	 *  */
 	// Read PLSG 
 
-	char opt[20] = "pDq0a0.3";
+	char opt[20] = "pDYq0a0.1";
 	char fileName[30] = "cylinder";
 	double * points_out ;
 	int * boundaryNodes;
@@ -166,15 +177,21 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 
 	// shape function parameters
-	double dmax = 2.5;
-	int constant_support_size = 1;
+
 	VEC * dI = v_get(xI->m);
+	double dmax_tensor[dim];
+
+	dmax_tensor[0] = dmax_x;
+	dmax_tensor[1] = dmax_y;
 
 	// meshfree domain
-	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI};
-	setDomain(&mfree,constant_support_size, dmax);
+	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI,
+		.weight_function = weight, .kernel_shape = kernel_shape, 
+		.basis_type = basis_type,.is_constant_support_size = constant_support_size,
+		.dmax_radial = dmax, .dmax_tensor = dmax_tensor};
+	
+	setDomain(&mfree);
 
-	v_foutput(stdout,mfree.di);
 
 	
 
@@ -238,8 +255,7 @@ int main(int argc, char** argv) {
 	VEC * nodal_mass = v_get(mfree.num_nodes);
 	VEC * inv_nodal_mass = v_get(mfree.num_nodes);
 	// get shape function and contact nodes
-	shape_function_container * phi_nodes = mls_shapefunction(mfree.nodes, 
-		"linear", "cubic", 2, 1, &mfree);
+	shape_function_container * phi_nodes = mls_shapefunction(mfree.nodes, 1, &mfree);
 
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
@@ -285,31 +301,28 @@ int main(int argc, char** argv) {
 	pB->is_axi = is_AXI;
 	/*  Set up essential boundary  */
 
-	m_foutput(stdout,pB->segment_normals);
+	//m_foutput(stdout,pB->segment_normals);
 
 
 	/*  Set up essential boundary  */
 	EBC * eb1 = malloc(1*sizeof(EBC));
 	eb1->dofFixed = 1;
 	getBoundary(&eb1->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,3);
-	iv_addNode(eb1->nodes,traction_nodes->ive[0],'e');
+	iv_addNode(eb1->nodes,traction_nodes->ive[traction_nodes->max_dim -1 ],'e');
 	setUpBC(eb1,inv_nodal_mass,&mfree);
-	m_foutput(stdout,eb1->coords);
 
 	/*  Set up essential boundary  */
 	EBC * eb2 = malloc(1*sizeof(EBC));
 	eb2->dofFixed = 2;
 	getBoundary(&eb2->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,8);
-	iv_addNode(eb2->nodes,traction_nodes->ive[traction_nodes->max_dim -1 ],'s');
+	iv_addNode(eb2->nodes,traction_nodes->ive[0],'s');
 	setUpBC(eb2,inv_nodal_mass,&mfree);
-	m_foutput(stdout,eb2->coords);
-
 
 
 	/*  Get transformation matrix */
 	/* Lambda  */
 
-	shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes, "linear", "cubic", 2, 1, &mfree);
+	shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes, 1, &mfree);
 
 	MAT * Lambda = m_get(2*mfree.num_nodes, 2*mfree.num_nodes);
 
@@ -446,7 +459,7 @@ int main(int argc, char** argv) {
 		update_pressure_boundary(pB, updatedNodes);
 		v_zero(Fext_n_1);
 
-		assemble_pressure_load(Fext_n_1, -pre_n_1, pB);
+		assemble_pressure_load(Fext_n_1, pre_n_1, pB);
 	
 		double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, v_n_h,
 		 materialParameters, material, is_AXI, dim,t_n_1);

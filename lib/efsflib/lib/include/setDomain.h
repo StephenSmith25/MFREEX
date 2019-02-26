@@ -7,7 +7,7 @@
 #include <math.h>
 
 
-int setDomain(meshfreeDomain * mfree, int constant_support_size, double dmax);
+int setDomain(meshfreeDomain * mfree);
 
 
 

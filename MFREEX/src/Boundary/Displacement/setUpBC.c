@@ -28,7 +28,7 @@ int setUpBC(EBC * ebc_, VEC * invMass, meshfreeDomain * mfree){
 		ebc_->coords->me[i][1] = mfree->nodes->me[ebc_->nodes->ive[i]][1];
 	}
 
-	shape_function_container * sf_nodes = mls_shapefunction(ebc_->coords, "linear", "cubic", 2, 1, mfree);
+	shape_function_container * sf_nodes = mls_shapefunction(ebc_->coords, 1, mfree);
 
 	VEC * phi;
 	IVEC * index;

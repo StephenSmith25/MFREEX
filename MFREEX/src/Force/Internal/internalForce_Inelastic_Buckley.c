@@ -118,8 +118,8 @@ internalForce_Inelastic_Buckley(VEC * Fint, SCNI_OBJ * scni_obj,
 			m_inverse_small(stateNew[i]->F, stateNew[i]->invF);
 
 			// Find Jacobian at n+1
-			stateNew[i]->Jacobian = stateOld[i]->Jacobian + stateOld[i]->Jacobian*stateNew[i]->div_v*DT;
-			//stateNew[i]->Jacobian = determinant(stateNew[i]->F);
+			//stateNew[i]->Jacobian = stateOld[i]->Jacobian + stateOld[i]->Jacobian*stateNew[i]->div_v*DT;
+			stateNew[i]->Jacobian = determinant(stateNew[i]->F);
 
 
 			//------------------------------------------//
@@ -174,15 +174,15 @@ internalForce_Inelastic_Buckley(VEC * Fint, SCNI_OBJ * scni_obj,
 			/* -----------------Damping -----------------*/
 			/* ------------------------------------------*/
 
-			double b1 = 0;
+			double b1 = 0.06;
 			double b2 = 1.44;
-			double Le = 3;
+			double Le = 0.5;
 			double Cd = 1400;
 			double div_v = stateNew[i]->div_v;
 			double qv =  rho*Le*b1*Cd * div_v;
 			if ( div_v < 0)
 			{
-				qv += rho*Le*(b2 * (Le/1000) * pow(div_v,2)) - rho*Le*b1*Cd * div_v ;
+				qv += rho*Le*(b2 * (Le/1000) * pow(div_v,2)) ;
 			}
 
 

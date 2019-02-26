@@ -1,8 +1,14 @@
 clear all
 close all
 
-PLOT_GRAPHS = true;
+PLOT_GRAPHS = false;
+WITH_MOULD = false;
 TMAX = 0.35;
+
+
+dmx = 3.364;
+dmy = 2.49;
+
 
 
 path = './../../build/bin/preform/Displacement/';
@@ -30,7 +36,6 @@ thickness_mould = 5;
 mould_length = 180;
 height = 74.2650;
 Radius_out = 11.25;
-
 top_point = 48.920;
 
 
@@ -49,6 +54,10 @@ mould_nodes = [mould_nodes ; [Radius_out+Radius_mould+thickness_mould,top_point]
 mould_nodes = [mould_nodes ; [Radius_out+thickness_mould,68.92]   ];
 mould_nodes = [mould_nodes ; [Radius_out+thickness_mould,height+5]   ];
 mould_nodes = [mould_nodes ; [Radius_out,height+5]   ];
+
+if ( WITH_MOULD == false)
+    mould_nodes = zeros(1,2);
+end
 
 
 
@@ -72,8 +81,18 @@ plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 ymax = max(disp(:,2));
+
+
+x = disp(plot_point,1);
+y = disp(plot_point,2);
 hold on
+rectangle('Position',[x-dmx,y- dmy,2*dmx,2*dmy],'EdgeColor','b',...
+    'LineWidth',1);
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
+
+
+
+
 axis equal 
 hold on
 plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')

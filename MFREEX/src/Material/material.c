@@ -40,6 +40,8 @@ state_variables ** new_material_state(double * temperatures, int num_Points, int
 
 		// Polar Decomposition
 		state[i]->R = m_get(dim_s,dim_s);
+		state[i]->delta_R = m_get(dim_s,dim_s);
+
 		m_ident(state[i]->R);
 		state[i]->U = m_get(dim_s,dim_s);
 		state[i]->V = m_get(dim_s,dim_s);
@@ -97,9 +99,22 @@ state_variables ** new_material_state(double * temperatures, int num_Points, int
 			m_ident(state[i]->Bbar);
 			state[i]->lambdaNBar = v_get(dim_s);
 			state[i]->ep_n = m_get(dim_s,dim_s);
+
+
+			state[i]->EP_bar = m_get(dim_s,dim_s);
+
+
 			v_ones(state[i]->lambdaNBar);
 			state[i]->Dn = m_get(dim_s,dim_s);
+			state[i]->Ubar = m_get(dim_s,dim_s);
+			m_ident(state[i]->Ubar);
 
+			state[i]->delta_Ubar = m_get(dim_s,dim_s);
+
+			state[i]->delta_ep_bar = m_get(dim_s,dim_s);
+
+			state[i]->Vbar = m_get(dim_s,dim_s);
+			m_ident(state[i]->Vbar);
 
 			// Eigen values
 

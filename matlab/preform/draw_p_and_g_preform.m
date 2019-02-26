@@ -43,11 +43,11 @@ NUM_NODES_THICKNESS = 4;
 
 
 %% NUMBER OF NODES
-NUM_NODES_SIDEWALL = 50;
-NUM_NODES_TAPER = 22;
+NUM_NODES_SIDEWALL =56;
+NUM_NODES_TAPER = 18;
 NUM_NODES_SPHERICAL_CAP = 20;
 NUM_NODES_TOP_FIXTURE = 5;
-NUM_NODES_BOT_FIXTURE = 5;
+NUM_NODES_BOT_FIXTURE = 6;
 
 
 
@@ -58,6 +58,7 @@ count = 1;
 
 theta = linspace(-90,0,NUM_NODES_SPHERICAL_CAP);
 
+ymax = -CIRCLE_BOT_OFFSET;
 
 
 
@@ -107,7 +108,6 @@ nodes(count:1:count+NUM_NODES_BOT_FIXTURE-1,:) = [linspace(0,0,NUM_NODES_BOT_FIX
 ib = sort(ib);
 nodes = nodes(ib,:);
 
-nodes(:,2) = nodes(:,2) - min(nodes(:,2));
 
 
 
@@ -117,6 +117,9 @@ boundaryNodes = linspace(1,length(nodes),length(nodes))';
 boundaryNodes(1:(NUM_NODES_SPHERICAL_CAP + NUM_NODES_SIDEWALL +NUM_NODES_TAPER -1  ),2) = 2;
 count = NUM_NODES_SPHERICAL_CAP + NUM_NODES_SIDEWALL +NUM_NODES_TAPER -1 ;
 boundaryNodes(count:count+NUM_NODES_TOP_FIXTURE*3-3,2) = 5;
+count = count+NUM_NODES_TOP_FIXTURE*3-2;
+boundaryNodes(count:count + NUM_NODES_SIDEWALL+NUM_NODES_SPHERICAL_CAP + NUM_NODES_TAPER , 2) = 6;
+
 boundaryNodes(end:-1:end-(NUM_NODES_BOT_FIXTURE-2),2) = 4;
 % 
 
@@ -125,74 +128,82 @@ boundaryNodes(end:-1:end-(NUM_NODES_BOT_FIXTURE-2),2) = 4;
 nodes1 = [];
 count = 1;
 % 
-% BOT_DIAMETER = linspace(DIN_BOT,DOUT_BOT,NUM_NODES_THICKNESS+2);
-% BOT_BOT_DIAMETER = linspace(Rin_bot*2,Rout_bot*2,NUM_NODES_THICKNESS+2);
-% MID_DIAMETER = linspace(DIN_MID,DOUT_MID,NUM_NODES_THICKNESS+2);
-% TOP_DIAMETER = linspace(DIN_TOP,DOUT_TOP,NUM_NODES_THICKNESS+2);
-% for i = 1:NUM_NODES_THICKNESS
-%     
-%     
-% Din_b = BOT_DIAMETER(i+1);
-% 
-% 
-% Din_m = MID_DIAMETER(i+1);
-% Din_t = TOP_DIAMETER(i+1);
-% Rin_bot = BOT_BOT_DIAMETER(i+1)/2;
-% 
-% Rin_bot_s = linspace(Rin_bot,Din_b/2,ntheta);
-% 
-% theta = linspace(-90,0,ntheta);
-% 
-% 
-% for i = 1:length(theta)-1
-%     nodes1(count,:) = [Rin_bot_s(i+1)*cosd(theta(i+1)), Rin_bot_s(i+1)*sind(theta(i+1))];
-%     count = count +1;
-%     
-% end
-% Left wall
-% % traction nodes
-% nodes1(count:1:count+N1_a-1,:) = [linspace(Din_b/2,Din_m/2,N1_a)',linspace(0,(4/6)*L_m,N1_a)'];
-% count = count + N1_a;
-% nodes1(count:1:count+N1_b-1,:) = [linspace(Din_m/2,Din_m/2,N1_b)',linspace((4/6)*L_m,L_m,N1_b)'];
-% count = count+N1_b;
-% nodes1(count:1:count+N2-1,:) = [linspace(Din_m/2,Din_t/2,N2)',linspace(L_m,L_t+L_m,N2)'];
-% count = count + N2;
-% nodes1(count:1:count+N3-1,:) = [linspace(Din_t/2,Din_t/2,N3)',linspace(L_m+L_t,L_t+L_m+L_t1-0.5,N3)'];
-% count = count + N3;
-% 
-% end
-% 
-% 
-% [~,ib] = unique(nodes1,'rows');
-% ib = sort(ib);
-% nodes1 = nodes1(ib,:);
-% 
-% nodes_total = [nodes;nodes1];
-% 
-% nodes = nodes_total;
-% nodes(:,2) = nodes(:,2) - min(nodes(:,2));
-% axis equal
-% % Find temperature of each node
-% tempProfile = xlsread('IRprofile.xlsx');
-% tempProfile(:,2) = flipud(tempProfile(:,2));
-% tempProfile(:,3) = flipud(tempProfile(:,3));
-% 
-% for i = 1:(length(nodes)+1)/2
-% nodes(i,3) = interp1q(tempProfile(:,1),tempProfile(:,3),nodes(i,2));
-%     
-% end
-% 
-% for i = round ((length(nodes)+1)/2):length(nodes)
-%    nodes(i,3) = interp1q(tempProfile(:,1),tempProfile(:,2),nodes(i,2));
-% end
+RADII_BOT = linspace(RIN_BOT,ROUT_BOT,NUM_NODES_THICKNESS+2);
+RADII_BOT_SIDEWALL = linspace(RIN_BOT_SIDEWALL,ROUT_BOT_SIDEWALL,NUM_NODES_THICKNESS+2);
+CIRCLE_BOT_OFFSETS = linspace(CIRCLE_BOT_OFFSET, 0, NUM_NODES_THICKNESS+2);
+RADII_TOP_SIDEWALL = linspace(RIN_TOP_SIDEWALL,ROUT_TOP_SIDEWALL,NUM_NODES_THICKNESS+2);
+RADII_NECK = linspace(RIN_NECK,ROUT_NECK,NUM_NODES_THICKNESS+2);
+
+nodes1 = [];
+count = 1;
+
+
+
+ for i = 1:NUM_NODES_THICKNESS
+
+     
+
+theta_max = asind((ymax + CIRCLE_BOT_OFFSETS(i+1))/RADII_BOT(i+1));
+theta = linspace(-90,theta_max,NUM_NODES_SPHERICAL_CAP);
+
+
+
+for j = 1:length(theta)-1
+    nodes1(count,:) = [RADII_BOT(i+1)*cosd(theta(j+1)),  RADII_BOT(i+1)*sind(theta(j+1)) - CIRCLE_BOT_OFFSETS(i+1)   ];
+    count = count +1;
+    
+end
+
+
+
+
+%Left wall
+%%traction nodes
+nodes1(count:1:count+NUM_NODES_SIDEWALL-1,:) = [linspace(RADII_BOT_SIDEWALL(i+1),RADII_TOP_SIDEWALL(i+1),NUM_NODES_SIDEWALL)',linspace(0,LENGTH_SIDEWALL,NUM_NODES_SIDEWALL)'];
+ count = count + NUM_NODES_SIDEWALL;
+ nodes1(count:1:count+NUM_NODES_TAPER-1,:) = [linspace(RADII_TOP_SIDEWALL(i+1),RADII_NECK(i+1),NUM_NODES_TAPER)',linspace(LENGTH_SIDEWALL,LENGTH_SIDEWALL+LENGTH_TAPER,NUM_NODES_TAPER)'];
+ count = count + NUM_NODES_TAPER;
+% %% Essential boundary nodes
+
+heights = linspace(LENGTH_SIDEWALL+LENGTH_TAPER,LENGTH_SIDEWALL + LENGTH_TAPER + LENGTH_NECK  ,NUM_NODES_TOP_FIXTURE)';
+
+nodes1(count:1:count+NUM_NODES_TOP_FIXTURE-2,:) = [linspace(RADII_NECK(i+1),RADII_NECK(i+1),NUM_NODES_TOP_FIXTURE-1)', heights(1:end-1)];
+count = count + NUM_NODES_TOP_FIXTURE-1;
+height_top = max(nodes(:,2));
+
+
+
+
+
+ end
+  
+[~,ib] = unique(nodes1,'rows');
+ib = sort(ib);
+nodes1 = nodes1(ib,:);
+
+nodes_total = [nodes;nodes1];
+
+nodes = nodes_total;
+nodes(:,2) = nodes(:,2) - min(nodes(:,2));
+% Find temperature of each node
+tempProfile = xlsread('IRprofile_P_AND_G.xlsx');
+tempProfile(:,2) = flipud(tempProfile(:,2));
+tempProfile(:,3) = flipud(tempProfile(:,3));
+
+for i = 1:(length(nodes)+1)/2
+nodes(i,3) = interp1q(tempProfile(:,1),tempProfile(:,3),nodes(i,2));
+    
+end
+
+for i = round ((length(nodes)+1)/2):length(nodes)
+   nodes(i,3) = interp1q(tempProfile(:,1),tempProfile(:,2),nodes(i,2));
+end
 figure
 plot(nodes(:,1),nodes(:,2),'k.');
 hold on
 plot(nodes(boundaryNodes(:,1),1),nodes(boundaryNodes(:,1),2),'b-')
-
 axis off
 axis equal
-
 hold on
 C = [];
 for i = 1:length(boundaryNodes)
@@ -216,6 +227,12 @@ for i = 1:length(boundaryNodes)
         color = 'go';
         hold on
         plot(nodes(boundaryNodes(i,1),1),nodes(boundaryNodes(i,1),2),color);
+                
+    elseif ( boundaryNodes(i,2)  == 6)
+        color = 'mo';
+        hold on
+        plot(nodes(boundaryNodes(i,1),1),nodes(boundaryNodes(i,1),2),color);   
+        
         
     else
       
@@ -227,12 +244,12 @@ end
 % 
 % 
 % 
-% % write files
-% dlmwrite('../../problems/preform/preform.nodes',[length(nodes),1],'delimiter',' ')
-% dlmwrite('../../problems/preform/preform.nodes',nodes,'-append','delimiter',' ')
-% 
-% %segments
-% dlmwrite('../../problems/preform/preform.boundary',length(boundaryNodes),'delimiter',' ')
-% dlmwrite('../../problems/preform/preform.boundary',boundaryNodes,'-append',.........
-%     'delimiter',' ')
+% write files
+dlmwrite('../../problems/preform/preform.nodes',[length(nodes),1],'delimiter',' ')
+dlmwrite('../../problems/preform/preform.nodes',nodes,'-append','delimiter',' ')
+
+%segments
+dlmwrite('../../problems/preform/preform.boundary',length(boundaryNodes),'delimiter',' ')
+dlmwrite('../../problems/preform/preform.boundary',boundaryNodes,'-append',.........
+    'delimiter',' ')
 

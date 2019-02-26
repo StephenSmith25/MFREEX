@@ -27,7 +27,7 @@ pressure_boundary * new_pressure_boundary(IVEC * points,  meshfreeDomain * mFree
 
 
 	// integration will be performed using a trapzoidal rule
-	pB->sf_traction = mls_shapefunction(pB->coords, "linear", "cubic", 2, 1, mFree);
+	pB->sf_traction = mls_shapefunction(pB->coords, 1, mFree);
 
 	pB->segment_normals = m_get(num_points-1,dim);
 	pB->segment_weights = malloc((num_points-1)*sizeof(double));

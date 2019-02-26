@@ -1,13 +1,26 @@
 
 #include "mls_shapefunction.h"
 
-shape_function_container *  mls_shapefunction(MAT * compute_points, char * basis_type, char * weight, int dim, int compute, meshfreeDomain * mfree)
+
+shape_function_container *  mls_shapefunction(MAT * compute_points, int compute, meshfreeDomain * mfree)
 {
 
 
 	// nodes and domain size from meshfree structure
+
+
+
 	int numnodes = mfree->num_nodes;
 	MAT * nodes = mfree->nodes;
+	char * shape = mfree->kernel_shape;
+	char * basis_type = mfree->basis_type;
+	char * weight = mfree->weight_function;
+	int dim = mfree->dim;
+
+	enum SUPPORT_TYPE support = mfree->kernel_support;
+
+
+
 	VEC * domainSize = mfree->di;
 
 
@@ -121,19 +134,23 @@ shape_function_container *  mls_shapefunction(MAT * compute_points, char * basis
 				A = m_zero(A);
 
 
-			// shifted coordinates, xi ( coords of point i) and domain size di
+				// shifted coordinates, xi ( coords of point i) and domain size di
 				double xS[3] = {0,0,0};
 
-			// construct moment matrix A, and B matrix
+				// construct moment matrix A, and B matrix
 				for ( int j = 0 ; j < num_neighbours ; ++j)
 				{
 
-				// find domain size, and coords of node xi;
+					// find domain size, and coords of node xi;
 					double * xi = nodes->me[neighbours->ive[j]];
-					double di = domainSize->ve[neighbours->ive[j]];
+					double di[dim];
+					di[0] = domainSize->ve[neighbours->ive[j]];
 
 					for ( int k = 0 ; k < dim ; k++)
 					{
+						if ( support == RECTANGULAR)
+							di[k] = mfree->di_tensor->me[neighbours->ive[j]][k];
+
 						xS[k] = x[k] - xi[k];
 					}
 
@@ -144,15 +161,15 @@ shape_function_container *  mls_shapefunction(MAT * compute_points, char * basis
 
 
 					// get weight function for node I
-					weight_function(weights, xS, di, weight, compute, dim);
+					weight_function(weights, xS, di, weight, support, compute, dim);
 
 
 
 					// shape function matricies
-				// B;
+					// B;
 					bi = sv_mlt(weights->ve[0], p_xi, bi);
 					B = set_col(B,j,bi);
-				//A
+					//A
 					ppT = v_outer_product(p_xi, p_xi, ppT);
 					A =ms_mltadd(A, ppT, weights->ve[0], A);
 
@@ -329,12 +346,15 @@ if ( compute == 2)
 
 				// find domain size, and coords of node xi;
 				double * xi = mfree->nodes->me[neighbours->ive[j]];
-				double di = mfree->di->ve[neighbours->ive[j]];
+					double di[dim];
+					di[0] = domainSize->ve[neighbours->ive[j]];
 
+					for ( int k = 0 ; k < dim ; k++)
+					{
+						if ( support == RECTANGULAR)
+							di[k] = mfree->di_tensor->me[neighbours->ive[j]][k];
 
-				for ( int k = 0 ; k < dim ; k++)
-				{
-					xS[k] = x[k] - xi[k];
+						xS[k] = x[k] - xi[k];
 				}
 
 				// get p(x_i)
@@ -343,7 +363,7 @@ if ( compute == 2)
 
 
 				// get weight function for node I
-				weight_function(weights, xS, di, weight, compute, dim);
+				weight_function(weights, xS, di, weight, support, compute, dim);
 
 				// shape function matricies
 				// B;
@@ -620,12 +640,19 @@ if ( compute == 2)
 
 				// find domain size, and coords of node xi;
 					double * xi = mfree->nodes->me[neighbours->ive[j]];
-					double di = mfree->di->ve[neighbours->ive[j]];
+					
+
+					double di[dim];
+					di[0] = domainSize->ve[neighbours->ive[j]];
 
 					for ( int k = 0 ; k < dim ; k++)
 					{
+						if ( support == RECTANGULAR)
+							di[k] = mfree->di_tensor->me[neighbours->ive[j]][k];
+
 						xS[k] = x[k] - xi[k];
 					}
+
 
 				// get p(x_i)
 					polynomial_basis(basis_xi, xi, dim, basis_type , 1);
@@ -633,7 +660,7 @@ if ( compute == 2)
 
 
 				// get weight function for node I
-					weight_function(weights, xS, di, weight, compute, dim);
+					weight_function(weights, xS, di, weight, support, compute, dim);
 
 
 

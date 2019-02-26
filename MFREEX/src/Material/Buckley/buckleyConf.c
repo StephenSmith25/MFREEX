@@ -60,13 +60,23 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 
 	// calculate updated network strains 
 	MAT * d_total = stateNew->dbar;
-
-	MAT * D_n = stateNew->m_temp4;
-
-	m_sub(d_total,Ds,D_n);
-
 	MAT * delta_ep = stateNew->m_temp3;
+	m_zero(delta_ep);
+
+
+	Ds = m_zero(Ds);
+	//METHOD 1//
+	// m_zero(stateNew->m_temp4);
+	// sm_mlt(deltaT,Ds,stateNew->m_temp4);
+	// m_sub(stateNew->delta_ep_bar,stateNew->m_temp4,delta_ep);
+
+
+	// METHOD 2//
+	MAT * D_n = stateNew->m_temp4;
+	m_sub(d_total,Ds,D_n);
 	sm_mlt(deltaT,D_n,delta_ep);
+
+	// update network strain
 	m_add(stateOld->ep_n,delta_ep,stateNew->ep_n);
 
 
@@ -83,7 +93,7 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 	}
 
 	MAT * intermediate1 = stateOld->m_temp1;
-
+	m_zero(intermediate1);
 
 
 	// rotate stress to global coordinates 

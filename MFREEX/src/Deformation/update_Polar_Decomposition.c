@@ -178,6 +178,7 @@ int update_Polar_Decomposition(state_variables * stateNew, state_variables * sta
 			m_mlt_3x3(stateNew->m_temp2,stateOld->R,stateOld->m_temp1);
 			m_mlt_3x3(stateNew->m_temp1,stateOld->m_temp1,stateNew->R);
 
+			mmtr_mlt(stateNew->R,stateOld->R, stateNew->delta_R);
 
 
 
