@@ -64,7 +64,6 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 	m_zero(delta_ep);
 
 
-	Ds = m_zero(Ds);
 	//METHOD 1//
 	// m_zero(stateNew->m_temp4);
 	// sm_mlt(deltaT,Ds,stateNew->m_temp4);
@@ -102,14 +101,14 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 
 
 	// update maximum network stretch
-	double lambda1 = exp(eigValB->ve[0]);
-	double lambda2 = exp(eigValB->ve[1]);
-	double lambda3 = exp(eigValB->ve[2]);
+	// double lambda1 = exp(eigValB->ve[0]);
+	// double lambda2 = exp(eigValB->ve[1]);
+	// double lambda3 = exp(eigValB->ve[2]);
 
 
-	// double lambda1 = exp(stateNew->ep_n->me[0][0]);
-	// double lambda2 = exp(stateNew->ep_n->me[1][1]);
-	// double lambda3 = exp(stateNew->ep_n->me[2][2]);
+	double lambda1 = exp(stateNew->ep_n->me[0][0]);
+	double lambda2 = exp(stateNew->ep_n->me[1][1]);
+	double lambda3 = exp(stateNew->ep_n->me[2][2]);
 
 	
 	stateNew->lambdaNMax = max(lambda1,lambda2);

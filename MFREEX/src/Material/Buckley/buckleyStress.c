@@ -105,10 +105,9 @@ buckleyStress(state_variables * stateNew,
 			sm_mlt(pow(stateNew->Jacobian,-1.00/3.00)/dt,stateNew->V,stateNew->m_temp2);
 			m_sub(stateNew->m_temp2,stateNew->m_temp1,stateNew->Vdot);
 
-			// m_zero(stateNew->m_temp1);
-			// m_zero(stateNew->m_temp2);
-			// mtrm_mlt(stateNew->R,stateNew->Vdot,stateNew->m_temp1);
-			// m_mlt(stateNew->m_temp1,stateNew->R,stateNew->Vdot);
+			m_zero(stateNew->m_temp1);
+			mtrm_mlt(stateNew->R,stateNew->Vdot,stateNew->m_temp1);
+			m_mlt(stateNew->m_temp1,stateNew->R,stateNew->Vdot);
 
 
 			/* ------------------------------------------*/

@@ -41,7 +41,7 @@ double delta_t = 5e-7;
 
 // Meshfree parameters
 const double dmax = 2.5;
-const double dmax_x =4;
+const double dmax_x =3.5;
 const double dmax_y =3;
 
 
@@ -50,10 +50,10 @@ char * basis_type = "linear";
 char * weight = "cubic";
 char * kernel_shape = "rectangular";
 
-
+int basis_point = 36;
 
 const int is_stabalised = 0;
-const int is_constant_support_size = 0;
+const int is_constant_support_size = 1;
 
 // stretch rod
 const double DISP_ROD_MAX = 100 ; // 132;
@@ -61,7 +61,7 @@ const double DISP_ROD_MAX = 100 ; // 132;
 // 
 const int WITH_MOULD = 0;
 
-const int WRITE_FREQ = 200;
+const int WRITE_FREQ = 250;
 
 int main(int argc, char** argv) {
 
@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
 	matParams->ve[6] = (67.47); // Cv
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
-	matParams->ve[9] = 1.8e9; // Kb
+	matParams->ve[9] = 2.8e9; // Kb
 	matParams->ve[10] = 6e8;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
@@ -101,25 +101,25 @@ int main(int argc, char** argv) {
 	matParams->ve[15] = 1.8098e17;// Ns_c
 	matParams->ve[16] = 1.38e-17;// boltzmann constant kB
 	// slippage
-	matParams->ve[17] = 100;// lambdaCrit
-	matParams->ve[18] = 383.15;// Ts 
-	matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
-	matParams->ve[20] = 10612;// Cs 10612
-	matParams->ve[21] = 95.48;// Tinf 95.48
-	matParams->ve[22] = 0.1565;// C1
-	matParams->ve[23] = 39.937;// C2
-	matParams->ve[24] = 0.9878;// beta
-	matParams->ve[25] = 0.33;// poissons ratio
-
 	// matParams->ve[17] = 100;// lambdaCrit
 	// matParams->ve[18] = 383.15;// Ts 
-	// matParams->ve[19] = 0.359e6;// gamma0_ref = 0.653
-	// matParams->ve[20] = 7307.8;// Cs 10612
-	// matParams->ve[21] = 152.95;// Tinf 95.48
+	// matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
+	// matParams->ve[20] = 10612;// Cs 10612
+	// matParams->ve[21] = 95.48;// Tinf 95.48
 	// matParams->ve[22] = 0.1565;// C1
 	// matParams->ve[23] = 39.937;// C2
 	// matParams->ve[24] = 0.9878;// beta
 	// matParams->ve[25] = 0.33;// poissons ratio
+
+	matParams->ve[17] = 100;// lambdaCrit
+	matParams->ve[18] = 383.15;// Ts 
+	matParams->ve[19] = 0.359e6;// gamma0_ref = 0.653
+	matParams->ve[20] = 7307.8;// Cs 10612
+	matParams->ve[21] = 152.95;// Tinf 95.48
+	matParams->ve[22] = 0.1565;// C1
+	matParams->ve[23] = 39.937;// C2
+	matParams->ve[24] = 0.9878;// beta
+	matParams->ve[25] = 0.33;// poissons ratio
 
 
 	
@@ -472,6 +472,7 @@ int main(int argc, char** argv) {
 	shape_function_container * phi_contact_mould = mls_shapefunction(contact_mould_nodes_coords,  1, &mfree);
 
 	m_foutput(stdout,contact_mould_nodes_coords);
+
 
 	/* ------------------------------------------*/
 	/* -----------Transformation matrix----------*/
@@ -911,7 +912,7 @@ int main(int argc, char** argv) {
 
 		if ( n % WRITE_FREQ == 0)
 			printf("%i  \t  %lf %10.2E %lf %lf %lf %lf %10.2E  %lf %lf %lf \n",n,t_n,Wbal,
-				pre_n_1,disp_rod_n,v_rod,volume/1e3,delta_t,mfree.di->ve[0],mfree.di_tensor->me[130][0],mfree.di_tensor->me[130][1]
+				pre_n_1,disp_rod_n,v_rod,volume/1e3,delta_t,mfree.di->ve[0],mfree.di_tensor->me[basis_point][0],mfree.di_tensor->me[basis_point][1]
 				);
 
 
