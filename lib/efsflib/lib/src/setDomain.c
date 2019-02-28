@@ -52,30 +52,41 @@ int setDomain(meshfreeDomain * mfree)
 		case RADIAL:
 		{
 
+
+			VEC * distances = v_get(num_nodes); 
+			PERM * order = px_get(num_nodes);
+			int min_num_neighbours = 5;
 			double dmax = mfree->dmax_radial;
-			double distance = 0;
-			double distance_min = 1e6;
 			// all nodes have same support size
+
+			if ( mfree->di == VNULL)
+			{
+			mfree->di = v_get(num_nodes);
+			}
+
+
 
 			for (int i = 0; i < num_nodes; ++i)
 			{
-			distance_min = 1e6;
-			distance = 1e6;
+	
+
 
 
 			// find distance from node I to each node J 
 			for (int j = 0; j < num_nodes; ++j)
 			{
-				if ( i != j){
-					// find distance to point;
-					distance = sq_distance(nodes->me[i], nodes->me[j], dim);
-					if (distance < distance_min )
-					{
-						distance_min = distance;
-					}
-				}
+				// find distance to point;
+				distances->ve[j] = sq_distance(nodes->me[i], nodes->me[j], dim);
+
 			}
-			mfree->di->ve[i] = distance_min*dmax;
+
+
+
+			v_sort(distances,order);
+			mfree->di->ve[i] = distances->ve[min_num_neighbours]*dmax;
+
+
+
 			}	
 
 			int index = 0;
@@ -185,6 +196,39 @@ int setDomain(meshfreeDomain * mfree)
 		}
 		case(ELLIPTICAL):
 		{
+			double beta = 0;
+
+			VEC * distances = v_get(num_nodes); 
+			PERM * order = px_get(num_nodes);
+
+			// form moment matrix
+
+			if  ( dim !=2)
+			{
+				fprintf(stderr,"ERROR: Eliptical basis only usable in 2D currently");
+				return -1;
+			}
+
+			for (int i = 0; i < num_nodes; ++i)
+			{
+
+				MAT * M_I = m_get(2,2);
+
+
+
+			// find distance from node I to each node J 
+			for (int j = 0; j < num_nodes; ++j)
+			{
+				// find distance to point;
+				distances->ve[j] = sq_distance(nodes->me[i], nodes->me[j], dim);
+
+			}
+			}
+
+
+
+
+
 			break;
 		}
 		default:

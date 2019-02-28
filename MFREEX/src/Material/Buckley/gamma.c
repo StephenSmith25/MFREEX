@@ -33,10 +33,11 @@ double gammaV(state_variables * state, double maxLambdaN,double critLambda,
 	double Tinf = para->ve[21];
 	double shiftTSlope = para->ve[22];
 	double shiftTIntercept = para->ve[23];
-	double expFactor = para->ve[24];
+	double beta = para->ve[24];
 	double gamma0 = 0;
 	int indx = 0;
 	double temperature = state->temperature;
+	MAT * Dbar = state->dbar;
 
 
 	double gamma_n = state->gamma;
@@ -59,9 +60,48 @@ double gammaV(state_variables * state, double maxLambdaN,double critLambda,
 		log2sr = 0;
 	}
 
+	double D1 = 0;
+	double D2 = 0;
+	D1 = Dbar->me[1][1];
+	D2 = Dbar->me[2][2];
+
+	if ( D1 >= D2)
+	{
+		// correct order
+	}else{
+		
+		double temp = D1;
+		D1 = D2;
+		D2 = temp;
+	}
+
+
+	// Find deformation mode indicator 
+	double xi = 0;
+	double theta = 0;
+	if (D1 > 0)
+	{
+		theta = D2/D1;
+	}
+
+
+	xi = (2*theta + 1.00)/(theta+2.00);
+
+	if ( xi > 0)
+	{
+		xi = 1;
+
+	}else if ( xi < 0)
+	{
+		xi = 0.001;
+	}
+
+
+
+
 
 	double shiftTemperature = temperature * 
-	pow(10, ( ( shiftTSlope*log2sr ) / ( shiftTIntercept + log2sr)));
+	pow(10, ( ( shiftTSlope*log2sr ) / ( shiftTIntercept + log2sr))*pow(beta,2-2*xi)   );
 	gamma0 = exp( Cs/(shiftTemperature - Tinf) - Cs/(starT - Tinf));
 	gamma0 = gamma0*refGamma;
 

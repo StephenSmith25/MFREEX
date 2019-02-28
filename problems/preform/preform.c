@@ -40,9 +40,9 @@ const double TMAX = 0.4;
 double delta_t = 5e-7;
 
 // Meshfree parameters
-const double dmax = 2.5;
-const double dmax_x =3.5;
-const double dmax_y =3;
+const double dmax = 3;
+const double dmax_x =4;
+const double dmax_y =2.5;
 
 
 
@@ -50,13 +50,12 @@ char * basis_type = "linear";
 char * weight = "cubic";
 char * kernel_shape = "rectangular";
 
-int basis_point = 36;
 
 const int is_stabalised = 0;
 const int is_constant_support_size = 1;
 
 // stretch rod
-const double DISP_ROD_MAX = 100 ; // 132;
+const double DISP_ROD_MAX = 132 ; // 132;
 
 // 
 const int WITH_MOULD = 0;
@@ -300,9 +299,21 @@ int main(int argc, char** argv) {
 	
 	setDomain(&mfree);
 
-	//v_foutput(stdout,mfree.di);
-	m_foutput(stdout,mfree.di_tensor);
 
+
+
+	fp = fopen("domains.txt","w");
+	if ( mfree.kernel_support == RADIAL)
+	{
+		for ( int i = 0 ; i < mfree.num_nodes ; i++)
+			fprintf(fp,"%lf\n",mfree.di->ve[i]);
+
+	}else if ( mfree.kernel_support == RECTANGULAR)
+	{
+		for ( int i = 0 ; i < mfree.num_nodes ; i++)
+			fprintf(fp,"%lf,%lf\n",mfree.di_tensor->me[i][0],mfree.di_tensor->me[i][1]);
+	}
+	fclose(fp);
 	
 	/* ------------------------------------------*/
 	/* ------------------SCNI--------------------*/
@@ -911,9 +922,8 @@ int main(int argc, char** argv) {
 
 
 		if ( n % WRITE_FREQ == 0)
-			printf("%i  \t  %lf %10.2E %lf %lf %lf %lf %10.2E  %lf %lf %lf \n",n,t_n,Wbal,
-				pre_n_1,disp_rod_n,v_rod,volume/1e3,delta_t,mfree.di->ve[0],mfree.di_tensor->me[basis_point][0],mfree.di_tensor->me[basis_point][1]
-				);
+			printf("%i  \t  %lf %10.2E %lf %lf %lf %lf %10.2E \n",n,t_n,Wbal,
+				pre_n_1,disp_rod_n,v_rod,volume/1e3,delta_t);
 
 
 

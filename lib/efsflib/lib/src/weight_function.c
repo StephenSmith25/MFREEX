@@ -7,22 +7,12 @@
 
 int weight_function (VEC * weights, double  * xS, double * dI_i, char * type, enum SUPPORT_TYPE support,  int compute, int dim){
 
-	double dI = dI_i[0];
 
-	double r = 0;
-	for ( int i = 0 ; i < dim ; i++){
-		r += pow(xS[i],2);
-	}
 
-	r = sqrt(r)/dI;
 
-	// if tensor product is used
-	double r_j[3];
 
-	for ( int i = 0 ; i < dim ; i++)
-	{
-		r_j[i] = fabs(xS[i])/dI_i[i];
-	}
+
+
 
 	// check input matrix is of the right dimensions 
 	if (weights == VNULL){
@@ -69,6 +59,14 @@ int weight_function (VEC * weights, double  * xS, double * dI_i, char * type, en
 	case (RADIAL):
 	{
 
+	double dI = dI_i[0];
+
+	double r = 0;
+	for ( int i = 0 ; i < dim ; i++){
+		r += pow(xS[i],2);
+	}
+
+	r = sqrt(r)/dI;
 
 	if (strcmp(type, "cubic")  == 0){
 		VEC * w_arr = v_get(3);
@@ -166,6 +164,13 @@ int weight_function (VEC * weights, double  * xS, double * dI_i, char * type, en
 
 	case (RECTANGULAR):
 	{
+
+	double r_j[3];
+
+	for ( int i = 0 ; i < dim ; i++)
+	{
+		r_j[i] = fabs(xS[i])/dI_i[i];
+	}
 
 
 	// else if tensor product kernels

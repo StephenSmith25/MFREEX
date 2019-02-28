@@ -141,7 +141,7 @@ buckleyStress(state_variables * stateNew,
 			m_zero(stateNew->m_temp1);
 			m_mlt(stateNew->R,stateNew->Sc_R,stateNew->m_temp1);
 			mmtr_mlt(stateNew->m_temp1,stateNew->R,stateNew->Sc);
-			sm_mlt((1.00)/stateNew->Jacobian,stateNew->Sc,stateNew->Sc);
+			//sm_mlt((1.00)/stateNew->Jacobian,stateNew->Sc,stateNew->Sc);
 
 			// Hydrostatic stress
 			stateNew->mSigma = log(stateNew->Jacobian)*Kb;

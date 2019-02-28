@@ -7,7 +7,7 @@
 
 const double TOLEREANCE = 1e-12;
 
-double sq_distance(double *point_1, double * point_2, int  dim)
+static inline double sq_distance(double *point_1, double * point_2, int  dim)
 {
 	double distance = 0;
 	for (int i = 0; i < dim; ++i)
@@ -21,7 +21,7 @@ double sq_distance(double *point_1, double * point_2, int  dim)
 }
 
 
-static double rectangle_area(double x1, double y1, double x2, double y2, 
+static inline double rectangle_area(double x1, double y1, double x2, double y2, 
                             double x3, double y3) 
 { 
     return fabs((x1 * (y2 - y3) + x2 * (y3 - y1) +  
@@ -29,7 +29,7 @@ static double rectangle_area(double x1, double y1, double x2, double y2,
 } 
 
 
-static bool inside_rectangle(double x1, double y1, double x2, double y2, double x3, double y3,
+static inline bool inside_rectangle(double x1, double y1, double x2, double y2, double x3, double y3,
 	double x4, double y4, double x, double y)
 {
 	

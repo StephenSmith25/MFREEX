@@ -1,19 +1,23 @@
 clear all
 close all
 
-PLOT_GRAPHS = false;
+PLOT_GRAPHS = true;
 WITH_MOULD = false;
-TMAX = 0.35;
+TMAX = 0.3;
 
 
 dmx = 5.304;
 dmy = 3.146;
+
+DOMAIN_TYPE = 'RECTANGULAR';
+% DOMAIN_TYPE = 'RADIAL'
 
 
 
 path = './../../build/bin/preform/Displacement/';
 pathSR = './../../build/bin/preform/srRod/';
 boundaryNodes = csvread('./../../build/bin/preform/boundary.txt');
+Domains= csvread('./../../build/bin/preform/domains.txt');
 
 boundaryNodes = [boundaryNodes;boundaryNodes(1)];
 
@@ -25,7 +29,7 @@ numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
 
-plot_point =285;
+plot_point =132;
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.csv');
 disp = csvread(filename,1);
 
@@ -83,13 +87,29 @@ plot(-disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 ymax = max(disp(:,2));
 
 
-x = disp(plot_point,1);
-y = disp(plot_point,2);
-hold on
-rectangle('Position',[x-dmx,y- dmy,2*dmx,2*dmy],'EdgeColor','b',...
-    'LineWidth',1);
-plot(disp(plot_point,1),disp(plot_point,2),'r*')
 
+if (strcmp(DOMAIN_TYPE,'RADIAL') == 1)
+   
+   [x,y] = circle(disp(5,1),disp(5,2),Domains(5));
+     
+
+   hold on
+   plot(x,y,'r.');
+   
+   hold on
+   plot(disp(5,1),disp(5,2),'bo')
+   
+   
+else if( strcmp(DOMAIN_TYPE,'RECTANGULAR') == 1)
+        
+     hold on
+     rectangle('Position',[disp(5,1)-Domains(5,1),disp(5,2)-Domains(5,2),Domains(5,1)*2,Domains(5,2)*2]);
+       hold on
+   plot(disp(5,1),disp(5,2),'bo')
+        
+    end
+    
+end
 
 
 
@@ -104,12 +124,7 @@ boundary_nodes_xy = disp(boundaryNodes,1:2);
 Rout = max(disp(:,1));
 height = max(disp(:,2));
 
-ix = find( boundary_nodes_xy(:,1) == Rout);
-iy = ix(find(boundary_nodes_xy(ix,2) == height));
 
-boundary_nodes = boundaryNodes;
-
-num_revolves = 15;
 
 
 hold on
@@ -185,62 +200,62 @@ hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(10)),'.csv');
 disp = csvread(filename,1);
 hold on
-fill(disp(:,1),disp(:,2),'r')          % line plot
+plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 hold on
-fill(-disp(:,1),disp(:,2),'r-')         % line plot
+plot(-disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 xlim([-50,50])
 ylim([-170,ymax])
 
 
 
-
-figure
-filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.csv');
-
-
-disp = csvread(filename,1);
-
-disp = disp(boundary_nodes,1:2);
-boundary_nodes = boundaryNodes(1:end-1);
-boundary_nodes = reshape(boundary_nodes,2,(length(boundary_nodes))/2)';
-
-boundary_nodes = boundary_nodes - iy;
-
-
+% 
+% figure
+% filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.csv');
 % 
 % 
-%  
-%  mould_nodes_index = zeros(5,2);
-% for i = 1:5
-%     mould_nodes_index(i,:) = [i,i+1];
-%     
-%     if ( i == length(mould_nodes))
-%         mould_nodes_index(i,:) = [i,1];
-%     end
-% end
+% disp = csvread(filename,1);
 % 
-%  num_revolves = 32;
-% [tri, xyz] = bfRevolve(mould_nodes_index, mould_nodes, num_revolves);
+% disp = disp(boundary_nodes,1:2);
+% boundary_nodes = boundaryNodes(1:end-1);
+% boundary_nodes = reshape(boundary_nodes,2,(length(boundary_nodes))/2)';
 % 
-% for i = 1:length(mould_nodes_index) 
-%     for j = 1:round(num_revolves/2)
-%         tri_mod((i-1)*num_revolves/2 + j,:) = tri((i-1)*num_revolves + j,:);  
-%     end
-%     
-%     end
-% s = trisurf(tri_mod, xyz(:,1),xyz(:,2),xyz(:,3),'FaceColor','y');
+% boundary_nodes = boundary_nodes - iy;
 % 
 % 
+% % 
+% % 
+% %  
+% %  mould_nodes_index = zeros(5,2);
+% % for i = 1:5
+% %     mould_nodes_index(i,:) = [i,i+1];
+% %     
+% %     if ( i == length(mould_nodes))
+% %         mould_nodes_index(i,:) = [i,1];
+% %     end
+% % end
+% % 
+% %  num_revolves = 32;
+% % [tri, xyz] = bfRevolve(mould_nodes_index, mould_nodes, num_revolves);
+% % 
+% % for i = 1:length(mould_nodes_index) 
+% %     for j = 1:round(num_revolves/2)
+% %         tri_mod((i-1)*num_revolves/2 + j,:) = tri((i-1)*num_revolves + j,:);  
+% %     end
+% %     
+% %     end
+% % s = trisurf(tri_mod, xyz(:,1),xyz(:,2),xyz(:,3),'FaceColor','y');
+% % 
+% % 
+% % 
+% [tri, xyz] = bfRevolve(boundary_nodes, disp(:,1:2), num_revolves);
 % 
-[tri, xyz] = bfRevolve(boundary_nodes, disp(:,1:2), num_revolves);
-
-% display the surface
-hold on
-trisurf(tri, xyz(:,1),xyz(:,2),xyz(:,3),'FaceColor','c');
-
-axis equal
-axis([-40 40 -40 40 -100 77])
-
+% % display the surface
+% hold on
+% trisurf(tri, xyz(:,1),xyz(:,2),xyz(:,3),'FaceColor','c');
+% 
+% axis equal
+% axis([-40 40 -40 40 -100 77])
+% 
 
 %axis equal
 
@@ -338,7 +353,7 @@ for i = 1:length(plotFiles)
     [R U V] = poldecomp(F);
     
     
-    true_strain = logm(V);
+    true_strain = logm(U);
 
     
     hoop_strain(i) =true_strain(3,3);
@@ -598,4 +613,23 @@ print -dpng2 stress.png
 
 
 
- end
+end
+ 
+
+function [x,y] = circle(x0,y0,r)
+    
+    theta = linspace(0,2*pi,40);
+    
+    x = x0 + r*cos(theta);
+    y = y0 + r*sin(theta);
+
+end
+
+
+function [x,y] = ellipse(x0,y0,a,b)
+    
+    t=-pi:0.01:pi;
+    x=x0+a*cos(t);
+    y=y0+b*sin(t);
+end
+

@@ -64,11 +64,6 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 	m_zero(delta_ep);
 
 
-	//METHOD 1//
-	// m_zero(stateNew->m_temp4);
-	// sm_mlt(deltaT,Ds,stateNew->m_temp4);
-	// m_sub(stateNew->delta_ep_bar,stateNew->m_temp4,delta_ep);
-
 
 	// METHOD 2//
 	MAT * D_n = stateNew->m_temp4;
@@ -77,7 +72,6 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 
 	// update network strain
 	m_add(stateOld->ep_n,delta_ep,stateNew->ep_n);
-
 
 
 	dsyevq3(stateNew->ep_n->me,eigVecB->me,eigValB->ve);

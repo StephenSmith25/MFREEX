@@ -49,10 +49,6 @@ int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * p
 	double sigma_m = stateOld->mSigma;
 
 
-	// if (sigma_m < 0)
-	//  {
-	//  	sigma_m = 0;
- // 	}
 
 	if ( tauOCT == 0){
 		alpha_sig = 1;
@@ -83,8 +79,6 @@ int buckleyBond(state_variables * stateNew, state_variables * stateOld , VEC * p
 	m_zero(stateNew->m_temp1);
 	m_zero(stateNew->m_temp2);
 
-
-	//sm_mlt(2*Gb*tau/dt,stateNew->delta_ep_bar,stateNew->m_temp1);
 
 	// mat1 = 2Gb*D*tau
 	sm_mlt(2*Gb*tau,d,stateNew->m_temp1);
