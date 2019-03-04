@@ -4,15 +4,15 @@ clc;
 
 r0 = 20;
 r1 = 21.57;
-theta = 90;
-
 
 
 
 
 numCircle = 32;
+num_thickness = 1;
 
-numWidth = 1;
+
+% draw boundary first
 theta = linspace(0,90,numCircle);
 nodes = [];
 countNodes = 1;
@@ -22,6 +22,15 @@ for i = 1:length(theta)
     countNodes = countNodes + 1;
 end
 
+for i = 1:num_thickness+2
+    thickness_coords = linspace(r0,r1,num_thickness+2)';
+end
+
+
+nodes(countNodes+1:countNodes+num_thickness,:) = [linspace(0,0,num_thickness)',thickness_coords(2:end-1)];
+
+countNodes = countNodes + num_thickness;
+
 theta = linspace(90,0,numCircle);
 
 for i = 1:length(theta)
@@ -29,6 +38,10 @@ for i = 1:length(theta)
     nodes(countNodes,2) = r1*sind(theta(i));
     countNodes = countNodes + 1;
 end
+
+nodes(countNodes+1:countNodes+num_thickness,:) = [linspace(r0,r1,num_thickness)',linspace(0,0,num_thickness)'];
+
+
 
 
 segments = [];

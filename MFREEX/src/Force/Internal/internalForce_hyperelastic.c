@@ -1,10 +1,9 @@
 #include "Force/Internal/internalForce_hyperelastic.h"
-#include "mat2csv.h"
 static int call_count ;
 static int print_count;
 
 
-double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC * velocity, VEC * matParams, 
+double internalForce_hyperelastic(VEC * Fint, MATERIAL_POINTS * material_points, VEC * disp, VEC * velocity, VEC * matParams, 
 	char * Material, int is_axi, int dim, double t_n_1){
 
 
@@ -54,19 +53,17 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 
 	char filename[50];
-	// loop over all integration points
 
-	SCNI ** scni = scni_obj->scni;
-	int num_int_points = scni_obj->num_points;
+	// Number of material points
+	int num_material_points = material_points->num_material_points;
 
-	
 	// time step calculation
 	// 
 	double delta_t_min = 1000;
+	MATERIAL_POINT ** MPS = material_points->MP;
 
 
-
-	omp_set_num_threads(4);
+	omp_set_num_threads(8);
 
 
 
@@ -90,18 +87,28 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 	MAT * B ;
 	IVEC * neighbours;
 	MAT * F_r;
+	MATERIAL_POINT * MP;
+	VEC * fInt;
 
 
 #pragma omp for nowait schedule(dynamic,4) 
-	for(int i = 0 ; i < num_int_points ; i++){
+	for(int i = 0 ; i < num_material_points ; i++){
+
+
 
 		/*  Find deformation gradient */
-		B = scni[i]->B;
-		neighbours = scni[i]->sfIndex;
-		F_r = scni[i]->F_r;
+		MP = MPS[i];
+		B = MP->B;
+		neighbours = MP->neighbours;
+		F_r = MP->F_r;
+		fInt = MP->fInt;
+
+
 		/*  Find deformation gradient */
 		get_defgrad(F, B, neighbours,F_r, disp);
 		get_dot_defgrad(Fdot,B, neighbours,F_r,velocity);
+
+	
 
 		int num_neighbours = neighbours->max_dim;
 		
@@ -147,11 +154,13 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 			div_v = L->me[0][0] + L->me[1][1] + L->me[2][2];	
 		}
 		/* Integration parameter */
-		double intFactor = scni[i]->area;
+		double intFactor = MP->volume;
 		if( is_axi == 1){
 
-			intFactor = intFactor * 2*PI*scni[i]->r;
+			intFactor = intFactor * 2*PI*MP->coords[0];
+
 		}
+
 
 		//Find 1D frequency bounds
 
@@ -169,9 +178,9 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		for ( int k = 0 ; k < (num_neighbours) ; k++)
 		{	
 			int index_J = neighbours->ive[k];
-			num_neighbours_J = scni[index_J]->sfIndex->max_dim;
-			volume_I = scni[i]->area;
-			m_j = rho * scni[index_J]->area;
+			num_neighbours_J = MPS[index_J]->neighbours->max_dim;
+			volume_I = MP->volume;
+			m_j = rho * MPS[index_J]->volume;
 
 
 			fro_b += (volume_I*num_neighbours_J/m_j)*B->me[0][2*k]*B->me[0][2*k];
@@ -213,7 +222,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		double b1 = 0;
 		double b2 = 0;
 
-		double Le = sqrt(scni[i]->area);
+		double Le = sqrt(MP->volume);
 		//Le = 2;
 		double c = sqrt(((lambda+2*mu)/rho));
 		double P_b1 = 0;
@@ -237,7 +246,7 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 		mat_func_ptr(stressVoigt,F,matParams);
 
 
-		__zero__(scni[i]->fInt->ve,scni[i]->fInt->max_dim);
+		__zero__(fInt->ve,fInt->max_dim);
 
 
 		// push forward stress to new reference configuration
@@ -323,13 +332,13 @@ double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, V
 
 
 		}
-		
+	
 
-		vm_mlt(scni[i]->B,stressVoigt,scni[i]->fInt);
+		vm_mlt(B,stressVoigt,fInt);
 
 		for ( int k = 0 ; k < num_neighbours; k++){
-			fIntTemp->ve[2*scni[i]->sfIndex->ive[k]] += intFactor * scni[i]->fInt->ve[2*k];
-			fIntTemp->ve[2*scni[i]->sfIndex->ive[k]+1] += intFactor * scni[i]->fInt->ve[2*k+1];
+			fIntTemp->ve[2*neighbours->ive[k]] += intFactor * fInt->ve[2*k];
+			fIntTemp->ve[2*neighbours->ive[k]+1] += intFactor *fInt->ve[2*k+1];
 		}
 	}
 

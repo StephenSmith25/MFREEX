@@ -97,7 +97,7 @@ void report(io, markers, reporttriangles, reportneighbors, reportsegments,
 	}
 }
 
-int trigen(double ** output_points, int ** boundary, char * options, char * fileName, int * numPoints, int * numBoundary, int ** pointmarkers, double ** temperatures ){
+struct triangulateio *  trigen(double ** output_points, int ** boundary, char * options, char * fileName, int * numPoints, int * numBoundary, int ** pointmarkers, double ** temperatures ){
 
 	char nodesFile[20] ;
 	char segsFile[20] ;
@@ -207,7 +207,7 @@ int trigen(double ** output_points, int ** boundary, char * options, char * file
 	triangulate(options,in,out, (struct trianglulateio *) NULL);
 
 	//printf("passed triangulate \n");
-	report(out, 1, 0, 0, 0, 0, 0);
+	//report(out, 1, 0, 0, 0, 0, 0);
 
 
 
@@ -254,10 +254,11 @@ int trigen(double ** output_points, int ** boundary, char * options, char * file
   	free(in->segmentlist);
   	free(in->regionlist);
   	free(in);
+
+
+  	return out;
 	
 
-
-	return 0;
 
 
 }

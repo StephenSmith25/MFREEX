@@ -2,15 +2,16 @@ clear all
 close all
 
 PLOT_GRAPHS = true;
+PLOT_DOMAINS_INFLUENCE = true; 
+
+
 WITH_MOULD = false;
 TMAX = 0.3;
 
 
-dmx = 5.304;
-dmy = 3.146;
 
-DOMAIN_TYPE = 'RECTANGULAR';
-% DOMAIN_TYPE = 'RADIAL'
+%DOMAIN_TYPE = 'RECTANGULAR';
+DOMAIN_TYPE = 'RADIAL'
 
 
 
@@ -29,7 +30,7 @@ numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
 
-plot_point =132;
+plot_point =177;
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.csv');
 disp = csvread(filename,1);
 
@@ -64,9 +65,55 @@ if ( WITH_MOULD == false)
 end
 
 
-
-
-
+% 
+% for i = 1:length(plotFiles)
+%    
+%    fig = figure;
+% 
+%    filename = strcat(path,'displacement_',num2str(plotFiles(i)),'.csv');
+%     disp = csvread(filename,1);
+%     subplot(1,3,2)       % add first plot in 2 x 2 grid
+%     hold on 
+%     fill(mould_nodes(:,1),mould_nodes(:,2),'w');
+%     hold on
+%     fill(-mould_nodes(:,1),mould_nodes(:,2),'w');
+%     hold on
+% 
+% 
+% 
+%     plot(disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
+%     hold on
+%     plot(-disp(:,1),disp(:,2),'k.','markersize',3) % line plot
+%     hold on
+%     plot(disp(plot_point,1),disp(plot_point,2),'r*')
+%     axis equal
+%     hold on
+% 
+%     hold on
+%     filename = strcat(pathSR,'srRod_',num2str(plotFiles(i)),'.csv');
+%     disp = csvread(filename,1);
+%     hold on
+%     plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
+%     hold on
+%     plot(-disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
+%     xlim([-50,50])
+%     ylim([-170,78])
+% 
+%     filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.csv');
+%     disp = csvread(filename,1);
+% 
+%     filename = strcat('./Displacements/Displacement_',num2str(i),'.png');
+%     
+%     drawnow   
+%     
+%     saveas(fig,filename);
+%    
+%    
+%    
+%    close all
+%     
+%     
+% end
 
 
 figure
@@ -85,32 +132,53 @@ plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 ymax = max(disp(:,2));
+plot(disp(plot_point,1),disp(plot_point,2),'r*')
 
 
 
 if (strcmp(DOMAIN_TYPE,'RADIAL') == 1)
    
-   [x,y] = circle(disp(5,1),disp(5,2),Domains(5));
+   [x,y] = circle(disp(plot_point,1),disp(plot_point,2),Domains(plot_point));
      
 
    hold on
    plot(x,y,'r.');
    
    hold on
-   plot(disp(5,1),disp(5,2),'bo')
+   plot(disp(plot_point,1),disp(plot_point,2),'bo')
    
    
-else if( strcmp(DOMAIN_TYPE,'RECTANGULAR') == 1)
+elseif( strcmp(DOMAIN_TYPE,'RECTANGULAR') == 1)
         
      hold on
-     rectangle('Position',[disp(5,1)-Domains(5,1),disp(5,2)-Domains(5,2),Domains(5,1)*2,Domains(5,2)*2]);
+     rectangle('Position',[disp(plot_point,1)-Domains(plot_point,1),disp(plot_point,2)-Domains(plot_point,2),Domains(plot_point,1)*2,....
+         Domains(plot_point,2)*2]);
        hold on
-   plot(disp(5,1),disp(5,2),'bo')
-        
-    end
-    
-end
+   plot(disp(plot_point,1),disp(plot_point,2),'bo')
+   
+elseif ( strcmp(DOMAIN_TYPE, 'ELLIPTICAL') == 1)
+     invMI = [Domains(plot_point,1:2) ; Domains(plot_point,3:4)];
 
+    MI = inv(invMI);
+
+
+[V,D] = eig(MI);
+
+
+[x_rotated,y_rotated] = ellipse(0,0,D(1,1),D(2,2));
+xyRotated = [x_rotated',y_rotated']*V';
+xy = xyRotated;
+
+x = xy(:,1) + disp(plot_point,1);
+y = xy(:,2) + disp(plot_point,2);
+
+
+hold on
+plot(x,y,'r-');
+axis equal
+else
+    
+end  
 
 
 axis equal 

@@ -228,11 +228,75 @@ IVEC * point_neighbours(double * x, meshfreeDomain * mfree)
 	}
 	case (ELLIPTICAL):
 	{
-		fprintf(stderr,"NEED TO IMPLEMENT THIS \n");
+
+		double distance = 0;
+		int count_neighbours = 0;
+		double beta = mfree->beta;
+		double d_I_s = 0;
+		MAT * MI ;
+
+
+		double M11 = 0;
+		double M12 = 0;
+		double M21 = 0;
+		double M22 = 0;
+
+
+
+		for (int i = 0; i < numnodes; ++i)
+		{
+			distance = sq_distance(x, nodes->me[i], dim);
+			double xS[2] = {x[0] - nodes->me[i][0], x[1] - nodes->me[i][1]};
+			MI = mfree->MI[i];
+
+
+			M11 = MI->me[0][0];
+			M12 = MI->me[0][1];
+			M21 = MI->me[1][0];
+			M22 = MI->me[1][1];
+			distance = xS[0]*(M11*xS[0] + M12 * xS[1]) + xS[1]*(M21*xS[0] + M22 * xS[1]);
+
+
+
+			if ( distance <= 1)
+			{
+				neighbours->ive[count_neighbours] = i;
+				count_neighbours = count_neighbours + 1;
+
+				if ( count_neighbours >= neighbours->max_dim)
+				{
+
+					IVEC * temp = iv_get(neighbours->max_dim);
+					iv_copy(neighbours,temp);
+					iv_resize(neighbours,neighbours->max_dim+5);
+
+					for (int k = 0 ; k < temp->max_dim; ++k)
+					{
+						neighbours->ive[k] = temp->ive[k];
+					}
+					IV_FREE(temp);
+
+				}
+			}
+		}
+		if ( neighbours->max_dim > count_neighbours)
+		{
+			IVEC * temp = iv_get(neighbours->max_dim);
+			iv_copy(neighbours,temp);
+			iv_resize(neighbours,count_neighbours);
+			neighbours->max_dim = count_neighbours;
+
+			for (int k = 0 ; k < count_neighbours; ++k)
+			{
+				neighbours->ive[k] = temp->ive[k];
+			}
+			IV_FREE(temp);
+
+		}
+
 		break;
 	}
 	}
-
 
 	return neighbours;
 

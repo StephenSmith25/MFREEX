@@ -40,19 +40,20 @@ const double TMAX = 0.4;
 double delta_t = 5e-7;
 
 // Meshfree parameters
-const double dmax = 3;
-const double dmax_x =4;
-const double dmax_y =2.5;
+const double dmax = 2;
+const double dmax_x =2;
+const double dmax_y =2;
+double beta = 1.1;
 
 
 
 char * basis_type = "linear";
-char * weight = "cubic";
-char * kernel_shape = "rectangular";
+char * weight = "quartic";
+char * kernel_shape = "radial";
 
 
 const int is_stabalised = 0;
-const int is_constant_support_size = 1;
+const int is_constant_support_size = 0;
 
 // stretch rod
 const double DISP_ROD_MAX = 132 ; // 132;
@@ -295,7 +296,7 @@ int main(int argc, char** argv) {
 	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI,
 		.weight_function = weight, .kernel_shape = kernel_shape, 
 		.basis_type = basis_type,.is_constant_support_size = is_constant_support_size,
-		.dmax_radial = dmax, .dmax_tensor = dmax_tensor};
+		.dmax_radial = dmax, .dmax_tensor = dmax_tensor, .beta=beta};
 	
 	setDomain(&mfree);
 
@@ -312,6 +313,12 @@ int main(int argc, char** argv) {
 	{
 		for ( int i = 0 ; i < mfree.num_nodes ; i++)
 			fprintf(fp,"%lf,%lf\n",mfree.di_tensor->me[i][0],mfree.di_tensor->me[i][1]);
+	}else if ( mfree.kernel_support == ELLIPTICAL)
+	{		
+			for ( int i = 0 ; i < mfree.num_nodes ; i++)
+			fprintf(fp,"%lf,%lf,%lf,%lf\n",mfree.MI[i]->me[0][0],mfree.MI[i]->me[0][1],
+				mfree.MI[i]->me[1][0],mfree.MI[i]->me[1][1]);
+
 	}
 	fclose(fp);
 	

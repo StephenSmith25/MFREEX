@@ -143,13 +143,10 @@ shape_function_container *  mls_shapefunction(MAT * compute_points, int compute,
 
 					// find domain size, and coords of node xi;
 					double * xi = nodes->me[neighbours->ive[j]];
-					double di[dim];
-					di[0] = domainSize->ve[neighbours->ive[j]];
+
 
 					for ( int k = 0 ; k < dim ; k++)
 					{
-						if ( support == RECTANGULAR)
-							di[k] = mfree->di_tensor->me[neighbours->ive[j]][k];
 
 						xS[k] = x[k] - xi[k];
 					}
@@ -161,7 +158,7 @@ shape_function_container *  mls_shapefunction(MAT * compute_points, int compute,
 
 
 					// get weight function for node I
-					weight_function(weights, xS, di, weight, support, compute, dim);
+					weight_function(weights, xS, neighbours->ive[j], mfree, compute);
 
 
 
@@ -346,14 +343,9 @@ if ( compute == 2)
 
 				// find domain size, and coords of node xi;
 				double * xi = mfree->nodes->me[neighbours->ive[j]];
-					double di[dim];
-					di[0] = domainSize->ve[neighbours->ive[j]];
 
-					for ( int k = 0 ; k < dim ; k++)
-					{
-						if ( support == RECTANGULAR)
-							di[k] = mfree->di_tensor->me[neighbours->ive[j]][k];
-
+				for ( int k = 0 ; k < dim ; k++)
+				{
 						xS[k] = x[k] - xi[k];
 				}
 
@@ -363,7 +355,7 @@ if ( compute == 2)
 
 
 				// get weight function for node I
-				weight_function(weights, xS, di, weight, support, compute, dim);
+				weight_function(weights, xS, neighbours->ive[j], mfree, compute);
 
 				// shape function matricies
 				// B;
@@ -642,13 +634,8 @@ if ( compute == 2)
 					double * xi = mfree->nodes->me[neighbours->ive[j]];
 					
 
-					double di[dim];
-					di[0] = domainSize->ve[neighbours->ive[j]];
-
 					for ( int k = 0 ; k < dim ; k++)
 					{
-						if ( support == RECTANGULAR)
-							di[k] = mfree->di_tensor->me[neighbours->ive[j]][k];
 
 						xS[k] = x[k] - xi[k];
 					}
@@ -659,8 +646,8 @@ if ( compute == 2)
 					p_xi = get_col(basis_xi,0,p_xi);
 
 
-				// get weight function for node I
-					weight_function(weights, xS, di, weight, support, compute, dim);
+				// get weight function for node J
+					weight_function(weights, xS, neighbours->ive[j], mfree, compute);
 
 
 

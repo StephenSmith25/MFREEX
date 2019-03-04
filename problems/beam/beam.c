@@ -20,7 +20,7 @@
 
 char * basis_type = "linear";
 char * weight = "cubic";
-char * kernel_shape = "rectangular";
+char * kernel_shape = "elliptical";
 
 int is_AXI = 0;
 
@@ -28,6 +28,8 @@ int is_AXI = 0;
 const double dmax = 2.5;
 const double dmax_x = 1.5;
 const double dmax_y = 2.0;
+double beta = 1.01;
+int constant_support_size = 0;
 
 
 int main(void )
@@ -133,7 +135,6 @@ int main(void )
 
 	// shape function parameters
 	double dmax = 1.6;
-	int constant_support_size = 0;
 	int compute = 3;
 	VEC * dI = v_get(xI->m);
 
@@ -141,14 +142,17 @@ int main(void )
 	dmax_tensor[0] = dmax_x;
 	dmax_tensor[1] = dmax_y;
 
+
 	// meshfree domain
 	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI,
 		.weight_function = weight, .kernel_shape = kernel_shape, 
 		.basis_type = basis_type,.is_constant_support_size = constant_support_size,
-		.dmax_radial = dmax, .dmax_tensor = dmax_tensor};
+		.dmax_radial = dmax, .dmax_tensor = dmax_tensor, .beta = beta };
 	
 	setDomain(&mfree);
-	m_foutput(stdout,mfree.di_tensor);
+
+
+	//m_foutput(stdout,mfree.di_tensor);
 
 	// get transformation matrix at nodal points
 

@@ -4,66 +4,89 @@
 #include "matrix2.h"
 #include <sys/time.h>
 #include <omp.h>
+#include "mat2csv.h"
+#include "trigen.h"
+#include "Integration/material_point.h"
 
-const int NUM_TRIES =10;
-const int NUM_MATRIX_MULTI = 10;
-const int NUM_POINTS = 300;
-const int NUM_THREADS = 4;
-int do_stuff(MAT * A, MAT*B, MAT * C, VEC * largeVector);
+
+#define QUADRATURE_ORDER 2
+
+#define INTEGRATION_TYPE 1
 
 int main(int argc, char const *argv[])
 {
 
-	omp_set_num_threads(4);
+
+	// TRIANGULATE THE DOMAIN
+	char opt[20] = "pDq0a0.05";
+	char fileName[30] = "square";
+	double * points_out ;
+	int * boundaryNodes;
+	int numBoundary;
+	int * nodalMarkers;
+	int  numnodes;
+
+	struct triangulateio * tri  =  trigen(&points_out,&boundaryNodes,opt,fileName,&numnodes,&numBoundary,&nodalMarkers,NULL);
+
+	double * tri_points = tri->pointlist;
+	int * triangles = tri->trianglelist;
+	int number_of_triangles = tri->numberoftriangles;
+	int * quad_orders = malloc(number_of_triangles*sizeof(int));
+	for ( int i = 0 ; i < number_of_triangles ; i++)
+	{
+		quad_orders[i] = QUADRATURE_ORDER;
+	}	
+
+	QUAD_TRIANGLE * quad_triangles = create_triangle_quadrature_points(tri_points, 
+		triangles,number_of_triangles, quad_orders );
+
+
+	printf("got here \n ");
+	m_foutput(stdout, quad_triangles->QUAD_POINTS);
 
 
 
+	int num_quad_points = quad_triangles->QUAD_POINTS->m;
 
+	// export gauss points
+	FILE * fp; 
 
+	fp = fopen("quad_points.csv","w");
+	for ( int i = 0 ; i < quad_triangles->QUAD_POINTS->m ; i++)
+	{
 
-	struct timeval start, end;
-	// generate clipped voronoi diagram
-	gettimeofday(&start, NULL);
-#pragma omp parallel
-{
-
-	int n = 0 ;
-	VEC * largeArray = v_get(50);
-	MAT * A = m_get(3,3);
-	MAT * B = m_get(3,3);
-	MAT * C = m_get(3,3);
-
-	while ( n < NUM_TRIES){
-		#pragma omp for 
-		for ( int i = 0 ; i < NUM_POINTS ; i++)
-		{
-			if ( i == 1)
-			{
-				printf("i = 1\n");
-			}
-			do_stuff(A, B, C, largeArray);
-		}
-	
-	#pragma omp atomic
-		++n;
-
+		fprintf(fp,"%lf,%lf\n",quad_triangles->QUAD_POINTS->me[i][0],
+			quad_triangles->QUAD_POINTS->me[i][1]);
 
 	}
 
+	fclose(fp);
+
+	fp = fopen("nodes.csv","w");
+	for ( int i =0 ; i < numnodes ; i++)
+	{
+		fprintf(fp, "%lf,%lf\n",tri_points[2*i],tri_points[2*i+1]);
+	}
+	fclose(fp);
+
+
+	fp = fopen("triangles.csv","w");
+
+
+	for ( int i = 0 ; i < number_of_triangles ; i++)
+	{
+		fprintf(fp,"%d,%d,%d\n",triangles[3*i],triangles[3*i+1],triangles[3*i+2]);
+	}
+	fclose(fp);
 
 
 
-}
+	printf("sum of volumes = %lf \n",v_sum(quad_triangles->VOLUMES));
+	// export triangles
+	MAT * xI = m_get(numnodes,2);
 
 
- 	// get time took to run
-	gettimeofday(&end, NULL);
-	double delta = ((end.tv_sec  - start.tv_sec) * 1000000u + 
-         end.tv_usec - start.tv_usec) / 1.e6;
-
-	// get time taken to run
-	printf("while loop took %lf seconds to run\n", delta);
-
+	// CREATE MATERIAL POINTS FROM SCNI OR TRIANGLE QUADRATURE
 
 
 	/* code */
@@ -71,15 +94,4 @@ int main(int argc, char const *argv[])
 }
 
 
-int do_stuff(MAT * A,MAT * B, MAT * C ,VEC * largeVector )
-{
 
-	for ( int i = 0 ; i < NUM_MATRIX_MULTI ; i++)
-	{
-		m_mlt(A,B,C);
-	}
-
-
-
-	return 0;
-}

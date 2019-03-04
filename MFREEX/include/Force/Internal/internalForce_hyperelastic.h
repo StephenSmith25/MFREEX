@@ -12,12 +12,14 @@
 #include "Material/Hyperelastic/hyperelastic_materials.h"
 #include "Integration/defgrad.h"
 #include "m_inverse_small.h"
+#include "mat2csv.h"
+#include "Integration/material_point.h"
 
 #define PI 3.14159265359
 
 
-double internalForce_hyperelastic(VEC * Fint, SCNI_OBJ * scni_obj, VEC * disp, VEC * velocity,VEC * matParams, 
-	char * material, int is_axi, int dim, double t_n_1);
+double internalForce_hyperelastic(VEC * Fint, MATERIAL_POINTS * material_points, VEC * disp, VEC * velocity, VEC * matParams, 
+	char * Material, int is_axi, int dim, double t_n_1);
 
 
 

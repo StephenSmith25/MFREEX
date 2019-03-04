@@ -41,7 +41,7 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 
 	printf("getting shape function value at cell veritices \n ");
 	shape_function_container * sf_verticies = mls_shapefunction(cell_verticies, 1, Mfree);
-	shape_function_container * sf_nodes ;
+	shape_function_container * sf_nodes = mls_shapefunction(nodes, 2, Mfree);
 
 
 	int dim_B = dim;
@@ -50,9 +50,6 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 	// at some nodes will have to find, compute could be given as a vector 
 	if ( is_AXI  == 1)
 	{
-		printf("getting shape function at nodes \n");
-		sf_nodes = mls_shapefunction(nodes, 2, Mfree);
-		printf("got shape function at nodes \n");
 
 		dim_B = 3;
 
@@ -274,15 +271,8 @@ SCNI_OBJ * generate_scni(voronoi_diagram * voronoi, char * type, int is_stabalis
 	M_FREE(bI);
 
 
-
-
 	free_shapefunction_container(sf_verticies);
-
-	if ( is_AXI == 1)
-	{
-		free_shapefunction_container(sf_nodes);
-
-	}
+	free_shapefunction_container(sf_nodes);
 
 
 	SCNI_OBJ * scni_obj = malloc(1*sizeof(SCNI_OBJ));

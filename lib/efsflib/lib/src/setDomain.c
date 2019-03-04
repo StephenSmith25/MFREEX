@@ -1,7 +1,7 @@
 #include "setDomain.h"
 
 
-
+const int min_num_neighbours = 6;
 
 static inline double sq_distance(double *point_1, double * point_2, int  dim)
 {
@@ -55,7 +55,6 @@ int setDomain(meshfreeDomain * mfree)
 
 			VEC * distances = v_get(num_nodes); 
 			PERM * order = px_get(num_nodes);
-			int min_num_neighbours = 5;
 			double dmax = mfree->dmax_radial;
 			// all nodes have same support size
 
@@ -112,7 +111,6 @@ int setDomain(meshfreeDomain * mfree)
 		mfree->di_tensor = m_get(num_nodes,dim);
 		}
 
-		int min_num_neighbours = 6;
 
 
 		VEC * distances = v_get(num_nodes); 
@@ -191,12 +189,28 @@ int setDomain(meshfreeDomain * mfree)
 
 		}
 
+			PX_FREE(order);
+			V_FREE(distances);
+
+
+
+
 
 			break;
 		}
 		case(ELLIPTICAL):
 		{
-			double beta = 0;
+
+			if ( mfree->MI == NULL)
+			{
+				mfree->MI = malloc(mfree->num_nodes*sizeof(MAT *));
+				for (int i = 0; i < num_nodes; ++i)
+				{
+				
+				mfree->MI[i] = m_get(2,2);
+				}
+			}
+
 
 			VEC * distances = v_get(num_nodes); 
 			PERM * order = px_get(num_nodes);
@@ -209,31 +223,102 @@ int setDomain(meshfreeDomain * mfree)
 				return -1;
 			}
 
+
+			MAT * MI = m_get(2,2);
+
 			for (int i = 0; i < num_nodes; ++i)
 			{
+				
+				m_zero(MI);
 
-				MAT * M_I = m_get(2,2);
+
+				// find distance from node I to each node J 
+				for (int j = 0; j < num_nodes; ++j)
+				{
+					// find distance to point;
+					distances->ve[j] = sq_distance(nodes->me[i], nodes->me[j], dim);
+
+
+				}
+
+				// Form MI with the N neighbours
+				v_sort(distances,order);
+				double xI = mfree->nodes->me[i][0];
+				double yI = mfree->nodes->me[i][1];
+				double xJ,yJ;
+
+				int k = 0;
+
+				double distance_n = -1;
+				double distance_n_1 = -1;
+
+				int j = 0;
+					while (( j < 100) && ( k < min_num_neighbours))
+					{
+						distance_n_1 = distances->ve[j];
+
+						xJ = mfree->nodes->me[order->pe[j]][0];
+						yJ = mfree->nodes->me[order->pe[j]][1];
 
 
 
-			// find distance from node I to each node J 
-			for (int j = 0; j < num_nodes; ++j)
-			{
-				// find distance to point;
-				distances->ve[j] = sq_distance(nodes->me[i], nodes->me[j], dim);
+
+						MI->me[0][0] += (xJ-xI)*(xJ-xI);
+						MI->me[0][1] += (xJ-xI)*(yJ-yI);
+						MI->me[1][0] += (xJ-xI)*(yJ-yI);
+						MI->me[1][1] += (yJ-yI)*(yJ-yI);
+
+
+						j++;
+						
+
+
+
+
+					if ( fabs(distance_n - distance_n_1) < 1e-9 )
+					{
+
+					}else{
+						k = k+1;
+					}
+
+					// update counters
+					distance_n = distance_n_1;
+					j++;
+
+					}
+
+
+	
+				sm_mlt(mfree->beta,MI,MI);
+				mfree->MI[i] = m_inverse(MI,mfree->MI[i]);
+
+
+
+
+
+
+
+
 
 			}
-			}
 
 
+			m_free(MI);
 
-
+			PX_FREE(order);
+			V_FREE(distances);
 
 			break;
+
+
 		}
 		default:
 
-		fprintf(stderr,"kernel shape not set\n");
+		printf("domain type not set\n");
+
+
+
 	}
 
 

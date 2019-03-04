@@ -27,22 +27,46 @@
 #include "Boundary/Displacement/setUpBC.h"
 #include "Boundary/Displacement/enforceBC.h"
 #include "Integration/SCNI/scni_update_B.h"
+#include "Integration/material_point.h"
+#include "Integration/mass_matrix.h"
 
 /*  Function definitions */
 
 int constant_support_size = 0;
 char * basis_type = "linear";
 char * weight = "cubic";
-char * kernel_shape = "rectangular";
+char * kernel_shape = "radial";
 
 // Meshfree parameters
 const double dmax = 2.5;
 const double dmax_x = 1.5;
 const double dmax_y = 1.5;
-	double tMax = 1;
+double tMax = 1;
+
+double deltaT = 5e-7;
+
+
+const int dim = 2;
+const int is_AXI = 0;
+const double pressure = 230;
+
+
+
+
+char * integration_type = "TRIANGLE";
+char * MATERIAL_TYPE = "HYPERELASTIC";
+
+
+/*  Material  */
+char * material = "mooney_rivlin";
+const double rho = 1000e-9;
+
+
 
 
 int main(int argc, char** argv) {
+
+
 
 	/*////////////////////////////////////////////////////////// */
 	/*                                                           */
@@ -51,58 +75,10 @@ int main(int argc, char** argv) {
 	/*////////////////////////////////////////////////////////// */
 
 
-	struct timeval beginPre, endPre, endExp;
-
-	gettimeofday(&beginPre, NULL);
-
 	/* Initialsie random parameters  */
 	FILE * fp;
 	int i;
-	char code;
 
-	/*  Material parameters */
-	const double rho = 1000e-9;
-
-
-
-	/*  Material struct */
-	VEC * materialParameters = v_get(3);
-	materialParameters->ve[0] = 1835.0;
-	materialParameters->ve[1] = 146.8;
-	materialParameters->ve[2] = 1e5;
-
-
-	// VEC * materialParameters = v_get(4);
-	// materialParameters->ve[0] = 0.373;
-	// materialParameters->ve[1] = -0.031;
-	// materialParameters->ve[2] = 0.005;
-	// materialParameters->ve[3] = 1e5;
-
-
-	char * material = "mooney_rivlin";
-	/*  Time step variables */
-
-	double deltaT = 5e-7;
-
-	int dim = 2;
-	int is_AXI = 0;
-
-
-
-	/*  Meshfree Paramters */
-	double dMax = 2;
-	double dMax_x = 2.0;
-	double dMax_y = 2.0;	
-
-
-	/*  Loading parameters */
-	double pressure = 230;
-
-	/*  Plotting parameters */
-
-
-	/*////////////////////////////////////////////////////////// */
-	/*////////////////////////////////////////////////////////// */
 
 
 	/*////////////////////////////////////////////////////////// */
@@ -112,13 +88,17 @@ int main(int argc, char** argv) {
 	/*////////////////////////////////////////////////////////// */
 
 
+	/*  Material struct */
+	VEC * materialParameters = v_get(3);
+	materialParameters->ve[0] = 1835.0;
+	materialParameters->ve[1] = 146.8;
+	materialParameters->ve[2] = 1e5;
 
-	/*  Create points 
-	 *
-	 *	Via a 2D triangulation 
-	 *
-	 *  */
-	// Read PLSG 
+
+
+
+	// CREATE POINTS BASED ON DELAUNAY TRIANGULATION
+
 
 	char opt[20] = "pDYq0a0.1";
 	char fileName[30] = "cylinder";
@@ -128,7 +108,11 @@ int main(int argc, char** argv) {
 	int * nodalMarkers;
 	int  numnodes;
 	double * temperatures;
-	trigen(&points_out,&boundaryNodes,opt,fileName,&numnodes,&numBoundary,&nodalMarkers,&temperatures);	
+
+
+	// TRIANGULATION
+	struct triangulateio * tri = trigen(&points_out,&boundaryNodes,opt,
+		fileName,&numnodes,&numBoundary,&nodalMarkers,&temperatures);	
 
 
 	MAT * xI = m_get(numnodes,dim);
@@ -149,34 +133,26 @@ int main(int argc, char** argv) {
 	fclose(fp);
 
 
-	
-	struct timeval start, end;
-	// generate clipped voronoi diagram
-	gettimeofday(&start, NULL);
-	voronoi_diagram * vor = NULL;
-	vor = generate_voronoi(xI->base, boundaryNodes, xI->m, numBoundary, 2);
- 	// get time took to run
-	gettimeofday(&end, NULL);
-	double delta = ((end.tv_sec  - start.tv_sec) * 1000000u + 
-         end.tv_usec - start.tv_usec) / 1.e6;
+	fp = fopen("nodes.csv","w");
+	for ( int i =0 ; i < numnodes ; i++)
+	{
+		for ( int k = 0 ; k < dim ; k++)
+		{
+			fprintf(fp, "%lf",xI->me[i][k]);
 
-	// get time taken to run
-	printf("voronoi took %lf seconds to run\n", delta);
+			if ( k < dim - 1)
+			{
+				fprintf(fp,",");
+			}
 
-	// Print voronoi diagram to file 
-	fp = fopen("cells.txt","w");
-	print_voronoi_diagram(fp,vor);
+		}
+		fprintf(fp, "\n");
+	}
 	fclose(fp);
-	/*  Set up efgBlock 
-	 *  nodes
-	 *  meshfree domain
-	 *  */
-	
+
 	/* ------------------------------------------*/
 	/* ------------Meshfree Domain---------------*/
 	/* ------------------------------------------*/
-
-	// shape function parameters
 
 	VEC * dI = v_get(xI->m);
 	double dmax_tensor[dim];
@@ -193,25 +169,61 @@ int main(int argc, char** argv) {
 	setDomain(&mfree);
 
 
+	/* ---------------------------------------------------------------------------*/
+	/* ---------------CREATE THE MATERIAL ( INTEGRATION) POINTS-------------------*/
+	/* ---------------------------------------------------------------------------*/
+
+	voronoi_diagram * vor = NULL;
+	MATERIAL_POINTS * material_points = NULL;
+
+	if ( strcmp ( integration_type, "SCNI") == 0)
+	{
+
+		// generate clipped voronoi diagram
+		vor = generate_voronoi(xI->base, boundaryNodes, xI->m, numBoundary, 2);
+		
+
+		material_points = create_material_points(vor, 
+			is_AXI, dim, integration_type, MATERIAL_TYPE, rho, &mfree);
+		
+
+		// Write material points to file
+		write_material_points("materialpoints.csv", material_points);
+
+		// Print voronoi diagram to file 
+		fp = fopen("cells.txt","w");
+		print_voronoi_diagram(fp,vor);
+		fclose(fp);
 	
+	}else if ( strcmp(integration_type, "TRIANGLE") == 0)
+	{
 
-	/* ------------------------------------------*/
-	/* ------------------SCNI--------------------*/
-	/* ------------------------------------------*/
+		material_points = create_material_points(tri, 
+			is_AXI, dim, integration_type, MATERIAL_TYPE, rho,  &mfree);
+		
 
-	int is_stabalised = 0;
-	SCNI_OBJ * _scni_obj = NULL;
-	MSCNI_OBJ * _mscni_obj = NULL;
+		// Write material points to file
+		write_material_points("materialpoints.csv", material_points);
 
-	struct timeval start2, end2;
-	gettimeofday(&start2, NULL);
-	// set up return container
-	// generate shape functions at sample points 
-	_scni_obj = generate_scni(vor, NULL , is_stabalised, is_AXI, dim, &mfree);
-	gettimeofday(&end2, NULL);
-	delta = ((end2.tv_sec  - start2.tv_sec) * 1000000u + 
-         end2.tv_usec - start2.tv_usec) / 1.e6;
-	printf("scni function took %lf seconds to run\n", delta);
+		double * tri_points = tri->pointlist;
+		int * triangles = tri->trianglelist;
+		int number_of_triangles = tri->numberoftriangles;
+
+
+		fp = fopen("triangles.csv","w");
+		for ( int i = 0 ; i < number_of_triangles ; i++)
+		{
+			fprintf(fp,"%d,%d,%d\n",triangles[3*i],triangles[3*i+1],triangles[3*i+2]);
+		}
+		fclose(fp);
+
+
+		printf("got here \n");
+
+
+
+
+	}
 
 	// Test divergence free condition
 	IVEC * index ;
@@ -220,74 +232,53 @@ int main(int argc, char** argv) {
 	printf("checking scni \n \n");
 	int checkPoint = 33;
 
-	m_foutput(stdout,_scni_obj->scni[checkPoint]->B);
-	iv_foutput(stdout, _scni_obj->scni[checkPoint]->sfIndex);
 
 	printf("checking divergence free condition at point %d\n", checkPoint);
 	printf("with coordinates %lf %lf\n", mfree.nodes->me[checkPoint][0], mfree.nodes->me[checkPoint][1]);
-	printf("cell area = %lf \n", _scni_obj->scni[checkPoint]->area);
+	printf("cell area = %lf \n", material_points->MP[checkPoint]->volume);
 	printf("and neighbours \n");
-	for ( int i = 0 ; i < _scni_obj->num_points ; i++)
+	for ( int i = 0 ; i < material_points->num_material_points ; i++)
 	{
-		index = _scni_obj->scni[i]->sfIndex;
-		B = _scni_obj->scni[i]->B;
+		index = material_points->MP[i]->neighbours;
+		B = material_points->MP[i]->B;
 
 		for (int k = 0 ; k < index->max_dim ; k++){
 			int indx = index->ive[k];
 
 			if ( indx == checkPoint)
 			{
-				check_B->me[0][0] += B->me[0][2*k]*_scni_obj->scni[i]->area;
-				check_B->me[1][1] += B->me[1][2*k+1]*_scni_obj->scni[i]->area;
-				check_B->me[2][0] += B->me[2][2*k]*_scni_obj->scni[i]->area;
-				check_B->me[3][1] += B->me[3][2*k+1]*_scni_obj->scni[i]->area;
+				check_B->me[0][0] += B->me[0][2*k]*material_points->MP[i]->volume;
+				check_B->me[1][1] += B->me[1][2*k+1]*material_points->MP[i]->volume;
+				check_B->me[2][0] += B->me[2][2*k]*material_points->MP[i]->volume;
+				check_B->me[3][1] += B->me[3][2*k+1]*material_points->MP[i]->volume;
 			}
 		}
 	}
 
+	m_foutput(stdout, check_B);
+	/* --------------------------------------------*/
+	/* ----------------LUMPED MASSES---------------*/
+	/* --------------------------------------------*/
+	VEC * nodal_mass = mass_vector(material_points, &mfree);
 
-	
-	/* ------------------------------------------*/
-	/* ----------------Mass Vector---------------*/
-	/* ------------------------------------------*/
-	VEC * phi;
-	IVEC * neighbours;
-	VEC * nodal_mass = v_get(mfree.num_nodes);
 	VEC * inv_nodal_mass = v_get(mfree.num_nodes);
-	// get shape function and contact nodes
-	shape_function_container * phi_nodes = mls_shapefunction(mfree.nodes, 1, &mfree);
 
-	for ( int i = 0 ; i < mfree.num_nodes ; i++)
-	{
-		phi = phi_nodes->sf_list[i]->phi;
-		neighbours = phi_nodes->sf_list[i]->neighbours;
-
-		double volume = _scni_obj->scni[i]->area;
-		if ( is_AXI == 1)
-		{
-			double r = _scni_obj->scni[i]->r;
-			volume = volume*r*2*PI;
-
-		}
-		for ( int k = 0 ; k < neighbours->max_dim ; k++)
-		{
-			int index = neighbours->ive[k];
-			nodal_mass->ve[index] += phi->ve[k]*rho*volume;
-		}
-
-		//nodal_mass->ve[i] = volume*rho;
-		//inv_nodal_mass->ve[i] = 1.000/nodal_mass->ve[i];
-
-	}
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
 		inv_nodal_mass->ve[i] = 1.00/nodal_mass->ve[i];
 	}
-	printf("total mass = %lf (g) \n", v_sum(nodal_mass)*1000);
-	v_foutput(stdout,nodal_mass);
-	
 
-	
+	printf("total mass = %lf (g) \n", v_sum(nodal_mass)*1000);
+
+	double area = 0;
+	for ( int i = 0 ; i < material_points->num_material_points ; i++)
+	{
+		area += material_points->MP[i]->volume;
+	}
+
+	printf("total area = %lf \n", area);
+
+
 	/* ------------------------------------------*/
 	/* ----------------Boundaries---------------*/
 	/* ------------------------------------------*/
@@ -343,8 +334,6 @@ int main(int argc, char** argv) {
 	free_shapefunction_container(sf_nodes);
 
 
-	gettimeofday(&endPre, NULL);
-	long elapsedPre = (endPre.tv_sec-beginPre.tv_sec) + (endPre.tv_usec-beginPre.tv_usec)/1000000.0;
 
 	///////////////////////////////////////////////////////////////
 	
@@ -421,7 +410,7 @@ int main(int argc, char** argv) {
 	fclose(fp);
 
 	while ( t_n < tMax){
-
+	//while ( n < 10){
 		/*  Update time step */
 		t_n_1 = t_n + deltaT;
 
@@ -461,10 +450,10 @@ int main(int argc, char** argv) {
 
 		assemble_pressure_load(Fext_n_1, pre_n_1, pB);
 	
-		double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, v_n_h,
+		double delta_t_min = internalForce_hyperelastic(Fint_n_1, material_points, d_n_1, v_n_h,
 		 materialParameters, material, is_AXI, dim,t_n_1);
 
-				
+		
 		/*  Balance of forces */
 		v_sub(Fext_n_1,Fint_n_1,Fnet);
 		
@@ -536,7 +525,7 @@ int main(int argc, char** argv) {
 
 		v_copy(Fint_n_1,Fint_n);
 		v_copy(Fext_n_1,Fext_n);
-		deltaT = 0.85*delta_t_min;
+		deltaT = deltaT; //delta_t_min;
 		v_copy(v_n_h,v_n_mh);
 		v_copy(d_n_1,d_n);
 		v_copy(v_n_1,v_n);
@@ -553,19 +542,6 @@ int main(int argc, char** argv) {
 	/*////////////////////////////////////////////////////////// */
 
 
-	gettimeofday(&endExp, NULL);
-
-	long elapsedExp = (endExp.tv_sec-endPre.tv_sec) + (endExp.tv_usec-endPre.tv_usec)/1000000.0;
-
-
-	printf("Post processing took %ld seconds \n Explicit routine took %ld seconds\n",elapsedPre,elapsedExp);
-
-
-
-
-
-	/*////////////////////////////////////////////////////////// */
-	/*////////////////////////////////////////////////////////// */
 
 
 

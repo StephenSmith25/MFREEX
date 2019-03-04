@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(cylinder)
 
 
+include_directories(${triangulate_SOURCE_DIR}/include)
 include_directories(${EFSFLIB_SOURCE_DIR}/lib/include)
 include_directories(${Meschach_SOURCE_DIR})
 include_directories(${CVLIB_SOURCE_DIR}/lib/include)
@@ -10,7 +11,6 @@ include_directories(${util_SOURCE_DIR}/include)
 
 include_directories(${GPC_SOURCE_DIR})
 include_directories(${MFREEX_SOURCE_DIR}/MFREEX/include)
-include_directories(${triangulate_SOURCE_DIR}/include)
 
 
 link_directories(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
@@ -30,7 +30,7 @@ find_package (Threads)
 
 
 add_executable(cylinder cylinder.c)
-target_link_libraries(cylinder CVLIB MFREEX EFSFLIB triangulate meschach m gpc util)
+target_link_libraries(cylinder CVLIB triangulate MFREEX EFSFLIB meschach m gpc util)
 
 
 # copy input files to location

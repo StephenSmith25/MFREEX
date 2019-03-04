@@ -5,12 +5,13 @@
 #include <math.h>
 
 
-int weight_function (VEC * weights, double  * xS, double * dI_i, char * type, enum SUPPORT_TYPE support,  int compute, int dim){
+int weight_function (VEC * weights, double  * xS, int I, meshfreeDomain * mfree,  int compute){
 
+	int dim = mfree->dim;
 
-
-
-
+	char * shape = mfree->kernel_shape;
+	char * weight_type = mfree->weight_function;
+	enum SUPPORT_TYPE support = mfree->kernel_support;
 
 
 
@@ -59,7 +60,7 @@ int weight_function (VEC * weights, double  * xS, double * dI_i, char * type, en
 	case (RADIAL):
 	{
 
-	double dI = dI_i[0];
+	double dI = mfree->di->ve[I];
 
 	double r = 0;
 	for ( int i = 0 ; i < dim ; i++){
@@ -68,7 +69,7 @@ int weight_function (VEC * weights, double  * xS, double * dI_i, char * type, en
 
 	r = sqrt(r)/dI;
 
-	if (strcmp(type, "cubic")  == 0){
+	if (strcmp(weight_type, "cubic")  == 0){
 		VEC * w_arr = v_get(3);
 
 		// find w, w_r, w_rr 
@@ -96,7 +97,7 @@ int weight_function (VEC * weights, double  * xS, double * dI_i, char * type, en
 
 
 
-	}else if ( strcmp(type,"quartic") == 0)
+	}else if ( strcmp(weight_type,"quartic") == 0)
 	{
 		VEC * w_arr = v_get(3);
 
@@ -165,6 +166,7 @@ int weight_function (VEC * weights, double  * xS, double * dI_i, char * type, en
 	case (RECTANGULAR):
 	{
 
+	double dI_i[2] = {mfree->di_tensor->me[I][0],mfree->di_tensor->me[I][1]};
 	double r_j[3];
 
 	for ( int i = 0 ; i < dim ; i++)
@@ -175,7 +177,7 @@ int weight_function (VEC * weights, double  * xS, double * dI_i, char * type, en
 
 	// else if tensor product kernels
 	
-	if ( strcmp(type,"cubic") == 0)
+	if ( strcmp(weight_type,"cubic") == 0)
 	{
 		VEC * w_arr = v_get(3);
 		weights->ve[0] = 1;
@@ -236,7 +238,116 @@ int weight_function (VEC * weights, double  * xS, double * dI_i, char * type, en
 	}
 	case (ELLIPTICAL):
 	{
-		fprintf(stderr,"need to implement this");
+
+	double d_I_s = 0;
+	MAT * MI = mfree->MI[I];
+
+
+	double M11 = MI->me[0][0];
+	double M12 = MI->me[0][1];
+	double M21 = MI->me[1][0];
+	double M22 = MI->me[1][1];
+
+
+
+	double r_norm_s = xS[0]*(M11*xS[0] + M12 * xS[1]) + xS[1]*(M21*xS[0] + M22 * xS[1]);
+	double r_norm = sqrt(r_norm_s);
+
+	double drdk[2];
+
+	drdk[0] = (1.00/(2*r_norm) * (2*M11*xS[0] + M12*xS[1]))  ; 
+	drdk[1] = (1.00/(2*r_norm) * (2*M22*xS[1] + M21*xS[0])) ; 
+
+
+	if (strcmp(weight_type, "cubic")  == 0){
+		VEC * w_arr = v_get(3);
+
+		// find w, w_r, w_rr 
+		cubic_spline(w_arr,r_norm);
+
+		weights->ve[0] = w_arr->ve[0];
+
+		if (( compute == 2) || ( compute == 3)){
+			for ( int i = 0 ; i < 2; i++)
+			{
+				if ( r_norm != 0 ){
+				double drdi = drdk[i];
+				weights->ve[1+i] = drdi*w_arr->ve[1];
+				}
+				else{
+				weights->ve[1+i] = 0;
+				}
+			}
+
+		}
+		if ( compute == 3){
+			printf("use higher order basis to find 2nd derivative \n");
+		}
+		v_free(w_arr);
+
+
+
+	}else if ( strcmp(weight_type,"quartic") == 0)
+	{
+		VEC * w_arr = v_get(3);
+
+		// find w, w_r, w_rr 
+		quartic_spline(w_arr,r_norm);
+
+		weights->ve[0] = w_arr->ve[0];
+
+		if (( compute == 2) || ( compute == 3)){
+			for ( int i = 0 ; i < dim ; i++)
+			{
+				if ( r_norm != 0 ){
+				double drdi = drdk[i];
+				weights->ve[1+i] = drdi*w_arr->ve[1];
+				}
+				else{
+				weights->ve[1+i] = 0;
+				}
+			}
+
+		}
+
+		// if ( compute == 3){
+
+		// 	double w_r = w_arr->ve[1];
+		// 	double w_rr = w_arr->ve[2];
+		// 	int kron = 0;
+
+		// 	for ( int i = 0 ; i < dim ; i++)
+		// 	{
+		// 		for ( int j = 0 ; j < dim ; j++)
+		// 		{
+		// 			int indx = j + i*dim;
+		// 			if ( i == j ){
+		// 				kron = 1;
+		// 			}else{
+		// 				kron = 0;
+		// 			}
+		// 			if ( r_norm != 0 )
+		// 			{
+		// 				weights->ve[(1+dim)+indx] = (w_rr - w_r/r_norm) * ( xS[i]*xS[j] )/(r_norm*r_norm*pow(dI,4))  + w_r * (double)(kron/(r_norm*dI*dI)) ;	
+	
+		// 			}else{
+		// 				weights->ve[(1+dim)+indx] = -12*kron/(dI*dI);	
+	
+		// 			}
+		// 		}
+		// 	}
+		// }
+
+		v_free(w_arr);
+
+
+
+	}else {
+		fprintf(stderr,"weight function not set \n ");
+	}
+	
+
+		break;
 	}
 	}
 

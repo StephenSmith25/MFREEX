@@ -15,9 +15,11 @@ typedef struct meshfreeDomain
 	VEC * di;
 	MAT * di_tensor;
 
+	MAT ** MI;
+
 	double dmax_radial ;
 	double * dmax_tensor;
-	double dmax_elliptical;
+	double beta ;
 
 	char * kernel_shape;
 	char * basis_type;

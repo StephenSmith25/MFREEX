@@ -13,6 +13,7 @@ include_directories(${CVLIB_SOURCE_DIR}/test/include)
 include_directories(${GPC_SOURCE_DIR})
 include_directories(${util_SOURCE_DIR}/include)
 include_directories(${Eigen_SOURCE_DIR}/include)
+include_directories(${triangulate_SOURCE_DIR}/include)
 
 
 find_package(OpenMP)

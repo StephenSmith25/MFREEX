@@ -22,7 +22,8 @@
 
 typedef struct triangulateio * tri ;
 
-int trigen(double **points, int ** boundary, char * options, char * fileName, int * numPoints, int * numBoundary, int ** pointmarkers, double ** temperatures);
+struct triangulateio *  trigen(double **points, int ** boundary, 
+	char * options, char * fileName, int * numPoints, int * numBoundary, int ** pointmarkers, double ** temperatures);
 
 
 
