@@ -459,8 +459,8 @@ int main(void )
 		/* ------------------------------------------*/
 
 		// find incremental displacement
-		double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, disp_inc, v_n_h, materialParameters, 
-			"SVK", is_AXI, dim, t_n_1);
+		//double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, disp_inc, v_n_h, materialParameters, 
+		//	"SVK", is_AXI, dim, t_n_1);
 
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/
@@ -536,7 +536,7 @@ int main(void )
 
 		t_n = t_n_1;
 
-		delta_t = 0.85*delta_t_min;
+		//delta_t = 0.85*delta_t_min;
 
 		++n;
 		printf("%i  \t  %lf  \t %lf \t  %10.2E %10.2E, \n",n,t_n,tipLoad, Wbal, delta_t);

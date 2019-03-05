@@ -24,7 +24,7 @@
 #include "dsyevq3.h"
 #include "matop_3x3.h"
 // material
-const char * MATERIAL = "BUCKLEY";
+const char * MATERIAL_NAME = "BUCKLEY";
 const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
@@ -106,11 +106,11 @@ int main(void)
 	int n = 0;
 
 
-	state_variables ** stateOld = new_material_state(&TEMPERATURE, 1, 
+	state_variables ** stateOld = new_material_states(&TEMPERATURE, 1, 
 		BUCKLEY_MATERIAL , 
 		PLASTIC_MATERIAL , 
 		DIM, IS_AXI);
-	state_variables ** stateNew = new_material_state(&TEMPERATURE, 1, 
+	state_variables ** stateNew = new_material_states(&TEMPERATURE, 1, 
 		BUCKLEY_MATERIAL , 
 		PLASTIC_MATERIAL , 
 		DIM, IS_AXI);

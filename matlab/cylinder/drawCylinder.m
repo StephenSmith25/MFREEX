@@ -2,14 +2,14 @@ clear all
 close all 
 clc;
 
-r0 = 20;
+r0 = 20.00;
 r1 = 21.57;
 
 
 
 
 numCircle = 32;
-num_thickness = 1;
+num_thickness = 2;
 
 
 % draw boundary first
@@ -22,14 +22,7 @@ for i = 1:length(theta)
     countNodes = countNodes + 1;
 end
 
-for i = 1:num_thickness+2
-    thickness_coords = linspace(r0,r1,num_thickness+2)';
-end
 
-
-nodes(countNodes+1:countNodes+num_thickness,:) = [linspace(0,0,num_thickness)',thickness_coords(2:end-1)];
-
-countNodes = countNodes + num_thickness;
 
 theta = linspace(90,0,numCircle);
 
@@ -39,7 +32,6 @@ for i = 1:length(theta)
     countNodes = countNodes + 1;
 end
 
-nodes(countNodes+1:countNodes+num_thickness,:) = [linspace(r0,r1,num_thickness)',linspace(0,0,num_thickness)'];
 
 
 
@@ -76,16 +68,32 @@ for i = 1:length(nodes)
     
 end
 
+theta = linspace(0,90,numCircle);
+
+Radii = linspace(r1,r0,num_thickness+2);
+for i = 1:num_thickness
+    R = Radii(i+1);
+    % draw boundary first
+
+    for i = 1:length(theta)
+    nodes(countNodes,1) = R * cosd(theta(i));
+    nodes(countNodes,2) = R*sind(theta(i));
+    countNodes = countNodes + 1;
+    end
+    
+    
+end
+
 % Plot it 
 figure
 plot(nodes(:,1),nodes(:,2),'k.');
 axis off
 axis equal 
     rand1 = rand(1,3);
-hold on 
-fill(nodes(:,1),nodes(:,2),rand1);
-hold on 
-plot(nodes(:,1),nodes(:,2),'k-');
+% hold on 
+% fill(nodes(:,1),nodes(:,2),rand1);
+% hold on 
+% plot(nodes(:,1),nodes(:,2),'k-');
 
 
 

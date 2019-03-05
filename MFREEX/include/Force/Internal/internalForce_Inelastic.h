@@ -12,7 +12,6 @@
 #include "Integration/defgrad.h"
 #include "mat2csv.h"
 #include "m_inverse_small.h"
-#include "Material/material.h"
 #include "Integration/gMat.h"
 #include "Deformation/velocity_grad.h"
 #define PI 3.14159265359

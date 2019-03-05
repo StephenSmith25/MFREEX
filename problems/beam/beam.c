@@ -477,8 +477,8 @@ int main(void )
 
 
 		//double delta_t_min = internalForce_hyperelastic_S(Fint_n_1, _mscni_obj, d_n_1, v_n_h, materialParameters, "SVK", is_AXI, dim);
-		double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, v_n_h,
-		 materialParameters, "SVK", is_AXI, dim,t_n_1);
+		//double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, v_n_h,
+		// materialParameters, "SVK", is_AXI, dim,t_n_1);
 
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/
@@ -554,7 +554,7 @@ int main(void )
 		v_copy(v_n_1,v_n);
 		v_copy(a_n_1,a_n);
 
-		delta_t = delta_t_min*0.85;
+		//delta_t = delta_t_min*0.85;
 
 		t_n = t_n_1;
 

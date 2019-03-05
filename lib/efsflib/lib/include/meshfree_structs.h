@@ -46,6 +46,47 @@ typedef struct shape_function{
 	MAT * d2phi;
 
 
+
+
+
+	// initialise shape function calculation matricies (these will be free'd
+	MAT * A ;
+	MAT * B ;
+	MAT * basis_xi ;
+	VEC * p_xi ;
+	MAT * ppT ;
+	VEC * bi ;
+	VEC * weights ;
+	MAT * invA ;
+	VEC * inter ;
+	MAT * basis ;
+	VEC * p ;
+	PERM * pivot ;
+	MAT * LU_A ;
+	VEC * gamma ;
+
+	// get derivatives of phi
+	VEC * v_inter_1 ;
+	VEC * v_inter_2 ;
+	VEC * dphia ;
+	VEC * dp_dk ;
+	MAT ** dA_dk ;
+	MAT ** dB_dk ;
+
+	// get second derivatives of phi
+	MAT ** d2A_dk_dj ;
+	MAT ** d2B_dk_dj ;
+	VEC * d2phia ;
+	VEC * gamma_kj ;
+	MAT * gamma_k_m ;
+	VEC * v_inter_3 ;
+
+	// LU decompostion variables
+	VEC * gamma_k ;
+	VEC * RHS ;
+
+
+
 } shape_function;
 
 typedef struct shape_function_container{

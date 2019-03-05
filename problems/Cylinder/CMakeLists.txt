@@ -29,6 +29,9 @@ endif()
 find_package (Threads)
 
 
+SET(GCC_COVERAGE_COMPILE_FLAGS "-O3 -g -std=c99")
+add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
+
 add_executable(cylinder cylinder.c)
 target_link_libraries(cylinder CVLIB triangulate MFREEX EFSFLIB meschach m gpc util)
 

@@ -14,4 +14,7 @@
 shape_function_container * mls_shapefunction(MAT * compute_points, int compute, meshfreeDomain * mfree);
 int free_shapefunction_container(shape_function_container * sf);
 
+
+int update_mls_shapefunction(shape_function * sf_point, double compute_point[3], int compute, meshfreeDomain * mfree);
+
 #endif

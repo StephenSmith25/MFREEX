@@ -3,11 +3,52 @@
 
 #include "matrix.h"
 #include "matrix2.h"
+//#include "Material/Hyperelastic/hyperelastic_materials.h"
 
 
 // stores the state of a material in terms of its deformation, 
 // and material properties
+typedef enum MATERIAL_TYPE{
+	HYPERELASTIC,
+	PLASTIC,
+	BUCKLEY
+}MATERIAL_TYPE;
 
+typedef enum HYPERELASTIC_LAW
+{
+	MOONEY_RIVLIN,
+	NEO_HOOKEAN,
+	CUBIC
+}HYPERELASTIC_LAW;
+
+typedef enum PLASTIC_LAW
+{
+	J2,
+	DRUCKER_PRAGER
+
+}PLASTIC_LAW;
+
+
+
+typedef struct MATERIAL
+{
+	MATERIAL_TYPE material_type;
+	void * MATERIAL_LAW;
+
+	VEC * params;
+}MATERIAL;
+
+
+typedef struct MOONEY_RIVLIN_MATERIAL
+{
+	// FUNCTION POINTER
+	//int (*GET_STRESS)(VEC*,MAT*,VEC*) = &mooneyRivlin;
+
+	// CONSTANTS
+	VEC * params;
+
+
+}MOONEY_RIVLIN_MATERIAL;
 
 
 typedef struct state_variables
@@ -21,6 +62,7 @@ typedef struct state_variables
 	// Deformation gradient
 	MAT * F;
 	MAT * invF;
+	MAT * Fdot;
 
 	// Determinant of F
 	double Jacobian;
@@ -144,7 +186,16 @@ typedef struct state_variables
 
 } state_variables;
 
-state_variables ** new_material_state(double * temperatures, int num_nodes, int is_buckley,
+state_variables ** new_material_states(double * temperatures, int num_nodes, int is_buckley,
  int is_plastic, int dim, int is_AXI);
+
+
+MATERIAL * create_new_material(MATERIAL_TYPE material_type, void * MATERIAL_LAW, VEC * params);
+
+
+
+state_variables * new_material_state( double temperature, MATERIAL_TYPE mat_type, int dim, int is_AXI);
+
+
 
 #endif

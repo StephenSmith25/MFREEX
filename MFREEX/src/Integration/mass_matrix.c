@@ -26,11 +26,7 @@ VEC *  mass_vector(MATERIAL_POINTS * MPS, meshfreeDomain * mfree){
 
 
 
-		if ( IS_AXI == 1)
-		{
-			double r = MPS->MP[i]->coords[0];
-			volume = volume*r*2*PI;
-		}
+
 		for ( int k = 0 ; k < neighbours->max_dim ; k++)
 		{
 			int index = neighbours->ive[k];

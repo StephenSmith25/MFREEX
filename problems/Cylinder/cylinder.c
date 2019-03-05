@@ -43,7 +43,7 @@ const double dmax_x = 1.5;
 const double dmax_y = 1.5;
 double tMax = 1;
 
-double deltaT = 5e-7;
+double deltaT = 1e-6;
 
 
 const int dim = 2;
@@ -51,17 +51,19 @@ const int is_AXI = 0;
 const double pressure = 230;
 
 
+// Material type 
+MATERIAL_TYPE material_type = HYPERELASTIC;
+HYPERELASTIC_LAW hyperelastic_law = MOONEY_RIVLIN;
 
 
 char * integration_type = "TRIANGLE";
-char * MATERIAL_TYPE = "HYPERELASTIC";
 
 
 /*  Material  */
-char * material = "mooney_rivlin";
 const double rho = 1000e-9;
 
 
+#define NUMBER_OF_THREADS 2
 
 
 int main(int argc, char** argv) {
@@ -100,7 +102,7 @@ int main(int argc, char** argv) {
 	// CREATE POINTS BASED ON DELAUNAY TRIANGULATION
 
 
-	char opt[20] = "pDYq0a0.1";
+	char opt[20] = "p";
 	char fileName[30] = "cylinder";
 	double * points_out ;
 	int * boundaryNodes;
@@ -169,6 +171,7 @@ int main(int argc, char** argv) {
 	setDomain(&mfree);
 
 
+
 	/* ---------------------------------------------------------------------------*/
 	/* ---------------CREATE THE MATERIAL ( INTEGRATION) POINTS-------------------*/
 	/* ---------------------------------------------------------------------------*/
@@ -184,7 +187,7 @@ int main(int argc, char** argv) {
 		
 
 		material_points = create_material_points(vor, 
-			is_AXI, dim, integration_type, MATERIAL_TYPE, rho, &mfree);
+			is_AXI, dim, integration_type, material_type, rho, &mfree);
 		
 
 		// Write material points to file
@@ -199,7 +202,7 @@ int main(int argc, char** argv) {
 	{
 
 		material_points = create_material_points(tri, 
-			is_AXI, dim, integration_type, MATERIAL_TYPE, rho,  &mfree);
+			is_AXI, dim, integration_type, material_type, rho,  &mfree);
 		
 
 		// Write material points to file
@@ -218,44 +221,11 @@ int main(int argc, char** argv) {
 		fclose(fp);
 
 
-		printf("got here \n");
 
 
 
 
 	}
-
-	// Test divergence free condition
-	IVEC * index ;
-	MAT * B; 
-	MAT * check_B = m_get(dim*dim,2);
-	printf("checking scni \n \n");
-	int checkPoint = 33;
-
-
-	printf("checking divergence free condition at point %d\n", checkPoint);
-	printf("with coordinates %lf %lf\n", mfree.nodes->me[checkPoint][0], mfree.nodes->me[checkPoint][1]);
-	printf("cell area = %lf \n", material_points->MP[checkPoint]->volume);
-	printf("and neighbours \n");
-	for ( int i = 0 ; i < material_points->num_material_points ; i++)
-	{
-		index = material_points->MP[i]->neighbours;
-		B = material_points->MP[i]->B;
-
-		for (int k = 0 ; k < index->max_dim ; k++){
-			int indx = index->ive[k];
-
-			if ( indx == checkPoint)
-			{
-				check_B->me[0][0] += B->me[0][2*k]*material_points->MP[i]->volume;
-				check_B->me[1][1] += B->me[1][2*k+1]*material_points->MP[i]->volume;
-				check_B->me[2][0] += B->me[2][2*k]*material_points->MP[i]->volume;
-				check_B->me[3][1] += B->me[3][2*k+1]*material_points->MP[i]->volume;
-			}
-		}
-	}
-
-	m_foutput(stdout, check_B);
 	/* --------------------------------------------*/
 	/* ----------------LUMPED MASSES---------------*/
 	/* --------------------------------------------*/
@@ -267,16 +237,6 @@ int main(int argc, char** argv) {
 	{
 		inv_nodal_mass->ve[i] = 1.00/nodal_mass->ve[i];
 	}
-
-	printf("total mass = %lf (g) \n", v_sum(nodal_mass)*1000);
-
-	double area = 0;
-	for ( int i = 0 ; i < material_points->num_material_points ; i++)
-	{
-		area += material_points->MP[i]->volume;
-	}
-
-	printf("total area = %lf \n", area);
 
 
 	/* ------------------------------------------*/
@@ -297,10 +257,31 @@ int main(int argc, char** argv) {
 
 	/*  Set up essential boundary  */
 	EBC * eb1 = malloc(1*sizeof(EBC));
+
+	eb1->nodes = iv_get(3);
+
+	int count = 0;
+	for ( int i = 0 ; i < mfree.num_nodes ; i++)
+	{
+		double x = mfree.nodes->me[i][0];
+		double y = mfree.nodes->me[i][1];
+
+
+		if ( x == 0)
+		{
+			eb1->nodes->ive[count] = i;
+
+			++count;
+		}
+
+	}
 	eb1->dofFixed = 1;
-	getBoundary(&eb1->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,3);
-	iv_addNode(eb1->nodes,traction_nodes->ive[traction_nodes->max_dim -1 ],'e');
+	//getBoundary(&eb1->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,3);
+	//iv_addNode(eb1->nodes,traction_nodes->ive[traction_nodes->max_dim -1 ],'e');
 	setUpBC(eb1,inv_nodal_mass,&mfree);
+
+	m_foutput(stdout, eb1->coords);
+	iv_foutput(stdout,eb1->nodes);
 
 	/*  Set up essential boundary  */
 	EBC * eb2 = malloc(1*sizeof(EBC));
@@ -308,6 +289,8 @@ int main(int argc, char** argv) {
 	getBoundary(&eb2->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,8);
 	iv_addNode(eb2->nodes,traction_nodes->ive[0],'s');
 	setUpBC(eb2,inv_nodal_mass,&mfree);
+	iv_foutput(stdout,eb2->nodes);
+	m_foutput(stdout, eb2->coords);
 
 
 	/*  Get transformation matrix */
@@ -362,6 +345,9 @@ int main(int argc, char** argv) {
 	MAT * updatedNodes = m_get(num_dof,dim);
 
 
+	VEC * inc_disp = v_get(num_dof);
+
+
 	VEC * delta_disp = v_get(num_dof);
 	VEC * nodal_disp = v_get(num_dof);
 
@@ -394,7 +380,7 @@ int main(int argc, char** argv) {
 	double preStop = 0;
 
 
-
+	double delta_t_min  = -1000;
 	/*  Iteration counter */
 	int n= 0;
 	/*  File write counter */
@@ -403,6 +389,14 @@ int main(int argc, char** argv) {
 
 	double pre_n_1 = 0; 
 
+
+	VEC * FINT[NUMBER_OF_THREADS];
+
+	for ( int i = 0 ; i < NUMBER_OF_THREADS ; i++)
+	{
+		FINT[i] = v_get(num_dof);
+	}
+
 	
 	/*  For writing to file */
 	fp = fopen("loadDisp.txt","w");
@@ -410,7 +404,10 @@ int main(int argc, char** argv) {
 	fclose(fp);
 
 	while ( t_n < tMax){
-	//while ( n < 10){
+	//while ( n < 200000){
+
+
+
 		/*  Update time step */
 		t_n_1 = t_n + deltaT;
 
@@ -443,25 +440,103 @@ int main(int argc, char** argv) {
 		//__mltadd__(d_n_1->ve,v_n_h->ve,deltaT, num_dof);
 
 
-		/*  Update tip load */
+		/*  Update pressureload */
 		pre_n_1 = pressure * smoothstep(t_n_1,tMax,0);
 		update_pressure_boundary(pB, updatedNodes);
 		v_zero(Fext_n_1);
 
 		assemble_pressure_load(Fext_n_1, pre_n_1, pB);
 	
-		double delta_t_min = internalForce_hyperelastic(Fint_n_1, material_points, d_n_1, v_n_h,
-		 materialParameters, material, is_AXI, dim,t_n_1);
 
+		__zero__(Fint_n_1->ve,Fint_n_1->max_dim);
+
+		#pragma omp parallel num_threads(NUMBER_OF_THREADS)
+		{
+		// Internal forces
+		int ID = omp_get_thread_num();
+
+		MAT * F ;
+		MAT * Fdot;
+		VEC * stressVoigt ;
+		MAT * B ;
+		IVEC * neighbours;
+		MAT * F_r;
+		VEC * fInt;
+
+		__zero__(FINT[ID]->ve,num_dof);
 		
+
+
+		#pragma omp for nowait schedule(dynamic,4)
+		for (  i = 0 ; i < material_points->num_material_points ; i++)
+		{
+
+
+			F = material_points->MP[i]->stateNew->F;
+			Fdot = material_points->MP[i]->stateNew->Fdot;
+			B = material_points->MP[i]->B;
+			neighbours = material_points->MP[i]->neighbours;
+			F_r = material_points->MP[i]->F_n;
+			stressVoigt = material_points->MP[i]->stressVoigt;
+			fInt = material_points->MP[i]->fInt;
+
+
+
+			// Update deformation gradient 
+			get_defgrad(F, B, neighbours,F_r, d_n_1);
+			get_dot_defgrad(Fdot,B, neighbours,F_r,v_n_h);
+			double intFactor = material_points->MP[i]->volume;
+
+			int num_neighbours = neighbours->max_dim;
+			mooneyRivlin(stressVoigt,material_points->MP[i]->stateNew,materialParameters);
+			state_variables * state ;
+
+			__zero__(fInt->ve,fInt->max_dim);
+
+
+			/// Internal force
+			vm_mlt(B,stressVoigt,fInt);
+
+			for ( int k = 0 ; k < num_neighbours; k++){
+				FINT[ID]->ve[2*neighbours->ive[k]] += intFactor * fInt->ve[2*k];
+				FINT[ID]->ve[2*neighbours->ive[k]+1] += intFactor *fInt->ve[2*k+1];
+			}
+
+				// delta_t_min = internalForce_hyperelastic(FINT[ID], material_points->MP[i], d_n_1, v_n_h,
+				//  materialParameters,&mooneyRivlin,t_n_1);		
+
+
+
+
+		}
+		
+		#pragma omp critical
+			__add__(FINT[ID]->ve, Fint_n_1->ve,Fint_n_1->ve, num_dof);
+
+		} // end of paralell region
+
+
 		/*  Balance of forces */
 		v_sub(Fext_n_1,Fint_n_1,Fnet);
-		
-		for ( int i = 0 ; i < numnodes  ; i++ )
+
+
+		for (  i = 0 ; i < numnodes  ; i++ )
 		{
 			a_n_1->ve[2*i] = Fnet->ve[2*i]*inv_nodal_mass->ve[i];
 			a_n_1->ve[2*i+1] = Fnet->ve[2*i+1]*inv_nodal_mass->ve[i];
 		}
+
+		// update d_n_1 and then generate new material point 
+
+
+		// update nodal positions
+
+
+		// update material points
+
+
+
+
 
 
 		// update to interger time step velocities
@@ -482,6 +557,15 @@ int main(int argc, char** argv) {
 		}
 
 
+
+
+		// UPDATE MATERIAL POINTS
+		// CONSTANT NODAL SUPPORTS
+
+
+
+
+
 		// save outputs
 		if ( n % writeFreq == 0 ){
 			char filename[50];
@@ -497,6 +581,8 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 		/* -----------------Find Energy--------------*/
 		/* ------------------------------------------*/
+
+
 
 
 		// find change in displacement 
@@ -525,7 +611,7 @@ int main(int argc, char** argv) {
 
 		v_copy(Fint_n_1,Fint_n);
 		v_copy(Fext_n_1,Fext_n);
-		deltaT = deltaT; //delta_t_min;
+		//deltaT = 0.85*delta_t_min; //delta_t_min;
 		v_copy(v_n_h,v_n_mh);
 		v_copy(d_n_1,d_n);
 		v_copy(v_n_1,v_n);

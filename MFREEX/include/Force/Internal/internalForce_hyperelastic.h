@@ -15,11 +15,13 @@
 #include "mat2csv.h"
 #include "Integration/material_point.h"
 
-#define PI 3.14159265359
+#ifndef PI
+#define PI 3.14159265358979323846
+#endif
 
+double internalForce_hyperelastic(VEC * Fint, MATERIAL_POINT * MP, VEC * disp, VEC * velocity,
+ 	VEC * matParams, int (*mat_func_ptr)(VEC *, MAT*,VEC*), double t_n_1);
 
-double internalForce_hyperelastic(VEC * Fint, MATERIAL_POINTS * material_points, VEC * disp, VEC * velocity, VEC * matParams, 
-	char * Material, int is_axi, int dim, double t_n_1);
 
 
 

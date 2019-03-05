@@ -503,8 +503,8 @@ int main(int argc, char** argv) {
 
 
 		
-		double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, v_n_h,
-		 materialParameters, "cubic_rivlin", is_AXI, dim,t_n_1);
+		//double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, v_n_h,
+		// materialParameters, "cubic_rivlin", is_AXI, dim,t_n_1);
 		
 		update_pressure_boundary(pB, updatedNodes);
 		v_zero(Fext_n_1);

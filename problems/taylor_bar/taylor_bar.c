@@ -68,7 +68,7 @@ char * kernel_shape = "radial";
 const int  writeFreq = 2000;
 
 
-char * MATERIAL = "J2";
+char * MATERIAL_NAME = "J2";
 
 
 
@@ -295,11 +295,11 @@ int main(int argc, char** argv) {
 
 	printf("creating state storage\n");
 
-	state_variables ** state_n = new_material_state(NULL, mfree.num_nodes, 
+	state_variables ** state_n = new_material_states(NULL, mfree.num_nodes, 
 		0 , 
 		1 , 
 		dim, is_AXI);
-	state_variables ** state_n_1 = new_material_state(NULL, mfree.num_nodes, 
+	state_variables ** state_n_1 = new_material_states(NULL, mfree.num_nodes, 
 		0 , 
 		1 , 
 		dim, is_AXI);
@@ -469,7 +469,7 @@ int main(int argc, char** argv) {
 		double delta_t_min = internalForce_Inelastic(Fint_n_1, _scni_obj,
 		d_n_1, v_n_h,
 		materialParameters, state_n_1, state_n,
-		mfree.IS_AXI, dim,deltaT,t_n_1, MATERIAL);
+		mfree.IS_AXI, dim,deltaT,t_n_1, MATERIAL_NAME);
 
 
 

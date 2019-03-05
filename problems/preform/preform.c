@@ -31,7 +31,7 @@
 #include "PostProcess/saveDisp.h"
 #include "input/read_input_points.h"
 
-char * MATERIAL = "BUCKLEY";
+char * MATERIAL_NAME = "BUCKLEY";
 const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
@@ -542,11 +542,11 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 	/* --------------State storage---------------*/
 	/* ------------------------------------------*/
-	state_variables ** state_n = new_material_state(temperatures, mfree.num_nodes, 
+	state_variables ** state_n = new_material_states(temperatures, mfree.num_nodes, 
 		BUCKLEY_MATERIAL , 
 		PLASTIC_MATERIAL , 
 		dim, is_AXI);
-	state_variables ** state_n_1 = new_material_state(temperatures, mfree.num_nodes, 
+	state_variables ** state_n_1 = new_material_states(temperatures, mfree.num_nodes, 
 		BUCKLEY_MATERIAL , 
 		PLASTIC_MATERIAL , 
 		dim, is_AXI);
@@ -824,7 +824,7 @@ int main(int argc, char** argv) {
 		internalForce_Inelastic_Buckley(Fint_n_1, _scni_obj,
 		disp_inc, v_n_h,
 		matParams, state_n_1, state_n,
-		mfree.IS_AXI, dim,delta_t,t_n_1, MATERIAL);
+		mfree.IS_AXI, dim,delta_t,t_n_1, MATERIAL_NAME);
 
 
 		/* ------------------------------------------*/

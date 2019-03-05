@@ -9,10 +9,9 @@ r1 = 21.57;
 
 
 numCircle = 32;
-num_thickness = 3;
+num_thickness = 1;
 
-
-R
+Radius
 
 % draw boundary first
 theta = linspace(0,90,numCircle);
@@ -24,8 +23,12 @@ for i = 1:length(theta)
     countNodes = countNodes + 1;
 end
 
+for i = 1:num_thickness+2
+    thickness_coords = linspace(r0,r1,num_thickness+2)';
+end
 
-countNodes = countNodes + num_thickness;
+
+
 
 theta = linspace(90,0,numCircle);
 
@@ -35,6 +38,7 @@ for i = 1:length(theta)
     countNodes = countNodes + 1;
 end
 
+nodes(countNodes+1:countNodes+num_thickness,:) = [linspace(r0,r1,num_thickness)',linspace(0,0,num_thickness)'];
 
 
 
