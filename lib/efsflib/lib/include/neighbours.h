@@ -9,6 +9,7 @@
 IVEC * point_neighbours(double * x, meshfreeDomain * mfree);
 
 
+IVEC * get_point_neighbours(IVEC * neighbours, double * x, meshfreeDomain * mfree);
 
 
 

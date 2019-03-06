@@ -42,7 +42,7 @@ double internalForce_hyperelastic(VEC * Fint, MATERIAL_POINT * MP, VEC * disp, V
 
 		/*  Find deformation gradient */
 		B = MP->B;
-		neighbours = MP->neighbours;
+		neighbours = MP->shape_function->neighbours;
 		F_r = MP->F_n;
 		fInt = MP->fInt;
 

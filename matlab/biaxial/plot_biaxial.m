@@ -23,7 +23,7 @@ trueStrain_E = M(:,2);
 trueStress_E = M(:,3);
 nominalStrain_E = exp(trueStrain_E) -1 ;
 nominalStress = trueStress_E./exp(trueStrain_E) ; 
-plot(nominalStrain_E,trueStress_E,'b+')
+plot(nominalStrain_E,trueStress_E,'b-')
 
 
 
@@ -34,4 +34,42 @@ trueStress_S = N(:,2);
 
 hold on
 
-plot(nominalStrain_S,trueStress_S,'k-')
+plot(nominalStrain_S(1:100:end),trueStress_S(1:100:end),'k+')
+
+
+%set axis
+set(gca, 'FontName', 'cmr12')
+% set x tics and y tics
+set(gca,...
+'Units','normalized',...
+'FontWeight','normal',...
+'FontSize',14,... % size ofiguref numbers on axis
+'FontName','cmr14') % font name
+set(gca,'TickLabelInterpreter', 'latex');
+
+% Y label
+ylabel({'True Stress (MPa) '},...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% X label
+xlabel('Nominal Strain',...
+'interpreter','latex',...
+'FontWeight','normal',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% legend
+
+legend({'Experimental','Buckley Model'},... % { 'legend1', 'legend2',...}
+'interpreter','latex',...
+'FontSize',12,...
+'FontName','cmr14',...
+'Location','NorthWest')
+
+
+set(gcf, 'Color', 'w');
+
+print -dpng2 stress_strain.png
+
+
+

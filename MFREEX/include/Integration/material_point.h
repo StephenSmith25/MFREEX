@@ -17,12 +17,11 @@
 typedef struct MATERIAL_POINT_TRACTION
 {
 
-
-
+	double * coords;
 	double area;
 	double * normal;
 
-	
+
 }MATERIAL_POINT_TRACTION;
 
 
@@ -48,11 +47,10 @@ typedef struct MATERIAL_POINT
 
 	// Geometric information
 	double volume;
+	double INTEGRATION_FACTOR;
 	double * coords;
 
 	// shape functions
-	VEC * phi;
-	IVEC * neighbours;
 	MAT * B;
 	MAT * F_n;
 	MAT * inc_F;
@@ -64,10 +62,17 @@ typedef struct MATERIAL_POINT
 	double temperature;
 	double mass;
 
+
+	shape_function * shape_function;
+
 	// material state 
 	state_variables * stateNew;
 	state_variables * stateOld;
 
+
+	double beta;
+	MAT * MI;
+	enum SUPPORT_TYPE kernel_support;
 
 }MATERIAL_POINT;
 
@@ -82,11 +87,6 @@ typedef struct MATERIAL_POINTS
 	int dim;
 	int IS_AXI;
 
-	// Raw coordinates of material points
-	MAT * MP_COORDS;
-
-	// Shape functions for each material points
-	shape_function_container * sf_material_points;
 
 	// Material
 	MATERIAL * material;
@@ -110,6 +110,7 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI, int dim,
 
 int write_material_points(char * filename, MATERIAL_POINTS * MPS);
 
+MATERIAL_POINT *  update_material_point(MATERIAL_POINT * MP, meshfreeDomain * mfree, VEC * nodal_mass);
 
 
 

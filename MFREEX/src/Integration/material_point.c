@@ -1,8 +1,10 @@
 #include "Integration/material_point.h"
 
 
-#define QUADRATURE_ORDER 2
 
+#ifndef QUADRATURE_ORDER
+#define QUADRATURE_ORDER 2
+#endif
 
 
 static inline MATERIAL_POINT * create_material_point(double coords[3], double volume)
@@ -55,9 +57,6 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI, int dim,
 		MATERIAL_POINT ** MPS = malloc(vor->num_cells * sizeof(MATERIAL_POINT));
 
 
-		material_points->sf_material_points = mls_shapefunction(mfree->nodes, 1, mfree);
-
-
 		material_points->num_material_points = vor->num_cells;
 
 		// create a material state for each point ( dependent on the material )
@@ -67,10 +66,14 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI, int dim,
 		for ( int i = 0 ; i < material_points->num_material_points ; i++)
 		{
 
+
+			MPS[i]->coords = malloc(dim*sizeof(double));
+
+
 			// Generate the coordinates
 			for  (  int k = 0 ; k < dim ; k++)
 			{
-				point_coords[k] = mfree->nodes->me[i][k];
+				MPS[i]->coords[k] = mfree->nodes->me[i][k];
 			}
 
 			// Create the material points
@@ -78,9 +81,19 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI, int dim,
 
 			// Shape function matricies 
 			MPS[i]->B = _scni_obj->scni[i]->B;
-			MPS[i]->neighbours = _scni_obj->scni[i]->sfIndex;
+			MPS[i]->shape_function = MLS_SHAPEFUNCTION(NULL,point_coords,1,mfree);
 			MPS[i]->fInt = _scni_obj->scni[i]->fInt;
+
+			// deformation gradients
+			MPS[i]->inc_F = m_get(dim_s,dim_s);
 			MPS[i]->F_n = _scni_obj->scni[i]->F_r;
+
+			m_ident(MPS[i]->inc_F);
+			m_ident(MPS[i]->F_n);
+
+
+
+
 			MPS[i]->rho = rho;
 
 			MPS[i]->stressVoigt = v_get(dim_p);
@@ -88,7 +101,9 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI, int dim,
 			if ( IS_AXI == 1)
 			{
 			double r = _scni_obj->scni[i]->r;
-			MPS[i]->volume = MPS[i]->volume*r*2*PI;
+				MPS[i]->INTEGRATION_FACTOR = r*2*PI;
+			}else{
+				MPS[i]->INTEGRATION_FACTOR = 1;
 			}
 
 
@@ -107,7 +122,6 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI, int dim,
 		material_points->MP = MPS;
 		material_points->dim = dim;
 		material_points->IS_AXI = IS_AXI;
-		material_points->MP_COORDS = mfree->nodes;
 
 
 
@@ -146,15 +160,10 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI, int dim,
 		double point_coords[3] = {0,0,0};
 
 
-		// Create BMAT;
-		shape_function_container * sf_material_points = mls_shapefunction(quad_triangles->QUAD_POINTS, 2, mfree);
-		material_points->sf_material_points = sf_material_points;
-
 
 
 		for ( int i = 0 ; i < number_of_quadrature_points ; i++)
 		{	
-
 
 			// Generate the coordinates
 			for  (  int k = 0 ; k < dim ; k++)
@@ -165,21 +174,36 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI, int dim,
 			// Create the material points
 			MPS[i] = create_material_point(point_coords,quad_triangles->VOLUMES->ve[i]);
 
-			// generate BMAT and neighbour list;
-			MPS[i]->B = generate_Bmat(sf_material_points->sf_list[i]->dphi,dim,IS_AXI,-1);
-			MPS[i]->neighbours = sf_material_points->sf_list[i]->neighbours;
-			MPS[i]->phi = sf_material_points->sf_list[i]->phi;
+
+			MPS[i]->shape_function = MLS_SHAPEFUNCTION(NULL,point_coords,2,mfree);
+
+
+			// generate BMAT 
+			MPS[i]->B = BMAT(MNULL,MPS[i]->shape_function->dphi,dim,IS_AXI,-1);
+
 
 			// Matricies used in internal force calculation
-			MPS[i]->fInt = v_get(dim*MPS[i]->neighbours->max_dim);
+			MPS[i]->fInt = v_get(dim*MPS[i]->shape_function->neighbours->max_dim);
+
+			// deformation gradients
 			MPS[i]->F_n = m_get(dim_s,dim_s);
+			MPS[i]->inc_F = m_get(dim_s,dim_s);
+			m_ident(MPS[i]->inc_F);
 			m_ident(MPS[i]->F_n);
+
+
+
 			MPS[i]->rho = rho;
 			MPS[i]->stressVoigt = v_get(dim_p);
 
+
+
+			// Modify integration factor if problem is axisymmetric
 			if ( IS_AXI == 1)
 			{
-				MPS[i]->volume = MPS[i]->volume*2*PI*MPS[i]->coords[0];
+				MPS[i]->INTEGRATION_FACTOR = 2*PI*MPS[i]->coords[0];
+			}else{
+				MPS[i]->INTEGRATION_FACTOR = 1.00;
 			}
 			MPS[i]->stateOld= new_material_state(0.00, material_type,
 				dim, IS_AXI);
@@ -191,8 +215,6 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI, int dim,
 
 
 
-
-		material_points->MP_COORDS = quad_triangles->QUAD_POINTS;
 		material_points->MP = MPS;
 		material_points->dim = dim;
 		material_points->IS_AXI = IS_AXI;
@@ -232,24 +254,25 @@ int write_material_points(char * filename, MATERIAL_POINTS * MPS)
 }
 
 
-int set_material_point_temperature(int i , double temp);
+int set_material_point_temperature(int index , double temp);
 
 
 
-int update_material_point(MATERIAL_POINT * MP, MAT * NODES)
+MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, meshfreeDomain * mfree,VEC * nodal_mass)
 {
 
 
-	// update density material point
+	// // update density material point
+	MAT * NODES = mfree->nodes;
+	int IS_AXI = mfree->IS_AXI;
 	int dim = NODES->n;
+	int index = 0;
+	// // Store F_n at each material point 
+	MP->F_n = m_copy(MP->stateNew->F,MP->F_n);
 
-	// Store F_n at each material point 
-	MP->F_n = MP->stateNew->F;
 
 	// Incremental deformation gradient
 	double inc_Jacobian = determinant(MP->inc_F);
-
-
 
 
 	// update volume and density of material points
@@ -258,56 +281,48 @@ int update_material_point(MATERIAL_POINT * MP, MAT * NODES)
 
 
 	/* UPDATE MATERIAL POINT COORDINATES*/
-	for ( int i = 0 ; i < MP->neighbours->max_dim ; i++)
+	for ( int i = 0 ; i < MP->shape_function->neighbours->max_dim ; i++)
 	{	
-		int index = MP->neighbours->ive[i];
+		index = MP->shape_function->neighbours->ive[i];
 
 		for ( int k = 0 ; k < dim ; k++)
 		{
-			MP->coords[k] = MP->phi->ve[i] * NODES->me[index][k];
+			if ( i == 0)
+			{
+				MP->coords[k] = 0;	
+			}
+
+			MP->coords[k] += MP->shape_function->phi->ve[i] * NODES->me[index][k];
 		}
 	}
 
-
-	// REFORM SHAPE FUNCTIONS
+	//REFORM SHAPE FUNCTIONS
+	MP->shape_function = MLS_SHAPEFUNCTION(MP->shape_function, MP->coords, 2 , mfree);
 	
 
+	//Reform B matrix 
+	MP->B = BMAT(MP->B,MP->shape_function->dphi,dim,IS_AXI,MP->coords[0]);
+
+
+
+	// update mass vector
+	for ( int k = 0 ; k < MP->shape_function->neighbours->max_dim ; k++)
+	{
+		index = MP->shape_function->neighbours->ive[k];		
+		nodal_mass->ve[k] += MP->INTEGRATION_FACTOR*MP->volume * MP->rho;
+	}
+
+
+
+	if ( IS_AXI == 1)
+	{
+		MP->INTEGRATION_FACTOR = MP->coords[0]*2*PI;
+	}else{
+		// leave integration factor as 1
+	}
 
 
 
 
-
-	// reform mass matrix ? maybe
-
-
-
-
-	// update material point coordinates
-
-
-
-
-	// incremental deformation gradient
-
-	// total deformation gradient
-
-	// update material point density
-
-	// update material point volume
-
-
-
-	// update shape functions
-		// Error : Insuffcient nodal connectivity
-	// 
-
-	// Update B
-
-
-
-
-
-
-
-	return 0;
+	return MP;
 }

@@ -9,6 +9,7 @@
 MAT * generate_Bmat(MAT * phi_der, int dim, int is_axi, double r );
 
 
+MAT * BMAT(MAT * B, MAT * phi_der, int dim, int is_axi, double r );
 
 
 #endif

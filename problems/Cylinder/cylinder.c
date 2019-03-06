@@ -38,7 +38,7 @@ char * weight = "cubic";
 char * kernel_shape = "radial";
 
 // Meshfree parameters
-const double dmax = 2.5;
+const double dmax = 2;
 const double dmax_x = 1.5;
 const double dmax_y = 1.5;
 double tMax = 1;
@@ -63,7 +63,7 @@ char * integration_type = "TRIANGLE";
 const double rho = 1000e-9;
 
 
-#define NUMBER_OF_THREADS 2
+#define NUMBER_OF_THREADS 3
 
 
 int main(int argc, char** argv) {
@@ -316,6 +316,56 @@ int main(int argc, char** argv) {
 
 	free_shapefunction_container(sf_nodes);
 
+	v_zero(nodal_mass);
+
+
+	
+
+
+	#pragma omp parallel for num_threads(NUMBER_OF_THREADS)
+	for (i = 0 ; i < material_points->num_material_points ; i++)
+	{
+
+		material_points->MP[i] = update_material_point(material_points->MP[i], &mfree, nodal_mass);
+
+
+	}
+
+
+	// SPLIT MATERIAL POINTS
+	int number_of_material_points = material_points->num_material_points;
+	IVEC * material_point_groups[NUMBER_OF_THREADS];
+
+	int number_per_group = number_of_material_points / NUMBER_OF_THREADS;
+	int remainder = number_of_material_points % NUMBER_OF_THREADS;
+
+	for ( int i = 0 ; i < NUMBER_OF_THREADS ; i++)
+	{
+		material_point_groups[i] = iv_get(number_per_group);
+
+		if ( i == NUMBER_OF_THREADS -1 )
+		{
+			material_point_groups[i] = iv_get(number_per_group+remainder);
+		}
+	}
+
+	count = 0;
+
+	for ( int i = 0 ; i < NUMBER_OF_THREADS -1 ; i++  )
+	{
+		for ( int k = 0 ; k < number_per_group ; k++)
+		{
+			material_point_groups[i]->ive[k] = count;
+			++count;
+		}
+	}
+	for ( int k = 0 ; k < number_per_group + remainder ; k++)
+	{
+		material_point_groups[NUMBER_OF_THREADS-1]->ive[k] = count;
+		++count;
+
+	}
+
 
 
 	///////////////////////////////////////////////////////////////
@@ -404,7 +454,7 @@ int main(int argc, char** argv) {
 	fclose(fp);
 
 	while ( t_n < tMax){
-	//while ( n < 200000){
+	//while ( n < 100000){
 
 
 
@@ -437,7 +487,6 @@ int main(int argc, char** argv) {
 		mv_mlt(Lambda,d_n_1,nodal_disp);
 		__add__(nodes_X->base, nodal_disp->ve, updatedNodes->base, num_dof);
 
-		//__mltadd__(d_n_1->ve,v_n_h->ve,deltaT, num_dof);
 
 
 		/*  Update pressureload */
@@ -450,10 +499,11 @@ int main(int argc, char** argv) {
 
 		__zero__(Fint_n_1->ve,Fint_n_1->max_dim);
 
-		#pragma omp parallel num_threads(NUMBER_OF_THREADS)
+		#pragma omp parallel num_threads(NUMBER_OF_THREADS) 
 		{
 		// Internal forces
 		int ID = omp_get_thread_num();
+		IVEC * mat_points = material_point_groups[ID];
 
 		MAT * F ;
 		MAT * Fdot;
@@ -462,20 +512,19 @@ int main(int argc, char** argv) {
 		IVEC * neighbours;
 		MAT * F_r;
 		VEC * fInt;
-
+		int i = 0;
 		__zero__(FINT[ID]->ve,num_dof);
 		
-
-
-		#pragma omp for nowait schedule(dynamic,4)
-		for (  i = 0 ; i < material_points->num_material_points ; i++)
+		//#pragma omp for nowait schedule(dynamic,4)
+		for ( int k = 0 ; k < mat_points->max_dim; k++)
 		{
 
+			i = mat_points->ive[k];
 
 			F = material_points->MP[i]->stateNew->F;
 			Fdot = material_points->MP[i]->stateNew->Fdot;
 			B = material_points->MP[i]->B;
-			neighbours = material_points->MP[i]->neighbours;
+			neighbours = material_points->MP[i]->shape_function->neighbours;
 			F_r = material_points->MP[i]->F_n;
 			stressVoigt = material_points->MP[i]->stressVoigt;
 			fInt = material_points->MP[i]->fInt;
@@ -485,11 +534,10 @@ int main(int argc, char** argv) {
 			// Update deformation gradient 
 			get_defgrad(F, B, neighbours,F_r, d_n_1);
 			get_dot_defgrad(Fdot,B, neighbours,F_r,v_n_h);
-			double intFactor = material_points->MP[i]->volume;
+			double intFactor = material_points->MP[i]->volume*material_points->MP[i]->INTEGRATION_FACTOR;
 
 			int num_neighbours = neighbours->max_dim;
 			mooneyRivlin(stressVoigt,material_points->MP[i]->stateNew,materialParameters);
-			state_variables * state ;
 
 			__zero__(fInt->ve,fInt->max_dim);
 
@@ -497,15 +545,13 @@ int main(int argc, char** argv) {
 			/// Internal force
 			vm_mlt(B,stressVoigt,fInt);
 
+
+			// Assemble internal force vector
 			for ( int k = 0 ; k < num_neighbours; k++){
 				FINT[ID]->ve[2*neighbours->ive[k]] += intFactor * fInt->ve[2*k];
 				FINT[ID]->ve[2*neighbours->ive[k]+1] += intFactor *fInt->ve[2*k+1];
 			}
-
-				// delta_t_min = internalForce_hyperelastic(FINT[ID], material_points->MP[i], d_n_1, v_n_h,
-				//  materialParameters,&mooneyRivlin,t_n_1);		
-
-
+	
 
 
 		}
@@ -527,7 +573,7 @@ int main(int argc, char** argv) {
 		}
 
 		// update d_n_1 and then generate new material point 
-
+		// 
 
 		// update nodal positions
 
@@ -632,5 +678,5 @@ int main(int argc, char** argv) {
 
 
 	/*  Program exit */
-	return 0;
+	exit(0);
 }

@@ -18,19 +18,19 @@ VEC *  mass_vector(MATERIAL_POINTS * MPS, meshfreeDomain * mfree){
 
 	for ( int i = 0 ; i < MPS->num_material_points ; i++)
 	{
-		phi = MPS->sf_material_points->sf_list[i]->phi;
-		neighbours = MPS->sf_material_points->sf_list[i]->neighbours;
+		phi = MPS->MP[i]->shape_function->phi;
+		neighbours = MPS->MP[i]->shape_function->neighbours;
 
 		double volume = MPS->MP[i]->volume;
 		double rho = MPS->MP[i]->rho;
-
+		double integration_factor = MPS->MP[i]->INTEGRATION_FACTOR;
 
 
 
 		for ( int k = 0 ; k < neighbours->max_dim ; k++)
 		{
 			int index = neighbours->ive[k];
-			nodal_mass->ve[index] += phi->ve[k]*rho*volume;
+			nodal_mass->ve[index] += phi->ve[k]*rho*volume*integration_factor;
 		}
 
 	}

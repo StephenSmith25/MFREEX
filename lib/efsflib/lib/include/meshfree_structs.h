@@ -40,14 +40,13 @@ typedef struct shape_function{
 	double * x;
 	IVEC * neighbours;
 	VEC * phi;
-
-
 	MAT * dphi;
 	MAT * d2phi;
+	int compute;
+	int dim;  
 
 
-
-
+	/* INTERNAL VARIABLES */ 
 
 	// initialise shape function calculation matricies (these will be free'd
 	MAT * A ;
@@ -63,12 +62,9 @@ typedef struct shape_function{
 	VEC * p ;
 	PERM * pivot ;
 	MAT * LU_A ;
-	VEC * gamma ;
 
-	// get derivatives of phi
-	VEC * v_inter_1 ;
-	VEC * v_inter_2 ;
-	VEC * dphia ;
+	// DERIVATIVES
+	VEC * dphi_dk;
 	VEC * dp_dk ;
 	MAT ** dA_dk ;
 	MAT ** dB_dk ;
@@ -76,14 +72,24 @@ typedef struct shape_function{
 	// get second derivatives of phi
 	MAT ** d2A_dk_dj ;
 	MAT ** d2B_dk_dj ;
-	VEC * d2phia ;
-	VEC * gamma_kj ;
-	MAT * gamma_k_m ;
+	VEC * d2phi_dk_dj;
+
+	// TEMPORY
+	VEC * v_inter_1 ;
+	VEC * v_inter_2 ;
 	VEC * v_inter_3 ;
 
+
+
 	// LU decompostion variables
+	VEC * gamma ;
 	VEC * gamma_k ;
+	VEC * gamma_kj ;
+	MAT * gamma_k_m ;
 	VEC * RHS ;
+
+
+	/* END INTERNAL VARIABLES */
 
 
 
