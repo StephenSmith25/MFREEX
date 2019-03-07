@@ -11,6 +11,7 @@ d1 = dir([displacementdir,'*.txt']);
 numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
+material_points = csvread('./../../build/bin/cylinder/materialpoints.csv');
 
 
 filename = strcat(path,'/displacement_',num2str(plotFiles(1)),'.txt');
@@ -59,6 +60,7 @@ subplot(2,3,5)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 axis equal
 
+
 filename = strcat(path,'/displacement_',num2str(plotFiles(9)),'.txt');
 disp = csvread(filename);
 
@@ -66,6 +68,12 @@ disp = csvread(filename);
 subplot(2,3,6)       % add first plot in 2 x 2 grid
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 axis equal
+hold on
+plot(material_points(:,1),material_points(:,2),'r*');
+
+
+
+
 %plot(d_nodes1(:,1),d_nodes1(:,2),'g+','markersize',8);
 %plot(d_nodes2(:,1),d_nodes2(:,2),'y+','markersize',8);
 %plot(p_nodes(:,1),p_nodes(:,2),'b+','markersize',8);
@@ -84,7 +92,7 @@ A = A';
 
 figure
 
-plot(A(:,1),A(:,2),'k-');
+plot(A(1:50:end,1),A(1:50:end,2),'kx','markersize',6);
 % 
 sizeA = [2 inf];
 formatSpec = '%f %f';
@@ -95,4 +103,4 @@ B = fscanf(fileID,formatSpec,sizeA);
 B = B';
 
 hold on 
-plot(B(:,1),B(:,2),'rx','markersize',6);
+plot(B(:,1),B(:,2),'r-');

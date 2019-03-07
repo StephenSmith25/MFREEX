@@ -65,10 +65,10 @@ MAT * generate_Bmat(MAT * phi_der, int dim, int is_axi, double r )
 
 
 
-MAT * BMAT(MAT * Bmat,MAT * phi_der, int dim, int is_axi, double r )
+MAT * BMAT(MAT * Bmat, shape_function * basis_functions, int dim, int is_axi, double r )
 {
 
-	int num_points = phi_der->m;
+	int num_points = basis_functions->dphi->m;
 
 
 	if (Bmat == MNULL)
@@ -95,17 +95,19 @@ MAT * BMAT(MAT * Bmat,MAT * phi_der, int dim, int is_axi, double r )
 
 		if ( dim == 2){
 		
-			Bmat->me[0][2*i] += phi_der->me[i][0];
-			Bmat->me[1][2*i+1] += phi_der->me[i][1];
-			Bmat->me[2][2*i] += phi_der->me[i][1];
-			Bmat->me[3][2*i+1] += phi_der->me[i][0];
+			Bmat->me[0][2*i] += basis_functions->dphi->me[i][0];
+			Bmat->me[1][2*i+1] += basis_functions->dphi->me[i][1];
+			Bmat->me[2][2*i] += basis_functions->dphi->me[i][1];
+			Bmat->me[3][2*i+1] += basis_functions->dphi->me[i][0];
 
 			if ( is_axi == 1)
 			{
 				if ( r < 1e-3 )
 				{
-					Bmat->me[4][2*i] += phi_der->me[i][0];
+					Bmat->me[4][2*i] += basis_functions->dphi->me[i][0];
 				}else{
+					Bmat->me[4][2*i] += basis_functions->phi->ve[i]/r;
+
 				}
 				//Bmat->me[4][2*i] += phi_der->me[i][2];
 			}

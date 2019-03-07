@@ -10,12 +10,13 @@
 
 #include "mls_shapefunction.h"
 #include "Integration/material_point.h"
+#include "m_inverse_small.h"
 
 
 
 
 
-int setDomainMaterialPoint(meshfreeDomain * mfree, MATERIAL_POINT * MP);
+int setDomainMaterialPoint(MAT * nodes, MATERIAL_POINT * MP);
 
 int updateMaterialPointDomain(MATERIAL_POINT * MP);
 

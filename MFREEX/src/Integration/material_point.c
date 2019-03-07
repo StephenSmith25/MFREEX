@@ -1,10 +1,16 @@
 #include "Integration/material_point.h"
 
 
-
+#include "ShapeFunction/mls_shapefunction_materialpoint.h"
+#include "Integration/DomainMaterialPoint.h"
 #ifndef QUADRATURE_ORDER
 #define QUADRATURE_ORDER 2
 #endif
+
+
+
+static int IS_AXI = -1;
+
 
 
 static inline MATERIAL_POINT * create_material_point(double coords[3], double volume)
@@ -26,18 +32,19 @@ static inline MATERIAL_POINT * create_material_point(double coords[3], double vo
 }
 
 
-MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI, int dim, 
-	char * integration_type, MATERIAL_TYPE material_type, double rho,  meshfreeDomain * mfree)
+MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI_I, int dim, 
+	char * integration_type, MATERIAL_TYPE material_type, double rho,  double beta, meshfreeDomain * mfree)
 
 {
-
 
 	MATERIAL_POINTS * material_points = malloc(1*sizeof(MATERIAL_POINTS));
 
 	int dim_s = dim;
 	int dim_p = dim*dim;
 
-	if ( IS_AXI)
+	IS_AXI = IS_AXI_I;
+
+	if ( IS_AXI == 1)
 	{
 		dim_s = dim+1;
 		dim_p = dim_p + 1;
@@ -81,7 +88,7 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI, int dim,
 
 			// Shape function matricies 
 			MPS[i]->B = _scni_obj->scni[i]->B;
-			MPS[i]->shape_function = MLS_SHAPEFUNCTION(NULL,point_coords,1,mfree);
+			//MPS[i]->shape_function = MLS_SHAPEFUNCTION(NULL,point_coords,1,mfree);
 			MPS[i]->fInt = _scni_obj->scni[i]->fInt;
 
 			// deformation gradients
@@ -112,6 +119,7 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI, int dim,
 			MPS[i]->stateNew = new_material_state(0.00, material_type,
 				dim, IS_AXI);
 
+			MPS[i]->Jn = 1.00;
 
 
 
@@ -174,12 +182,15 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI, int dim,
 			// Create the material points
 			MPS[i] = create_material_point(point_coords,quad_triangles->VOLUMES->ve[i]);
 
-
-			MPS[i]->shape_function = MLS_SHAPEFUNCTION(NULL,point_coords,2,mfree);
+			MPS[i]->beta = beta;
+			MPS[i]->kernel_support=RADIAL;
+			setDomainMaterialPoint(mfree->nodes, MPS[i]);
+			MPS[i]->shape_function = NULL;
+			MPS[i]->shape_function = mls_shapefunction_materialpoint(MPS[i],2,mfree->nodes);
 
 
 			// generate BMAT 
-			MPS[i]->B = BMAT(MNULL,MPS[i]->shape_function->dphi,dim,IS_AXI,-1);
+			MPS[i]->B = BMAT(MNULL,MPS[i]->shape_function,dim,0,-1);
 
 
 			// Matricies used in internal force calculation
@@ -192,6 +203,7 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI, int dim,
 			m_ident(MPS[i]->F_n);
 
 
+			MPS[i]->Jn = 1.00;
 
 			MPS[i]->rho = rho;
 			MPS[i]->stressVoigt = v_get(dim_p);
@@ -254,26 +266,31 @@ int write_material_points(char * filename, MATERIAL_POINTS * MPS)
 }
 
 
-int set_material_point_temperature(int index , double temp);
+void set_material_point_temperature(double temperature , MATERIAL_POINT * MP)
+{
+	MP->temperature = temperature;
+}
 
 
 
-MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, meshfreeDomain * mfree,VEC * nodal_mass)
+MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, MAT * NODES, VEC * nodal_mass)
 {
 
 
 	// // update density material point
-	MAT * NODES = mfree->nodes;
-	int IS_AXI = mfree->IS_AXI;
 	int dim = NODES->n;
 	int index = 0;
+
+
+
+	/*DEFORMATION GRADIENTS(THIS BIT NEEDS DOING NEXT) */ 
 	// // Store F_n at each material point 
 	MP->F_n = m_copy(MP->stateNew->F,MP->F_n);
+	MP->Jn = determinant(MP->F_n);
 
 
 	// Incremental deformation gradient
 	double inc_Jacobian = determinant(MP->inc_F);
-
 
 	// update volume and density of material points
 	MP->rho = MP->rho / inc_Jacobian;
@@ -296,12 +313,14 @@ MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, meshfreeDomain * mfr
 		}
 	}
 
+
+
 	//REFORM SHAPE FUNCTIONS
-	MP->shape_function = MLS_SHAPEFUNCTION(MP->shape_function, MP->coords, 2 , mfree);
+	MP->shape_function = mls_shapefunction_materialpoint(MP, 2 , NODES);
 	
 
 	//Reform B matrix 
-	MP->B = BMAT(MP->B,MP->shape_function->dphi,dim,IS_AXI,MP->coords[0]);
+	MP->B = BMAT(MP->B,MP->shape_function,dim,IS_AXI,MP->coords[0]);
 
 
 
@@ -309,7 +328,7 @@ MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, meshfreeDomain * mfr
 	for ( int k = 0 ; k < MP->shape_function->neighbours->max_dim ; k++)
 	{
 		index = MP->shape_function->neighbours->ive[k];		
-		nodal_mass->ve[k] += MP->INTEGRATION_FACTOR*MP->volume * MP->rho;
+		nodal_mass->ve[index] += MP->INTEGRATION_FACTOR*MP->volume * MP->rho*MP->shape_function->phi->ve[k];
 	}
 
 

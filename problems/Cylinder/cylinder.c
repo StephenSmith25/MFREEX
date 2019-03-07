@@ -32,19 +32,22 @@
 
 /*  Function definitions */
 
-int constant_support_size = 0;
+int constant_support_size = 1;
 char * basis_type = "linear";
 char * weight = "cubic";
 char * kernel_shape = "radial";
 
+double beta =2;
+
 // Meshfree parameters
-const double dmax = 2;
+const double dmax =2;
 const double dmax_x = 1.5;
 const double dmax_y = 1.5;
-double tMax = 1;
+double tMax = 0.5;
 
 double deltaT = 1e-6;
 
+int update_freq =1;
 
 const int dim = 2;
 const int is_AXI = 0;
@@ -63,7 +66,7 @@ char * integration_type = "TRIANGLE";
 const double rho = 1000e-9;
 
 
-#define NUMBER_OF_THREADS 3
+#define NUMBER_OF_THREADS 4
 
 
 int main(int argc, char** argv) {
@@ -187,7 +190,7 @@ int main(int argc, char** argv) {
 		
 
 		material_points = create_material_points(vor, 
-			is_AXI, dim, integration_type, material_type, rho, &mfree);
+			is_AXI, dim, integration_type, material_type, rho, beta,&mfree);
 		
 
 		// Write material points to file
@@ -202,7 +205,7 @@ int main(int argc, char** argv) {
 	{
 
 		material_points = create_material_points(tri, 
-			is_AXI, dim, integration_type, material_type, rho,  &mfree);
+			is_AXI, dim, integration_type, material_type, rho, beta,  &mfree);
 		
 
 		// Write material points to file
@@ -257,9 +260,12 @@ int main(int argc, char** argv) {
 
 	/*  Set up essential boundary  */
 	EBC * eb1 = malloc(1*sizeof(EBC));
+	EBC * eb2 = malloc(1*sizeof(EBC));
 
-	eb1->nodes = iv_get(3);
 
+	int count1 = 0;
+	eb1->nodes = iv_get(4);
+	eb2->nodes = iv_get(4);
 	int count = 0;
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
@@ -273,6 +279,11 @@ int main(int argc, char** argv) {
 
 			++count;
 		}
+		if ( y == 0)
+		{
+			eb2->nodes->ive[count1] = i;
+			++count1;
+		}
 
 	}
 	eb1->dofFixed = 1;
@@ -283,11 +294,11 @@ int main(int argc, char** argv) {
 	m_foutput(stdout, eb1->coords);
 	iv_foutput(stdout,eb1->nodes);
 
+
 	/*  Set up essential boundary  */
-	EBC * eb2 = malloc(1*sizeof(EBC));
 	eb2->dofFixed = 2;
-	getBoundary(&eb2->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,8);
-	iv_addNode(eb2->nodes,traction_nodes->ive[0],'s');
+	//getBoundary(&eb2->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,8);
+	//iv_addNode(eb2->nodes,traction_nodes->ive[0],'s');
 	setUpBC(eb2,inv_nodal_mass,&mfree);
 	iv_foutput(stdout,eb2->nodes);
 	m_foutput(stdout, eb2->coords);
@@ -316,20 +327,19 @@ int main(int argc, char** argv) {
 
 	free_shapefunction_container(sf_nodes);
 
-	v_zero(nodal_mass);
 
 
 	
+	v_zero(nodal_mass);
 
-
-	#pragma omp parallel for num_threads(NUMBER_OF_THREADS)
 	for (i = 0 ; i < material_points->num_material_points ; i++)
 	{
 
-		material_points->MP[i] = update_material_point(material_points->MP[i], &mfree, nodal_mass);
+	material_points->MP[i] = update_material_point(material_points->MP[i], mfree.nodes, nodal_mass);
 
 
 	}
+
 
 
 	// SPLIT MATERIAL POINTS
@@ -393,11 +403,12 @@ int main(int argc, char** argv) {
 	VEC * v_n_mh = v_get(num_dof);
 	VEC * v_n = v_get(num_dof);
 	MAT * updatedNodes = m_get(num_dof,dim);
+	MAT * updated_nodes = m_get(num_dof,dim);
 
 
 	VEC * inc_disp = v_get(num_dof);
 
-
+	VEC * D_N = v_get(num_dof);
 	VEC * delta_disp = v_get(num_dof);
 	VEC * nodal_disp = v_get(num_dof);
 
@@ -441,20 +452,21 @@ int main(int argc, char** argv) {
 
 
 	VEC * FINT[NUMBER_OF_THREADS];
-
+	VEC * NODAL_MASS[NUMBER_OF_THREADS];
 	for ( int i = 0 ; i < NUMBER_OF_THREADS ; i++)
 	{
+		NODAL_MASS[i] = v_get(numnodes);
 		FINT[i] = v_get(num_dof);
 	}
 
-	
+
 	/*  For writing to file */
 	fp = fopen("loadDisp.txt","w");
 	fprintf(fp,"%lf %lf\n",0.00,0.00);
 	fclose(fp);
 
 	while ( t_n < tMax){
-	//while ( n < 100000){
+	//while ( n < 10){
 
 
 
@@ -485,7 +497,8 @@ int main(int argc, char** argv) {
 
 		// find new nodal positions
 		mv_mlt(Lambda,d_n_1,nodal_disp);
-		__add__(nodes_X->base, nodal_disp->ve, updatedNodes->base, num_dof);
+		__add__(nodes_X->base, d_n_1->ve, updatedNodes->base, num_dof);
+		__add__(nodes_X->base, d_n_1->ve, updated_nodes->base, num_dof);
 
 
 
@@ -498,12 +511,15 @@ int main(int argc, char** argv) {
 	
 
 		__zero__(Fint_n_1->ve,Fint_n_1->max_dim);
+		__sub__(d_n_1->ve, D_N->ve,inc_disp->ve, num_dof);
+
 
 		#pragma omp parallel num_threads(NUMBER_OF_THREADS) 
 		{
 		// Internal forces
 		int ID = omp_get_thread_num();
 		IVEC * mat_points = material_point_groups[ID];
+		double P11,P12,P13,P21,P22,P23,P31,P32,P33;
 
 		MAT * F ;
 		MAT * Fdot;
@@ -513,7 +529,11 @@ int main(int argc, char** argv) {
 		MAT * F_r;
 		VEC * fInt;
 		int i = 0;
+
 		__zero__(FINT[ID]->ve,num_dof);
+		__zero__(NODAL_MASS[ID]->ve,numnodes);
+
+
 		
 		//#pragma omp for nowait schedule(dynamic,4)
 		for ( int k = 0 ; k < mat_points->max_dim; k++)
@@ -528,22 +548,48 @@ int main(int argc, char** argv) {
 			F_r = material_points->MP[i]->F_n;
 			stressVoigt = material_points->MP[i]->stressVoigt;
 			fInt = material_points->MP[i]->fInt;
+			int num_neighbours = neighbours->max_dim;
 
 
 
-			// Update deformation gradient 
-			get_defgrad(F, B, neighbours,F_r, d_n_1);
-			get_dot_defgrad(Fdot,B, neighbours,F_r,v_n_h);
+			// Compute incremental deformation gradient
+			defgrad(material_points->MP[i]->inc_F, B, neighbours,inc_disp);
+			
+			// compute total deformation gradient 
+			m_mlt(material_points->MP[i]->inc_F,
+				material_points->MP[i]->F_n,material_points->MP[i]->stateNew->F);
+
+			// Integration factor
 			double intFactor = material_points->MP[i]->volume*material_points->MP[i]->INTEGRATION_FACTOR;
 
-			int num_neighbours = neighbours->max_dim;
+
+			// Material law 
 			mooneyRivlin(stressVoigt,material_points->MP[i]->stateNew,materialParameters);
 
 			__zero__(fInt->ve,fInt->max_dim);
 
 
 			/// Internal force
+
+			// push forward piola kirchoff stress to Omega_n configuration
+			sv_mlt(1.00/material_points->MP[i]->Jn,stressVoigt,stressVoigt);
+
+			P11 = stressVoigt->ve[0];
+			P22 = stressVoigt->ve[1];
+			P12 = stressVoigt->ve[2];
+			P21 = stressVoigt->ve[3];
+
+			stressVoigt->ve[0] = P11*F_r->me[0][0] + P12*F_r->me[0][1];
+			stressVoigt->ve[1] = P21*F_r->me[1][0] + P22*F_r->me[1][1];
+			stressVoigt->ve[2] = P11*F_r->me[1][0] + P12*F_r->me[1][1];
+			stressVoigt->ve[3] = P21*F_r->me[0][0] + P22*F_r->me[0][1];
+
+
 			vm_mlt(B,stressVoigt,fInt);
+
+
+
+
 
 
 			// Assemble internal force vector
@@ -553,13 +599,16 @@ int main(int argc, char** argv) {
 			}
 	
 
-
-		}
+		} //end of loop over points
 		
+
 		#pragma omp critical
 			__add__(FINT[ID]->ve, Fint_n_1->ve,Fint_n_1->ve, num_dof);
 
+
 		} // end of paralell region
+
+
 
 
 		/*  Balance of forces */
@@ -568,8 +617,8 @@ int main(int argc, char** argv) {
 
 		for (  i = 0 ; i < numnodes  ; i++ )
 		{
-			a_n_1->ve[2*i] = Fnet->ve[2*i]*inv_nodal_mass->ve[i];
-			a_n_1->ve[2*i+1] = Fnet->ve[2*i+1]*inv_nodal_mass->ve[i];
+			a_n_1->ve[2*i] = Fnet->ve[2*i]/nodal_mass->ve[i];
+			a_n_1->ve[2*i+1] = Fnet->ve[2*i+1]/nodal_mass->ve[i];
 		}
 
 		// update d_n_1 and then generate new material point 
@@ -579,8 +628,24 @@ int main(int argc, char** argv) {
 
 
 		// update material points
+		if ( n % update_freq == 0)
+		{
 
+			v_zero(nodal_mass);
 
+			for ( int i =0 ; i < material_points->num_material_points ; i++)
+			{
+
+				material_points->MP[i] = update_material_point(material_points->MP[i],
+			 	updated_nodes, nodal_mass);
+
+		
+			}
+			
+
+			v_copy(d_n_1,D_N);
+
+		}	
 
 
 
@@ -614,12 +679,15 @@ int main(int argc, char** argv) {
 
 		// save outputs
 		if ( n % writeFreq == 0 ){
+
+
+
 			char filename[50];
 			snprintf(filename, 50, "displacement_%d%s",fileCounter,".txt");
 			mat2csv(updatedNodes,"./Displacement",filename);
+			write_material_points("materialpoints.csv", material_points);
 
 			fp = fopen("loadDisp.txt","a");
-			printf("node = %d\n",traction_nodes->ive[traction_nodes->max_dim-1]) ;
 			fprintf(fp,"%lf %lf\n",nodal_disp->ve[0],pre_n_1);		
 			fclose(fp);
 			fileCounter++;	

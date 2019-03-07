@@ -1,4 +1,4 @@
-#include "mls_shapefunction.h"
+#include "ShapeFunction/mls_shapefunction_materialpoint.h"
 
 
 shape_function * new_shape_function(int compute, char * basis_type, int dim)
@@ -46,6 +46,7 @@ shape_function * new_shape_function(int compute, char * basis_type, int dim)
 	sf_point->basis_xi = m_get(dim_p,1);
 	sf_point->ppT = m_get(dim_p,dim_p);
 	sf_point->bi = v_get(dim_p);
+	sf_point->p_xi = v_get(dim_p);
 	sf_point->weights = v_get(1+dim);
 	sf_point->basis = m_get(1,1);
 	sf_point->p = v_get(dim_p);
@@ -95,18 +96,17 @@ shape_function * new_shape_function(int compute, char * basis_type, int dim)
 
 
 
-shape_function * MLS_SHAPEFUNCTION(shape_function * sf_point, double compute_point[3], int compute, meshfreeDomain * mfree)
+shape_function * mls_shapefunction_materialpoint(MATERIAL_POINT * MP, int compute, MAT * nodes)
 {
 
 
 	// nodes and domain size from meshfree structure
-	MAT * nodes = mfree->nodes;
-	char * shape = mfree->kernel_shape;
-	char * basis_type = mfree->basis_type;
-	char * weight = mfree->weight_function;
-	int dim = mfree->dim;
-	enum SUPPORT_TYPE support = mfree->kernel_support;
-	VEC * domainSize = mfree->di;
+	char * basis_type = "linear";
+	char * weight = "cubic_spline";
+	int dim = nodes->n;
+
+	shape_function * sf_point = MP->shape_function;
+	double * compute_point = MP->coords;
 	int i ;
 
 
@@ -115,6 +115,10 @@ shape_function * MLS_SHAPEFUNCTION(shape_function * sf_point, double compute_poi
 	if ( sf_point == NULL){
 		sf_point = new_shape_function(compute,basis_type,dim);
 	}
+
+	double xS[3] = {0,0,0};
+
+
 	int dim_p = sf_point->B->m;
 
 	switch(compute)
@@ -126,7 +130,7 @@ shape_function * MLS_SHAPEFUNCTION(shape_function * sf_point, double compute_poi
 
 
 			// Find point neighbors ( have to do something smart with this)
-			sf_point->neighbours = get_point_neighbours(sf_point->neighbours,x,mfree);
+			sf_point->neighbours = get_materialpoint_neighbours(sf_point->neighbours,MP,nodes);
 			int num_neighbours = sf_point->neighbours->max_dim;
 
 
@@ -150,8 +154,6 @@ shape_function * MLS_SHAPEFUNCTION(shape_function * sf_point, double compute_poi
 			sf_point->A = m_zero(sf_point->A);
 
 
-			// shifted coordinates, xi ( coords of point i) and domain size di
-			double xS[3] = {0,0,0};
 
 			// construct moment matrix A, and B matrix
 			for ( int j = 0 ; j < num_neighbours ; ++j)
@@ -159,6 +161,8 @@ shape_function * MLS_SHAPEFUNCTION(shape_function * sf_point, double compute_poi
 
 				// find domain size, and coords of node xi;
 				double * xi = nodes->me[sf_point->neighbours->ive[j]];
+
+
 				for ( int k = 0 ; k < dim ; k++)
 				{
 
@@ -170,7 +174,7 @@ shape_function * MLS_SHAPEFUNCTION(shape_function * sf_point, double compute_poi
 				sf_point->p_xi = get_col(sf_point->basis_xi,0,sf_point->p_xi);
 
 				// get weight function for node I
-				weight_function(sf_point->weights, xS, sf_point->neighbours->ive[j], mfree, compute);
+				weight_function_materialpoint(sf_point->weights, MP, xS, dim);
 
 				// shape function matricies
 				// B;
@@ -225,10 +229,11 @@ case(2):
 	double * x = compute_point;
 
 	// find neighbours of point x;
-	get_point_neighbours(sf_point->neighbours,x,mfree);
+	sf_point->neighbours = get_materialpoint_neighbours(sf_point->neighbours,MP,nodes);
 	int num_neighbours = sf_point->neighbours->max_dim;
 
 
+	
 	// get output sizes
 	sf_point->phi = v_resize(sf_point->phi,num_neighbours);
 	sf_point->dphi = m_resize(sf_point->dphi,num_neighbours,dim);
@@ -265,16 +270,13 @@ case(2):
 	}
 
 
-	// shifted coordinates, xi ( coords of point i) and domain size di
-	double xS[3] = {0,0,0};
 
 
 	// construct moment matrix A, and B matrix
 	for ( int j = 0 ; j < num_neighbours ; ++j)
 	{
-
 		// find domain size, and coords of node xi;
-		double * xi = mfree->nodes->me[sf_point->neighbours->ive[j]];
+		double * xi = nodes->me[sf_point->neighbours->ive[j]];
 
 		for ( int k = 0 ; k < dim ; k++)
 		{
@@ -288,7 +290,7 @@ case(2):
 
 
 		// get weight function for node I
-		weight_function(sf_point->weights, xS, sf_point->neighbours->ive[j], mfree, compute);
+		weight_function_materialpoint(sf_point->weights, MP, xS, dim);
 
 		// shape function matricies
 		// B;
@@ -345,6 +347,9 @@ case(2):
 	phi_sum = v_sum(sf_point->phi);
 	double tol = 1e-4;
 
+	assert(fabs(phi_sum -1) < tol);
+
+
 	if ( fabs(phi_sum -1) > tol)
 		{	
 
@@ -357,7 +362,7 @@ case(2):
 	// derivative consistencey check
 	for ( int k = 0 ; k < num_neighbours; k++)
 	{	
-		double * xi = mfree->nodes->me[sf_point->neighbours->ive[k]];
+		double * xi = nodes->me[sf_point->neighbours->ive[k]];
 		for ( int l = 0 ; l < dim ; l++)
 		{
 			lc_sum[l] += xi[l]*sf_point->dphi->me[k][l];
@@ -372,14 +377,21 @@ case(2):
 			{	
 				printf("ERROR ERROR : FIRST ORDER DERIVATIVE CONSISTENCEY FAILED \n");
 				printf("ERROR ERROR : FIRST ORDER DERIVATIVE CONSISTENCEY FAILED \n");
+
 			}
 		}
 
 
+
+
+
+
 		break;
 
-	} // end if compute == 2
 
+
+
+	} // end if compute == 2
 
 	case(3):
 	{

@@ -19,7 +19,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 SET(GCC_COVERAGE_COMPILE_FLAGS " -O3 -std=c99 ")
 add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
-add_library(EFSFLIB STATIC src/polynomial_basis.c src/mls_shapefunction.c src/MLS_SHAPEFUNCTION.c src/neighbours.c src/setDomain.c src/weight_function.c
+add_library(EFSFLIB STATIC src/polynomial_basis.c src/mls_shapefunction.c  src/neighbours.c src/setDomain.c src/weight_function.c
 	src/v_outer_product.c src/quartic_spline.c src/cubic_spline.c)
 
 #target_link_libraries(Shapefunction meschach m ${CMAKE_THREAD_LIBS_INIT} )
