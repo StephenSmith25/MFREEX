@@ -348,6 +348,8 @@ case(2):
 	double tol = 1e-4;
 
 	assert(fabs(phi_sum -1) < tol);
+	int index = 0;
+	assert(v_max(sf_point->phi,&index) < 1.00);
 
 
 	if ( fabs(phi_sum -1) > tol)

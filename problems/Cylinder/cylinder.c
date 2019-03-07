@@ -37,7 +37,7 @@ char * basis_type = "linear";
 char * weight = "cubic";
 char * kernel_shape = "radial";
 
-double beta =2;
+double beta =4;
 
 // Meshfree parameters
 const double dmax =2;
@@ -47,7 +47,8 @@ double tMax = 0.5;
 
 double deltaT = 1e-6;
 
-int update_freq =1;
+int update_freq =10;
+	int writeFreq = 10;
 
 const int dim = 2;
 const int is_AXI = 0;
@@ -66,7 +67,7 @@ char * integration_type = "TRIANGLE";
 const double rho = 1000e-9;
 
 
-#define NUMBER_OF_THREADS 4
+#define NUMBER_OF_THREADS 1
 
 
 int main(int argc, char** argv) {
@@ -229,6 +230,9 @@ int main(int argc, char** argv) {
 
 
 	}
+
+
+
 	/* --------------------------------------------*/
 	/* ----------------LUMPED MASSES---------------*/
 	/* --------------------------------------------*/
@@ -402,8 +406,8 @@ int main(int argc, char** argv) {
 
 	VEC * v_n_mh = v_get(num_dof);
 	VEC * v_n = v_get(num_dof);
-	MAT * updatedNodes = m_get(num_dof,dim);
-	MAT * updated_nodes = m_get(num_dof,dim);
+	MAT * updatedNodes = m_get(numnodes,dim);
+	MAT * updated_nodes = m_get(numnodes,dim);
 
 
 	VEC * inc_disp = v_get(num_dof);
@@ -530,6 +534,9 @@ int main(int argc, char** argv) {
 		VEC * fInt;
 		int i = 0;
 
+
+
+
 		__zero__(FINT[ID]->ve,num_dof);
 		__zero__(NODAL_MASS[ID]->ve,numnodes);
 
@@ -569,7 +576,7 @@ int main(int argc, char** argv) {
 			__zero__(fInt->ve,fInt->max_dim);
 
 
-			/// Internal force
+			// Internal force
 
 			// push forward piola kirchoff stress to Omega_n configuration
 			sv_mlt(1.00/material_points->MP[i]->Jn,stressVoigt,stressVoigt);
@@ -642,7 +649,8 @@ int main(int argc, char** argv) {
 		
 			}
 			
-
+			printf("print Jn = %lf \n",material_points->MP[5]->Jn);
+			iv_foutput(stdout,material_points->MP[5]->shape_function->neighbours);
 			v_copy(d_n_1,D_N);
 
 		}	
@@ -688,7 +696,7 @@ int main(int argc, char** argv) {
 			write_material_points("materialpoints.csv", material_points);
 
 			fp = fopen("loadDisp.txt","a");
-			fprintf(fp,"%lf %lf\n",nodal_disp->ve[0],pre_n_1);		
+			fprintf(fp,"%lf %lf\n",d_n_1->ve[0],pre_n_1);		
 			fclose(fp);
 			fileCounter++;	
 		}

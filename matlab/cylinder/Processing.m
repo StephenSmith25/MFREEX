@@ -61,7 +61,7 @@ plot(disp(:,1),disp(:,2),'k.')           % line plot
 axis equal
 
 
-filename = strcat(path,'/displacement_',num2str(plotFiles(9)),'.txt');
+filename = strcat(path,'/displacement_',num2str(plotFiles(10)),'.txt');
 disp = csvread(filename);
 
 
@@ -92,7 +92,7 @@ A = A';
 
 figure
 
-plot(A(1:50:end,1),A(1:50:end,2),'kx','markersize',6);
+plot(A(1:1:end,1),A(1:1:end,2),'kx','markersize',6);
 % 
 sizeA = [2 inf];
 formatSpec = '%f %f';

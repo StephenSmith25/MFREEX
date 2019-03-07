@@ -331,7 +331,7 @@ MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, MAT * NODES, VEC * n
 		nodal_mass->ve[index] += MP->INTEGRATION_FACTOR*MP->volume * MP->rho*MP->shape_function->phi->ve[k];
 	}
 
-
+	MP->fInt = v_resize(MP->fInt, dim*MP->shape_function->neighbours->max_dim);
 
 	if ( IS_AXI == 1)
 	{
