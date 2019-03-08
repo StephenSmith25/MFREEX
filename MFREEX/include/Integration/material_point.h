@@ -56,6 +56,8 @@ typedef struct MATERIAL_POINT
 	MAT * inc_F;
 	VEC * fInt;
 	VEC * stressVoigt;
+	MAT * temp;
+	MAT * temp_1;
 
 	// density
 	double rho;

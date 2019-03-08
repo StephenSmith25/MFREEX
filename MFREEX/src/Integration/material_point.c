@@ -208,7 +208,8 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI_I, int dim,
 			MPS[i]->rho = rho;
 			MPS[i]->stressVoigt = v_get(dim_p);
 
-
+			MPS[i]->temp = m_get(dim_s,dim_s);
+			MPS[i]->temp_1 = m_get(dim_s,dim_s);
 
 			// Modify integration factor if problem is axisymmetric
 			if ( IS_AXI == 1)
@@ -314,6 +315,14 @@ MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, MAT * NODES, VEC * n
 	}
 
 
+	m_inverse_small(MP->inc_F, MP->temp);
+
+	mtrm_mlt(MP->temp, MP->invMI, MP->temp_1);
+
+	m_zero(MP->invMI);
+	m_mlt(MP->temp_1,MP->temp,MP->invMI);
+
+
 
 	//REFORM SHAPE FUNCTIONS
 	MP->shape_function = mls_shapefunction_materialpoint(MP, 2 , NODES);
@@ -321,6 +330,8 @@ MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, MAT * NODES, VEC * n
 
 	//Reform B matrix 
 	MP->B = BMAT(MP->B,MP->shape_function,dim,IS_AXI,MP->coords[0]);
+
+
 
 
 

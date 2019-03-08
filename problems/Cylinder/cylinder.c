@@ -32,7 +32,7 @@
 
 /*  Function definitions */
 
-int constant_support_size = 1;
+int constant_support_size = 0;
 char * basis_type = "linear";
 char * weight = "cubic";
 char * kernel_shape = "radial";
@@ -67,7 +67,7 @@ char * integration_type = "TRIANGLE";
 const double rho = 1000e-9;
 
 
-#define NUMBER_OF_THREADS 1
+#define NUMBER_OF_THREADS 3
 
 
 int main(int argc, char** argv) {
@@ -484,19 +484,40 @@ int main(int argc, char** argv) {
 		// implement boundary conditions
 
 			
-		// Boundary conditions
-		enforceBC(eb1,d_n_1); 
-		// find velocity correction
-		sv_mlt(1.00/(deltaT),eb1->uCorrect1,v_correct);
-		for ( int k = 0 ; k < v_correct->max_dim; k++){
-			v_n_h->ve[2*k] += v_correct->ve[k];
+		// // Boundary conditions
+		// enforceBC(eb1,d_n_1); 
+		// // find velocity correction
+		// sv_mlt(1.00/(deltaT),eb1->uCorrect1,v_correct);
+		// for ( int k = 0 ; k < v_correct->max_dim; k++){
+		// 	v_n_h->ve[2*k] += v_correct->ve[k];
+		// }
+
+		// enforceBC(eb2,d_n_1); 
+		// sv_mlt(1.000/(deltaT),eb2->uCorrect2,v_correct);
+		// for ( int k = 0 ; k < v_correct->max_dim; k++){
+		// 	v_n_h->ve[2*k+1] += v_correct->ve[k];
+		// }
+
+
+		// Apply boundary conditions as corrective accelerations
+
+
+		for ( int i =0 ; i < eb1->nodes->max_dim ; i++)
+		{
+			int index = eb1->nodes->ive[i];
+			d_n_1->ve[2*index] = 0;
+			v_n_h->ve[2*index] = 0;
 		}
 
-		enforceBC(eb2,d_n_1); 
-		sv_mlt(1.000/(deltaT),eb2->uCorrect2,v_correct);
-		for ( int k = 0 ; k < v_correct->max_dim; k++){
-			v_n_h->ve[2*k+1] += v_correct->ve[k];
+		for ( int i =0 ; i < eb2->nodes->max_dim ; i++)
+		{
+			int index = eb2->nodes->ive[i];
+			d_n_1->ve[2*index+1] = 0;
+			v_n_h->ve[2*index+1] = 0;
 		}
+
+
+
 
 
 		// find new nodal positions
@@ -649,8 +670,7 @@ int main(int argc, char** argv) {
 		
 			}
 			
-			printf("print Jn = %lf \n",material_points->MP[5]->Jn);
-			iv_foutput(stdout,material_points->MP[5]->shape_function->neighbours);
+
 			v_copy(d_n_1,D_N);
 
 		}	
