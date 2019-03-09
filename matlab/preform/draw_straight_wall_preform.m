@@ -16,7 +16,7 @@ NUM_NODES_THICKNESS=4;
 N1 = 70;
 N2 = 5;
 N3 = 6;
-ntheta = 20;
+ntheta = 25
 
 % starting from 0,0
 nodes = [];
@@ -189,6 +189,7 @@ dlmwrite('../../problems/preform/preform.boundary',boundaryNodes,'-append',.....
 
 
 
+
 % draw mould
 Radius_mould = 24;
 Height_mould = 30;
@@ -196,7 +197,6 @@ thickness_mould = 5;
 mould_length = 180;
 height = 74.2650;
 Radius_out = 11.25;
-
 top_point = 48.920;
 
 

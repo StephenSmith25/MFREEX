@@ -86,7 +86,7 @@ for i = 1:num_tests
     r_x(i,j) = (x_proj/h1);
     r_y(i,j) = (y_proj/h2);  
     
-    dr_dx(i,j) = sign(-x_proj);
+    dr_dx(i,j) = sign(x_proj);
     dr_dy(i,j) = sign(y_proj);
     
     
@@ -129,6 +129,12 @@ surf(X,Y,dw_dx);
 
 % second method
 invMI = inv(MI);
+
+
+
+
+
+
 
 
 

@@ -81,7 +81,6 @@ double lambdaCrit(double critLambda_n, state_variables * state, VEC * para, doub
 		xi = -1;
 	}
 
-	xi = 0;
 
 	// // update critical network stretch 
 	double C1 = para->ve[26];

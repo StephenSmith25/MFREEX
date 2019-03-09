@@ -18,7 +18,7 @@
 
 int setDomainMaterialPoint(MAT * nodes, MATERIAL_POINT * MP);
 
-int updateMaterialPointDomain(MATERIAL_POINT * MP);
+int updateDomainMaterialPoint(MAT * nodes, MATERIAL_POINT * MP);
 
 
 int neighboursMaterialPoint(MATERIAL_POINT * MP, MAT * nodes);

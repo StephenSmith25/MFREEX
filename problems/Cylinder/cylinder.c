@@ -37,7 +37,7 @@ char * basis_type = "linear";
 char * weight = "cubic";
 char * kernel_shape = "radial";
 
-double beta =4;
+double beta =2.5;
 
 // Meshfree parameters
 const double dmax =2;
@@ -45,10 +45,10 @@ const double dmax_x = 1.5;
 const double dmax_y = 1.5;
 double tMax = 0.5;
 
-double deltaT = 1e-6;
+double deltaT = 5e-7;
 
-int update_freq =10;
-	int writeFreq = 10;
+int update_freq =100;
+	int writeFreq = 1000;
 
 const int dim = 2;
 const int is_AXI = 0;
@@ -67,7 +67,7 @@ char * integration_type = "TRIANGLE";
 const double rho = 1000e-9;
 
 
-#define NUMBER_OF_THREADS 3
+#define NUMBER_OF_THREADS 4
 
 
 int main(int argc, char** argv) {

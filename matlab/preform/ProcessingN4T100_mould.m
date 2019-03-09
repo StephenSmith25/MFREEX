@@ -1,7 +1,7 @@
 clear all
 close all
 
-PLOT_GRAPHS = true;
+PLOT_GRAPHS = false;
 PLOT_DOMAINS_INFLUENCE = true; 
 
 
@@ -254,13 +254,13 @@ hold on
 fill(-mould_nodes(:,1),mould_nodes(:,2),'w');
 hold on
 
-plot(disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
+plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 hold on
-plot(-disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
+plot(-disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 hold on
-%plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
+plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
-%plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
+plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 axis equal

@@ -96,7 +96,6 @@ double gammaV(state_variables * state, double maxLambdaN,double critLambda,
 		xi = 0.001;
 	}
 
-	xi = 0;
 
 
 
