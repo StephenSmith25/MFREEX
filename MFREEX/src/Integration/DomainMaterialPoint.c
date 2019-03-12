@@ -50,7 +50,7 @@ int setDomainMaterialPoint(MAT * nodes, MATERIAL_POINT * MP)
 			for (int j = 0; j < num_nodes; ++j)
 			{
 				// find distance to point;
-				distances->ve[j] = sq_distance(MP->coords, nodes->me[j], dim);
+				distances->ve[j] = sq_distance(MP->coords_n_1, nodes->me[j], dim);
 
 
 			}
@@ -209,7 +209,7 @@ int updateDomainMaterialPoint(MAT * nodes, MATERIAL_POINT * MP)
 
 	int num_nodes = nodes->m;
 	int dim = nodes->n;
-	int min_num_neighbours = 6;
+	int min_num_neighbours = 7;
 
 
 
@@ -230,7 +230,7 @@ int updateDomainMaterialPoint(MAT * nodes, MATERIAL_POINT * MP)
 			for (int j = 0; j < num_nodes; ++j)
 			{
 				// find distance to point;
-				distances->ve[j] = sq_distance(MP->coords, nodes->me[j], dim);
+				distances->ve[j] = sq_distance(MP->coords_n_1, nodes->me[j], dim);
 
 
 			}

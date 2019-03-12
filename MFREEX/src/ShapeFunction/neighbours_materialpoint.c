@@ -30,7 +30,13 @@ IVEC * get_materialpoint_neighbours(IVEC * neighbours, MATERIAL_POINT * MP, MAT 
 	int numnodes = nodes->m;
 	double distance = 0;
 	int count_neighbours = 0;
-	double * x = MP->coords;
+	double * x = MP->coords_n_1;
+
+
+	if ( neighbours == IVNULL)
+	{
+		neighbours  = iv_get(10);
+	}
 
 
 	double xS[dim];

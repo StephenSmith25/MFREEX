@@ -1,5 +1,4 @@
 clear all
-close all 
 
 close all 
 path = './../../build/bin/cylinder/Displacement';
@@ -70,7 +69,7 @@ A = A';
 
 figure
 
-plot(A(1:50:end,1),A(1:50:end,2),'kx','markersize',6);
+plot(A(1:1:end,1),A(1:1:end,2),'kx','markersize',6);
 % 
 sizeA = [2 inf];
 formatSpec = '%f %f';

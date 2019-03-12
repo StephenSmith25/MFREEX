@@ -36,11 +36,11 @@ const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
 // time step parameters
-const double TMAX = 0.4;
+const double TMAX = 0.45;
 double delta_t = 5e-7;
 
 // Meshfree parameters
-const double dmax = 3;
+const double dmax = 2;
 const double dmax_x =2;
 const double dmax_y =2;
 double beta = 1.1;
@@ -59,7 +59,7 @@ const int is_constant_support_size = 1;
 const double DISP_ROD_MAX = 90; // 132;
 
 // 
-const int WITH_MOULD = 0;
+const int WITH_MOULD = 1;
 
 const int WRITE_FREQ = 250;
 

@@ -29,6 +29,7 @@
 #include "Integration/SCNI/scni_update_B.h"
 #include "Integration/material_point.h"
 #include "Integration/mass_matrix.h"
+#include "Integration/DomainMaterialPoint.h"
 
 /*  Function definitions */
 
@@ -37,17 +38,19 @@ char * basis_type = "linear";
 char * weight = "cubic";
 char * kernel_shape = "radial";
 
-double beta =2.5;
+double beta =1.5;
 
 // Meshfree parameters
 const double dmax =2;
 const double dmax_x = 1.5;
 const double dmax_y = 1.5;
-double tMax = 0.5;
-
+double tMax = 0.2;
+static double epsilon_penalty = -1e5; 
 double deltaT = 5e-7;
 
-int update_freq =100;
+
+int update_domains_freq = 1000;
+
 	int writeFreq = 1000;
 
 const int dim = 2;
@@ -406,8 +409,12 @@ int main(int argc, char** argv) {
 
 	VEC * v_n_mh = v_get(num_dof);
 	VEC * v_n = v_get(num_dof);
-	MAT * updatedNodes = m_get(numnodes,dim);
-	MAT * updated_nodes = m_get(numnodes,dim);
+
+
+	MAT * XI_n = m_get(numnodes,dim); 
+	MAT * XI_n_1 = m_get(numnodes,dim);
+	m_copy(mfree.nodes,XI_n);
+
 
 
 	VEC * inc_disp = v_get(num_dof);
@@ -424,6 +431,7 @@ int main(int argc, char** argv) {
 	VEC * Fnet = v_get(num_dof);
 
 
+	VEC * R_pen = v_get(num_dof);
 
 	/* Boundary conditions */
 	eb1->uBar1 = v_get(eb1->nodes->max_dim);
@@ -456,12 +464,23 @@ int main(int argc, char** argv) {
 
 
 	VEC * FINT[NUMBER_OF_THREADS];
+	VEC * RPEN[NUMBER_OF_THREADS];
+
 	VEC * NODAL_MASS[NUMBER_OF_THREADS];
 	for ( int i = 0 ; i < NUMBER_OF_THREADS ; i++)
 	{
+
 		NODAL_MASS[i] = v_get(numnodes);
 		FINT[i] = v_get(num_dof);
+		RPEN[i] = v_get(num_dof);
+
 	}
+
+	// damping
+	double b1 = 0.06;
+	double b2 = 1.44;
+	double lambda = materialParameters->ve[0];
+	double mu = materialParameters->ve[1];
 
 
 	/*  For writing to file */
@@ -521,22 +540,26 @@ int main(int argc, char** argv) {
 
 
 		// find new nodal positions
-		mv_mlt(Lambda,d_n_1,nodal_disp);
-		__add__(nodes_X->base, d_n_1->ve, updatedNodes->base, num_dof);
-		__add__(nodes_X->base, d_n_1->ve, updated_nodes->base, num_dof);
+		//mv_mlt(Lambda,d_n_1,nodal_disp);
+		//__add__(nodes_X->base, d_n_1->ve, updatedNodes->base, num_dof);
+
+
+		__add__(nodes_X->base, d_n_1->ve, XI_n_1->base, num_dof);
 
 
 
 		/*  Update pressureload */
 		pre_n_1 = pressure * smoothstep(t_n_1,tMax,0);
-		update_pressure_boundary(pB, updatedNodes);
+		update_pressure_boundary(pB, XI_n_1);
 		v_zero(Fext_n_1);
 
 		assemble_pressure_load(Fext_n_1, pre_n_1, pB);
 	
+		__zero__(R_pen->ve,num_dof);
 
 		__zero__(Fint_n_1->ve,Fint_n_1->max_dim);
-		__sub__(d_n_1->ve, D_N->ve,inc_disp->ve, num_dof);
+		__sub__(d_n_1->ve, d_n->ve,inc_disp->ve, num_dof);
+
 
 
 		#pragma omp parallel num_threads(NUMBER_OF_THREADS) 
@@ -553,13 +576,17 @@ int main(int argc, char** argv) {
 		IVEC * neighbours;
 		MAT * F_r;
 		VEC * fInt;
+		double Xp_n, Xp_n_1, Yp_n, Yp_n_1;
 		int i = 0;
 
+		#pragma omp critical
+			__add__(NODAL_MASS[ID]->ve, nodal_mass->ve,nodal_mass->ve, numnodes);
 
 
 
 		__zero__(FINT[ID]->ve,num_dof);
 		__zero__(NODAL_MASS[ID]->ve,numnodes);
+		__zero__(RPEN[ID]->ve,num_dof);
 
 
 		
@@ -596,8 +623,22 @@ int main(int argc, char** argv) {
 
 			__zero__(fInt->ve,fInt->max_dim);
 
+			// // Damping
 
-			// Internal force
+			// double Le = sqrt(material_points->MP[i]->volume);
+			// //Le = 2;
+			// double c = sqrt(((lambda+2*mu)/rho));
+			// double P_b1 = 0;
+			// //P_b1 = b1*div_v*rho*Le*c;
+			// double eta = b1;
+			// double P_b2 = 0;
+			// if ( div_v < 0 ){
+			// P_b2 = Le*rho*(b2*b2*Le*div_v*div_v) -  b1*div_v*rho*Le*c;
+			// eta -= b2*b2*Le*(1/c)*div_v;
+			// }
+
+	
+
 
 			// push forward piola kirchoff stress to Omega_n configuration
 			sv_mlt(1.00/material_points->MP[i]->Jn,stressVoigt,stressVoigt);
@@ -616,32 +657,90 @@ int main(int argc, char** argv) {
 			vm_mlt(B,stressVoigt,fInt);
 
 
-
-
-
-
 			// Assemble internal force vector
 			for ( int k = 0 ; k < num_neighbours; k++){
-				FINT[ID]->ve[2*neighbours->ive[k]] += intFactor * fInt->ve[2*k];
-				FINT[ID]->ve[2*neighbours->ive[k]+1] += intFactor *fInt->ve[2*k+1];
+
+				int index = neighbours->ive[k];
+
+				FINT[ID]->ve[2*index] += intFactor * fInt->ve[2*k];
+				FINT[ID]->ve[2*index + 1] += intFactor *fInt->ve[2*k+1];
+
+
 			}
-	
+
+
+			if ( n % update_domains_freq == 0)
+			{ 
+			updateDomainMaterialPoint(XI_n_1, material_points->MP[i]);
+			}
+
+			material_points->MP[i] = update_material_point(material_points->MP[i],
+			 	XI_n_1, NODAL_MASS[ID]);
+
+			// Find error in displacment field
+			Xp_n_1 = material_points->MP[i]->coords_n_1[0];
+			Xp_n = material_points->MP[i]->coords_n[0];
+			Yp_n_1 = material_points->MP[i]->coords_n_1[1];
+			Yp_n = material_points->MP[i]->coords_n[1];
+
+
+			num_neighbours = material_points->MP[i]->shape_function->neighbours->max_dim;
+			neighbours = material_points->MP[i]->shape_function->neighbours;
+
+
+
+
+			for ( int k = 0 ; k < num_neighbours; k++){
+
+				int index = neighbours->ive[k];
+
+				// Find vectors dX_n and dX_n_1
+				double delta_x_n[2] = {XI_n->me[index][0] - Xp_n,XI_n->me[index][1] - Yp_n};
+				double delta_x_n_1[2] = {XI_n_1->me[index][0] - Xp_n_1,XI_n_1->me[index][1] - Yp_n_1};
+
+				// Find error in displacement 
+				double x_tilde[2] = {material_points->MP[i]->inc_F->me[0][0]*(delta_x_n[0])
+					+ material_points->MP[i]->inc_F->me[0][1]*(delta_x_n[1]),
+					material_points->MP[i]->inc_F->me[1][0]*delta_x_n[0]
+					+ material_points->MP[i]->inc_F->me[1][1]*delta_x_n[1]};
+
+				double norm_x = sqrt(pow(delta_x_n[0],2) + pow(delta_x_n[1],2));
+				double e_x  = (delta_x_n_1[0] - x_tilde[0])/norm_x;
+				double e_y =  (delta_x_n_1[1] - x_tilde[1])/norm_x ;
+		
+				// assemble forces 
+				RPEN[ID]->ve[2*index] += epsilon_penalty*material_points->MP[i]->shape_function->phi->ve[k]*e_x;
+				RPEN[ID]->ve[2*index+1] += epsilon_penalty*material_points->MP[i]->shape_function->phi->ve[k]*e_y;
+
+			}
+
+
+
+
 
 		} //end of loop over points
 		
 
 		#pragma omp critical
+		{
+			__add__(RPEN[ID]->ve, R_pen->ve,R_pen->ve, num_dof);
 			__add__(FINT[ID]->ve, Fint_n_1->ve,Fint_n_1->ve, num_dof);
+		}
 
 
 		} // end of paralell region
 
-
+		if ( n % 2000 == 0)
+		{
+			//v_foutput(stdout, RPEN[0]);
+			//v_foutput(stdout,Fint_n_1);
+		}
 
 
 		/*  Balance of forces */
-		v_sub(Fext_n_1,Fint_n_1,Fnet);
+		__sub__(Fint_n_1->ve, R_pen->ve, Fint_n_1->ve, num_dof);
 
+		__sub__(Fext_n_1->ve,Fint_n_1->ve,Fnet->ve,num_dof);
 
 		for (  i = 0 ; i < numnodes  ; i++ )
 		{
@@ -649,31 +748,10 @@ int main(int argc, char** argv) {
 			a_n_1->ve[2*i+1] = Fnet->ve[2*i+1]/nodal_mass->ve[i];
 		}
 
-		// update d_n_1 and then generate new material point 
-		// 
 
 		// update nodal positions
+		__zero__(nodal_mass->ve,numnodes);
 
-
-		// update material points
-		if ( n % update_freq == 0)
-		{
-
-			v_zero(nodal_mass);
-
-			for ( int i =0 ; i < material_points->num_material_points ; i++)
-			{
-
-				material_points->MP[i] = update_material_point(material_points->MP[i],
-			 	updated_nodes, nodal_mass);
-
-		
-			}
-			
-
-			v_copy(d_n_1,D_N);
-
-		}	
 
 
 
@@ -712,7 +790,7 @@ int main(int argc, char** argv) {
 
 			char filename[50];
 			snprintf(filename, 50, "displacement_%d%s",fileCounter,".txt");
-			mat2csv(updatedNodes,"./Displacement",filename);
+			mat2csv(XI_n_1,"./Displacement",filename);
 			write_material_points("materialpoints.csv", material_points);
 
 			fp = fopen("loadDisp.txt","a");
@@ -757,6 +835,7 @@ int main(int argc, char** argv) {
 		v_copy(v_n_h,v_n_mh);
 		v_copy(d_n_1,d_n);
 		v_copy(v_n_1,v_n);
+		m_copy(XI_n_1,XI_n);
 		v_copy(a_n_1,a_n);
 		t_n = t_n_1;
 		// update iteration counter

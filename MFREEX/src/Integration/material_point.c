@@ -4,7 +4,7 @@
 #include "ShapeFunction/mls_shapefunction_materialpoint.h"
 #include "Integration/DomainMaterialPoint.h"
 #ifndef QUADRATURE_ORDER
-#define QUADRATURE_ORDER 3
+#define QUADRATURE_ORDER 1
 #endif
 
 
@@ -20,11 +20,17 @@ static inline MATERIAL_POINT * create_material_point(double coords[3], double vo
 
 
 	mp->volume = volume;
-	mp->coords = malloc(3*sizeof(double));
+	mp->coords_n_1 = malloc(3*sizeof(double));
+	mp->coords_n = malloc(3*sizeof(double));
 
-	mp->coords[0] = coords[0];
-	mp->coords[1] = coords[1];
-	mp->coords[2] = coords[2];
+
+	// Generate the coordinates
+	for  (  int k = 0 ; k < 3 ; k++)
+	{
+		mp->coords_n_1[k] = coords[k];
+		mp->coords_n[k] = coords[k];
+	}
+
 
 
 	return mp; 
@@ -74,13 +80,15 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI_I, int dim,
 		{
 
 
-			MPS[i]->coords = malloc(dim*sizeof(double));
+			MPS[i]->coords_n_1 = malloc(dim*sizeof(double));
+			MPS[i]->coords_n = malloc(dim*sizeof(double));
 
 
 			// Generate the coordinates
 			for  (  int k = 0 ; k < dim ; k++)
 			{
-				MPS[i]->coords[k] = mfree->nodes->me[i][k];
+				MPS[i]->coords_n_1[k] = mfree->nodes->me[i][k];
+				MPS[i]->coords_n[k] = mfree->nodes->me[i][k];
 			}
 
 			// Create the material points
@@ -214,7 +222,7 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI_I, int dim,
 			// Modify integration factor if problem is axisymmetric
 			if ( IS_AXI == 1)
 			{
-				MPS[i]->INTEGRATION_FACTOR = 2*PI*MPS[i]->coords[0];
+				MPS[i]->INTEGRATION_FACTOR = 2*PI*MPS[i]->coords_n_1[0];
 			}else{
 				MPS[i]->INTEGRATION_FACTOR = 1.00;
 			}
@@ -257,7 +265,7 @@ int write_material_points(char * filename, MATERIAL_POINTS * MPS)
 
 	for ( int i = 0 ; i < MPS->num_material_points ; i++ )
 	{
-		fprintf(fp,"%lf,%lf,%lf\n",MPS->MP[i]->coords[0],MPS->MP[i]->coords[1],MPS->MP[i]->coords[2]);
+		fprintf(fp,"%lf,%lf,%lf\n",MPS->MP[i]->coords_n_1[0],MPS->MP[i]->coords_n_1[1],MPS->MP[i]->coords_n_1[2]);
 	}
 
 	fclose(fp);
@@ -307,20 +315,22 @@ MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, MAT * NODES, VEC * n
 		{
 			if ( i == 0)
 			{
-				MP->coords[k] = 0;	
+				MP->coords_n[k] = MP->coords_n_1[k];
+				MP->coords_n_1[k] = 0;	
 			}
 
-			MP->coords[k] += MP->shape_function->phi->ve[i] * NODES->me[index][k];
+			MP->coords_n_1[k] += MP->shape_function->phi->ve[i] * NODES->me[index][k];
 		}
 	}
 
 
-	m_inverse_small(MP->inc_F, MP->temp);
+	// m_inverse_small(MP->inc_F, MP->temp);
 
-	mtrm_mlt(MP->temp, MP->invMI, MP->temp_1);
+	// mtrm_mlt(MP->temp, MP->invMI, MP->temp_1);
 
-	m_zero(MP->invMI);
-	m_mlt(MP->temp_1,MP->temp,MP->invMI);
+	// m_zero(MP->invMI);
+	// m_mlt(MP->temp_1,MP->temp,MP->invMI);
+
 
 	//updateDomainMaterialPoint(NODES, MP);
 
@@ -330,7 +340,7 @@ MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, MAT * NODES, VEC * n
 	
 
 	//Reform B matrix 
-	MP->B = BMAT(MP->B,MP->shape_function,dim,IS_AXI,MP->coords[0]);
+	MP->B = BMAT(MP->B,MP->shape_function,dim,IS_AXI,MP->coords_n_1[0]);
 
 
 
@@ -347,7 +357,7 @@ MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, MAT * NODES, VEC * n
 
 	if ( IS_AXI == 1)
 	{
-		MP->INTEGRATION_FACTOR = MP->coords[0]*2*PI;
+		MP->INTEGRATION_FACTOR = MP->coords_n_1[0]*2*PI;
 	}else{
 		// leave integration factor as 1
 	}

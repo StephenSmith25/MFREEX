@@ -106,7 +106,7 @@ shape_function * mls_shapefunction_materialpoint(MATERIAL_POINT * MP, int comput
 	int dim = nodes->n;
 
 	shape_function * sf_point = MP->shape_function;
-	double * compute_point = MP->coords;
+	double * compute_point = MP->coords_n_1;
 	int i ;
 
 

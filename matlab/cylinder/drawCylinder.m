@@ -8,7 +8,7 @@ r1 = 21.57;
 
 
 
-numCircle = 32;
+numCircle = 70;
 num_thickness = 2;
 
 

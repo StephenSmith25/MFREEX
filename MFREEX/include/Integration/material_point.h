@@ -48,7 +48,8 @@ typedef struct MATERIAL_POINT
 	// Geometric information
 	double volume;
 	double INTEGRATION_FACTOR;
-	double * coords;
+	double * coords_n_1;
+	double * coords_n;
 
 	// shape functions
 	MAT * B;
