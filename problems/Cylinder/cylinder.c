@@ -30,7 +30,8 @@
 #include "Integration/material_point.h"
 #include "Integration/mass_matrix.h"
 #include "Integration/DomainMaterialPoint.h"
-
+#include "cellSearch.h"
+#include <stdbool.h>
 /*  Function definitions */
 
 int constant_support_size = 0;
@@ -38,20 +39,20 @@ char * basis_type = "linear";
 char * weight = "cubic";
 char * kernel_shape = "radial";
 
-double beta =1.5;
+double beta =2;
 
 // Meshfree parameters
 const double dmax =2;
 const double dmax_x = 1.5;
 const double dmax_y = 1.5;
 double tMax = 0.2;
-static double epsilon_penalty = -1e5; 
+static double epsilon_penalty = -1e5 ;//-1e5; 
 double deltaT = 5e-7;
 
 
-int update_domains_freq = 1000;
+int update_domains_freq = 1;
 
-	int writeFreq = 1000;
+int writeFreq = 1000;
 
 const int dim = 2;
 const int is_AXI = 0;
@@ -158,6 +159,74 @@ int main(int argc, char** argv) {
 		fprintf(fp, "\n");
 	}
 	fclose(fp);
+
+
+	// CREATE NODES
+	// 
+	BOUNDING_BOX * bounding_box = create_bounding_box(0, 35,
+	0, 35, 0, 0);
+
+	double cell_size[2] = {1.5,1.5};
+
+	MAT * xI_copy = m_copy(xI,MNULL);
+	CELLS * cells = create_cells(bounding_box, cell_size, dim, xI_copy);
+	NODELIST * nodelist;
+
+	fp = fopen("search_cells.csv","w");
+	for ( int i = 0 ; i < cells->nx ; i++)
+	{
+
+		for ( int j = 0 ; j < cells->ny ; j++)
+		{
+
+		//printf("x bounds = %lf %lf \n", cells->cells[i][0].x[0], cells->cells[i][0].x[1]);
+		nodelist = cells->cells[i][j].nodes;
+		fprintf(fp,"%lf,%lf,%lf,%lf\n",cells->cells[i][j].x[0],cells->cells[i][j].x[1],
+			cells->cells[i][j].y[0],cells->cells[i][j].y[1]);
+		
+		}
+
+	}
+
+	fclose(fp);
+
+	bool activeCell[cells->nx][cells->ny];
+
+
+	fp = fopen("search_cells_nodes.csv","w");
+	for ( int i = 0 ; i < cells->nx ; i++)
+	{
+
+		for ( int j = 0 ; j < cells->ny ; j++)
+		{
+		nodelist = cells->cells[i][j].nodes;
+		if ( nodelist != NULL)
+		{
+			activeCell[i][j] = true; 
+			fprintf(fp,"1,");
+
+		}
+			fprintf(fp,"0,");
+
+		 while ( nodelist != NULL)
+		{
+			fprintf(fp,"%d,",nodelist->node_number);
+			nodelist = nodelist->next;
+
+		}
+		fprintf(fp,"\n");
+	}
+
+	}
+	fclose(fp);
+
+
+	// as points deform the active cell will change 
+	// so active cells should be a linked list to the cell index i,j
+	// and the next active cell along 
+
+	exit(0);
+
 
 	/* ------------------------------------------*/
 	/* ------------Meshfree Domain---------------*/
@@ -669,10 +738,10 @@ int main(int argc, char** argv) {
 			}
 
 
-			if ( n % update_domains_freq == 0)
-			{ 
-			updateDomainMaterialPoint(XI_n_1, material_points->MP[i]);
-			}
+			// if ( n % update_domains_freq == 0)
+			// { 
+			// updateDomainMaterialPoint(XI_n_1, material_points->MP[i]);
+			// }
 
 			material_points->MP[i] = update_material_point(material_points->MP[i],
 			 	XI_n_1, NODAL_MASS[ID]);

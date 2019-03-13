@@ -8,6 +8,7 @@
  ********************************/
 
 #include "Integration/DomainMaterialPoint.h"
+#include "ShapeFunction/neighbours_materialpoint.h"
 
 static inline double sq_distance(double *point_1, double * point_2, int  dim)
 {
@@ -69,6 +70,7 @@ int setDomainMaterialPoint(MAT * nodes, MATERIAL_POINT * MP)
 
 
 			MP->invMI = m_inverse_small(MP->MI,MP->invMI);
+
 
 			PX_FREE(order);
 			V_FREE(distances);
@@ -209,7 +211,7 @@ int updateDomainMaterialPoint(MAT * nodes, MATERIAL_POINT * MP)
 
 	int num_nodes = nodes->m;
 	int dim = nodes->n;
-	int min_num_neighbours = 7;
+	int min_num_neighbours = 6;
 
 
 
@@ -251,6 +253,9 @@ int updateDomainMaterialPoint(MAT * nodes, MATERIAL_POINT * MP)
 
 
 			MP->invMI = m_inverse_small(MP->MI,MP->invMI);
+			
+			MP->shape_function->neighbours = get_materialpoint_neighbours
+			(MP->shape_function->neighbours,MP,nodes);
 
 			PX_FREE(order);
 			V_FREE(distances);

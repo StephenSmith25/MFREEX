@@ -10,7 +10,7 @@ d = dir(displacementdir);
 d1 = dir([displacementdir,'*.txt']);
 numFiles = size(d,1) -2 ;
 
-num_loops = 50;
+num_loops = 150;
 
 
 
@@ -30,8 +30,8 @@ for i = 1:num_loops
   
     set(gcf,'color','w');
     
-    xlim([0,50])
-ylim([0,50])
+    xlim([0,30])
+    ylim([0,30])
     
     
     axis off
@@ -41,3 +41,7 @@ ylim([0,50])
 
     
 end
+
+
+
+

@@ -37,7 +37,7 @@ ylim([0,30])
 axis equal 
 
 
-filename = strcat(path,'/displacement_',num2str(plotFiles(10)),'.txt');
+filename = strcat(path,'/displacement_',num2str(plotFiles(9)),'.txt');
 disp = csvread(filename);
 
 
@@ -69,7 +69,7 @@ A = A';
 
 figure
 
-plot(A(1:1:end,1),A(1:1:end,2),'kx','markersize',6);
+plot(A(1:10:end,1),A(1:10:end,2),'kx','markersize',6);
 % 
 sizeA = [2 inf];
 formatSpec = '%f %f';

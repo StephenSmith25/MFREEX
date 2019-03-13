@@ -332,7 +332,7 @@ MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, MAT * NODES, VEC * n
 	// m_mlt(MP->temp_1,MP->temp,MP->invMI);
 
 
-	//updateDomainMaterialPoint(NODES, MP);
+	updateDomainMaterialPoint(NODES, MP);
 
 
 	//REFORM SHAPE FUNCTIONS

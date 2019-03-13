@@ -1,6 +1,5 @@
 #include "ShapeFunction/mls_shapefunction_materialpoint.h"
 
-
 shape_function * new_shape_function(int compute, char * basis_type, int dim)
 {
 
@@ -114,6 +113,8 @@ shape_function * mls_shapefunction_materialpoint(MATERIAL_POINT * MP, int comput
 	// Initialise some storage matricies
 	if ( sf_point == NULL){
 		sf_point = new_shape_function(compute,basis_type,dim);
+		sf_point->neighbours = get_materialpoint_neighbours(sf_point->neighbours,MP,nodes);
+
 	}
 
 	double xS[3] = {0,0,0};
@@ -130,7 +131,7 @@ shape_function * mls_shapefunction_materialpoint(MATERIAL_POINT * MP, int comput
 
 
 			// Find point neighbors ( have to do something smart with this)
-			sf_point->neighbours = get_materialpoint_neighbours(sf_point->neighbours,MP,nodes);
+			//sf_point->neighbours = get_materialpoint_neighbours(sf_point->neighbours,MP,nodes);
 			int num_neighbours = sf_point->neighbours->max_dim;
 
 
@@ -229,7 +230,7 @@ case(2):
 	double * x = compute_point;
 
 	// find neighbours of point x;
-	sf_point->neighbours = get_materialpoint_neighbours(sf_point->neighbours,MP,nodes);
+	//sf_point->neighbours = get_materialpoint_neighbours(sf_point->neighbours,MP,nodes);
 	int num_neighbours = sf_point->neighbours->max_dim;
 
 
@@ -349,6 +350,17 @@ case(2):
 
 	assert(fabs(phi_sum -1) < tol);
 	int index = 0;
+
+
+	double maxphi = v_max(sf_point->phi,&index);
+
+	if ( maxphi > 1)
+
+	{	
+		iv_foutput(stdout, sf_point->neighbours);
+		assert(v_max(sf_point->phi,&index) < 1.00);
+
+	}
 	assert(v_max(sf_point->phi,&index) < 1.00);
 
 
@@ -405,6 +417,7 @@ case(2):
 
 }// end of switch
 	return sf_point;
+
 
 }
 
