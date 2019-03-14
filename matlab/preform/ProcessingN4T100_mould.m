@@ -6,7 +6,7 @@ PLOT_DOMAINS_INFLUENCE = true;
 
 
 WITH_MOULD = true;
-TMAX = 0.3;
+TMAX = 0.6;
 
 
 
@@ -338,7 +338,7 @@ plot(m(:,1),m(:,2),'k-','linewidth',3);
 xlabel('time');
 ylabel('Pressure');
 xlim([0,TMAX])
-ylim([0,0.9])
+ylim([0,5])
 
 b = csvread("Experimental/N4T100_exp_pressure.csv");
 hold on

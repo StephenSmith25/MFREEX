@@ -1,4 +1,32 @@
 #include "cellSearch.h"
+#include <stdbool.h>
+
+
+static inline void deleteList()
+{
+
+	// iterate to the node before the node we wish to delete
+
+	// save the node we wish to delete in a temporary pointer
+
+	// set the previous nodes next pointer to point to the node after the node we wish to delete
+
+
+	// delete the node using the temporary pointer
+
+}
+static inline void insertList()
+{
+
+	// create a new value and set its value
+
+	// link the new item to point ot the head of the list
+
+	// set of head of the list be our new item
+
+
+
+}
 
 
 CELLS * create_cells(BOUNDING_BOX * bounding_box, double * CELL_SIZE, int dim, MAT * NODES)
@@ -143,4 +171,105 @@ BOUNDING_BOX * create_bounding_box(double xmin, double xmax, double ymin, double
 
 
 	return bounding_box;
+}
+
+
+int  * get_active_cells(CELLS * grid)
+{
+
+
+
+	// returns a sorted array of active cell indicies
+
+	return NULL;
+}
+
+
+int move_nodes(CELLS * grid, int * active_cells, int num_active_cells,
+ int * nc, double * l, MAT * nodes)
+{
+
+	CELL ** grid_cells = grid->cells;
+
+	// Only loop over the active_cells
+	int i = 0;
+	int j = 0;
+
+	int i_new = 0;
+	int j_new = 0;
+
+
+	int k = 0;
+	int k_new = 0;
+	int cell_number = 0;
+	int dim = nodes->n;
+
+	NODELIST * p = NULL;
+	NODELIST * q = NULL;
+
+	double x,y,z;
+
+	if ( dim == 2)
+	{
+
+		int nx = nc[0];
+		int ny = nc[1];
+
+		for ( int i = 0 ; i < num_active_cells ; i++)
+		{
+
+			cell_number = active_cells[i];
+
+			// translate into each cell number into its i,j grid reference
+
+			i = (int) floor(cell_number/ny);
+			j = cell_number - i*ny;
+
+
+			p = grid_cells[i][j].nodes;
+			q = p;
+
+			while ( p != NULL)
+			{
+
+				x = nodes->me[p->node_number][0];
+				y = nodes->me[p->node_number][1];
+
+
+				i = (int)floor(x*nc[0]/l[0]);
+				j = (int)floor(y*nc[1]/l[1]);
+
+				if (( i_new != i ) ||  (j_new != j))
+				{
+					//delete point
+
+					// insert point into the correct grid
+
+
+				}else{
+
+				}
+
+				p = p->next;
+
+
+			}
+
+
+
+
+
+
+		}
+
+
+
+
+
+
+	}
+
+
+
+	return num_active_cells;
 }

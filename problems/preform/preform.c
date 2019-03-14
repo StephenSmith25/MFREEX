@@ -36,11 +36,11 @@ const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
 // time step parameters
-const double TMAX = 0.45;
+const double TMAX = 1;
 double delta_t = 5e-7;
 
 // Meshfree parameters
-const double dmax = 2;
+const double dmax = 3;
 const double dmax_x =2;
 const double dmax_y =2;
 double beta = 1.1;
@@ -142,6 +142,8 @@ int main(int argc, char** argv) {
 	double P0 = 0;
 	double tLine = 304.724;
 	double pLine = 0.8; // 0.6 Mpa;
+	double pLine_FINAL = 3;
+	double aReduced_final = 0.001;
 	double molarMass = 29;
 	double Rg = 8.314;
 	double rLine = Rg/molarMass;
@@ -638,6 +640,7 @@ int main(int argc, char** argv) {
 	double pre_n_1 = 0; 
 	double volume = 0;
 	double volume_t = 0;
+	double pLine_n;
 
 	double v_rod = 0;
 
@@ -801,12 +804,20 @@ int main(int argc, char** argv) {
 		volume = cavityVolume(traction_nodes,updatedNodes);
 
 
+		if ( t_n_1 < 0.35)
+		{
+			pLine_n = pLine;
+		}else{
+			pLine_n = pLine + (pLine_FINAL-pLine) * smoothstep(t_n_1, 0.40, 0.350);
+			aReduced = aReduced_final;
+		}
+
 		/*  Find Cavity pressure */
-		pRatio = pre_n/pLine;
+		pRatio = pre_n/pLine_n;
 		if ( pRatio <= 0.528){
 			massAir += chokedMassRate*delta_t;
 		}else{
-			massAir += flowRate(pRatio,tLine,pLine*1e6, rLine, aReduced,gammaLine)*delta_t;
+			massAir += flowRate(pRatio,tLine,pLine_n*1e6, rLine, aReduced,gammaLine)*delta_t;
 		}
 		pre_n_1 = ((P0*(volume - volumeInitial) + 1000*massAir*rLine*tLine)/(volume+vDead));
 
