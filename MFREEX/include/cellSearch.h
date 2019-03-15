@@ -71,11 +71,32 @@ CELLS * create_cells(BOUNDING_BOX * bounding_box, double * CELL_SIZE, int dim, M
 int iterate_over_cell(CELL * cell);
 
 
-/* Add a particular node to a cell */
-int add_node_to_cell(CELL * cell, int node_number);
-
-
 /*Loop over each cell and adjust nodal cell location based on updated nodal coordinates*/
-int update_cells(CELL ** cells, MAT * nodes);
+int move_nodes(CELLS * grid, int * active_cells, int num_active_cells,
+ int * nc, double * l, MAT * nodes);
+
+/* Stores a dynamic list of active cells */ 
+typedef struct active_cell
+{
+	int cell_number ;
+	struct active_cell * next; 
+
+}active_cell;
+
+/* Get the list of active cells */
+active_cell * get_active_cells(CELLS * grid,int * num_active_cells);
+
+/* Range searching */
+typedef enum RANGE_TYPE
+{
+	RADIAL_SEARCH,
+	RECTANGULAR_SEARCH,
+}RANGE_TYPE;
+
+/* Get neighbours of a point x, within the range specified in range
+distanc measure is specified in ranged type */
+
+int neighbour_RangeSearch(IVEC * neighbours, int cell,
+int dim,  double * x, double * range, RANGE_TYPE range_type);
 
 #endif

@@ -41,6 +41,10 @@ char * kernel_shape = "radial";
 
 double beta =2;
 
+
+// how much larger can the domains get 
+const double alpha = 1.2;
+
 // Meshfree parameters
 const double dmax =2;
 const double dmax_x = 1.5;
@@ -166,21 +170,19 @@ int main(int argc, char** argv) {
 	BOUNDING_BOX * bounding_box = create_bounding_box(0, 35,
 	0, 35, 0, 0);
 
-	double cell_size[2] = {1.5,1.5};
+	double cell_size[2] = {1.0,1.0};
 
 	MAT * xI_copy = m_copy(xI,MNULL);
 	CELLS * cells = create_cells(bounding_box, cell_size, dim, xI_copy);
 	NODELIST * nodelist;
 
 	fp = fopen("search_cells.csv","w");
-	for ( int i = 0 ; i < cells->nx ; i++)
+	for ( int j = 0 ; j < cells->ny ; j++)
 	{
 
-		for ( int j = 0 ; j < cells->ny ; j++)
+		for ( int i = 0 ; i < cells->nx ; i++)
 		{
 
-		//printf("x bounds = %lf %lf \n", cells->cells[i][0].x[0], cells->cells[i][0].x[1]);
-		nodelist = cells->cells[i][j].nodes;
 		fprintf(fp,"%lf,%lf,%lf,%lf\n",cells->cells[i][j].x[0],cells->cells[i][j].x[1],
 			cells->cells[i][j].y[0],cells->cells[i][j].y[1]);
 		
@@ -190,37 +192,20 @@ int main(int argc, char** argv) {
 
 	fclose(fp);
 
-	bool activeCell[cells->nx][cells->ny];
-
-
+	int num_active_cells = 0;
+	active_cell * active_cells = get_active_cells(cells, &num_active_cells);
 	fp = fopen("search_cells_nodes.csv","w");
-	for ( int i = 0 ; i < cells->nx ; i++)
-	{
+	active_cell * activeCell = active_cells;
 
-		for ( int j = 0 ; j < cells->ny ; j++)
-		{
-		nodelist = cells->cells[i][j].nodes;
-		if ( nodelist != NULL)
-		{
-			activeCell[i][j] = true; 
-			fprintf(fp,"1,");
-
-		}
-			fprintf(fp,"0,");
-
-		 while ( nodelist != NULL)
-		{
-			fprintf(fp,"%d,",nodelist->node_number);
-			nodelist = nodelist->next;
-
-		}
-		fprintf(fp,"\n");
-	}
-
+	while ( activeCell != NULL)
+	{	
+		fprintf(fp,"%d \n",activeCell->cell_number);
+		activeCell = activeCell->next;
+		printf("got here \n");
 	}
 	fclose(fp);
 
-
+	printf("num active cells = %d \n", num_active_cells);
 	// as points deform the active cell will change 
 	// so active cells should be a linked list to the cell index i,j
 	// and the next active cell along 

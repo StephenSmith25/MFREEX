@@ -2,28 +2,23 @@
 #include <stdbool.h>
 
 
-static inline void deleteList()
+static inline void deleteList(NODELIST * prev)
 {
-
-	// iterate to the node before the node we wish to delete
-
 	// save the node we wish to delete in a temporary pointer
+	NODELIST * temp = prev->next;
 
 	// set the previous nodes next pointer to point to the node after the node we wish to delete
-
-
-	// delete the node using the temporary pointer
+	prev->next = temp->next;
 
 }
-static inline void insertList()
+static inline void insertList(CELL * cell, NODELIST * newpoint)
 {
 
-	// create a new value and set its value
-
 	// link the new item to point ot the head of the list
+	newpoint->next = cell->nodes;
 
 	// set of head of the list be our new item
-
+	cell->nodes = newpoint;
 
 
 }
@@ -173,15 +168,61 @@ BOUNDING_BOX * create_bounding_box(double xmin, double xmax, double ymin, double
 	return bounding_box;
 }
 
-
-int  * get_active_cells(CELLS * grid)
+static inline void deleteCell()
 {
 
 
+}
+
+static inline void addCell(int cell_number)
+{
+
+
+}
+
+active_cell * get_active_cells(CELLS * cells, int * num_active_cells)
+{
+
+	int i,j,k; 
+
+	int count_num_active_cells = 0;
+	int nx = cells->nx;
+	int ny = cells->ny;
+
+	active_cell * active_cells = NULL;
+	active_cell * previous = NULL;
+
+	for ( int i = 0 ; i < cells->nx ; i++)
+	{
+
+		for ( int j = 0 ; j < cells->ny ; j++)
+		{
+			if ( cells->cells[i][j].nodes != NULL)
+			{
+				// add this cell to the active cells list
+				active_cell * active_cell_i = malloc(1*sizeof(active_cell));
+				active_cell_i->cell_number = (i)*nx + j;
+
+				if (previous==NULL)
+				{
+					active_cells = active_cell_i;
+				}else{
+					previous->next = active_cell_i;
+					previous->next->next = NULL;
+				}	
+
+				previous = active_cell_i;
+
+				++count_num_active_cells;
+			}
+		}
+
+	}
+
 
 	// returns a sorted array of active cell indicies
-
-	return NULL;
+	*num_active_cells = count_num_active_cells;
+	return active_cells;
 }
 
 
@@ -204,8 +245,8 @@ int move_nodes(CELLS * grid, int * active_cells, int num_active_cells,
 	int cell_number = 0;
 	int dim = nodes->n;
 
-	NODELIST * p = NULL;
-	NODELIST * q = NULL;
+	NODELIST * current_p = NULL;
+	NODELIST * previous_p = NULL;
 
 	double x,y,z;
 
@@ -222,35 +263,47 @@ int move_nodes(CELLS * grid, int * active_cells, int num_active_cells,
 
 			// translate into each cell number into its i,j grid reference
 
-			i = (int) floor(cell_number/ny);
-			j = cell_number - i*ny;
+			i = (int) (floor(cell_number/nx));
+			j = (int) (cell_number - i*(nx));
 
 
-			p = grid_cells[i][j].nodes;
-			q = p;
+			current_p = grid_cells[i][j].nodes;
 
-			while ( p != NULL)
+			if ( current_p == NULL)
+			{
+				// remove cell from active list 
+			}
+			previous_p = current_p;
+
+			while ( current_p != NULL)
 			{
 
-				x = nodes->me[p->node_number][0];
-				y = nodes->me[p->node_number][1];
+				// get coordinates 
+				x = nodes->me[current_p->node_number][0];
+				y = nodes->me[current_p->node_number][1];
 
+				// Find grid reference
+				i_new = (int)floor(x*nc[0]/l[0]);
+				j_new = (int)floor(y*nc[1]/l[1]);
 
-				i = (int)floor(x*nc[0]/l[0]);
-				j = (int)floor(y*nc[1]/l[1]);
-
+				// check if correct grid reference
 				if (( i_new != i ) ||  (j_new != j))
 				{
-					//delete point
-
-					// insert point into the correct grid
+					// remove point from current grid nodelist
+					deleteList(previous_p);
+					// add point to current node list 
+					insertList(&grid_cells[i_new][j_new],current_p);
+					// set current point to the previous point
+					current_p = previous_p;
 
 
 				}else{
-
+					// update previous point to current point
+					previous_p = current_p;
 				}
 
-				p = p->next;
+				// move on to next point in list
+				current_p = current_p->next;
 
 
 			}
@@ -272,4 +325,48 @@ int move_nodes(CELLS * grid, int * active_cells, int num_active_cells,
 
 
 	return num_active_cells;
+}
+
+
+
+int neighbour_RangeSearch(IVEC * neighbours, int cell,
+int dim,  double * x, double * range, RANGE_TYPE range_type)
+{
+	// Find all nodes that are within this range 
+	int num_neighbours = 0;
+
+
+	// Find the possible cells
+
+
+	switch ( range_type)
+	{
+		case(RADIAL_SEARCH):
+		{
+			// iterate over each cell
+
+
+			// Find each point within the range of point x
+			// as measured by the euclidean norm
+
+
+
+
+			break;
+		}
+		case(RECTANGULAR_SEARCH):
+		{
+
+			// iterate over each cell
+
+			break;
+		}
+
+	}
+
+
+
+	// check which possible cells it could be 
+
+	return num_neighbours;
 }
