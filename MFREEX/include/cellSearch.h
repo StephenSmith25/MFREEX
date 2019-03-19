@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <stdbool.h>
 
 #include "matrix.h"
 #include "matrix2.h"
@@ -105,6 +106,6 @@ typedef enum RANGE_TYPE
 distanc measure is specified in ranged type */
 
 int neighbour_RangeSearch(IVEC * neighbours, CELLS * cells,
-double * x, double range,  MAT * nodes);
+double * x, double range, MAT * nodes);
 
 #endif

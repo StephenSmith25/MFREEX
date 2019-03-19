@@ -39,7 +39,7 @@ char * basis_type = "linear";
 char * weight = "cubic";
 char * kernel_shape = "radial";
 
-double beta =2;
+double beta =2.0;
 
 
 // how much larger can the domains get 
@@ -50,7 +50,7 @@ const double dmax =2;
 const double dmax_x = 1.5;
 const double dmax_y = 1.5;
 double tMax = 0.2;
-static double epsilon_penalty = -1.5e5 ;//-1e5; 
+static double epsilon_penalty = -1e5;//-1e5; 
 double deltaT = 5e-7;
 
 
@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
 	BOUNDING_BOX * bounding_box = create_bounding_box(0, 35,
 	0, 35, 0, 0);
 
-	double cell_size[2] = {1.0,1.0};
+	double cell_size[2] = {1.5,1.5};
 
 	MAT * xI_copy = m_copy(xI,MNULL);
 	CELLS * cells = create_cells(bounding_box, cell_size, dim, xI_copy);
@@ -194,6 +194,25 @@ int main(int argc, char** argv) {
 
 	int num_active_cells = 0;
 	active_cell * active_cells = get_active_cells(cells, &num_active_cells);
+	write_active_cells("active_cells.csv",active_cells);
+	
+	IVEC * neighbours = iv_get(50);
+	double x[2] = {13.5,16.12};
+	int num_neighbours = neighbour_RangeSearch(neighbours, cells, x , 1, xI);
+	iv_foutput(stdout, neighbours);
+	printf("%d neighbours\n", num_neighbours);
+	printf("Coordinates of neighbours \n");
+	for ( int i = 0 ; i < num_neighbours ; i++)
+	{
+		int index = neighbours->ive[i];
+		printf("%lf,%lf\n",xI->me[index][0], xI->me[index][1]);
+	}
+
+
+
+
+
+
 
 	// for ( int i = 0 ; i < numnodes; i++)
 	// {
@@ -324,10 +343,6 @@ int main(int argc, char** argv) {
 	// fclose(fp);
 
 
-	IVEC * neighbours = iv_get(50);
-	double x[2] = {13.5,16.12};
-	neighbour_RangeSearch(neighbours, cells, x , 1.2, xI);
-	iv_foutput(stdout, neighbours);
 
 
 
@@ -366,7 +381,7 @@ int main(int argc, char** argv) {
 		
 
 		material_points = create_material_points(vor, 
-			is_AXI, dim, integration_type, material_type, rho, beta,&mfree);
+			is_AXI, dim, integration_type, material_type, cells, rho, beta,&mfree);
 		
 
 		// Write material points to file
@@ -381,7 +396,7 @@ int main(int argc, char** argv) {
 	{
 
 		material_points = create_material_points(tri, 
-			is_AXI, dim, integration_type, material_type, rho, beta,  &mfree);
+			is_AXI, dim, integration_type, material_type,  cells, rho, beta,  &mfree);
 		
 
 		// Write material points to file
@@ -419,7 +434,6 @@ int main(int argc, char** argv) {
 	{
 		inv_nodal_mass->ve[i] = 1.00/nodal_mass->ve[i];
 	}
-
 
 	/* ------------------------------------------*/
 	/* ----------------Boundaries---------------*/
@@ -509,16 +523,15 @@ int main(int argc, char** argv) {
 
 
 	
-	v_zero(nodal_mass);
+	// v_zero(nodal_mass);
 
-	for (i = 0 ; i < material_points->num_material_points ; i++)
-	{
+	// for (i = 0 ; i < material_points->num_material_points ; i++)
+	// {
 
-	material_points->MP[i] = update_material_point(material_points->MP[i], mfree.nodes, nodal_mass);
+	// material_points->MP[i] = update_material_point(material_points->MP[i], cells, mfree.nodes, nodal_mass);
 
 
-	}
-
+	// }
 
 
 	// SPLIT MATERIAL POINTS
@@ -660,8 +673,9 @@ int main(int argc, char** argv) {
 	fprintf(fp,"%lf %lf\n",0.00,0.00);
 	fclose(fp);
 
-	while ( t_n < tMax){
-	//while ( n < 10){
+
+	//while ( t_n < tMax){
+	while ( t_n < 0.1){
 
 
 
@@ -731,7 +745,11 @@ int main(int argc, char** argv) {
 		__zero__(R_pen->ve,num_dof);
 
 		__zero__(Fint_n_1->ve,Fint_n_1->max_dim);
-		__sub__(d_n_1->ve, d_n->ve,inc_disp->ve, num_dof);
+
+		// update incremental displacemnt
+		__sub__(d_n_1->ve, D_N->ve, inc_disp->ve, num_dof);
+
+
 
 
 
@@ -754,7 +772,7 @@ int main(int argc, char** argv) {
 
 		#pragma omp critical
 			__add__(NODAL_MASS[ID]->ve, nodal_mass->ve,nodal_mass->ve, numnodes);
-
+		
 
 
 		__zero__(FINT[ID]->ve,num_dof);
@@ -772,45 +790,30 @@ int main(int argc, char** argv) {
 			F = material_points->MP[i]->stateNew->F;
 			Fdot = material_points->MP[i]->stateNew->Fdot;
 			B = material_points->MP[i]->B;
-			neighbours = material_points->MP[i]->shape_function->neighbours;
+			neighbours = material_points->MP[i]->neighbours;
 			F_r = material_points->MP[i]->F_n;
 			stressVoigt = material_points->MP[i]->stressVoigt;
 			fInt = material_points->MP[i]->fInt;
-			int num_neighbours = neighbours->max_dim;
-
+			int num_neighbours = material_points->MP[i]->num_neighbours;
 
 
 			// Compute incremental deformation gradient
-			defgrad(material_points->MP[i]->inc_F, B, neighbours,inc_disp);
+			defgrad_m(material_points->MP[i]->inc_F, B, neighbours, num_neighbours, inc_disp);
 			
+
 			// compute total deformation gradient 
 			m_mlt(material_points->MP[i]->inc_F,
 				material_points->MP[i]->F_n,material_points->MP[i]->stateNew->F);
-
+	
+	
 			// Integration factor
-			double intFactor = material_points->MP[i]->volume*material_points->MP[i]->INTEGRATION_FACTOR;
+			double intFactor = material_points->MP[i]->volume*
+			material_points->MP[i]->INTEGRATION_FACTOR;
 
 
 			// Material law 
 			mooneyRivlin(stressVoigt,material_points->MP[i]->stateNew,materialParameters);
-
 			__zero__(fInt->ve,fInt->max_dim);
-
-			// // Damping
-
-			// double Le = sqrt(material_points->MP[i]->volume);
-			// //Le = 2;
-			// double c = sqrt(((lambda+2*mu)/rho));
-			// double P_b1 = 0;
-			// //P_b1 = b1*div_v*rho*Le*c;
-			// double eta = b1;
-			// double P_b2 = 0;
-			// if ( div_v < 0 ){
-			// P_b2 = Le*rho*(b2*b2*Le*div_v*div_v) -  b1*div_v*rho*Le*c;
-			// eta -= b2*b2*Le*(1/c)*div_v;
-			// }
-
-	
 
 
 			// push forward piola kirchoff stress to Omega_n configuration
@@ -830,6 +833,7 @@ int main(int argc, char** argv) {
 			vm_mlt(B,stressVoigt,fInt);
 
 
+
 			// Assemble internal force vector
 			for ( int k = 0 ; k < num_neighbours; k++){
 
@@ -842,12 +846,7 @@ int main(int argc, char** argv) {
 			}
 
 
-			// if ( n % update_domains_freq == 0)
-			// { 
-			// updateDomainMaterialPoint(XI_n_1, material_points->MP[i]);
-			// }
-
-			material_points->MP[i] = update_material_point(material_points->MP[i],
+			material_points->MP[i] = update_material_point(material_points->MP[i], cells,
 			 	XI_n_1, NODAL_MASS[ID]);
 
 			// Find error in displacment field
@@ -857,8 +856,8 @@ int main(int argc, char** argv) {
 			Yp_n = material_points->MP[i]->coords_n[1];
 
 
-			num_neighbours = material_points->MP[i]->shape_function->neighbours->max_dim;
-			neighbours = material_points->MP[i]->shape_function->neighbours;
+			num_neighbours = material_points->MP[i]->num_neighbours;
+			neighbours = material_points->MP[i]->neighbours;
 
 
 
@@ -890,7 +889,6 @@ int main(int argc, char** argv) {
 
 
 
-
 		} //end of loop over points
 		
 
@@ -903,16 +901,9 @@ int main(int argc, char** argv) {
 
 		} // end of paralell region
 
-		if ( n % 2000 == 0)
-		{
-			//v_foutput(stdout, RPEN[0]);
-			//v_foutput(stdout,Fint_n_1);
-		}
-
 
 		/*  Balance of forces */
 		__sub__(Fint_n_1->ve, R_pen->ve, Fint_n_1->ve, num_dof);
-
 		__sub__(Fext_n_1->ve,Fint_n_1->ve,Fnet->ve,num_dof);
 
 		for (  i = 0 ; i < numnodes  ; i++ )
@@ -920,11 +911,6 @@ int main(int argc, char** argv) {
 			a_n_1->ve[2*i] = Fnet->ve[2*i]/nodal_mass->ve[i];
 			a_n_1->ve[2*i+1] = Fnet->ve[2*i+1]/nodal_mass->ve[i];
 		}
-
-
-		// update nodal positions
-		__zero__(nodal_mass->ve,numnodes);
-
 
 
 
@@ -949,8 +935,12 @@ int main(int argc, char** argv) {
 
 
 
-		// UPDATE MATERIAL POINTS
-		// CONSTANT NODAL SUPPORTS
+		// used for updated rotuine
+		v_zero(nodal_mass);
+		v_copy(d_n_1,D_N);
+
+
+	
 
 
 

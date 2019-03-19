@@ -1,5 +1,4 @@
 #include "cellSearch.h"
-#include <stdbool.h>
 
 static inline double sq_distance(double *point_1, double * point_2, int  dim)
 {
@@ -489,7 +488,7 @@ int move_nodes(CELLS * grid, active_cell ** active_cells, double * l, MAT * node
 
 
 int neighbour_RangeSearch(IVEC * neighbours, CELLS * cells,
-double * x, double range, MAT * nodes)
+double * x, double range,  MAT * nodes)
 {
 	// NOTE - IMPLEMENTED JUST FOR 2D AT THE MOMENT - END NOTE 
 
@@ -525,7 +524,6 @@ double * x, double range, MAT * nodes)
 
 				distance = sq_distance(x,node_check, dim);
 
-				printf("distance = %lf \n",distance);
 				if ( distance <= range)
 				{
 					neighbours->ive[num_neighbours] = current_p->node_number;

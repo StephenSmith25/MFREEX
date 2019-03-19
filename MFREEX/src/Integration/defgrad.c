@@ -98,6 +98,45 @@ void defgrad(MAT * f, MAT * B, IVEC * neighbours, VEC * disp){
 
 
 }
+void defgrad_m(MAT * f, MAT * B, IVEC * neighbours, int num_neighbours, VEC * disp){
+
+
+
+	m_ident(f);
+
+
+		// Find incremental deformation gradient (f)
+	for ( int i = 0 ; i < num_neighbours ; i++)
+	{
+		int indx = neighbours->ive[i];
+
+		if ( B->m == 4)
+		{
+			f->me[0][0] += B->me[0][2*i]*disp->ve[2*indx];
+			f->me[1][1] += B->me[1][2*i+1]*disp->ve[2*indx+1];
+			f->me[0][1] += B->me[2][2*i]*disp->ve[2*indx];
+			f->me[1][0] += B->me[3][2*i+1]*disp->ve[2*indx+1];
+		}
+
+		if ( B->m == 5)
+		{
+			f->me[0][0]+= B->me[0][2*i]*disp->ve[2*indx];
+			f->me[1][1] += B->me[1][2*i+1]*disp->ve[2*indx+1];
+			f->me[0][1]+= B->me[2][2*i]*disp->ve[2*indx];
+			f->me[1][0]+= B->me[3][2*i+1]*disp->ve[2*indx+1];
+			f->me[2][2]+= B->me[4][2*i]*disp->ve[2*indx];
+
+		}
+
+
+	}
+
+
+	return;
+
+
+}
+
 void get_dot_defgrad(MAT * f,MAT * B,IVEC * neighbours, MAT * F_r, VEC * velocity) {
 
 

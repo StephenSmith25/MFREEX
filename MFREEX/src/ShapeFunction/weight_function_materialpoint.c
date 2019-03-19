@@ -68,7 +68,7 @@ int weight_function_materialpoint(VEC * weights, MATERIAL_POINT * MP, double  * 
 	double distance = 0;
 	double inter[dim] ;
 
-
+	double dI = MP->r_cutoff;
 
 
 	/* Find r and dr/dk */
@@ -78,14 +78,10 @@ int weight_function_materialpoint(VEC * weights, MATERIAL_POINT * MP, double  * 
 
 		case(2):
 		{
-			r_norm_s = xS[0]*(MP->invMI->me[0][0]*xS[0] + MP->invMI->me[0][1]*xS[1]) + 
-			xS[1]*(MP->invMI->me[1][0]*xS[0] + MP->invMI->me[1][1]*xS[1]);
+			r_norm = sqrt(xS[0]*xS[0] + xS[1]*xS[1])/dI;
 
-			r_norm = sqrt(r_norm_s);
-
-
-			drdk[0] = (1.00/(2*r_norm)) * (2*MP->invMI->me[0][0]*xS[0] + MP->invMI->me[0][1]*xS[1]) ;
-			drdk[1] = (1.00/(2*r_norm)) * (MP->invMI->me[1][0]*xS[0] +  2*MP->invMI->me[1][1]*xS[1]) ;
+			drdk[0] = (1.00/(r_norm*dI *dI)) * (xS[0]) ;
+			drdk[1] = (1.00/(r_norm*dI*dI)) * (xS[1]) ;
 
 
 
@@ -93,14 +89,14 @@ int weight_function_materialpoint(VEC * weights, MATERIAL_POINT * MP, double  * 
 		}
 		case(3):
 		{
-			r_norm_s = xS[0]*(MP->invMI->me[0][0]*xS[0] + MP->invMI->me[0][1]*xS[1] + MP->invMI->me[0][2]*xS[2] ) + 
-			xS[1]*(MP->invMI->me[1][0]*xS[0] + MP->invMI->me[1][1]*xS[1] + MP->invMI->me[1][2]*xS[2]) +
-			xS[2]*(MP->invMI->me[2][0]*xS[0] + MP->invMI->me[2][1]*xS[1] + MP->invMI->me[2][2]*xS[2]) ;
-			r_norm = sqrt(r_norm_s);
-			// drdk
-			drdk[0] = (1.00/(2*r_norm)) * (2*MP->invMI->me[0][0]*xS[0] + MP->invMI->me[0][1]*xS[1] + MP->invMI->me[0][2]*xS[2]) ;
-			drdk[1] = (1.00/(2*r_norm)) * (MP->invMI->me[1][0]*xS[0] + 2*MP->invMI->me[1][1]*xS[1] + MP->invMI->me[1][2]*xS[2]); 
-			drdk[2] = (1.00/(2*r_norm)) * (MP->invMI->me[2][0]*xS[0] + MP->invMI->me[2][1]*xS[1] + 2*MP->invMI->me[2][2]*xS[2]);
+			// r_norm_s = xS[0]*(MP->invMI->me[0][0]*xS[0] + MP->invMI->me[0][1]*xS[1] + MP->invMI->me[0][2]*xS[2] ) + 
+			// xS[1]*(MP->invMI->me[1][0]*xS[0] + MP->invMI->me[1][1]*xS[1] + MP->invMI->me[1][2]*xS[2]) +
+			// xS[2]*(MP->invMI->me[2][0]*xS[0] + MP->invMI->me[2][1]*xS[1] + MP->invMI->me[2][2]*xS[2]) ;
+			// r_norm = sqrt(r_norm_s);
+			// // drdk
+			// drdk[0] = (1.00/(2*r_norm)) * (2*MP->invMI->me[0][0]*xS[0] + MP->invMI->me[0][1]*xS[1] + MP->invMI->me[0][2]*xS[2]) ;
+			// drdk[1] = (1.00/(2*r_norm)) * (MP->invMI->me[1][0]*xS[0] + 2*MP->invMI->me[1][1]*xS[1] + MP->invMI->me[1][2]*xS[2]); 
+			// drdk[2] = (1.00/(2*r_norm)) * (MP->invMI->me[2][0]*xS[0] + MP->invMI->me[2][1]*xS[1] + 2*MP->invMI->me[2][2]*xS[2]);
 
 		}
 	}

@@ -54,7 +54,6 @@ shape_function * new_shape_function(int compute, char * basis_type, int dim)
 	sf_point->LU_A = m_get(dim_p,dim_p);
 	sf_point->gamma = v_get(dim_p);
 	sf_point->inter = v_get(12);
-	sf_point->neighbours = iv_get(22);
 
 
 	if (compute == 2)
@@ -113,8 +112,6 @@ shape_function * mls_shapefunction_materialpoint(MATERIAL_POINT * MP, int comput
 	// Initialise some storage matricies
 	if ( sf_point == NULL){
 		sf_point = new_shape_function(compute,basis_type,dim);
-		sf_point->neighbours = get_materialpoint_neighbours(sf_point->neighbours,MP,nodes);
-
 	}
 
 	double xS[3] = {0,0,0};
@@ -132,7 +129,7 @@ shape_function * mls_shapefunction_materialpoint(MATERIAL_POINT * MP, int comput
 
 			// Find point neighbors ( have to do something smart with this)
 			//sf_point->neighbours = get_materialpoint_neighbours(sf_point->neighbours,MP,nodes);
-			int num_neighbours = sf_point->neighbours->max_dim;
+			int num_neighbours = MP->num_neighbours;
 
 
 			// resize output vectors
@@ -161,7 +158,7 @@ shape_function * mls_shapefunction_materialpoint(MATERIAL_POINT * MP, int comput
 			{
 
 				// find domain size, and coords of node xi;
-				double * xi = nodes->me[sf_point->neighbours->ive[j]];
+				double * xi = nodes->me[MP->neighbours->ive[j]];
 
 
 				for ( int k = 0 ; k < dim ; k++)
@@ -231,7 +228,7 @@ case(2):
 
 	// find neighbours of point x;
 	//sf_point->neighbours = get_materialpoint_neighbours(sf_point->neighbours,MP,nodes);
-	int num_neighbours = sf_point->neighbours->max_dim;
+	int num_neighbours = MP->num_neighbours;
 
 
 	
@@ -277,7 +274,7 @@ case(2):
 	for ( int j = 0 ; j < num_neighbours ; ++j)
 	{
 		// find domain size, and coords of node xi;
-		double * xi = nodes->me[sf_point->neighbours->ive[j]];
+		double * xi = nodes->me[MP->neighbours->ive[j]];
 
 		for ( int k = 0 ; k < dim ; k++)
 		{
@@ -357,7 +354,7 @@ case(2):
 	if ( maxphi > 1)
 
 	{	
-		iv_foutput(stdout, sf_point->neighbours);
+		iv_foutput(stdout, MP->neighbours);
 		assert(v_max(sf_point->phi,&index) < 1.00);
 
 	}
@@ -376,7 +373,7 @@ case(2):
 	// derivative consistencey check
 	for ( int k = 0 ; k < num_neighbours; k++)
 	{	
-		double * xi = nodes->me[sf_point->neighbours->ive[k]];
+		double * xi = nodes->me[MP->neighbours->ive[k]];
 		for ( int l = 0 ; l < dim ; l++)
 		{
 			lc_sum[l] += xi[l]*sf_point->dphi->me[k][l];
