@@ -37,7 +37,7 @@ ylim([0,30])
 axis equal 
 
 
-filename = strcat(path,'/displacement_',num2str(plotFiles(9)),'.txt');
+filename = strcat(path,'/displacement_',num2str(plotFiles(10)),'.txt');
 disp = csvread(filename);
 
 

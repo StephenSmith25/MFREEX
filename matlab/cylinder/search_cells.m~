@@ -36,11 +36,13 @@ nodes_origin = csvread('./../../build/bin/cylinder/nodes_1.csv');
 %     i = active_cells(k)+1;
 % rectangle('Position',[cells(i,1), cells(i,3), cells(i,2)-cells(i,1), cells(i,4)-cells(i,3)])
 % end
+v = VideoWriter('peaks.avi');
 
-v = VideoWriter('cells.avi');
-v.FrameRate = 5;
 open(v);
-for i = 1:49
+
+   writeVideo(v,F);
+
+for i = 49
 
     filename = strcat('./../../build/bin/cylinder/nodes_',num2str(i),'.csv');
    
@@ -72,14 +74,11 @@ ylim([0,35])
 
     
     drawnow
-   
     F(i) = getframe(gcf);
-    writeVideo(v,F(i));
-
+    
 end
 
 
-close(v);
 
 
 active_nodes = csvread("./../../build/bin/cylinder/active_nodes.csv");

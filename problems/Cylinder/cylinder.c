@@ -50,7 +50,7 @@ const double dmax =2;
 const double dmax_x = 1.5;
 const double dmax_y = 1.5;
 double tMax = 0.2;
-static double epsilon_penalty = -1e5 ;//-1e5; 
+static double epsilon_penalty = -1.5e5 ;//-1e5; 
 double deltaT = 5e-7;
 
 
@@ -177,10 +177,10 @@ int main(int argc, char** argv) {
 	NODELIST * nodelist;
 
 	fp = fopen("search_cells.csv","w");
-	for ( int j = 0 ; j < cells->ny ; j++)
+	for ( int i = 0 ; i < cells->ny ; i++)
 	{
 
-		for ( int i = 0 ; i < cells->nx ; i++)
+		for ( int j = 0 ; j < cells->nx ; j++)
 		{
 
 		fprintf(fp,"%lf,%lf,%lf,%lf\n",cells->cells[i][j].x[0],cells->cells[i][j].x[1],
@@ -194,23 +194,141 @@ int main(int argc, char** argv) {
 
 	int num_active_cells = 0;
 	active_cell * active_cells = get_active_cells(cells, &num_active_cells);
-	fp = fopen("search_cells_nodes.csv","w");
-	active_cell * activeCell = active_cells;
 
-	while ( activeCell != NULL)
-	{	
-		fprintf(fp,"%d \n",activeCell->cell_number);
-		activeCell = activeCell->next;
-		printf("got here \n");
-	}
-	fclose(fp);
+	// for ( int i = 0 ; i < numnodes; i++)
+	// {
+	// 	xI->me[i][0] += 11;
+	// }
 
-	printf("num active cells = %d \n", num_active_cells);
-	// as points deform the active cell will change 
-	// so active cells should be a linked list to the cell index i,j
-	// and the next active cell along 
+	//  printf("FIRST CALL : \n");
+	// move_nodes(cells, &active_cells, cell_size, xI);
+	
+	// printf("SECOND CALL \n");
+	// move_nodes(cells, &active_cells, cell_size, xI);
 
-	exit(0);
+	// int count_2 = 1;
+	// char filename_1[50];
+	// char filename_2[50];
+
+
+
+
+	// while ( count_2 < 50 ){
+
+
+	// 	for ( int i = 0 ; i < numnodes; i++)
+	// 	{
+	// 		xI->me[i][0] += 0.2;
+	// 		xI->me[i][1] += 0.2;
+
+	// 	}
+
+	// 	move_nodes(cells, &active_cells, cell_size, xI);
+
+
+	// 	snprintf(filename_1, 50, "nodes_%d%s",count_2,".csv");
+	// 	snprintf(filename_2, 50, "search_cells_%d%s",count_2,".csv");
+
+
+
+	// 	fp = fopen(filename_1,"w");
+	// 	for ( int i =0 ; i < numnodes ; i++)
+	// 	{
+	// 		for ( int k = 0 ; k < dim ; k++)
+	// 		{
+	// 			fprintf(fp, "%lf",xI->me[i][k]);
+
+	// 			if ( k < dim - 1)
+	// 			{
+	// 				fprintf(fp,",");
+	// 			}
+
+	// 		}
+	// 		fprintf(fp, "\n");
+	// 	}
+	// 	fclose(fp);
+
+	// 	write_active_cells(filename_2,active_cells);
+
+	// 	++count_2;
+
+
+	// }
+
+
+
+	// //snprintf(filename_2, 50, "nodes_%d%s",count_2-1,".csv");
+
+	// // move_nodes(cells, &active_cells, cell_size, xI);
+	// // move_nodes(cells, &active_cells, cell_size, xI);
+	//  move_nodes(cells, &active_cells, cell_size, xI);
+	// // move_nodes(cells, &active_cells, cell_size, xI);
+	// // move_nodes(cells, &active_cells, cell_size, xI);
+	// // move_nodes(cells, &active_cells, cell_size, xI);
+
+
+	// write_active_cells(filename_2,active_cells);
+
+
+	// fp = fopen(filename_1,"w");
+	// 	for ( int i =0 ; i < numnodes ; i++)
+	// 	{
+	// 		for ( int k = 0 ; k < dim ; k++)
+	// 		{
+	// 			fprintf(fp, "%lf",xI->me[i][k]);
+
+	// 			if ( k < dim - 1)
+	// 			{
+	// 				fprintf(fp,",");
+	// 			}
+
+	// 		}
+	// 		fprintf(fp, "\n");
+	// 	}
+	// 	fclose(fp);
+
+	// printf("num active cells = %d \n", num_active_cells);
+	// // as points deform the active cell will change 
+	// // so active cells should be a linked list to the cell index i,j
+	// // and the next active cell along 
+
+	// active_cell * activeCell = active_cells;
+
+	// fp = fopen("active_nodes.csv","w");
+	// NODELIST * current_p = NULL;
+	// int nx = cells->nx;
+	// int ny = cells->ny; 
+
+	// while ( activeCell != NULL)
+	// {	
+
+	// 	int cell_number = activeCell->cell_number;
+	// 	int i = (int) (floor(cell_number/nx));
+	// 	int j = (int) (cell_number - i*(nx));
+	// 	current_p = cells->cells[i][j].nodes;
+
+	// 	while ( current_p != NULL)
+	// 	{
+	// 		fprintf(fp,"%d,",current_p->node_number+1);
+	// 		current_p = current_p->next;
+
+
+
+	// 	}
+
+	// 	fprintf(fp,"\n");
+
+
+	// 	activeCell = activeCell->next;
+	// }
+	// fclose(fp);
+
+
+	IVEC * neighbours = iv_get(50);
+	double x[2] = {13.5,16.12};
+	neighbour_RangeSearch(neighbours, cells, x , 1.2, xI);
+	iv_foutput(stdout, neighbours);
+
 
 
 	/* ------------------------------------------*/
@@ -599,6 +717,7 @@ int main(int argc, char** argv) {
 
 
 		__add__(nodes_X->base, d_n_1->ve, XI_n_1->base, num_dof);
+		move_nodes(cells, &active_cells, cell_size, XI_n_1);
 
 
 
