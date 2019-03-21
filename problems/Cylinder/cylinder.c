@@ -681,22 +681,21 @@ int main(int argc, char** argv) {
 	fprintf(fp,"%lf %lf\n",0.00,0.00);
 	fclose(fp);
 
-	internal_force_args * INTERNAL_FORCE_ARGS[NUMBER_OF_THREADS];
+	internal_force_args * INTERNAL_FORCE_ARGS = calloc(NUMBER_OF_THREADS,sizeof(internal_force_args));
 
 	for ( int i = 0 ; i < NUMBER_OF_THREADS ; i++)
 	{
 
-		INTERNAL_FORCE_ARGS[i] = malloc(1*sizeof(internal_force_args));
-		INTERNAL_FORCE_ARGS[i]->NODAL_MASS = NODAL_MASS[i];
-		INTERNAL_FORCE_ARGS[i]->FINT = FINT[i];
-		INTERNAL_FORCE_ARGS[i]->RPEN = RPEN[i];
-		INTERNAL_FORCE_ARGS[i]->mat_points = material_point_groups[i];
-		INTERNAL_FORCE_ARGS[i]->material_points = material_points;
-		INTERNAL_FORCE_ARGS[i]->inc_disp = inc_disp;
-		INTERNAL_FORCE_ARGS[i]->materialParameters = materialParameters;
-		INTERNAL_FORCE_ARGS[i]->XI_n = XI_n;
-		INTERNAL_FORCE_ARGS[i]->XI_n_1 = XI_n_1;
-		INTERNAL_FORCE_ARGS[i]->cells = cells;
+		INTERNAL_FORCE_ARGS[i].NODAL_MASS = NODAL_MASS[i];
+		INTERNAL_FORCE_ARGS[i].FINT = FINT[i];
+		INTERNAL_FORCE_ARGS[i].RPEN = RPEN[i];
+		INTERNAL_FORCE_ARGS[i].mat_points = material_point_groups[i];
+		INTERNAL_FORCE_ARGS[i].material_points = material_points;
+		INTERNAL_FORCE_ARGS[i].inc_disp = inc_disp;
+		INTERNAL_FORCE_ARGS[i].materialParameters = materialParameters;
+		INTERNAL_FORCE_ARGS[i].XI_n = XI_n;
+		INTERNAL_FORCE_ARGS[i].XI_n_1 = XI_n_1;
+		INTERNAL_FORCE_ARGS[i].cells = cells;
 
 
 	}
@@ -705,16 +704,16 @@ int main(int argc, char** argv) {
 	//threadpool thpool = thpool_init(NUMBER_OF_THREADS);
 
     pthread_t threads[NUMBER_OF_THREADS];
-   // pthread_attr_t attr[NUMBER_OF_THREADS];
+   	pthread_attr_t attr[NUMBER_OF_THREADS];
 
-    // for ( int i = 0 ;i < NUMBER_OF_THREADS ; i++)
-    // {
-    //    pthread_attr_init(&attr[i]);
-    //    pthread_attr_setdetachstate(&attr[i], PTHREAD_CREATE_JOINABLE); 	
-    // }
+    for ( int i = 0 ;i < NUMBER_OF_THREADS ; i++)
+    {
+       pthread_attr_init(&attr[i]);
+       pthread_attr_setdetachstate(&attr[i], PTHREAD_CREATE_JOINABLE); 	
+    }
 
 
-
+	threadpool thpool = thpool_init(NUMBER_OF_THREADS);
 
 	//while ( t_n < tMax){
 	while ( t_n < 0.01){
@@ -808,17 +807,17 @@ int main(int argc, char** argv) {
 
 		for (i=0; i < NUMBER_OF_THREADS; i++){
 			__add__(NODAL_MASS[i]->ve, nodal_mass->ve,nodal_mass->ve, numnodes);
-			pthread_create( &threads[i], NULL, (void*) internal_force_mooney, INTERNAL_FORCE_ARGS[i]);
+			thpool_add_work( thpool, (void*) internal_force_mooney, &INTERNAL_FORCE_ARGS[i]);
 
 		}
 
-		for (int i = 0 ; i < NUMBER_OF_THREADS ; i++)
-		{
-			pthread_join( threads[i], NULL);
+		// for (int i = 0 ; i < NUMBER_OF_THREADS ; i++)
+		// {
+		// 	pthread_join( threads[i], NULL);
 
-		}
+		// }
    
-
+		thpool_wait(thpool);
 		for (i=0; i < NUMBER_OF_THREADS; i++){
 		
 	 		__add__(RPEN[i]->ve, R_pen->ve,R_pen->ve, num_dof);
