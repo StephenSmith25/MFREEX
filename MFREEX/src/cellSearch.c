@@ -491,7 +491,7 @@ int neighbour_RangeSearch(IVEC * neighbours, CELLS * cells,
 double * x, double range,  MAT * nodes)
 {
 	// NOTE - IMPLEMENTED JUST FOR 2D AT THE MOMENT - END NOTE 
-
+	iv_zero(neighbours);
 	// Find all nodes that are within this range 
 	int num_neighbours = 0;
 	int dim = nodes->n;

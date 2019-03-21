@@ -49,7 +49,7 @@ int setDomainMaterialPoint(MAT * nodes, CELLS * cells, MATERIAL_POINT * MP)
 			v_sort(distances,order);
 	
 
-			MP->r_cutoff = MP->beta * distances->ve[1];
+			MP->r_cutoff = 1.2* distances->ve[4];
 
 
 			MP->num_neighbours = neighbour_RangeSearch(MP->neighbours,
@@ -73,28 +73,66 @@ int updateDomainMaterialPoint(MAT * nodes, CELLS * cells,  MATERIAL_POINT * MP)
 	int num_nodes = nodes->m;
 	int dim = nodes->n;
 	double distance_min = 1000;
-	double distance = 0;
+	int i,j;
 
+
+	int min_num_neighbours = 5; 
+
+	double distance[MP->num_neighbours];
 
 	// find min_num_neighbours for material point x_p
-	for (int j = 0; j < MP->num_neighbours; ++j)
+	for (j = 0; j < MP->num_neighbours; ++j)
 	{
 			// find distance to point;
 			int index = MP->neighbours->ive[j];
+			distance[j] = sq_distance(MP->coords_n_1, nodes->me[index], dim);
 
+	}
 
-
-			distance = sq_distance(MP->coords_n_1, nodes->me[index], dim);
-
-			if ( distance < distance_min)
-				distance_min = distance;
+	double a;
+	for (i = 0 ; i < MP->num_neighbours ; i++)
+	{
+		for (  j = i+1 ; j < MP->num_neighbours ; j++)
+		{
+			if (distance[i] > distance[j])
+			{
+				a = distance[i];
+				distance[i] = distance[j];
+				distance[j] = a;
+			}
+		}
 	}
 
 
-	MP->r_cutoff = MP->beta * distance_min;
+	// printf("distance_min = %lf \n",distance_min);
+
+	MP->r_cutoff = 1.2 * distance[4];
+	double area_support = MP->r_cutoff * MP->r_cutoff * PI;
+
+	if ( area_support < MP->volume)
+	{
+		printf("REACHED AREA CONDITION\n");
+		exit(0);
+	}
 
 	MP->num_neighbours = neighbour_RangeSearch(MP->neighbours
-	,cells, MP->coords_n_1, MP->r_cutoff, nodes);
+		,cells, MP->coords_n_1, MP->r_cutoff, nodes);
+
+
+
+	// while ( MP->num_neighbours < min_num_neighbours){
+
+
+	// 	//MP->beta = 1.1*MP->beta;
+	// 	MP->r_cutoff = 1.1*MP->r_cutoff;
+
+	// 	MP->num_neighbours = neighbour_RangeSearch(MP->neighbours
+	// 	,cells, MP->coords_n_1, MP->r_cutoff, nodes);
+
+	// 	printf("got here \n");
+
+	// }
+
 
 
 

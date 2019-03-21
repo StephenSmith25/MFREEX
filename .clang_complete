@@ -2,7 +2,7 @@
 -Ilib/Meschach/
 -Ilib/gpc
 -Ilib/Eigen/include
-
+-Ilib/thread_pool
 -Ilib/efsflib/lib/include
 -Ilib/clipped_voronoi/lib/include
 -IMFREEX/include

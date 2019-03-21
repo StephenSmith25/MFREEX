@@ -14,6 +14,7 @@ include_directories(${GPC_SOURCE_DIR})
 include_directories(${util_SOURCE_DIR}/include)
 include_directories(${Eigen_SOURCE_DIR}/include)
 include_directories(${triangulate_SOURCE_DIR}/include)
+include_directories(${thread_pool_SOURCE_DIR})
 
 
 find_package(OpenMP)

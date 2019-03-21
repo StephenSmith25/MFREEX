@@ -4,7 +4,7 @@
 #include "ShapeFunction/mls_shapefunction_materialpoint.h"
 #include "Integration/DomainMaterialPoint.h"
 #ifndef QUADRATURE_ORDER
-#define QUADRATURE_ORDER 1
+#define QUADRATURE_ORDER 2
 #endif
 
 

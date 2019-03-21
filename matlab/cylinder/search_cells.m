@@ -6,11 +6,11 @@ clear all
 
 
 
-%material_points = csvread('./../../build/bin/cylinder/materialpoints.csv');
+material_points = csvread('./../../build/bin/cylinder/materialpoints.csv');
 
 
 
-%plot(material_points(:,1),material_points(:,2),'r*');
+plot(material_points(:,1),material_points(:,2),'r*');
 
 %axis equal 
 

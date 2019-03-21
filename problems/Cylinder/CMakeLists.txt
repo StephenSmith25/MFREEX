@@ -11,6 +11,7 @@ include_directories(${util_SOURCE_DIR}/include)
 
 include_directories(${GPC_SOURCE_DIR})
 include_directories(${MFREEX_SOURCE_DIR}/MFREEX/include)
+include_directories(${thread_pool_SOURCE_DIR})
 
 
 link_directories(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
@@ -26,14 +27,14 @@ if (OPENMP_FOUND)
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
-find_package (Threads)
+find_package (Threads REQUIRED)
 
 
-SET(GCC_COVERAGE_COMPILE_FLAGS "-O3 -g -std=c99")
+SET(GCC_COVERAGE_COMPILE_FLAGS "-O3 -g -std=c99 -pthread -lpthread")
 add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
 add_executable(cylinder cylinder.c)
-target_link_libraries(cylinder CVLIB triangulate MFREEX EFSFLIB meschach m gpc util)
+target_link_libraries(cylinder CVLIB thread_pool triangulate MFREEX EFSFLIB meschach m gpc util )
 
 
 # copy input files to location

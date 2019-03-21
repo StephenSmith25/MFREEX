@@ -32,6 +32,12 @@
 #include "Integration/DomainMaterialPoint.h"
 #include "cellSearch.h"
 #include <stdbool.h>
+#include <pthread.h>
+#include "internal_force_mooney.h"
+#include "thpool.h"
+
+
+
 /*  Function definitions */
 
 int constant_support_size = 0;
@@ -39,7 +45,7 @@ char * basis_type = "linear";
 char * weight = "cubic";
 char * kernel_shape = "radial";
 
-double beta =2.0;
+double beta =2;
 
 
 // how much larger can the domains get 
@@ -50,7 +56,7 @@ const double dmax =2;
 const double dmax_x = 1.5;
 const double dmax_y = 1.5;
 double tMax = 0.2;
-static double epsilon_penalty = -1e5;//-1e5; 
+static double epsilon_penalty = -5000;//-1e5; 
 double deltaT = 5e-7;
 
 
@@ -75,7 +81,7 @@ char * integration_type = "TRIANGLE";
 const double rho = 1000e-9;
 
 
-#define NUMBER_OF_THREADS 4
+#define NUMBER_OF_THREADS 3
 
 
 int main(int argc, char** argv) {
@@ -107,6 +113,8 @@ int main(int argc, char** argv) {
 	materialParameters->ve[0] = 1835.0;
 	materialParameters->ve[1] = 146.8;
 	materialParameters->ve[2] = 1e5;
+
+
 
 
 
@@ -170,7 +178,7 @@ int main(int argc, char** argv) {
 	BOUNDING_BOX * bounding_box = create_bounding_box(0, 35,
 	0, 35, 0, 0);
 
-	double cell_size[2] = {1.5,1.5};
+	double cell_size[2] = {1,1};
 
 	MAT * xI_copy = m_copy(xI,MNULL);
 	CELLS * cells = create_cells(bounding_box, cell_size, dim, xI_copy);
@@ -457,8 +465,8 @@ int main(int argc, char** argv) {
 
 
 	int count1 = 0;
-	eb1->nodes = iv_get(4);
-	eb2->nodes = iv_get(4);
+	eb1->nodes = iv_get(5);
+	eb2->nodes = iv_get(5);
 	int count = 0;
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
@@ -673,9 +681,43 @@ int main(int argc, char** argv) {
 	fprintf(fp,"%lf %lf\n",0.00,0.00);
 	fclose(fp);
 
+	internal_force_args * INTERNAL_FORCE_ARGS[NUMBER_OF_THREADS];
+
+	for ( int i = 0 ; i < NUMBER_OF_THREADS ; i++)
+	{
+
+		INTERNAL_FORCE_ARGS[i] = malloc(1*sizeof(internal_force_args));
+		INTERNAL_FORCE_ARGS[i]->NODAL_MASS = NODAL_MASS[i];
+		INTERNAL_FORCE_ARGS[i]->FINT = FINT[i];
+		INTERNAL_FORCE_ARGS[i]->RPEN = RPEN[i];
+		INTERNAL_FORCE_ARGS[i]->mat_points = material_point_groups[i];
+		INTERNAL_FORCE_ARGS[i]->material_points = material_points;
+		INTERNAL_FORCE_ARGS[i]->inc_disp = inc_disp;
+		INTERNAL_FORCE_ARGS[i]->materialParameters = materialParameters;
+		INTERNAL_FORCE_ARGS[i]->XI_n = XI_n;
+		INTERNAL_FORCE_ARGS[i]->XI_n_1 = XI_n_1;
+		INTERNAL_FORCE_ARGS[i]->cells = cells;
+
+
+	}
+
+	// create thread pool
+	//threadpool thpool = thpool_init(NUMBER_OF_THREADS);
+
+    pthread_t threads[NUMBER_OF_THREADS];
+   // pthread_attr_t attr[NUMBER_OF_THREADS];
+
+    // for ( int i = 0 ;i < NUMBER_OF_THREADS ; i++)
+    // {
+    //    pthread_attr_init(&attr[i]);
+    //    pthread_attr_setdetachstate(&attr[i], PTHREAD_CREATE_JOINABLE); 	
+    // }
+
+
+
 
 	//while ( t_n < tMax){
-	while ( t_n < 0.1){
+	while ( t_n < 0.01){
 
 
 
@@ -725,181 +767,212 @@ int main(int argc, char** argv) {
 
 
 
-		// find new nodal positions
-		//mv_mlt(Lambda,d_n_1,nodal_disp);
-		//__add__(nodes_X->base, d_n_1->ve, updatedNodes->base, num_dof);
 
 
 		__add__(nodes_X->base, d_n_1->ve, XI_n_1->base, num_dof);
 		move_nodes(cells, &active_cells, cell_size, XI_n_1);
 
 
+		/* --------------------------------------------------------------*/
+		/* --------------------------------------------------------------*/
+		/*      				 EXTERNAL FORCE 					     */
+		/* --------------------------------------------------------------*/
+		/* --------------------------------------------------------------*/
 
 		/*  Update pressureload */
 		pre_n_1 = pressure * smoothstep(t_n_1,tMax,0);
 		update_pressure_boundary(pB, XI_n_1);
 		v_zero(Fext_n_1);
-
 		assemble_pressure_load(Fext_n_1, pre_n_1, pB);
 	
-		__zero__(R_pen->ve,num_dof);
 
-		__zero__(Fint_n_1->ve,Fint_n_1->max_dim);
+
 
 		// update incremental displacemnt
-		__sub__(d_n_1->ve, D_N->ve, inc_disp->ve, num_dof);
+		__sub__(d_n_1->ve, d_n->ve, inc_disp->ve, num_dof);
+
+
+
+		/* --------------------------------------------------------------*/
+		/* --------------------------------------------------------------*/
+		/*      			 INTERNAL FORCE ROUTINE 					 */
+		/* --------------------------------------------------------------*/
+		/* --------------------------------------------------------------*/
+		__zero__(R_pen->ve,num_dof);
+		__zero__(Fint_n_1->ve,Fint_n_1->max_dim);
+		// update incremental displacemnt
+		__sub__(d_n_1->ve, d_n->ve, inc_disp->ve, num_dof);
 
 
 
 
+		for (i=0; i < NUMBER_OF_THREADS; i++){
+			__add__(NODAL_MASS[i]->ve, nodal_mass->ve,nodal_mass->ve, numnodes);
+			pthread_create( &threads[i], NULL, (void*) internal_force_mooney, INTERNAL_FORCE_ARGS[i]);
 
-		#pragma omp parallel num_threads(NUMBER_OF_THREADS) 
-		{
-		// Internal forces
-		int ID = omp_get_thread_num();
-		IVEC * mat_points = material_point_groups[ID];
-		double P11,P12,P13,P21,P22,P23,P31,P32,P33;
-
-		MAT * F ;
-		MAT * Fdot;
-		VEC * stressVoigt ;
-		MAT * B ;
-		IVEC * neighbours;
-		MAT * F_r;
-		VEC * fInt;
-		double Xp_n, Xp_n_1, Yp_n, Yp_n_1;
-		int i = 0;
-
-		#pragma omp critical
-			__add__(NODAL_MASS[ID]->ve, nodal_mass->ve,nodal_mass->ve, numnodes);
-		
-
-
-		__zero__(FINT[ID]->ve,num_dof);
-		__zero__(NODAL_MASS[ID]->ve,numnodes);
-		__zero__(RPEN[ID]->ve,num_dof);
-
-
-		
-		//#pragma omp for nowait schedule(dynamic,4)
-		for ( int k = 0 ; k < mat_points->max_dim; k++)
-		{
-
-			i = mat_points->ive[k];
-
-			F = material_points->MP[i]->stateNew->F;
-			Fdot = material_points->MP[i]->stateNew->Fdot;
-			B = material_points->MP[i]->B;
-			neighbours = material_points->MP[i]->neighbours;
-			F_r = material_points->MP[i]->F_n;
-			stressVoigt = material_points->MP[i]->stressVoigt;
-			fInt = material_points->MP[i]->fInt;
-			int num_neighbours = material_points->MP[i]->num_neighbours;
-
-
-			// Compute incremental deformation gradient
-			defgrad_m(material_points->MP[i]->inc_F, B, neighbours, num_neighbours, inc_disp);
-			
-
-			// compute total deformation gradient 
-			m_mlt(material_points->MP[i]->inc_F,
-				material_points->MP[i]->F_n,material_points->MP[i]->stateNew->F);
-	
-	
-			// Integration factor
-			double intFactor = material_points->MP[i]->volume*
-			material_points->MP[i]->INTEGRATION_FACTOR;
-
-
-			// Material law 
-			mooneyRivlin(stressVoigt,material_points->MP[i]->stateNew,materialParameters);
-			__zero__(fInt->ve,fInt->max_dim);
-
-
-			// push forward piola kirchoff stress to Omega_n configuration
-			sv_mlt(1.00/material_points->MP[i]->Jn,stressVoigt,stressVoigt);
-
-			P11 = stressVoigt->ve[0];
-			P22 = stressVoigt->ve[1];
-			P12 = stressVoigt->ve[2];
-			P21 = stressVoigt->ve[3];
-
-			stressVoigt->ve[0] = P11*F_r->me[0][0] + P12*F_r->me[0][1];
-			stressVoigt->ve[1] = P21*F_r->me[1][0] + P22*F_r->me[1][1];
-			stressVoigt->ve[2] = P11*F_r->me[1][0] + P12*F_r->me[1][1];
-			stressVoigt->ve[3] = P21*F_r->me[0][0] + P22*F_r->me[0][1];
-
-
-			vm_mlt(B,stressVoigt,fInt);
-
-
-
-			// Assemble internal force vector
-			for ( int k = 0 ; k < num_neighbours; k++){
-
-				int index = neighbours->ive[k];
-
-				FINT[ID]->ve[2*index] += intFactor * fInt->ve[2*k];
-				FINT[ID]->ve[2*index + 1] += intFactor *fInt->ve[2*k+1];
-
-
-			}
-
-
-			material_points->MP[i] = update_material_point(material_points->MP[i], cells,
-			 	XI_n_1, NODAL_MASS[ID]);
-
-			// Find error in displacment field
-			Xp_n_1 = material_points->MP[i]->coords_n_1[0];
-			Xp_n = material_points->MP[i]->coords_n[0];
-			Yp_n_1 = material_points->MP[i]->coords_n_1[1];
-			Yp_n = material_points->MP[i]->coords_n[1];
-
-
-			num_neighbours = material_points->MP[i]->num_neighbours;
-			neighbours = material_points->MP[i]->neighbours;
-
-
-
-
-			for ( int k = 0 ; k < num_neighbours; k++){
-
-				int index = neighbours->ive[k];
-
-				// Find vectors dX_n and dX_n_1
-				double delta_x_n[2] = {XI_n->me[index][0] - Xp_n,XI_n->me[index][1] - Yp_n};
-				double delta_x_n_1[2] = {XI_n_1->me[index][0] - Xp_n_1,XI_n_1->me[index][1] - Yp_n_1};
-
-				// Find error in displacement 
-				double x_tilde[2] = {material_points->MP[i]->inc_F->me[0][0]*(delta_x_n[0])
-					+ material_points->MP[i]->inc_F->me[0][1]*(delta_x_n[1]),
-					material_points->MP[i]->inc_F->me[1][0]*delta_x_n[0]
-					+ material_points->MP[i]->inc_F->me[1][1]*delta_x_n[1]};
-
-				double norm_x = sqrt(pow(delta_x_n[0],2) + pow(delta_x_n[1],2));
-				double e_x  = (delta_x_n_1[0] - x_tilde[0])/norm_x;
-				double e_y =  (delta_x_n_1[1] - x_tilde[1])/norm_x ;
-		
-				// assemble forces 
-				RPEN[ID]->ve[2*index] += epsilon_penalty*material_points->MP[i]->shape_function->phi->ve[k]*e_x;
-				RPEN[ID]->ve[2*index+1] += epsilon_penalty*material_points->MP[i]->shape_function->phi->ve[k]*e_y;
-
-			}
-
-
-
-
-		} //end of loop over points
-		
-
-		#pragma omp critical
-		{
-			__add__(RPEN[ID]->ve, R_pen->ve,R_pen->ve, num_dof);
-			__add__(FINT[ID]->ve, Fint_n_1->ve,Fint_n_1->ve, num_dof);
 		}
 
+		for (int i = 0 ; i < NUMBER_OF_THREADS ; i++)
+		{
+			pthread_join( threads[i], NULL);
 
-		} // end of paralell region
+		}
+   
+
+		for (i=0; i < NUMBER_OF_THREADS; i++){
+		
+	 		__add__(RPEN[i]->ve, R_pen->ve,R_pen->ve, num_dof);
+	 		__add__(FINT[i]->ve, Fint_n_1->ve,Fint_n_1->ve, num_dof);
+
+		}
+
+		// #pragma omp parallel num_threads(NUMBER_OF_THREADS) 
+		// {
+		// // Internal forces
+		// int ID = omp_get_thread_num();
+		// IVEC * mat_points = material_point_groups[ID];
+		// double P11,P12,P13,P21,P22,P23,P31,P32,P33;
+
+		// MAT * F ;
+		// MAT * Fdot;
+		// VEC * stressVoigt ;
+		// MAT * B ;
+		// IVEC * neighbours;
+		// MAT * F_r;
+		// VEC * fInt;
+		// double Xp_n, Xp_n_1, Yp_n, Yp_n_1;
+		// int i = 0;
+
+		// #pragma omp critical
+		// 	__add__(NODAL_MASS[ID]->ve, nodal_mass->ve,nodal_mass->ve, numnodes);
+		
+
+
+		// __zero__(FINT[ID]->ve,num_dof);
+		// __zero__(NODAL_MASS[ID]->ve,numnodes);
+		// __zero__(RPEN[ID]->ve,num_dof);
+
+
+		
+		// //#pragma omp for nowait schedule(dynamic,4)
+		// for ( int k = 0 ; k < mat_points->max_dim; k++)
+		// {
+
+		// 	i = mat_points->ive[k];
+
+		// 	F = material_points->MP[i]->stateNew->F;
+		// 	Fdot = material_points->MP[i]->stateNew->Fdot;
+		// 	B = material_points->MP[i]->B;
+		// 	neighbours = material_points->MP[i]->neighbours;
+		// 	F_r = material_points->MP[i]->F_n;
+		// 	stressVoigt = material_points->MP[i]->stressVoigt;
+		// 	fInt = material_points->MP[i]->fInt;
+		// 	int num_neighbours = material_points->MP[i]->num_neighbours;
+
+
+		// 	// Compute incremental deformation gradient
+		// 	defgrad_m(material_points->MP[i]->inc_F, B, neighbours, num_neighbours, inc_disp);
+			
+
+		// 	// compute total deformation gradient 
+		// 	m_mlt(material_points->MP[i]->inc_F,
+		// 		material_points->MP[i]->F_n,material_points->MP[i]->stateNew->F);
+	
+	
+		// 	// Integration factor
+		// 	double intFactor = material_points->MP[i]->volume*
+		// 	material_points->MP[i]->INTEGRATION_FACTOR;
+
+
+		// 	// Material law 
+		// 	mooneyRivlin(stressVoigt,material_points->MP[i]->stateNew,materialParameters);
+		// 	__zero__(fInt->ve,fInt->max_dim);
+
+
+		// 	// push forward piola kirchoff stress to Omega_n configuration
+		// 	sv_mlt(1.00/material_points->MP[i]->Jn,stressVoigt,stressVoigt);
+
+		// 	P11 = stressVoigt->ve[0];
+		// 	P22 = stressVoigt->ve[1];
+		// 	P12 = stressVoigt->ve[2];
+		// 	P21 = stressVoigt->ve[3];
+
+		// 	stressVoigt->ve[0] = P11*F_r->me[0][0] + P12*F_r->me[0][1];
+		// 	stressVoigt->ve[1] = P21*F_r->me[1][0] + P22*F_r->me[1][1];
+		// 	stressVoigt->ve[2] = P11*F_r->me[1][0] + P12*F_r->me[1][1];
+		// 	stressVoigt->ve[3] = P21*F_r->me[0][0] + P22*F_r->me[0][1];
+
+
+		// 	vm_mlt(B,stressVoigt,fInt);
+
+
+
+		// 	// Assemble internal force vector
+		// 	for ( int k = 0 ; k < num_neighbours; k++){
+
+		// 		int index = neighbours->ive[k];
+
+		// 		FINT[ID]->ve[2*index] += intFactor * fInt->ve[2*k];
+		// 		FINT[ID]->ve[2*index + 1] += intFactor *fInt->ve[2*k+1];
+
+
+		// 	}
+
+
+		// 	material_points->MP[i] = update_material_point(material_points->MP[i], cells,
+		// 	 	XI_n_1, NODAL_MASS[ID]);
+
+		// 	// Find error in displacment field
+		// 	Xp_n_1 = material_points->MP[i]->coords_n_1[0];
+		// 	Xp_n = material_points->MP[i]->coords_n[0];
+		// 	Yp_n_1 = material_points->MP[i]->coords_n_1[1];
+		// 	Yp_n = material_points->MP[i]->coords_n[1];
+
+
+		// 	num_neighbours = material_points->MP[i]->num_neighbours;
+		// 	neighbours = material_points->MP[i]->neighbours;
+
+
+
+
+		// 	for ( int k = 0 ; k < num_neighbours; k++){
+
+		// 		int index = neighbours->ive[k];
+
+		// 		// Find vectors dX_n and dX_n_1
+		// 		double delta_x_n[2] = {XI_n->me[index][0] - Xp_n,XI_n->me[index][1] - Yp_n};
+		// 		double delta_x_n_1[2] = {XI_n_1->me[index][0] - Xp_n_1,XI_n_1->me[index][1] - Yp_n_1};
+
+		// 		// Find error in displacement 
+		// 		double x_tilde[2] = {material_points->MP[i]->inc_F->me[0][0]*(delta_x_n[0])
+		// 			+ material_points->MP[i]->inc_F->me[0][1]*(delta_x_n[1]),
+		// 			material_points->MP[i]->inc_F->me[1][0]*delta_x_n[0]
+		// 			+ material_points->MP[i]->inc_F->me[1][1]*delta_x_n[1]};
+
+		// 		double norm_x = sqrt(pow(delta_x_n[0],2) + pow(delta_x_n[1],2));
+		// 		double e_x  = (delta_x_n_1[0] - x_tilde[0])/norm_x;
+		// 		double e_y =  (delta_x_n_1[1] - x_tilde[1])/norm_x ;
+		
+		// 		// assemble forces 
+		// 		RPEN[ID]->ve[2*index] += epsilon_penalty*material_points->MP[i]->shape_function->phi->ve[k]*e_x;
+		// 		RPEN[ID]->ve[2*index+1] += epsilon_penalty*material_points->MP[i]->shape_function->phi->ve[k]*e_y;
+
+		// 	}
+
+
+
+
+		// } //end of loop over points
+		
+
+		// #pragma omp critical
+		// {
+		// 	__add__(RPEN[ID]->ve, R_pen->ve,R_pen->ve, num_dof);
+		// 	__add__(FINT[ID]->ve, Fint_n_1->ve,Fint_n_1->ve, num_dof);
+		// }
+
+
+		// } // end of paralell region
 
 
 		/*  Balance of forces */
@@ -936,8 +1009,8 @@ int main(int argc, char** argv) {
 
 
 		// used for updated rotuine
-		v_zero(nodal_mass);
-		v_copy(d_n_1,D_N);
+		__zero__(nodal_mass->ve,numnodes);
+		//v_copy(d_n_1,D_N);
 
 
 	
@@ -1018,3 +1091,153 @@ int main(int argc, char** argv) {
 	/*  Program exit */
 	exit(0);
 }
+
+
+
+	// #pragma omp parallel num_threads(NUMBER_OF_THREADS) 
+	// 	{
+	// 	// Internal forces
+	// 	int ID = omp_get_thread_num();
+	// 	IVEC * mat_points = material_point_groups[ID];
+	// 	double P11,P12,P13,P21,P22,P23,P31,P32,P33;
+
+	// 	MAT * F ;
+	// 	MAT * Fdot;
+	// 	VEC * stressVoigt ;
+	// 	MAT * B ;
+	// 	IVEC * neighbours;
+	// 	MAT * F_r;
+	// 	VEC * fInt;
+	// 	double Xp_n, Xp_n_1, Yp_n, Yp_n_1;
+	// 	int i = 0;
+
+	// 	#pragma omp critical
+	// 		__add__(NODAL_MASS[ID]->ve, nodal_mass->ve,nodal_mass->ve, numnodes);
+		
+
+
+	// 	__zero__(FINT[ID]->ve,num_dof);
+	// 	__zero__(NODAL_MASS[ID]->ve,numnodes);
+	// 	__zero__(RPEN[ID]->ve,num_dof);
+
+
+		
+	// 	//#pragma omp for nowait schedule(dynamic,4)
+	// 	for ( int k = 0 ; k < mat_points->max_dim; k++)
+	// 	{
+
+	// 		i = mat_points->ive[k];
+
+	// 		F = material_points->MP[i]->stateNew->F;
+	// 		Fdot = material_points->MP[i]->stateNew->Fdot;
+	// 		B = material_points->MP[i]->B;
+	// 		neighbours = material_points->MP[i]->neighbours;
+	// 		F_r = material_points->MP[i]->F_n;
+	// 		stressVoigt = material_points->MP[i]->stressVoigt;
+	// 		fInt = material_points->MP[i]->fInt;
+	// 		int num_neighbours = material_points->MP[i]->num_neighbours;
+
+
+	// 		// Compute incremental deformation gradient
+	// 		defgrad_m(material_points->MP[i]->inc_F, B, neighbours, num_neighbours, inc_disp);
+			
+
+	// 		// compute total deformation gradient 
+	// 		m_mlt(material_points->MP[i]->inc_F,
+	// 			material_points->MP[i]->F_n,material_points->MP[i]->stateNew->F);
+	
+	
+	// 		// Integration factor
+	// 		double intFactor = material_points->MP[i]->volume*
+	// 		material_points->MP[i]->INTEGRATION_FACTOR;
+
+
+	// 		// Material law 
+	// 		mooneyRivlin(stressVoigt,material_points->MP[i]->stateNew,materialParameters);
+	// 		__zero__(fInt->ve,fInt->max_dim);
+
+
+	// 		// push forward piola kirchoff stress to Omega_n configuration
+	// 		sv_mlt(1.00/material_points->MP[i]->Jn,stressVoigt,stressVoigt);
+
+	// 		P11 = stressVoigt->ve[0];
+	// 		P22 = stressVoigt->ve[1];
+	// 		P12 = stressVoigt->ve[2];
+	// 		P21 = stressVoigt->ve[3];
+
+	// 		stressVoigt->ve[0] = P11*F_r->me[0][0] + P12*F_r->me[0][1];
+	// 		stressVoigt->ve[1] = P21*F_r->me[1][0] + P22*F_r->me[1][1];
+	// 		stressVoigt->ve[2] = P11*F_r->me[1][0] + P12*F_r->me[1][1];
+	// 		stressVoigt->ve[3] = P21*F_r->me[0][0] + P22*F_r->me[0][1];
+
+
+	// 		vm_mlt(B,stressVoigt,fInt);
+
+
+
+	// 		// Assemble internal force vector
+	// 		for ( int k = 0 ; k < num_neighbours; k++){
+
+	// 			int index = neighbours->ive[k];
+
+	// 			FINT[ID]->ve[2*index] += intFactor * fInt->ve[2*k];
+	// 			FINT[ID]->ve[2*index + 1] += intFactor *fInt->ve[2*k+1];
+
+
+	// 		}
+
+
+	// 		material_points->MP[i] = update_material_point(material_points->MP[i], cells,
+	// 		 	XI_n_1, NODAL_MASS[ID]);
+
+	// 		// Find error in displacment field
+	// 		Xp_n_1 = material_points->MP[i]->coords_n_1[0];
+	// 		Xp_n = material_points->MP[i]->coords_n[0];
+	// 		Yp_n_1 = material_points->MP[i]->coords_n_1[1];
+	// 		Yp_n = material_points->MP[i]->coords_n[1];
+
+
+	// 		num_neighbours = material_points->MP[i]->num_neighbours;
+	// 		neighbours = material_points->MP[i]->neighbours;
+
+
+
+
+	// 		for ( int k = 0 ; k < num_neighbours; k++){
+
+	// 			int index = neighbours->ive[k];
+
+	// 			// Find vectors dX_n and dX_n_1
+	// 			double delta_x_n[2] = {XI_n->me[index][0] - Xp_n,XI_n->me[index][1] - Yp_n};
+	// 			double delta_x_n_1[2] = {XI_n_1->me[index][0] - Xp_n_1,XI_n_1->me[index][1] - Yp_n_1};
+
+	// 			// Find error in displacement 
+	// 			double x_tilde[2] = {material_points->MP[i]->inc_F->me[0][0]*(delta_x_n[0])
+	// 				+ material_points->MP[i]->inc_F->me[0][1]*(delta_x_n[1]),
+	// 				material_points->MP[i]->inc_F->me[1][0]*delta_x_n[0]
+	// 				+ material_points->MP[i]->inc_F->me[1][1]*delta_x_n[1]};
+
+	// 			double norm_x = sqrt(pow(delta_x_n[0],2) + pow(delta_x_n[1],2));
+	// 			double e_x  = (delta_x_n_1[0] - x_tilde[0])/norm_x;
+	// 			double e_y =  (delta_x_n_1[1] - x_tilde[1])/norm_x ;
+		
+	// 			// assemble forces 
+	// 			RPEN[ID]->ve[2*index] += epsilon_penalty*material_points->MP[i]->shape_function->phi->ve[k]*e_x;
+	// 			RPEN[ID]->ve[2*index+1] += epsilon_penalty*material_points->MP[i]->shape_function->phi->ve[k]*e_y;
+
+	// 		}
+
+
+
+
+	// 	} //end of loop over points
+		
+
+	// 	#pragma omp critical
+	// 	{
+	// 		__add__(RPEN[ID]->ve, R_pen->ve,R_pen->ve, num_dof);
+	// 		__add__(FINT[ID]->ve, Fint_n_1->ve,Fint_n_1->ve, num_dof);
+	// 	}
+
+
+	// 	} // end of paralell region
