@@ -1,9 +1,13 @@
 
 #include "internal_force_mooney.h"
+#include "Deformation/velocity_grad.h"
 
 
+static double epsilon_penalty = -20000;
 
-static double epsilon_penalty = -5000;
+static double mu = 4000;
+static double lambda = 1e5;
+static double rho = 1000e-9;
 
 
 
@@ -37,15 +41,20 @@ void internal_force_mooney(void *threadarg)
 	MATERIAL_POINTS * material_points = internal_force_struct->material_points;
 	MAT * XI_n = internal_force_struct->XI_n;
 	MAT * XI_n_1 = internal_force_struct->XI_n_1;
-
+	double dt = internal_force_struct->dt;
 
 	__zero__(FINT->ve,FINT->max_dim);
 	__zero__(NODAL_MASS->ve,NODAL_MASS->max_dim);
 	__zero__(RPEN->ve,RPEN->max_dim);
 
+	state_variables * stateNew;
+	state_variables * stateOld;
 
 	for ( int k = 0 ; k < mat_points->max_dim; k++)
 	{
+
+		stateNew = material_points->MP[i]->stateNew;
+		stateOld = material_points->MP[i]->stateOld;
 
 		i = mat_points->ive[k];
 		F = material_points->MP[i]->stateNew->F;
@@ -66,6 +75,43 @@ void internal_force_mooney(void *threadarg)
 		m_mlt(material_points->MP[i]->inc_F,
 			material_points->MP[i]->F_n,material_points->MP[i]->stateNew->F);
 	
+
+		// // Find Fdot
+		// m_sub(material_points->MP[i]->stateNew->F,material_points->MP[i]->stateOld->F,
+		// 	material_points->MP[i]->stateNew->m_temp1);
+		// sm_mlt(1.00/dt,material_points->MP[i]->stateNew->m_temp1,material_points->MP[i]->stateNew->Fdot);
+		// Find L
+		// m_mlt(stateNew->invF,stateNew->Fdot,stateNew->L);
+		
+		// velocity_grad(stateNew, stateOld, dt,0.5);
+		// m_inverse_small(stateNew->F,stateNew->invF);
+		// stateNew->Jacobian = determinant(stateNew->F);
+
+
+		// double div_v = stateNew->div_v;
+
+
+		// double b1 = 0.06;
+		// double b2 = 1.44;
+
+		// double Le = sqrt(material_points->MP[i]->volume);
+		// //Le = 2;
+		// double c = sqrt(((lambda+2*mu)/rho));
+		// double P_b1 = 0;
+
+		// P_b1 = b1*div_v*rho*Le*c;
+		// double P_b2 = 0;
+		// if ( div_v < 0 ){
+		// 	P_b2 = Le*rho*(b2*b2*Le*div_v*div_v) ;
+		// }
+
+		// double P11_hydr = (stateNew->Jacobian)*(P_b1 + P_b2)*stateNew->invF->me[0][0];
+		// double P22_hydr = (stateNew->Jacobian)*(P_b1 + P_b2)*stateNew->invF->me[1][1];
+		// // Compute 
+
+
+		double P11_hydr = 0;
+		double P22_hydr = 0;
 	
 		// Integration factor
 		double intFactor = material_points->MP[i]->volume*
@@ -82,8 +128,8 @@ void internal_force_mooney(void *threadarg)
 		// push forward piola kirchoff stress to Omega_n configuration
 		sv_mlt(1.00/material_points->MP[i]->Jn,stressVoigt,stressVoigt);
 
-		P11 = stressVoigt->ve[0];
-		P22 = stressVoigt->ve[1];
+		P11 = stressVoigt->ve[0]+P11_hydr;
+		P22 = stressVoigt->ve[1]+P22_hydr;
 		P12 = stressVoigt->ve[2];
 		P21 = stressVoigt->ve[3];
 

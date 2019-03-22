@@ -4,7 +4,7 @@
 #include "ShapeFunction/mls_shapefunction_materialpoint.h"
 #include "Integration/DomainMaterialPoint.h"
 #ifndef QUADRATURE_ORDER
-#define QUADRATURE_ORDER 2
+#define QUADRATURE_ORDER 1
 #endif
 
 
@@ -299,7 +299,6 @@ MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, CELLS * grid, MAT * 
 
 
 
-	/*DEFORMATION GRADIENTS(THIS BIT NEEDS DOING NEXT) */ 
 	// // Store F_n at each material point 
 	MP->F_n = m_copy(MP->stateNew->F,MP->F_n);
 	MP->Jn = determinant(MP->F_n);

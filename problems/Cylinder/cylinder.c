@@ -56,7 +56,7 @@ const double dmax =2;
 const double dmax_x = 1.5;
 const double dmax_y = 1.5;
 double tMax = 0.2;
-static double epsilon_penalty = -5000;//-1e5; 
+static double epsilon_penalty = -100000;//-1e5; 
 double deltaT = 5e-7;
 
 
@@ -81,7 +81,7 @@ char * integration_type = "TRIANGLE";
 const double rho = 1000e-9;
 
 
-#define NUMBER_OF_THREADS 3
+#define NUMBER_OF_THREADS 4
 
 
 int main(int argc, char** argv) {
@@ -406,7 +406,6 @@ int main(int argc, char** argv) {
 		material_points = create_material_points(tri, 
 			is_AXI, dim, integration_type, material_type,  cells, rho, beta,  &mfree);
 		
-
 		// Write material points to file
 		write_material_points("materialpoints.csv", material_points);
 
@@ -465,8 +464,8 @@ int main(int argc, char** argv) {
 
 
 	int count1 = 0;
-	eb1->nodes = iv_get(5);
-	eb2->nodes = iv_get(5);
+	eb1->nodes = iv_get(4);
+	eb2->nodes = iv_get(4);
 	int count = 0;
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
@@ -696,6 +695,7 @@ int main(int argc, char** argv) {
 		INTERNAL_FORCE_ARGS[i].XI_n = XI_n;
 		INTERNAL_FORCE_ARGS[i].XI_n_1 = XI_n_1;
 		INTERNAL_FORCE_ARGS[i].cells = cells;
+		INTERNAL_FORCE_ARGS[i].dt = deltaT;
 
 
 	}
@@ -715,8 +715,8 @@ int main(int argc, char** argv) {
 
 	threadpool thpool = thpool_init(NUMBER_OF_THREADS);
 
-	//while ( t_n < tMax){
-	while ( t_n < 0.01){
+	while ( t_n < tMax){
+	//while ( t_n < 0.01){
 
 
 

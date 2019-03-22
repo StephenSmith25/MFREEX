@@ -24,7 +24,7 @@ typedef struct internal_force_args
 	CELLS * cells;
 	MAT * XI_n;
 	MAT * XI_n_1;
-
+	double dt;
 	
 }internal_force_args;
 
