@@ -107,9 +107,7 @@ MAT * BMAT(MAT * Bmat, shape_function * basis_functions, int dim, int is_axi, do
 					Bmat->me[4][2*i] += basis_functions->dphi->me[i][0];
 				}else{
 					Bmat->me[4][2*i] += basis_functions->phi->ve[i]/r;
-
 				}
-				//Bmat->me[4][2*i] += phi_der->me[i][2];
 			}
 
 		}else if ( dim == 3){

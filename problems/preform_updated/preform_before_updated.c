@@ -31,35 +31,34 @@
 #include "PostProcess/saveDisp.h"
 #include "input/read_input_points.h"
 
-char * MATERIAL_NAME = "BUCKLEY";
+char * MATERIAL = "BUCKLEY";
 const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
 // time step parameters
-const double TMAX = 1;
+const double TMAX = 0.4;
 double delta_t = 5e-7;
 
 // Meshfree parameters
 const double dmax = 3;
-const double dmax_x =2;
-const double dmax_y =2;
-double beta = 1.1;
+const double dmax_x =3;
+const double dmax_y =1.5;
 
 
 
 char * basis_type = "linear";
-char * weight = "quartic";
-char * kernel_shape = "radial";
+char * weight = "cubic";
+char * kernel_shape = "rectangular";
 
 
 const int is_stabalised = 0;
 const int is_constant_support_size = 1;
 
 // stretch rod
-const double DISP_ROD_MAX = 90; // 132;
+const double DISP_ROD_MAX = 132 ; // 132;
 
 // 
-const int WITH_MOULD = 1;
+const int WITH_MOULD = 0;
 
 const int WRITE_FREQ = 250;
 
@@ -101,25 +100,25 @@ int main(int argc, char** argv) {
 	matParams->ve[15] = 1.8098e17;// Ns_c
 	matParams->ve[16] = 1.38e-17;// boltzmann constant kB
 	// slippage
-	matParams->ve[17] = 100;// lambdaCrit
-	matParams->ve[18] = 383.15;// Ts 
-	matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
-	matParams->ve[20] = 10612;// Cs 10612
-	matParams->ve[21] = 95.48;// Tinf 95.48
-	matParams->ve[22] = 0.1565;// C1
-	matParams->ve[23] = 39.937;// C2
-	matParams->ve[24] = 0.9878;// beta
-	matParams->ve[25] = 0.33;// poissons ratio
-
 	// matParams->ve[17] = 100;// lambdaCrit
 	// matParams->ve[18] = 383.15;// Ts 
-	// matParams->ve[19] = 0.359e6;// gamma0_ref = 0.653
-	// matParams->ve[20] = 7307.8;// Cs 10612
-	// matParams->ve[21] = 152.95;// Tinf 95.48
+	// matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
+	// matParams->ve[20] = 10612;// Cs 10612
+	// matParams->ve[21] = 95.48;// Tinf 95.48
 	// matParams->ve[22] = 0.1565;// C1
 	// matParams->ve[23] = 39.937;// C2
 	// matParams->ve[24] = 0.9878;// beta
 	// matParams->ve[25] = 0.33;// poissons ratio
+
+	matParams->ve[17] = 100;// lambdaCrit
+	matParams->ve[18] = 383.15;// Ts 
+	matParams->ve[19] = 0.359e6;// gamma0_ref = 0.653
+	matParams->ve[20] = 7307.8;// Cs 10612
+	matParams->ve[21] = 152.95;// Tinf 95.48
+	matParams->ve[22] = 0.1565;// C1
+	matParams->ve[23] = 39.937;// C2
+	matParams->ve[24] = 0.9878;// beta
+	matParams->ve[25] = 0.33;// poissons ratio
 
 
 	
@@ -142,8 +141,6 @@ int main(int argc, char** argv) {
 	double P0 = 0;
 	double tLine = 304.724;
 	double pLine = 0.8; // 0.6 Mpa;
-	double pLine_FINAL = 3;
-	double aReduced_final = 0.001;
 	double molarMass = 29;
 	double Rg = 8.314;
 	double rLine = Rg/molarMass;
@@ -177,7 +174,7 @@ int main(int argc, char** argv) {
 		double theta = -PI/2.00 + (PI/2/(numPointsRod-1))*i;
 		srNodes->me[i][0] = stretchRodRad*cos(theta);
 		// either 10.3 or 9
-		srNodes->me[i][1] =10.3+stretchRodRad*sin(theta);
+		srNodes->me[i][1] =9+stretchRodRad*sin(theta);
 		srNodes_O->me[i][0] = srNodes->me[i][0];
 		srNodes_O->me[i][1] = srNodes->me[i][1];
 	}
@@ -298,7 +295,7 @@ int main(int argc, char** argv) {
 	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI,
 		.weight_function = weight, .kernel_shape = kernel_shape, 
 		.basis_type = basis_type,.is_constant_support_size = is_constant_support_size,
-		.dmax_radial = dmax, .dmax_tensor = dmax_tensor, .beta=beta};
+		.dmax_radial = dmax, .dmax_tensor = dmax_tensor};
 	
 	setDomain(&mfree);
 
@@ -315,12 +312,6 @@ int main(int argc, char** argv) {
 	{
 		for ( int i = 0 ; i < mfree.num_nodes ; i++)
 			fprintf(fp,"%lf,%lf\n",mfree.di_tensor->me[i][0],mfree.di_tensor->me[i][1]);
-	}else if ( mfree.kernel_support == ELLIPTICAL)
-	{		
-			for ( int i = 0 ; i < mfree.num_nodes ; i++)
-			fprintf(fp,"%lf,%lf,%lf,%lf\n",mfree.MI[i]->me[0][0],mfree.MI[i]->me[0][1],
-				mfree.MI[i]->me[1][0],mfree.MI[i]->me[1][1]);
-
 	}
 	fclose(fp);
 	
@@ -416,8 +407,6 @@ int main(int argc, char** argv) {
 		inv_nodal_mass->ve[i] = 1.00/nodal_mass->ve[i];
 	}
 	printf("total mass = %lf (g) \n", v_sum(nodal_mass)*1000);
-
-	exit(0);
 	
 	/* ------------------------------------------*/
 	/* ------------Boundaries--------------------*/
@@ -546,11 +535,11 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 	/* --------------State storage---------------*/
 	/* ------------------------------------------*/
-	state_variables ** state_n = new_material_states(temperatures, mfree.num_nodes, 
+	state_variables ** state_n = new_material_state(temperatures, mfree.num_nodes, 
 		BUCKLEY_MATERIAL , 
 		PLASTIC_MATERIAL , 
 		dim, is_AXI);
-	state_variables ** state_n_1 = new_material_states(temperatures, mfree.num_nodes, 
+	state_variables ** state_n_1 = new_material_state(temperatures, mfree.num_nodes, 
 		BUCKLEY_MATERIAL , 
 		PLASTIC_MATERIAL , 
 		dim, is_AXI);
@@ -642,7 +631,6 @@ int main(int argc, char** argv) {
 	double pre_n_1 = 0; 
 	double volume = 0;
 	double volume_t = 0;
-	double pLine_n;
 
 	double v_rod = 0;
 
@@ -806,20 +794,12 @@ int main(int argc, char** argv) {
 		volume = cavityVolume(traction_nodes,updatedNodes);
 
 
-		if ( t_n_1 < 0.35)
-		{
-			pLine_n = pLine;
-		}else{
-			pLine_n = pLine + (pLine_FINAL-pLine) * smoothstep(t_n_1, 0.40, 0.350);
-			aReduced = aReduced_final;
-		}
-
 		/*  Find Cavity pressure */
-		pRatio = pre_n/pLine_n;
+		pRatio = pre_n/pLine;
 		if ( pRatio <= 0.528){
 			massAir += chokedMassRate*delta_t;
 		}else{
-			massAir += flowRate(pRatio,tLine,pLine_n*1e6, rLine, aReduced,gammaLine)*delta_t;
+			massAir += flowRate(pRatio,tLine,pLine*1e6, rLine, aReduced,gammaLine)*delta_t;
 		}
 		pre_n_1 = ((P0*(volume - volumeInitial) + 1000*massAir*rLine*tLine)/(volume+vDead));
 
@@ -837,7 +817,7 @@ int main(int argc, char** argv) {
 		internalForce_Inelastic_Buckley(Fint_n_1, _scni_obj,
 		disp_inc, v_n_h,
 		matParams, state_n_1, state_n,
-		mfree.IS_AXI, dim,delta_t,t_n_1, MATERIAL_NAME);
+		mfree.IS_AXI, dim,delta_t,t_n_1, MATERIAL);
 
 
 		/* ------------------------------------------*/

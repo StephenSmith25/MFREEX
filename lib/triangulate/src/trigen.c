@@ -152,11 +152,17 @@ struct triangulateio *  trigen(double ** output_points, int ** boundary, char * 
 
 	}
 	fclose(fp);
+
 	fp = fopen(segsFile,"r");
 	if (fgets(buf,sizeof(buf),fp) != NULL)
 		in->numberofsegments = atoi(buf);
+
+	printf("number of segments = %d \n",in->numberofsegments);
 	in->segmentlist = malloc(2*in->numberofsegments*sizeof(int));
 	in->segmentmarkerlist = malloc(in->numberofsegments*sizeof(int));
+
+
+	printf("got here \n");
 	for ( i = 0 ; i < in->numberofsegments ;i++){
 		if (fgets(buf,sizeof(buf),fp) != NULL)
 			token = strtok(buf,s);
@@ -168,6 +174,8 @@ struct triangulateio *  trigen(double ** output_points, int ** boundary, char * 
 			in->segmentmarkerlist[i] = atoi(token);
 
 	}
+
+	printf("got here \n");
 	in->numberofregions = 0;
 	in->regionlist = (double *) NULL;
 		//holes

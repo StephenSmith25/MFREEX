@@ -14,6 +14,7 @@ OPTION(PROBLEM_TUBE "Compile tube program" OFF)
 OPTION(PROBLEM_CYLINDER "Compile cylinder program" ON)
 OPTION(PROBLEM_TAYLOR_BAR "Compile cylinder program" ON)
 OPTION(PROBLEM_TEST "Compile TEST program" OFF)
+OPTION(PROBLEM_PREFORM_UPDATED "Compile UPDATED PREFORM program" ON)
 
 
 add_subdirectory(lib)
@@ -32,6 +33,9 @@ if(PROBLEM_PREFORM)
 	add_subdirectory(problems/preform)
 endif(PROBLEM_PREFORM)	
 
+if(PROBLEM_PREFORM_UPDATED)
+	add_subdirectory(problems/preform_updated)
+endif(PROBLEM_PREFORM_UPDATED)	
 if(PROBLEM_BIAXIAL)
 	add_subdirectory(problems/Biaxial)
 endif(PROBLEM_BIAXIAL)	

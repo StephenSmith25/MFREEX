@@ -205,7 +205,7 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI_I, int dim,
 
 
 			// generate BMAT 
-			MPS[i]->B = BMAT(MNULL,MPS[i]->shape_function,dim,0,-1);
+			MPS[i]->B = BMAT(MNULL,MPS[i]->shape_function,dim,IS_AXI,MPS[i]->coords_n_1[0]);
 
 
 			// Matricies used in internal force calculation

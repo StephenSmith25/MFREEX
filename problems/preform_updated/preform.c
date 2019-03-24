@@ -30,8 +30,8 @@
 #include "Integration/SCNI/scni_update_B.h"
 #include "PostProcess/saveDisp.h"
 #include "input/read_input_points.h"
+#include "Integration/mass_matrix.h"
 
-char * MATERIAL_NAME = "BUCKLEY";
 const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
@@ -48,18 +48,25 @@ double beta = 1.1;
 
 
 char * basis_type = "linear";
-char * weight = "quartic";
+char * weight = "cubic";
 char * kernel_shape = "radial";
 
 
 const int is_stabalised = 0;
-const int is_constant_support_size = 1;
+const int constant_support_size = 1;
 
 // stretch rod
 const double DISP_ROD_MAX = 90; // 132;
 
-// 
-const int WITH_MOULD = 1;
+
+// Material type 
+MATERIAL_TYPE material_type = BUCKLEY;
+char * integration_type = "TRIANGLE";
+
+
+
+
+const int WITH_MOULD = 0;
 
 const int WRITE_FREQ = 250;
 
@@ -223,25 +230,22 @@ int main(int argc, char** argv) {
 	/*////////////////////////////////////////////////////////// */
 
 
+	// CREATE POINTS BASED ON DELAUNAY TRIANGULATION
 
-	/*  Create points 
-	 *
-	 *	Via a 2D triangulation 
-	 *
-	 *  */
-	// Read PLSG 
 
+	char opt[20] = "p";
 	char fileName[30] = "preform";
 	double * points_out ;
-	int * boundaryNodes = NULL;
-	int numBoundary = 0;
+	int * boundaryNodes;
+	int numBoundary;
 	int * nodalMarkers;
-	int  numnodes = 0;;
+	int  numnodes;
 	double * temperatures;
 
-	read_input_points(fileName,&points_out, &boundaryNodes, &nodalMarkers, &temperatures,&numnodes, &numBoundary);
 
-
+	// TRIANGULATION
+	struct triangulateio * tri = trigen(&points_out,&boundaryNodes,opt,
+		fileName,&numnodes,&numBoundary,&nodalMarkers,&temperatures);	
 
 
 	MAT * xI = m_get(numnodes,dim);
@@ -252,7 +256,7 @@ int main(int argc, char** argv) {
 		xI->me[i][1] = points_out[2*i+1];
 
 	}
-	m_foutput(stdout, xI);
+
 	fp = fopen("boundary.txt","w");
 	for (int i = 0; i < numBoundary; ++i)
 	{
@@ -262,24 +266,55 @@ int main(int argc, char** argv) {
 	fclose(fp);
 
 
-	
-	struct timeval start, end;
-	// generate clipped voronoi diagram
-	gettimeofday(&start, NULL);
-	voronoi_diagram * vor = NULL;
-	vor = generate_voronoi(xI->base, boundaryNodes, xI->m, numBoundary, 2);
- 	// get time took to run
-	gettimeofday(&end, NULL);
-	double delta = ((end.tv_sec  - start.tv_sec) * 1000000u + 
-         end.tv_usec - start.tv_usec) / 1.e6;
+	fp = fopen("nodes.csv","w");
+	for ( int i =0 ; i < numnodes ; i++)
+	{
+		for ( int k = 0 ; k < dim ; k++)
+		{
+			fprintf(fp, "%lf",xI->me[i][k]);
 
-	// get time taken to run
-	printf("voronoi took %lf seconds to run\n", delta);
+			if ( k < dim - 1)
+			{
+				fprintf(fp,",");
+			}
 
-	// Print voronoi diagram to file 
-	fp = fopen("cells.txt","w");
-	print_voronoi_diagram(fp,vor);
+		}
+		fprintf(fp, "\n");
+	}
 	fclose(fp);
+
+
+	// CREATE NODES
+	// 
+	BOUNDING_BOX * bounding_box = create_bounding_box(0, 15,
+	-10,100 , 0, 0);
+
+	double cell_size[2] = {2,2};
+
+	MAT * xI_copy = m_copy(xI,MNULL);
+	CELLS * cells = create_cells(bounding_box, cell_size, dim, xI_copy);
+	NODELIST * nodelist;
+
+	fp = fopen("search_cells.csv","w");
+	for ( int i = 0 ; i < cells->ny ; i++)
+	{
+
+		for ( int j = 0 ; j < cells->nx ; j++)
+		{
+
+		fprintf(fp,"%lf,%lf,%lf,%lf\n",cells->cells[i][j].x[0],cells->cells[i][j].x[1],
+			cells->cells[i][j].y[0],cells->cells[i][j].y[1]);
+		
+		}
+
+	}
+
+	fclose(fp);
+
+	int num_active_cells = 0;
+	active_cell * active_cells = get_active_cells(cells, &num_active_cells);
+	write_active_cells("active_cells.csv",active_cells);
+
 
 
 
@@ -287,143 +322,96 @@ int main(int argc, char** argv) {
 	/* ------------Meshfree Domain---------------*/
 	/* ------------------------------------------*/
 
-	// shape function parameters
 	VEC * dI = v_get(xI->m);
-
 	double dmax_tensor[dim];
+
 	dmax_tensor[0] = dmax_x;
 	dmax_tensor[1] = dmax_y;
 
 	// meshfree domain
 	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI,
 		.weight_function = weight, .kernel_shape = kernel_shape, 
-		.basis_type = basis_type,.is_constant_support_size = is_constant_support_size,
-		.dmax_radial = dmax, .dmax_tensor = dmax_tensor, .beta=beta};
+		.basis_type = basis_type,.is_constant_support_size = constant_support_size,
+		.dmax_radial = dmax, .dmax_tensor = dmax_tensor};
 	
 	setDomain(&mfree);
 
 
 
+	/* ---------------------------------------------------------------------------*/
+	/* ---------------CREATE THE MATERIAL ( INTEGRATION) POINTS-------------------*/
+	/* ---------------------------------------------------------------------------*/
 
-	fp = fopen("domains.txt","w");
-	if ( mfree.kernel_support == RADIAL)
+	voronoi_diagram * vor = NULL;
+	MATERIAL_POINTS * material_points = NULL;
+
+	if ( strcmp ( integration_type, "SCNI") == 0)
 	{
-		for ( int i = 0 ; i < mfree.num_nodes ; i++)
-			fprintf(fp,"%lf\n",mfree.di->ve[i]);
 
-	}else if ( mfree.kernel_support == RECTANGULAR)
-	{
-		for ( int i = 0 ; i < mfree.num_nodes ; i++)
-			fprintf(fp,"%lf,%lf\n",mfree.di_tensor->me[i][0],mfree.di_tensor->me[i][1]);
-	}else if ( mfree.kernel_support == ELLIPTICAL)
-	{		
-			for ( int i = 0 ; i < mfree.num_nodes ; i++)
-			fprintf(fp,"%lf,%lf,%lf,%lf\n",mfree.MI[i]->me[0][0],mfree.MI[i]->me[0][1],
-				mfree.MI[i]->me[1][0],mfree.MI[i]->me[1][1]);
+		// generate clipped voronoi diagram
+		vor = generate_voronoi(xI->base, boundaryNodes, xI->m, numBoundary, 2);
+		
 
-	}
-	fclose(fp);
+		material_points = create_material_points(vor, 
+			is_AXI, dim, integration_type, material_type, cells, rho, beta,&mfree);
+		
+
+		// Write material points to file
+		write_material_points("materialpoints.csv", material_points);
+
+		// Print voronoi diagram to file 
+		fp = fopen("cells.txt","w");
+		print_voronoi_diagram(fp,vor);
+		fclose(fp);
 	
-	/* ------------------------------------------*/
-	/* ------------------SCNI--------------------*/
-	/* ------------------------------------------*/
-
-	SCNI_OBJ * _scni_obj = NULL;
-	MSCNI_OBJ * _mscni_obj = NULL;
-
-	struct timeval start2, end2;
-	gettimeofday(&start2, NULL);
-	// set up return container
-	// generate shape functions at sample points 
-	_scni_obj = generate_scni(vor, NULL , is_stabalised, is_AXI, dim, &mfree);
-	gettimeofday(&end2, NULL);
-	delta = ((end2.tv_sec  - start2.tv_sec) * 1000000u + 
-         end2.tv_usec - start2.tv_usec) / 1.e6;
-	printf("scni function took %lf seconds to run\n", delta);
-
-	// Test divergence free condition
-	IVEC * index ;
-	MAT * B; 
-	MAT * check_B = m_get(dim*dim,2);
-	printf("checking scni \n \n");
-	int checkPoint = 33;
-
-	m_foutput(stdout,_scni_obj->scni[checkPoint]->B);
-	iv_foutput(stdout, _scni_obj->scni[checkPoint]->sfIndex);
-
-	printf("checking divergence free condition at point %d\n", checkPoint);
-	printf("with coordinates %lf %lf\n", mfree.nodes->me[checkPoint][0], mfree.nodes->me[checkPoint][1]);
-	printf("cell area = %lf \n", _scni_obj->scni[checkPoint]->area);
-	printf("and neighbours \n");
-	for ( int i = 0 ; i < _scni_obj->num_points ; i++)
+	}else if ( strcmp(integration_type, "TRIANGLE") == 0)
 	{
-		index = _scni_obj->scni[i]->sfIndex;
-		B = _scni_obj->scni[i]->B;
 
-		for (int k = 0 ; k < index->max_dim ; k++){
-			int indx = index->ive[k];
+		material_points = create_material_points(tri, 
+			is_AXI, dim, integration_type, material_type,  cells, rho, beta,  &mfree);
+		
+		// Write material points to file
+		write_material_points("materialpoints.csv", material_points);
 
-			if ( indx == checkPoint)
-			{
-				check_B->me[0][0] += B->me[0][2*k]*_scni_obj->scni[i]->area;
-				check_B->me[1][1] += B->me[1][2*k+1]*_scni_obj->scni[i]->area;
-				check_B->me[2][0] += B->me[2][2*k]*_scni_obj->scni[i]->area;
-				check_B->me[3][1] += B->me[3][2*k+1]*_scni_obj->scni[i]->area;
-			}
+		double * tri_points = tri->pointlist;
+		int * triangles = tri->trianglelist;
+		int number_of_triangles = tri->numberoftriangles;
+
+
+		fp = fopen("triangles.csv","w");
+		for ( int i = 0 ; i < number_of_triangles ; i++)
+		{
+			fprintf(fp,"%d,%d,%d\n",triangles[3*i],triangles[3*i+1],triangles[3*i+2]);
 		}
+		fclose(fp);
+
 	}
-	// m_foutput(stdout, check_B);
 
 
-	// m_foutput(stdout,_scni_obj->scni[checkPoint]->B);
-	// iv_foutput(stdout, _scni_obj->scni[checkPoint]->sfIndex);
 	
 
-
-	/* ------------------------------------------*/
-	/* ----------------Mass Vector---------------*/
-	/* ------------------------------------------*/
-	VEC * phi;
+	/* --------------------------------------------*/
+	/* ----------------LUMPED MASSES---------------*/
+	/* --------------------------------------------*/
+	VEC * nodal_mass = mass_vector(material_points, &mfree);
 	IVEC * neighbours;
-	VEC * nodal_mass = v_get(mfree.num_nodes);
+	VEC * phi;
+
 	VEC * inv_nodal_mass = v_get(mfree.num_nodes);
-	// get shape function and contact nodes
-	shape_function_container * phi_nodes = mls_shapefunction(mfree.nodes, 1, &mfree);
 
-	for ( int i = 0 ; i < mfree.num_nodes ; i++)
-	{
-		phi = phi_nodes->sf_list[i]->phi;
-		neighbours = phi_nodes->sf_list[i]->neighbours;
-
-		double volume = _scni_obj->scni[i]->area;
-		if ( is_AXI == 1)
-		{
-			double r = _scni_obj->scni[i]->r;
-			volume = volume*r*2*PI;
-		}
-		for ( int k = 0 ; k < neighbours->max_dim ; k++)
-		{
-			int index = neighbours->ive[k];
-			nodal_mass->ve[index] += phi->ve[k]*rho*volume;
-		}
-
-		//nodal_mass->ve[i] = volume*rho;
-		//inv_nodal_mass->ve[i] = 1.000/nodal_mass->ve[i];
-
-	}
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
 		inv_nodal_mass->ve[i] = 1.00/nodal_mass->ve[i];
 	}
-	printf("total mass = %lf (g) \n", v_sum(nodal_mass)*1000);
 
-	exit(0);
-	
+	printf("total mass = %lf \n", v_sum(nodal_mass));
+
+
+
 	/* ------------------------------------------*/
 	/* ------------Boundaries--------------------*/
 	/* ------------------------------------------*/
 
-	m_foutput(stdout, xI);
 
 	// Traction
 	IVEC * traction_nodes ;
@@ -439,7 +427,6 @@ int main(int argc, char** argv) {
 	getBoundary(&eb1->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,5);
 	//iv_addNode(eb1->nodes,traction_nodes->ive[0],'s');
 	//iv_addNode(eb1->nodes,traction_nodes->ive[traction_nodes->max_dim -1  ],'s');
-
 	int num_nodes_eb1 = eb1->nodes->max_dim;
 	setUpBC(eb1,inv_nodal_mass,&mfree);
 	
@@ -480,7 +467,7 @@ int main(int argc, char** argv) {
 
 	IVEC * eb4_nodes ;
 	getBoundary(&eb4_nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,6);
-		iv_addNode(eb4_nodes,eb2->nodes->ive[0],'e');
+	iv_addNode(eb4_nodes,eb2->nodes->ive[0],'e');
 	int num_nodes_eb4 = eb4_nodes->max_dim;
 
 	MAT * contact_mould_nodes_coords = m_get(num_nodes_eb4 ,dim);
@@ -490,11 +477,12 @@ int main(int argc, char** argv) {
 		contact_mould_nodes_coords->me[i][1] = mfree.nodes->me[eb4_nodes->ive[i]][1];
 
 	}
-		// get shape function and contact nodes
+	// get shape function and contact nodes
 	shape_function_container * phi_contact_mould = mls_shapefunction(contact_mould_nodes_coords,  1, &mfree);
 
 	m_foutput(stdout,contact_mould_nodes_coords);
 
+	exit(0);
 
 	/* ------------------------------------------*/
 	/* -----------Transformation matrix----------*/
@@ -834,10 +822,10 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 		__sub__(d_n_1->ve, disp_r->ve,disp_inc->ve, num_dof);
 
-		internalForce_Inelastic_Buckley(Fint_n_1, _scni_obj,
-		disp_inc, v_n_h,
-		matParams, state_n_1, state_n,
-		mfree.IS_AXI, dim,delta_t,t_n_1, MATERIAL_NAME);
+		// internalForce_Inelastic_Buckley(Fint_n_1, _scni_obj,
+		// disp_inc, v_n_h,
+		// matParams, state_n_1, state_n,
+		// mfree.IS_AXI, dim,delta_t,t_n_1, MATERIAL_NAME);
 
 
 		/* ------------------------------------------*/
