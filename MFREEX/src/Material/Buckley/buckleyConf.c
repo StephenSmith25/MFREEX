@@ -74,7 +74,22 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 	m_add(stateOld->ep_n,delta_ep,stateNew->ep_n);
 
 
-	dsyevq3(stateNew->ep_n->me,eigVecB->me,eigValB->ve);
+	dsyevh3(stateNew->ep_n->me,eigVecB->me,eigValB->ve);
+	for ( int i = 0 ; i < 3 ; i++)
+	{	double x = eigValB->ve[i];
+
+		if (isnan((x)))
+		{
+			m_foutput(stdout, stateNew->ep_n);
+			m_foutput(stdout, Ds);
+
+
+			//m_foutput(stdout, stateNew->ep_n);
+			//m_foutput(stdout, stateNew->ep_n);
+
+			exit(0);
+		}
+	}
 
 	edwardsVilgis(Sc_n_1p,eigValB,para, Jacobian, stateNew->temperature);
 

@@ -59,7 +59,7 @@ const int is_constant_support_size = 1;
 const double DISP_ROD_MAX = 90; // 132;
 
 // 
-const int WITH_MOULD = 1;
+const int WITH_MOULD = 0;
 
 const int WRITE_FREQ = 250;
 
@@ -415,10 +415,7 @@ int main(int argc, char** argv) {
 	{
 		inv_nodal_mass->ve[i] = 1.00/nodal_mass->ve[i];
 	}
-	printf("total mass = %lf (g) \n", v_sum(nodal_mass)*1000);
 
-	exit(0);
-	
 	/* ------------------------------------------*/
 	/* ------------Boundaries--------------------*/
 	/* ------------------------------------------*/
@@ -671,7 +668,7 @@ int main(int argc, char** argv) {
 
 	/*  Explicit Loop */
 	while ( t_n < TMAX)
-	//while ( n < 1)
+	//while ( n < 2)
 	{
 
 		/*  Update time step */
@@ -827,7 +824,7 @@ int main(int argc, char** argv) {
 		update_pressure_boundary(pB, updatedNodes);
 
 		assemble_pressure_load(Fext_n_1, pre_n_1, pB);
-
+		//v_foutput(stdout, Fext_n_1);
 
 		/* ------------------------------------------*/
 		/* ------------Find Internal Force-----------*/

@@ -102,7 +102,7 @@ MAT * BMAT(MAT * Bmat, shape_function * basis_functions, int dim, int is_axi, do
 
 			if ( is_axi == 1)
 			{
-				if ( r < 1e-3 )
+				if ( r < 0.01 )
 				{
 					Bmat->me[4][2*i] += basis_functions->dphi->me[i][0];
 				}else{

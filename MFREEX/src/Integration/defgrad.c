@@ -120,11 +120,11 @@ void defgrad_m(MAT * f, MAT * B, IVEC * neighbours, int num_neighbours, VEC * di
 
 		if ( B->m == 5)
 		{
-			f->me[0][0]+= B->me[0][2*i]*disp->ve[2*indx];
+			f->me[0][0] += B->me[0][2*i]*disp->ve[2*indx];
 			f->me[1][1] += B->me[1][2*i+1]*disp->ve[2*indx+1];
-			f->me[0][1]+= B->me[2][2*i]*disp->ve[2*indx];
-			f->me[1][0]+= B->me[3][2*i+1]*disp->ve[2*indx+1];
-			f->me[2][2]+= B->me[4][2*i]*disp->ve[2*indx];
+			f->me[0][1] += B->me[2][2*i]*disp->ve[2*indx];
+			f->me[1][0] += B->me[3][2*i+1]*disp->ve[2*indx+1];
+			f->me[2][2] += B->me[4][2*i]*disp->ve[2*indx];
 
 		}
 

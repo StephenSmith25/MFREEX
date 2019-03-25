@@ -29,6 +29,7 @@ double gammaV(state_variables * state, double maxLambdaN,double critLambda,
 
 	double starT = para->ve[18];
 	double refGamma = para->ve[19];
+
 	double Cs = para->ve[20];
 	double Tinf = para->ve[21];
 	double shiftTSlope = para->ve[22];
@@ -38,7 +39,6 @@ double gammaV(state_variables * state, double maxLambdaN,double critLambda,
 	int indx = 0;
 	double temperature = state->temperature;
 	MAT * Dbar = state->dbar;
-
 
 	double gamma_n = state->gamma;
 	// initialise gamma 
@@ -104,15 +104,12 @@ double gammaV(state_variables * state, double maxLambdaN,double critLambda,
 	gamma0 = exp( Cs/(shiftTemperature - Tinf) - Cs/(starT - Tinf));
 	gamma0 = gamma0*refGamma;
 
-
 	if ( maxLambdaN >= critLambda ){
 		gamma_n_1 = 1e50;
 	}else{
 		gamma_n_1 = gamma0/( 1 - maxLambdaN/critLambda);
 	}
 
-
-	
 	state->gamma = gamma_n_1; 
 
 	

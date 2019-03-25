@@ -14,6 +14,7 @@ include_directories(${util_SOURCE_DIR}/include)
 include_directories(${GPC_SOURCE_DIR})
 include_directories(${MFREEX_SOURCE_DIR}/MFREEX/include)
 include_directories(${triangulate_SOURCE_DIR}/include)
+include_directories(${thread_pool_SOURCE_DIR})
 
 
 link_directories(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
@@ -34,12 +35,12 @@ endif()
 
 find_package (Threads)
 
-SET(GCC_COVERAGE_COMPILE_FLAGS "-O3 -g -std=c99")
+SET(GCC_COVERAGE_COMPILE_FLAGS "-O3 -g -std=c99  -pthread -lpthread")
 add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
 
 add_executable(preform_alt preform.c)
-target_link_libraries(preform_alt CVLIB MFREEX Eigen EFSFLIB util triangulate meschach m gpc)
+target_link_libraries(preform_alt thread_pool CVLIB MFREEX Eigen EFSFLIB util triangulate meschach m gpc)
 
 
 # copy input files to location

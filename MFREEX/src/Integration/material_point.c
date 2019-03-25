@@ -38,9 +38,15 @@ static inline MATERIAL_POINT * create_material_point(double coords[3], double vo
 }
 
 
-MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI_I, int dim, 
-	char * integration_type, MATERIAL_TYPE material_type, 
-	CELLS * grid, double rho,  double beta, meshfreeDomain * mfree)
+MATERIAL_POINTS * create_material_points(void * cells, 
+	int IS_AXI_I, 
+	int dim, 
+	char * integration_type,
+	MATERIAL_TYPE material_type, 
+	CELLS * grid, 
+	double rho,  
+	double beta, 
+	meshfreeDomain * mfree)
 
 {
 
@@ -103,15 +109,19 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI_I, int dim,
 			// deformation gradients
 			MPS[i]->inc_F = m_get(dim_s,dim_s);
 			MPS[i]->F_n = _scni_obj->scni[i]->F_r;
-
 			m_ident(MPS[i]->inc_F);
 			m_ident(MPS[i]->F_n);
 
 
+			MPS[i]->temperature = 0; 
 
 
+
+			// Density
 			MPS[i]->rho = rho;
 
+
+			// Stress Voigt
 			MPS[i]->stressVoigt = v_get(dim_p);
 
 			if ( IS_AXI == 1)
@@ -123,9 +133,9 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI_I, int dim,
 			}
 
 
-			MPS[i]->stateOld= new_material_state(0.00, material_type,
+			MPS[i]->stateOld= new_material_state(MPS[i]->temperature, material_type,
 				dim, IS_AXI);
-			MPS[i]->stateNew = new_material_state(0.00, material_type,
+			MPS[i]->stateNew = new_material_state(MPS[i]->temperature, material_type,
 				dim, IS_AXI);
 
 			MPS[i]->Jn = 1.00;
@@ -204,23 +214,35 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI_I, int dim,
 			MPS[i]->shape_function = mls_shapefunction_materialpoint(MPS[i],2,mfree->nodes);
 
 
-			// generate BMAT 
+			// Strain Displacement relationship 
 			MPS[i]->B = BMAT(MNULL,MPS[i]->shape_function,dim,IS_AXI,MPS[i]->coords_n_1[0]);
 
 
 			// Matricies used in internal force calculation
 			MPS[i]->fInt = v_get(dim*MPS[i]->num_neighbours);
 
-			// deformation gradients
+			// Deformation gradient 
 			MPS[i]->F_n = m_get(dim_s,dim_s);
 			MPS[i]->inc_F = m_get(dim_s,dim_s);
 			m_ident(MPS[i]->inc_F);
 			m_ident(MPS[i]->F_n);
-
-
 			MPS[i]->Jn = 1.00;
 
+			// Temperature
+			MPS[i]->temperature = 0;
+
+			for ( int k = 0 ; k < MPS[i]->num_neighbours ; k++)
+			{
+				int index = MPS[i]->neighbours->ive[k];
+				MPS[i]->temperature += MPS[i]->shape_function->phi->ve[k]*mfree->temperatures[index];
+			}
+
+
+
+			// Density
 			MPS[i]->rho = rho;
+
+			// Stress Voigt
 			MPS[i]->stressVoigt = v_get(dim_p);
 
 			MPS[i]->temp = m_get(dim_s,dim_s);
@@ -233,9 +255,12 @@ MATERIAL_POINTS * create_material_points(void * cells, int IS_AXI_I, int dim,
 			}else{
 				MPS[i]->INTEGRATION_FACTOR = 1.00;
 			}
-			MPS[i]->stateOld= new_material_state(0.00, material_type,
+
+
+			// Create material state for eahc material point 
+			MPS[i]->stateOld= new_material_state(MPS[i]->temperature, material_type,
 				dim, IS_AXI);
-			MPS[i]->stateNew = new_material_state(0.00, material_type,
+			MPS[i]->stateNew = new_material_state(MPS[i]->temperature, material_type,
 				dim, IS_AXI);
 
 

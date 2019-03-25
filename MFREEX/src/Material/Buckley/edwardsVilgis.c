@@ -38,7 +38,6 @@ int edwardsVilgis(VEC * stress, VEC * lambda_in, VEC * para, double Jacobian, do
 	lambda3 = lambda3*lambda3;
 
 
-
 	double lambda[3] = {lambda1,lambda2,lambda3};
 
 
@@ -78,6 +77,95 @@ int edwardsVilgis(VEC * stress, VEC * lambda_in, VEC * para, double Jacobian, do
 	}	
 	++call_count;
 
-
 	return 0 ;
 }
+
+	// double alpha = para->ve[13];
+	// double Ns = para->ve[15];
+	// double eta = para->ve[14];
+	// double kB = para->ve[16];
+
+	// double lambda1 = exp(lambda_in->ve[0]);
+	// double lambda2 = exp(lambda_in->ve[1]);
+	// double lambda3 = exp(lambda_in->ve[2]);
+
+
+	// lambda1 = lambda1*lambda1;
+	// lambda2 = lambda2*lambda2;
+	// lambda3 = lambda3*lambda3;
+
+
+
+	// double lambda[3] = {lambda1,lambda2,lambda3};
+
+	// double sigCL = 0;
+	// double sigSL = 0; 
+
+
+
+	// double I1 = lambda[0] + lambda[1] + lambda[2];
+
+
+	// double ta = Ns*kB*temperature;
+	// double tb = 0;
+	// double tc = 1 + eta;
+	// double td = pow(alpha,2);
+	// double te = 1 - td;
+	// double tf = 1- td * I1;
+	// double tg = 1 - 2*td ;
+	// double th = 0;
+
+
+
+
+	// for ( int k = 0 ; k < 3 ; k++){
+	// 	th = th + (lambda[k])/(1+eta*lambda[k]);
+	// }
+
+
+
+	// for ( int k = 0 ; k < 3 ; k++){
+
+
+
+	// 	// sigCL part 
+	// 	double tempa = tg/tf;
+	// 	double tempb = td * te * I1/pow(tf,2);
+	// 	double tempc = lambda[k] * tb;
+	// 	sigCL = tempc * ( tempa + tempb);
+
+
+
+	// 	// sigSL 
+	// 	tempa = lambda[k] * ta;
+
+	// 	tempb = tc*te;
+	// 	tempc = 1 + eta*lambda[k];
+	// 	double tempd = tempb/(tf*pow(tempc,2));
+	// 	double tempe = tempb * td * th / pow(tf,2);
+	// 	double tempf = eta/tempc;
+
+
+	// 	double tempg = td/tf;
+	// 	if ( lambda[k] == 1.00 )
+	// 	{
+	// 		tempa = 0;
+	// 	}
+
+	// 	sigSL = tempa * ( tempd + tempe + tempf - tempg);
+
+	// 	stress->ve[k] = (1/Jacobian)*(sigCL + sigSL) * 1e3;
+
+
+	// }
+
+	// double I1s = (1.000/3.000)*(stress->ve[0] + stress->ve[1] + stress->ve[2]);
+
+	// for ( int k = 0 ; k < 3 ; k++){
+	// 	stress->ve[k] = stress->ve[k] - I1s;
+	// }
+
+
+
+
+	// return 0 ;

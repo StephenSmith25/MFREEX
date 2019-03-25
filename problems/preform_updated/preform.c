@@ -31,16 +31,19 @@
 #include "PostProcess/saveDisp.h"
 #include "input/read_input_points.h"
 #include "Integration/mass_matrix.h"
+#include "thpool.h"
+#include "internal_force_buckley.h"
+
+
 
 const int BUCKLEY_MATERIAL = 1;
-const int PLASTIC_MATERIAL = 0;
 
 // time step parameters
 const double TMAX = 1;
 double delta_t = 5e-7;
 
 // Meshfree parameters
-const double dmax = 3;
+const double dmax = 2;
 const double dmax_x =2;
 const double dmax_y =2;
 double beta = 1.1;
@@ -65,11 +68,15 @@ char * integration_type = "TRIANGLE";
 
 
 
+//#define WITH_MOULD 
+#define WITH_STRETCHROD
+#define NUMBER_OF_THREADS 3
 
-const int WITH_MOULD = 0;
+
+
 
 const int WRITE_FREQ = 250;
-
+const int PRINT_FREQ = 250;
 int main(int argc, char** argv) {
 
 	/*////////////////////////////////////////////////////////// */
@@ -286,10 +293,10 @@ int main(int argc, char** argv) {
 
 	// CREATE NODES
 	// 
-	BOUNDING_BOX * bounding_box = create_bounding_box(0, 15,
-	-10,100 , 0, 0);
+	BOUNDING_BOX * bounding_box = create_bounding_box(-1, 20,
+	-10, 100 , 0, 0);
 
-	double cell_size[2] = {2,2};
+	double cell_size[2] = {10,10};
 
 	MAT * xI_copy = m_copy(xI,MNULL);
 	CELLS * cells = create_cells(bounding_box, cell_size, dim, xI_copy);
@@ -332,7 +339,7 @@ int main(int argc, char** argv) {
 	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI,
 		.weight_function = weight, .kernel_shape = kernel_shape, 
 		.basis_type = basis_type,.is_constant_support_size = constant_support_size,
-		.dmax_radial = dmax, .dmax_tensor = dmax_tensor};
+		.dmax_radial = dmax, .dmax_tensor = dmax_tensor,.temperatures = temperatures};
 	
 	setDomain(&mfree);
 
@@ -482,7 +489,8 @@ int main(int argc, char** argv) {
 
 	m_foutput(stdout,contact_mould_nodes_coords);
 
-	exit(0);
+
+
 
 	/* ------------------------------------------*/
 	/* -----------Transformation matrix----------*/
@@ -531,17 +539,65 @@ int main(int argc, char** argv) {
 	double mu = Gb;
 	double lambda = Kb - (2.00/3.00)*mu;
 
-	/* ------------------------------------------*/
-	/* --------------State storage---------------*/
-	/* ------------------------------------------*/
-	state_variables ** state_n = new_material_states(temperatures, mfree.num_nodes, 
-		BUCKLEY_MATERIAL , 
-		PLASTIC_MATERIAL , 
-		dim, is_AXI);
-	state_variables ** state_n_1 = new_material_states(temperatures, mfree.num_nodes, 
-		BUCKLEY_MATERIAL , 
-		PLASTIC_MATERIAL , 
-		dim, is_AXI);
+
+	// SPLIT MATERIAL POINTS
+	int count;
+	int number_of_material_points = material_points->num_material_points;
+	IVEC * material_point_groups[NUMBER_OF_THREADS];
+
+	int number_per_group = number_of_material_points / NUMBER_OF_THREADS;
+	int remainder = number_of_material_points % NUMBER_OF_THREADS;
+
+	for ( int i = 0 ; i < NUMBER_OF_THREADS ; i++)
+	{
+		material_point_groups[i] = iv_get(number_per_group);
+
+		if ( i == NUMBER_OF_THREADS -1 )
+		{
+			material_point_groups[i] = iv_get(number_per_group+remainder);
+		}
+	}
+
+	count = 0;
+
+	for ( int i = 0 ; i < NUMBER_OF_THREADS -1 ; i++  )
+	{
+		for ( int k = 0 ; k < number_per_group ; k++)
+		{
+			material_point_groups[i]->ive[k] = count;
+			++count;
+		}
+	}
+	for ( int k = 0 ; k < number_per_group + remainder ; k++)
+	{
+		material_point_groups[NUMBER_OF_THREADS-1]->ive[k] = count;
+		++count;
+
+	}
+
+	int total_number_material_points = 0;
+	for (int i = 0 ; i < NUMBER_OF_THREADS ; i++)
+	{
+		total_number_material_points += material_point_groups[i]->max_dim;
+	}
+	printf("total number of material points = %d \n", total_number_material_points);
+
+	// for ( int i = 0 ; i < number_of_material_points ; i++)
+	// {
+	// 	material_points->MP[i]->stateNew->temperature=97.45+273.15;
+	// 	material_points->MP[i]->stateOld->temperature=97.45+273.15;
+
+
+	// }
+
+	// v_zero(nodal_mass);
+	// for ( int i = 0 ; i < number_of_material_points ; i++)
+	// {
+	// 	material_points->MP[i] = update_material_point(material_points->MP[i], cells,
+	// 	mfree.nodes, nodal_mass);
+	// }
+
+	printf("mass = %lf \n", v_sum(nodal_mass));
 	// ///////////////////////////////////////////////////////////////
 
 	// /*////////////////////////////////////////////////////////// */
@@ -592,6 +648,11 @@ int main(int argc, char** argv) {
 	VEC * a_n_1 = v_get(num_dof);
 	VEC * a_n = v_get(num_dof);
 	MAT * updatedNodes = m_get(mfree.num_nodes,2);
+
+
+	MAT * XI_n = m_get(mfree.num_nodes,2);
+	MAT * XI_n_1 = m_get(mfree.num_nodes,2);
+
 
 
 	/* Boundary conditions */
@@ -655,11 +716,65 @@ int main(int argc, char** argv) {
 	VEC * disp_inc = v_get(num_dof);
 	VEC * disp_r = v_get(num_dof);
 
+	VEC * FINT[NUMBER_OF_THREADS];
+	VEC * RPEN[NUMBER_OF_THREADS];
+
+	VEC * NODAL_MASS[NUMBER_OF_THREADS];
+	for ( int i = 0 ; i < NUMBER_OF_THREADS ; i++)
+	{
+
+		NODAL_MASS[i] = v_get(numnodes);
+		FINT[i] = v_get(num_dof);
+		RPEN[i] = v_get(num_dof);
+
+	}
+	internal_force_args * INTERNAL_FORCE_ARGS = 
+	calloc(NUMBER_OF_THREADS,sizeof(internal_force_args));
+
+		// check if problem is axisymmetric
+	int dim_piola;
+	int dim_strain;
+	int dim_cauchy;
+
+
+	if ( is_AXI== 1){
+		dim_piola = 5;
+		dim_strain = 3;
+		dim_cauchy = 4;
+	}else{
+		dim_piola = dim*dim;
+		dim_strain = dim;
+		dim_cauchy = (dim*dim) - (dim -1);
+	}
+
+
+
+	for ( int i = 0 ; i < NUMBER_OF_THREADS ; i++)
+	{
+
+		INTERNAL_FORCE_ARGS[i].NODAL_MASS = NODAL_MASS[i];
+		INTERNAL_FORCE_ARGS[i].FINT = FINT[i];
+		INTERNAL_FORCE_ARGS[i].RPEN = RPEN[i];
+		INTERNAL_FORCE_ARGS[i].mat_points = material_point_groups[i];
+		INTERNAL_FORCE_ARGS[i].material_points = material_points;
+		INTERNAL_FORCE_ARGS[i].inc_disp = d_n_1;
+		INTERNAL_FORCE_ARGS[i].materialParameters = matParams;
+		INTERNAL_FORCE_ARGS[i].XI_n = XI_n;
+		INTERNAL_FORCE_ARGS[i].XI_n_1 = XI_n_1;
+		INTERNAL_FORCE_ARGS[i].cells = cells;
+		INTERNAL_FORCE_ARGS[i].dt = delta_t;
+		INTERNAL_FORCE_ARGS[i].G = m_get(dim_piola,dim_cauchy);
+		INTERNAL_FORCE_ARGS[i].sigma = v_get(dim_cauchy);
+
+
+	}
+
+	threadpool thpool = thpool_init(NUMBER_OF_THREADS);
 
 
 	/*  Explicit Loop */
 	while ( t_n < TMAX)
-	//while ( n < 1)
+	//while ( n < 450)
 	{
 
 		/*  Update time step */
@@ -677,6 +792,7 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 		__zero__(Fcont_n_1->ve, num_dof);
 
+#ifdef WITH_STRETCHROD
 		// STRETCH ROD 
 		// update stretch rod position
 		if ( disp_rod_n < DISP_ROD_MAX){
@@ -685,6 +801,7 @@ int main(int argc, char** argv) {
 
 			disp_rod_n_1 = a0*pow(x,7) + a1*pow(x,6) + a2*pow(x,5) + a3*pow(x,4) + a4*pow(x,3) + a5*pow(x,2) +a6*pow(x,1) + a7;
 			disp_rod_n_1 = disp_rod_n_1;
+
 	
 			for ( int i = 0 ; i < srNodes->m ; i++){
 	
@@ -693,6 +810,9 @@ int main(int argc, char** argv) {
 
 			}
 		}
+
+
+
 		// STRETCH ROD CONTACT CONDITIONS
 
 		for ( int i = 0 ; i < eb3_nodes->max_dim ; i++){
@@ -717,7 +837,8 @@ int main(int argc, char** argv) {
 
 
 		}
-		if ( WITH_MOULD == 1){
+#endif
+#ifdef WITH_MOULD
 		// MOULD CONTACT CONDITIONS
 		for ( int i = 0 ; i < eb4_nodes->max_dim ; i++){
 
@@ -744,9 +865,8 @@ int main(int argc, char** argv) {
 
 
 		}
-		}
-
-
+#endif
+#if defined(WITH_STRETCHROD) || defined (WITH_MOULD)
 		// /*  Find a corrective acceleration - method in pronto 3D manual*/
 		for ( int i = 0 ; i < numnodes  ; i++ )
 		{
@@ -756,6 +876,7 @@ int main(int argc, char** argv) {
 
 		__mltadd__(v_n_h->ve, a_n->ve,delta_t,num_dof);
 		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
+#endif
 
 
 		/* ------------------------------------------*/
@@ -785,7 +906,6 @@ int main(int argc, char** argv) {
 		mv_mlt(Lambda,d_n_1,nodal_disp);
 		__add__(nodes_X->base, nodal_disp->ve, updatedNodes->base, num_dof);
 
-	
 		/* ------------------------------------------*/
 		/* ------------Find External Force-----------*/
 		/* ------------------------------------------*/
@@ -813,27 +933,50 @@ int main(int argc, char** argv) {
 
 		/*  Update pressure load */
 		update_pressure_boundary(pB, updatedNodes);
-
 		assemble_pressure_load(Fext_n_1, pre_n_1, pB);
 
+
+
+		//v_foutput(stdout, Fext_n_1);
 
 		/* ------------------------------------------*/
 		/* ------------Find Internal Force-----------*/
 		/* ------------------------------------------*/
+
+		__zero__(Fint_n_1->ve,Fint_n_1->max_dim);
+
 		__sub__(d_n_1->ve, disp_r->ve,disp_inc->ve, num_dof);
 
-		// internalForce_Inelastic_Buckley(Fint_n_1, _scni_obj,
-		// disp_inc, v_n_h,
-		// matParams, state_n_1, state_n,
-		// mfree.IS_AXI, dim,delta_t,t_n_1, MATERIAL_NAME);
+		for (int i=0; i < NUMBER_OF_THREADS; i++){
+
+			thpool_add_work( thpool, 
+			 (void*) internal_force_buckley, 
+			 (void*) &INTERNAL_FORCE_ARGS[i]);
+
+		}
+
+		thpool_wait(thpool);
 
 
+
+
+
+
+		for (int i=0; i < NUMBER_OF_THREADS; i++){
+
+	 		//__add__(RPEN[i]->ve, R_pen->ve,R_pen->ve, num_dof);
+	 		__add__(FINT[i]->ve, Fint_n_1->ve,Fint_n_1->ve, num_dof);
+
+		}
+		//v_foutput(stdout, d_n_1);
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/
 		/* ------------------------------------------*/
 
 		/*  Balance of forces */
 		__sub__(Fext_n_1->ve, Fint_n_1->ve, Fnet_n_1->ve,num_dof);
+
+
 
 
 		/* -----------------------------------------------*/
@@ -871,8 +1014,10 @@ int main(int argc, char** argv) {
 		if ( n % WRITE_FREQ == 0 ){
 
 			char filename[50];
-			snprintf(filename, 50, "displacement_%d%s",fileCounter,".csv");
-			saveDisp(updatedNodes,state_n_1,"./Displacement",filename);
+			// snprintf(filename, 50, "displacement_%d%s",fileCounter,".csv");
+			// saveDisp(updatedNodes,state_n_1,"./Displacement",filename);
+			snprintf(filename, 50, "displacement_%d%s",fileCounter,".txt");
+			mat2csv(updatedNodes,"./Displacement",filename);
 
 			snprintf(filename, 50, "srRod_%d%s",fileCounter,".csv");
 			disp2csv(srNodes,"./srRod",filename);
@@ -929,7 +1074,7 @@ int main(int argc, char** argv) {
 
 
 
-		if ( n % WRITE_FREQ == 0)
+		if ( n % PRINT_FREQ == 0)
 			printf("%i  \t  %lf %10.2E %lf %lf %lf %lf %10.2E \n",n,t_n,Wbal,
 				pre_n_1,disp_rod_n,v_rod,volume/1e3,delta_t);
 

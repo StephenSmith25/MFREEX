@@ -15,6 +15,8 @@ typedef struct meshfreeDomain
 	VEC * di;
 	MAT * di_tensor;
 
+	double * temperatures;
+
 	MAT ** MI;
 
 	double dmax_radial ;
