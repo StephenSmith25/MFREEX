@@ -16,7 +16,7 @@ NUM_NODES_THICKNESS=3;
 N1 = 70;
 N2 = 5;
 N3 = 6;
-ntheta = 25
+ntheta = 16
 
 % starting from 0,0
 nodes = [];

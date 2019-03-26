@@ -7,3 +7,8 @@ Arch/
 *.avi
 *.pdf 
 tmp/
+!userguide.pdf
+*.aux
+*.gz
+*.toc
+*.log

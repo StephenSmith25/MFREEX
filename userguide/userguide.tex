@@ -1,0 +1,54 @@
+\documentclass[openany,oneside,12pt]{book}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage[utf8]{inputenc}
+\usepackage{tcolorbox}
+\usepackage{listings}
+\usepackage{listings-golang} % import this package after listings
+\usepackage{color}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\lstset{
+	language=Golang,
+	aboveskip=3mm,
+	belowskip=3mm,
+	showstringspaces=false,
+	columns=flexible,
+	basicstyle={\small\ttfamily},
+	numbers=none,
+	numberstyle=\tiny\color{gray},
+	keywordstyle=\color{blue},
+	commentstyle=\color{red},
+	stringstyle=\color{red},
+	breaklines=true,
+	breakatwhitespace=true,
+	tabsize=3}
+\title{MFree: An Explicit Meshfree Code for Non-Linear Solid Mechanics \\ release 0.1}
+\date{2018 \\ October}
+\author{Stephen Smith \\ Queen's University Belfast}
+
+
+
+\newcommand*{\rttensor}[1]{\overline{\overline{#1}}}
+\newcommand*{\rttensortwo}[1]{\ubar{\ubar{#1}}}
+
+\raggedbottom
+\begin{document}
+\frontmatter
+\vbox{
+	\centering
+		\includegraphics[width=0.9\textwidth,keepaspectratio]{MeshfreeDisc}
+	\maketitle %this typesets the contents of \title, \author and \date
+}
+\tableofcontents
+\mainmatter
+\include{Introduction}
+\include{Theory}
+\include {Design}	
+\chapter{Furture Plans}
+\chapter{Area of Improvements}	
+As the matrix library (gonum) is based off the blas libaries the performance for smaller domains is expected to be poor due to the overhead of calling the blas routines. Therefore it may be best to rediesng the shape function library.
+\chapter{Acknowledgements}
+The following packages have been used in this project
+\end{document}

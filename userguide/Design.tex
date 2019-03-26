@@ -1,0 +1,125 @@
+\chapter{Design}
+\section{Domain}
+
+\subsubsection*{Overview}
+The domain package is intended to hold together the geometric details of the problem, i.e the nodes, the intergration cells and the degrees of freedom attached to the domain. From this other packages will reference this domain, such as the meshfree packaage, which builds the meshfree domain, and the integration package.
+The domain is described by the structure 
+
+\begin{tcolorbox}
+	\begin{lstlisting}
+	type Domain struct {	
+		Name string // name the domain
+		Nodes []node.Node // nodes within the domain
+		num_nodes int // number of nodes
+		voronoi *voronoi.Voronoi // Voronoi diagram
+		dim int // dimension of domain
+		boundaryNodes []int // index of nodes on boundary
+		global_basis *[]*Dir //basis vectors e.g <1,0> <0,1> for 2D 
+	}
+	\end{lstlisting}
+\end{tcolorbox}
+
+At present there are two ways to build a domain, manually by adding nodes to a domain object, or more simply by providing a planar-straight line graph (PLSG) to the domain constructor, given by:
+\begin{tcolorbox}
+\begin{lstlisting}
+domain := domain.DomainNew(fileName string, options string, dim int, global_coordinate coordinateSystem)
+\end{lstlisting}
+\end{tcolorbox}
+
+Where $fileName$ is the name of the PLSG, $options$ provides a set of rules the mesh, and voronoi generator, see \url{https://www.cs.cmu.edu/~quake/triangle.html} for a description. The variable $dim$ ensures that correct number of degrees of freedom(DOFs) will be set. The coordinate system can be generated using the following function (for Cartesian coordinates),
+\begin{lstlisting}
+globalCS := coordinatesystem.CreateCartesian()
+\end{lstlisting}
+axisymmetric (cylindrical coordinates) are also supported. This function will construct the nodes, the degrees of freedom (assuming they are all free to start with) and the Voronoi diagram, which is used in the stabalised nodal integration scheme (SCNI).
+
+\subsubsection*{Public functions}
+In this section the public functions available to a domain object are described
+\begin{lstlisting}
+func (domain *Domain) GetDim() int 
+\end{lstlisting}
+Returns the dimensions of the Domain object $domain$
+\begin{lstlisting}
+func (domain *Domain) SetCoordinateSystem() 
+\end{lstlisting}
+Sets the coordinate system of the Domain object $domain$
+\begin{lstlisting}
+func (domain *Domain) AddNodes(nodes ...*node.Node) 
+\end{lstlisting}
+Appends the nodes to the domain and increments the number of nodes counter
+\begin{lstlisting}
+func (domain *Domain) GetNumNodes() int 
+\end{lstlisting}
+Returns the number of nodes in the domain
+\begin{lstlisting}
+func (domain *Domain) GetNodesIn(shape * geometry.Shape) *[]*Node
+\end{lstlisting}
+Returns the nodes inside the shape interface, e.g square, circle, cylinder.
+\begin{lstlisting}
+func (domain *Domain) TriGen(filename string, options string)
+\end{lstlisting}
+Triangulates the domain defined by the planar-straight line graph (PLSG). Uses the Triangle programme written in C.
+\begin{lstlisting}
+UpdateDomain
+\end{lstlisting}
+\begin{lstlisting}
+CopyDomain
+\end{lstlisting}
+\begin{lstlisting}
+CreatDofs
+\end{lstlisting}
+\begin{lstlisting}
+func (domain *Domain) GenerateClippedVoronoi()
+\end{lstlisting}
+Generates a clipped voronoi diagram using JC\_VORONOI to construct the voronoi diagram, and the general polygon clipper (GPC) to clip the resulting diagram. Both libraries are written in C. 
+\begin{lstlisting}
+func GetVoronoi
+\end{lstlisting}
+Returns a pointer to the Voronoi diagram within the domain.
+
+\begin{lstlisting}
+PrintNodesToImg
+\end{lstlisting}
+
+\subsubsection*{Private functions}
+None so far
+
+\pagebreak
+\section{Shape functions}
+The shape function routines are contained within the $shapefunctions$ package. The fundamental data structure in this routine is the meshfree structure, which is a 'layer' of meshfree information implemented on-top of the physical domain
+
+\begin{tcolorbox}
+	\begin{lstlisting}
+	type Meshfree struct {	
+		domain *domain.Domain // reference to the underlying physical domain
+		nodalSpacing []float64 // distance to the closest node for each node 
+		gamma []float64 // support size multiplier for each node
+		isConstantSpacing bool// whether base domain sizes are the same
+		isVariousPoints bool // whether finding basis functions at multiple points
+		basisFunctionRadii []float64 // radius(support) of each basis function
+		dim int // does not need to be here
+		tol float64// tolerance for maxent convergence
+	}
+	\end{lstlisting}
+\end{tcolorbox}
+\noindent To construct a meshfree structure the following constructing function can be used:
+\begin{lstlisting}
+func NewMeshfree(domain *domain.Domain, isConstantSpacing bool, isVariousPoints bool, dim int, gamma []float64, tol float64)
+\end{lstlisting}
+if the support size parameter ($gamma []float64$) is left empty it can be set using the following functions:
+\begin{lstlisting}
+func (meshfree *Meshfree) SetConstantGamma(gamma float64)
+\end{lstlisting}
+if a constant gamma (same support size parameter for each node)
+or 
+\begin{lstlisting}
+func (meshfree * Meshfree) setGamma(gamma []float64)
+\end{lstlisting}
+if the support size parameter is different for each node. Note: the length of gamma should be equal to the number of nodes in the domain. 
+
+
+\subsubsection*{Private functions:}
+\section{Geometry}
+
+
+\section{Example}
+
