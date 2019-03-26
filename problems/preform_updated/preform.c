@@ -986,7 +986,6 @@ int main(int argc, char** argv) {
 
 
 		move_nodes(cells, &active_cells, cell_size, XI_n_1);
-		write_active_cells("active_cells.csv",active_cells);
 
 		/* ------------------------------------------*/
 		/* ------------Find External Force-----------*/
@@ -1114,6 +1113,10 @@ int main(int argc, char** argv) {
 			fprintf(fp,"%lf %lf\n",t_n_1,pre_n_1);
 			fclose(fp);
 			fileCounter++;
+
+			write_active_cells("active_cells.csv",active_cells);
+
+
 		}
 
 
