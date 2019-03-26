@@ -43,7 +43,7 @@ const double TMAX = 1;
 double delta_t = 5e-7;
 
 // Meshfree parameters
-const double dmax = 2;
+const double dmax = 1.5;
 const double dmax_x =2;
 const double dmax_y =2;
 double beta = 1.1;
@@ -69,7 +69,7 @@ char * integration_type = "TRIANGLE";
 
 
 //#define WITH_MOULD 
-#define WITH_STRETCHROD
+//#define WITH_STRETCHROD
 #define NUMBER_OF_THREADS 4
 
 
@@ -779,6 +779,24 @@ int main(int argc, char** argv) {
 
 		/*  Update time step */
 		t_n_1 = t_n + delta_t;
+
+
+
+		for ( int k = 0 ; k < eb1->nodes->max_dim; k++)
+		{
+			int index = eb1->nodes->ive[k];
+			a_n->ve[2*index] = 0;
+			a_n->ve[2*index+1] = 0;
+
+		}
+		for ( int k = 0 ; k < eb2->nodes->max_dim ; k++)
+		{
+			int index = eb2->nodes->ive[k];
+			a_n->ve[2*index] = 0;
+		}
+
+
+
 		/*  Make a time step  */ 
 		__mltadd__(v_n_h->ve, a_n->ve,delta_t,num_dof);
 
@@ -810,6 +828,8 @@ int main(int argc, char** argv) {
 		__zero__(Fcont_n_1->ve, num_dof);
 
 #ifdef WITH_STRETCHROD
+		__add__(nodes_X->base, d_n_1->ve, updatedNodes->base, num_dof);
+
 		// IF STRETCH rod hasn't reached its maximum travel 
 		if ( disp_rod_n < DISP_ROD_MAX){
 
@@ -830,24 +850,27 @@ int main(int argc, char** argv) {
 
 		for ( int i = 0 ; i < eb3_nodes->max_dim ; i++){
 
-			//neighbours = phi_contact->sf_list[i]->neighbours;
+			neighbours = phi_contact->sf_list[i]->neighbours;
+			phi = phi_contact->sf_list[i]->phi;
 
 			int index = eb3_nodes->ive[i];
-			//phi = phi_contact->sf_list[i]->phi;
 			testPoint->me[0][0] = updatedNodes->me[eb3_nodes->ive[i]][0];
 			testPoint->me[0][1] = updatedNodes->me[eb3_nodes->ive[i]][1];
 			distanceProj = contactDetection(testPoint,srNodes,msNormal);
 			if (distanceProj > 0){
-				if ( i > 14)
-					printf("testPoint = %lf %lf \n", testPoint->me[0][0],testPoint->me[0][1]);
-				f1Cor = 0.1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-				f2Cor = 0.1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
 
-				Fcont_n_1->ve[2*index] = f1Cor; 
-				Fcont_n_1->ve[2*index+1] = f2Cor; 
+
+				f1Cor = 2*(2*distanceProj*msNormal->me[0][0]*
+					nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+				f2Cor = 2*(2*distanceProj*msNormal->me[0][1]*
+					nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+
+				for ( int k = 0 ; k < neighbours->max_dim ; k++){
+					Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
+					Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
+				}
+
 			}
-
-
 		}
 #endif
 #ifdef WITH_MOULD
@@ -907,6 +930,14 @@ int main(int argc, char** argv) {
 
 
 		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
+
+
+
+
+
+
+
+
 #endif
 
 
