@@ -29,7 +29,7 @@ plotFiles = ceil(linspace(1,numFiles,10));
 
 plot_point =177;
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.txt');
-disp = csvread(filename,1);
+disp = csvread(filename);
 
 % draw mould
 Radius_mould = 24;

@@ -44,6 +44,13 @@ typedef struct CELLS
 	double CX;
 	double CY;
 	double CZ;
+
+	double Bx_min;
+	double Bx_max;
+	double By_min;
+	double By_max;
+
+
 }CELLS;
 
 typedef struct BOUNDING_BOX

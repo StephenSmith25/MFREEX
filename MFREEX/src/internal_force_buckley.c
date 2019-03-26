@@ -3,7 +3,7 @@
 
 
 
-
+static double epsilon_penalty = -1e5;
 
 void internal_force_buckley(void *threadarg)
 
@@ -136,9 +136,9 @@ void internal_force_buckley(void *threadarg)
 		//-------------------------------------------------//
 		//         Get Voigt Piola Kirchoff stress         //
 		//-------------------------------------------------//
-		v_zero(sigma);
-		v_zero(stressVoigt);
-		m_zero(G);
+		// v_zero(sigma);
+		// v_zero(stressVoigt);
+		// m_zero(G);
 
 		sigma->ve[0] = (stateNew->sigma->me[0][0])/1e6 + qv;
 		sigma->ve[1] = (stateNew->sigma->me[1][1])/1e6 + qv;
@@ -191,45 +191,47 @@ void internal_force_buckley(void *threadarg)
 
 		stateOld->div_v = stateNew->div_v;
 
-		//v_foutput(stdout, stressVoigt);
-		// // update_material point neighbours
-		// material_points->MP[i] = update_material_point(material_points->MP[i], cells,
-		// 	 XI_n_1, NODAL_MASS);
-
-		// // Find error in displacment field
-		// Xp_n_1 = material_points->MP[i]->coords_n_1[0];
-		// Xp_n = material_points->MP[i]->coords_n[0];
-		// Yp_n_1 = material_points->MP[i]->coords_n_1[1];
-		// Yp_n = material_points->MP[i]->coords_n[1];
 
 
-		// num_neighbours = material_points->MP[i]->num_neighbours;
-		// neighbours = material_points->MP[i]->neighbours;
+		// update_material point neighbours
+
+		material_points->MP[i] = update_material_point(material_points->MP[i], cells,
+			 XI_n_1, NODAL_MASS);
+
+		// Find error in displacment field
+		Xp_n_1 = material_points->MP[i]->coords_n_1[0];
+		Xp_n = material_points->MP[i]->coords_n[0];
+		Yp_n_1 = material_points->MP[i]->coords_n_1[1];
+		Yp_n = material_points->MP[i]->coords_n[1];
 
 
-		// for ( int k = 0 ; k < num_neighbours; k++){
+		num_neighbours = material_points->MP[i]->num_neighbours;
+		neighbours = material_points->MP[i]->neighbours;
 
-		// 	int index = neighbours->ive[k];
 
-		// 	// Find vectors dX_n and dX_n_1
-		// 	double delta_x_n[2] = {XI_n->me[index][0] - Xp_n,XI_n->me[index][1] - Yp_n};
-		// 	double delta_x_n_1[2] = {XI_n_1->me[index][0] - Xp_n_1,XI_n_1->me[index][1] - Yp_n_1};
+		for ( int k = 0 ; k < num_neighbours; k++){
 
-		// 	// Find error in displacement 
-		// 	double x_tilde[2] = {material_points->MP[i]->inc_F->me[0][0]*(delta_x_n[0])
-		// 			+ material_points->MP[i]->inc_F->me[0][1]*(delta_x_n[1]),
-		// 			material_points->MP[i]->inc_F->me[1][0]*delta_x_n[0]
-		// 			+ material_points->MP[i]->inc_F->me[1][1]*delta_x_n[1]};
+			int index = neighbours->ive[k];
 
-		// 	double norm_x = sqrt(pow(delta_x_n[0],2) + pow(delta_x_n[1],2));
-		// 	double e_x  = (delta_x_n_1[0] - x_tilde[0])/norm_x;
-		// 	double e_y =  (delta_x_n_1[1] - x_tilde[1])/norm_x ;
+			// Find vectors dX_n and dX_n_1
+			double delta_x_n[2] = {XI_n->me[index][0] - Xp_n,XI_n->me[index][1] - Yp_n};
+			double delta_x_n_1[2] = {XI_n_1->me[index][0] - Xp_n_1,XI_n_1->me[index][1] - Yp_n_1};
+
+			// Find error in displacement 
+			double x_tilde[2] = {material_points->MP[i]->inc_F->me[0][0]*(delta_x_n[0])
+					+ material_points->MP[i]->inc_F->me[0][1]*(delta_x_n[1]),
+					material_points->MP[i]->inc_F->me[1][0]*delta_x_n[0]
+					+ material_points->MP[i]->inc_F->me[1][1]*delta_x_n[1]};
+
+			double norm_x = sqrt(pow(delta_x_n[0],2) + pow(delta_x_n[1],2));
+			double e_x  = (delta_x_n_1[0] - x_tilde[0])/norm_x;
+			double e_y =  (delta_x_n_1[1] - x_tilde[1])/norm_x ;
 		
-		// 	// assemble forces 
-		// 	RPEN->ve[2*index] += epsilon_penalty*material_points->MP[i]->shape_function->phi->ve[k]*e_x;
-		// 	RPEN->ve[2*index+1] += epsilon_penalty*material_points->MP[i]->shape_function->phi->ve[k]*e_y;
+			// assemble forces 
+			RPEN->ve[2*index] += epsilon_penalty*material_points->MP[i]->shape_function->phi->ve[k]*e_x;
+			RPEN->ve[2*index+1] += epsilon_penalty*material_points->MP[i]->shape_function->phi->ve[k]*e_y;
 
-		// 	}
+			}
 
 
 

@@ -6,14 +6,14 @@ close all;
 %% GOEMETRY
 
 Radius_in = 13.97/2;
-Radius_out = 22.50/2;
+Radius_out = 20.50/2;
 
 length_preform = 70;
 length_wall = length_preform - Radius_in;
 
 NUM_NODES_THICKNESS=3;
 %% NUMBER OF NODES
-N1 = 70;
+N1 = 90;
 N2 = 5;
 N3 = 6;
 ntheta = 16

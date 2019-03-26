@@ -73,6 +73,11 @@ CELLS * create_cells(BOUNDING_BOX * bounding_box, double * CELL_SIZE, int dim, M
 		double By_max = bounding_box->ymax;
 
 
+		cells->By_min = By_min;
+		cells->By_max = By_max;
+		cells->Bx_min = Bx_min;
+		cells->Bx_max = Bx_max;
+
 		int ny = ceil(fabs(By_max - By_min) / CY );
 
 		cells->nx = nx;
@@ -94,11 +99,11 @@ CELLS * create_cells(BOUNDING_BOX * bounding_box, double * CELL_SIZE, int dim, M
 
 
 				/*Create cell limits*/
-				cells->cells[j][i].x[0] = i*CX;
-				cells->cells[j][i].x[1] = (i+1)*CX;
+				cells->cells[j][i].x[0] = i*CX +  Bx_min;
+				cells->cells[j][i].x[1] = (i+1)*CX + Bx_min;
 
-				cells->cells[j][i].y[0] = j*CY;
-				cells->cells[j][i].y[1] = (j+1)*CY;
+				cells->cells[j][i].y[0] = j*CY + By_min;
+				cells->cells[j][i].y[1] = (j+1)*CY + By_min;
 
 				// CREATE CELL NODE LIST
 				cells->cells[j][i].nodes = NULL;
@@ -117,10 +122,12 @@ CELLS * create_cells(BOUNDING_BOX * bounding_box, double * CELL_SIZE, int dim, M
 				
 					double x = NODES->me[k][0];
 					double y = NODES->me[k][1];
+					double x_pert = x-cells->Bx_min;
+					double y_pert = y-cells->By_min;
 
 
-					int j = (int)floor(x/CX);
-					int i = (int)floor(y/CY);
+					int j = (int)floor(x_pert/CX);
+					int i = (int)floor(y_pert/CY);
 
 
 					/*Create nodelist object */
@@ -419,17 +426,20 @@ int move_nodes(CELLS * grid, active_cell ** active_cells, double * l, MAT * node
 				x = nodes->me[current_p->node_number][0];
 				y = nodes->me[current_p->node_number][1];
 
+				double x_pert = x - grid->Bx_min;
+				double y_pert = y - grid->By_min;
+
 
 				// Find grid reference
-				j_new = (int)floor(x/l[0]);
-				i_new = (int)floor(y/l[1]);
+				j_new = (int)floor(x_pert/l[0]);
+				i_new = (int)floor(y_pert/l[1]);
 
 
 				// check if correct grid reference
 				if (( i_new != i ) ||  (j_new != j))
 				{
-
 					// Add new cell to active list
+
 					// if already a member, cell wont be added 
 					cell_number_new = (i_new)*nx + j_new;
 					addCell(active_cells, cell_number_new);
@@ -490,15 +500,15 @@ int move_nodes(CELLS * grid, active_cell ** active_cells, double * l, MAT * node
 int neighbour_RangeSearch(IVEC * neighbours, CELLS * cells,
 double * x, double range,  MAT * nodes)
 {
-	// NOTE - IMPLEMENTED JUST FOR 2D AT THE MOMENT - END NOTE 
-	iv_zero(neighbours);
+	// NOTE - IMPLEMENTED JUST FOR 2D AT THE MOMENT d
 	// Find all nodes that are within this range 
 	int num_neighbours = 0;
 	int dim = nodes->n;
+	iv_zero(neighbours);
 	
 	// convert x into its i,j components
-	int j = (int)floor(x[0]/cells->CX);
-	int i = (int)floor(x[1]/cells->CY);
+	int j = (int)floor((x[0]-cells->Bx_min)/cells->CX);
+	int i = (int)floor((x[1]-cells->By_min)/cells->CY);
 
 	// number of clels in each direction
 	int nx = cells->nx;

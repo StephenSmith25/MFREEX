@@ -132,7 +132,6 @@ MATERIAL_POINTS * create_material_points(void * cells,
 				MPS[i]->INTEGRATION_FACTOR = 1;
 			}
 
-
 			MPS[i]->stateOld= new_material_state(MPS[i]->temperature, material_type,
 				dim, IS_AXI);
 			MPS[i]->stateNew = new_material_state(MPS[i]->temperature, material_type,
@@ -230,11 +229,12 @@ MATERIAL_POINTS * create_material_points(void * cells,
 
 			// Temperature
 			MPS[i]->temperature = 0;
-
-			for ( int k = 0 ; k < MPS[i]->num_neighbours ; k++)
-			{
-				int index = MPS[i]->neighbours->ive[k];
-				MPS[i]->temperature += MPS[i]->shape_function->phi->ve[k]*mfree->temperatures[index];
+			if ( mfree->temperatures != NULL){
+				for ( int k = 0 ; k < MPS[i]->num_neighbours ; k++)
+				{
+					int index = MPS[i]->neighbours->ive[k];
+					MPS[i]->temperature += MPS[i]->shape_function->phi->ve[k]*mfree->temperatures[index];
+				}
 			}
 
 
