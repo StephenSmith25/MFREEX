@@ -1,7 +1,0 @@
-dmax = 3;
-is_consant_support_size = 1;
-kb = 1.8e9;
-all constants are at defined values
-lambdaCrit = 2.7;
-lambda crit based on hoop component of Bbar;
-made top of preform longer, 3---> 4
