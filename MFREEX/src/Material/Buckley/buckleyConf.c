@@ -74,7 +74,14 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 	m_add(stateOld->ep_n,delta_ep,stateNew->ep_n);
 
 
+
+	// Find eigen values of network strain
 	dsyevh3(stateNew->ep_n->me,eigVecB->me,eigValB->ve);
+
+
+	// Check that none of the principles values are NaN
+	// (Can probably delete this)
+	
 	for ( int i = 0 ; i < 3 ; i++)
 	{	double x = eigValB->ve[i];
 
@@ -83,9 +90,6 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 			m_foutput(stdout, stateNew->ep_n);
 			m_foutput(stdout, Ds);
 
-
-			//m_foutput(stdout, stateNew->ep_n);
-			//m_foutput(stdout, stateNew->ep_n);
 
 			exit(0);
 		}
@@ -109,20 +113,14 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 	mmtr_mlt(intermediate1,eigVecB,Sc_n_1);
 
 
-	// update maximum network stretch
-	// double lambda1 = exp(eigValB->ve[0]);
-	// double lambda2 = exp(eigValB->ve[1]);
-	// double lambda3 = exp(eigValB->ve[2]);
-
-
+	// Find principle stretches
 	double lambda1 = exp(stateNew->ep_n->me[0][0]);
 	double lambda2 = exp(stateNew->ep_n->me[1][1]);
 	double lambda3 = exp(stateNew->ep_n->me[2][2]);
 
-	
+	// Get maximum principle stretch
 	stateNew->lambdaNMax = max(lambda1,lambda2);
 	stateNew->lambdaNMax = max(stateNew->lambdaNMax,lambda3);
-
 
 
 	// update old variables n+1 ->>> n 

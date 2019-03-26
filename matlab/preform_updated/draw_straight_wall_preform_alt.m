@@ -11,7 +11,7 @@ Radius_out = 22.50/2;
 length_preform = 70;
 length_wall = length_preform - Radius_in;
 
-NUM_NODES_THICKNESS=4;
+NUM_NODES_THICKNESS=3;
 %% NUMBER OF NODES
 N1 = 70;
 N2 = 5;

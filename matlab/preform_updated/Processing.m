@@ -112,7 +112,7 @@ ylim([-170,ymax])
 
 
 
-filename = strcat(path,'displacement_',num2str(plotFiles(5)),'.txt');
+filename = strcat(path,'displacement_',num2str(plotFiles(6)),'.txt');
 disp = csvread(filename);
 subplot(1,3,2)       % add first plot in 2 x 2 grid
 hold on 
@@ -135,7 +135,7 @@ hold on
 %plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 %plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
-filename = strcat(pathSR,'srRod_',num2str(plotFiles(5)),'.csv');
+filename = strcat(pathSR,'srRod_',num2str(plotFiles(6)),'.csv');
 disp = csvread(filename,1);
 hold on
 plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
@@ -156,9 +156,9 @@ hold on
 fill(-mould_nodes(:,1),mould_nodes(:,2),'w');
 hold on
 
-plot(disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
+plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 hold on
-plot(-disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
+plot(-disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 hold on
 %plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on

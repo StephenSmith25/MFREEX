@@ -105,18 +105,18 @@ void internal_force_buckley(void *threadarg)
 		/* ------------------------------------------*/
 		/* -----------------Damping -----------------*/
 		/* ------------------------------------------*/
+		double rho = 1380e-9;
 
-		// double b1 = 0;
-		// double b2 = 0;
-		// double Le = 0.1;
-		// double Cd = 1400;
-		// double div_v = stateNew->div_v;
-		// double qv =  rho*Le*b1*Cd * div_v;
-		// if ( div_v < 0)
-		// {
-		// 	qv += rho*Le*(b2 * (Le/1000) * pow(div_v,2)) ;
-		// }
-		double qv = 0;
+		double b1 = 0.06;
+		double b2 = 1.44;
+		double Le = 0.1;
+		double Cd = 1400;
+		double div_v = stateNew->div_v;
+		double qv =  rho*Le*b1*Cd * div_v;
+		if ( div_v < 0)
+		{
+			qv += rho*Le*(b2 * (Le/1000) * pow(div_v,2)) ;
+		}
 
 
 		// Integration factor
@@ -168,9 +168,7 @@ void internal_force_buckley(void *threadarg)
 		stressVoigt->ve[3] = P21*F_r->me[0][0] + P22*F_r->me[0][1];
 		stressVoigt->ve[4] = P33*F_r->me[2][2];
 
-		//v_foutput(stdout,stressVoigt);
 		vm_mlt(B,stressVoigt,fInt);
-		//v_foutput(stdout, fInt);
 
 		// Assemble internal force vector
 		for ( int l = 0 ; l < num_neighbours; l++){

@@ -70,7 +70,7 @@ char * integration_type = "TRIANGLE";
 
 //#define WITH_MOULD 
 #define WITH_STRETCHROD
-#define NUMBER_OF_THREADS 3
+#define NUMBER_OF_THREADS 4
 
 
 
@@ -456,7 +456,7 @@ int main(int argc, char** argv) {
 
 
 	// /*  EB3 */
-	int numB3 = 15;
+	int numB3 = 18;
 	IVEC * eb3_nodes = iv_get(numB3);
 	MAT * contact_nodes_coords = m_get(numB3,dim);
 
@@ -781,11 +781,28 @@ int main(int argc, char** argv) {
 		t_n_1 = t_n + delta_t;
 		/*  Make a time step  */ 
 		__mltadd__(v_n_h->ve, a_n->ve,delta_t,num_dof);
+
+
+		for ( int k = 0 ; k < eb1->nodes->max_dim; k++)
+		{
+			int index = eb1->nodes->ive[k];
+			v_n_h->ve[2*index] = 0;
+			v_n_h->ve[2*index+1] = 0;
+
+		}
+		for ( int k = 0 ; k < eb2->nodes->max_dim ; k++)
+		{
+			int index = eb2->nodes->ive[k];
+			v_n_h->ve[2*index] = 0;
+		}
+
+
+
 		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
 
 
-		mv_mlt(Lambda,d_n_1,nodal_disp);
-		__add__(nodes_X->base, nodal_disp->ve, updatedNodes->base, num_dof);
+		//mv_mlt(Lambda,d_n_1,nodal_disp);
+		__add__(nodes_X->base, d_n_1->ve, updatedNodes->base, num_dof);
 
 		/* ------------------------------------------*/
 		/* -----------Contact Conditions-------------*/
@@ -793,19 +810,15 @@ int main(int argc, char** argv) {
 		__zero__(Fcont_n_1->ve, num_dof);
 
 #ifdef WITH_STRETCHROD
-		// STRETCH ROD 
-		// update stretch rod position
+		// IF STRETCH rod hasn't reached its maximum travel 
 		if ( disp_rod_n < DISP_ROD_MAX){
+
 		/*  Update stretch rod */
 			double x = t_n_1*smoothstep(t_n_1,0.001,0);
-
 			disp_rod_n_1 = a0*pow(x,7) + a1*pow(x,6) + a2*pow(x,5) + a3*pow(x,4) + a4*pow(x,3) + a5*pow(x,2) +a6*pow(x,1) + a7;
 			disp_rod_n_1 = disp_rod_n_1;
-
-	
 			for ( int i = 0 ; i < srNodes->m ; i++){
 	
-				//srNodes->me[i][1] = srNodes_O->me[i][1] + disp_rod_n_1;
 				srNodes->me[i][1] = srNodes_O->me[i][1] - disp_rod_n_1;
 
 			}
@@ -817,22 +830,21 @@ int main(int argc, char** argv) {
 
 		for ( int i = 0 ; i < eb3_nodes->max_dim ; i++){
 
-			neighbours = phi_contact->sf_list[i]->neighbours;
-			phi = phi_contact->sf_list[i]->phi;
+			//neighbours = phi_contact->sf_list[i]->neighbours;
+
+			int index = eb3_nodes->ive[i];
+			//phi = phi_contact->sf_list[i]->phi;
 			testPoint->me[0][0] = updatedNodes->me[eb3_nodes->ive[i]][0];
 			testPoint->me[0][1] = updatedNodes->me[eb3_nodes->ive[i]][1];
 			distanceProj = contactDetection(testPoint,srNodes,msNormal);
 			if (distanceProj > 0){
+				if ( i > 14)
+					printf("testPoint = %lf %lf \n", testPoint->me[0][0],testPoint->me[0][1]);
+				f1Cor = 0.1*(2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+				f2Cor = 0.1*(2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
 
-				f1Cor = (2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-				f2Cor = (2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-
-
-				for ( int k = 0 ; k < neighbours->max_dim ; k++){
-					Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
-					Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
-				}
-
+				Fcont_n_1->ve[2*index] = f1Cor; 
+				Fcont_n_1->ve[2*index+1] = f2Cor; 
 			}
 
 
@@ -841,6 +853,7 @@ int main(int argc, char** argv) {
 #ifdef WITH_MOULD
 		// MOULD CONTACT CONDITIONS
 		for ( int i = 0 ; i < eb4_nodes->max_dim ; i++){
+
 
 			neighbours = phi_contact_mould->sf_list[i]->neighbours;
 			phi = phi_contact_mould->sf_list[i]->phi;
@@ -874,37 +887,53 @@ int main(int argc, char** argv) {
 			a_n->ve[2*i+1] = Fcont_n_1->ve[2*i+1]*inv_nodal_mass->ve[i];
 		}
 
+		/* ------------------------------------------*/
+		/* -----------Boundary Conditions------------*/
+		/* ------------------------------------------*/
+
+
+
+
 		__mltadd__(v_n_h->ve, a_n->ve,delta_t,num_dof);
+
+
+
+		for ( int k = 0 ; k < eb2->nodes->max_dim ; k++)
+		{
+			int index = eb2->nodes->ive[k];
+			v_n_h->ve[2*index] = 0;
+		}
+
+
+
 		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
 #endif
 
 
-		/* ------------------------------------------*/
-		/* -----------Boundary Conditions------------*/
-		/* ------------------------------------------*/
-		/*  Implement BCs */
-		enforceBC(eb1,d_n_1); 
-		// find velocity correction
-		sv_mlt(1.00/(delta_t),eb1->uCorrect1,v_correct);
-		for ( int k = 0 ; k < v_correct->max_dim; k++){
-			v_n_h->ve[2*k] += v_correct->ve[k];
-		}
 
-		sv_mlt(1.000/(delta_t),eb1->uCorrect2,v_correct);
-		for ( int k = 0 ; k < v_correct->max_dim; k++){
-			v_n_h->ve[2*k+1] += v_correct->ve[k];
-		}
+		// /*  Implement BCs */
+		// enforceBC(eb1,d_n_1); 
+		// // find velocity correction
+		// sv_mlt(1.00/(delta_t),eb1->uCorrect1,v_correct);
+		// for ( int k = 0 ; k < v_correct->max_dim; k++){
+		// 	v_n_h->ve[2*k] += v_correct->ve[k];
+		// }
 
-		// Symmetry boundary /
-		enforceBC(eb2,d_n_1); 
-		sv_mlt(1.00/(delta_t),eb2->uCorrect1,v_correct);
-		for ( int k = 0 ; k < v_correct->max_dim; k++){
-			v_n_h->ve[2*k] += v_correct->ve[k];
-		}
+		// sv_mlt(1.000/(delta_t),eb1->uCorrect2,v_correct);
+		// for ( int k = 0 ; k < v_correct->max_dim; k++){
+		// 	v_n_h->ve[2*k+1] += v_correct->ve[k];
+		// }
+
+		// // Symmetry boundary /
+		// enforceBC(eb2,d_n_1); 
+		// sv_mlt(1.00/(delta_t),eb2->uCorrect1,v_correct);
+		// for ( int k = 0 ; k < v_correct->max_dim; k++){
+		// 	v_n_h->ve[2*k] += v_correct->ve[k];
+		// }
 
 		// find new nodal positions
-		mv_mlt(Lambda,d_n_1,nodal_disp);
-		__add__(nodes_X->base, nodal_disp->ve, updatedNodes->base, num_dof);
+		//mv_mlt(Lambda,d_n_1,nodal_disp);
+		__add__(nodes_X->base, d_n_1->ve, updatedNodes->base, num_dof);
 
 		/* ------------------------------------------*/
 		/* ------------Find External Force-----------*/

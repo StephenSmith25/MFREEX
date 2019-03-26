@@ -1,8 +1,9 @@
 build/
 build-dir/
-.sublime-project
-.sublime-workspace
-.pdf
-.avi
+*.sublime-project
+*.sublime-workspace
 arch/
 Arch/
+*.avi
+*.pdf 
+tmp/
