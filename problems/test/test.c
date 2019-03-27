@@ -26,67 +26,73 @@ int main(int argc, char const *argv[])
 	int * nodalMarkers;
 	int  numnodes;
 
-	struct triangulateio * tri  =  trigen(&points_out,&boundaryNodes,opt,fileName,&numnodes,&numBoundary,&nodalMarkers,NULL);
+	TRIANGLE * tri = trigen(opt,fileName);	
 
-	double * tri_points = tri->pointlist;
-	int * triangles = tri->trianglelist;
-	int number_of_triangles = tri->numberoftriangles;
-	int * quad_orders = malloc(number_of_triangles*sizeof(int));
-	for ( int i = 0 ; i < number_of_triangles ; i++)
-	{
-		quad_orders[i] = QUADRATURE_ORDER;
-	}	
+	boundaryNodes = tri->boundary;
+	numBoundary = tri->num_boundary_points;
+	nodalMarkers = tri->pointmarkers;
+	numnodes = tri->num_points;
+	points_out = tri->points;	
 
-	QUAD_TRIANGLE * quad_triangles = create_triangle_quadrature_points(tri_points, 
-		triangles,number_of_triangles, quad_orders );
+	// double * tri_points = tri->pointlist;
+	// int * triangles = tri->trianglelist;
+	// int number_of_triangles = tri->numberoftriangles;
+	// int * quad_orders = malloc(number_of_triangles*sizeof(int));
+	// for ( int i = 0 ; i < number_of_triangles ; i++)
+	// {
+	// 	quad_orders[i] = QUADRATURE_ORDER;
+	// }	
 
-
-	printf("got here \n ");
-	m_foutput(stdout, quad_triangles->QUAD_POINTS);
-
-
-
-	int num_quad_points = quad_triangles->QUAD_POINTS->m;
-
-	// export gauss points
-	FILE * fp; 
-
-	fp = fopen("quad_points.csv","w");
-	for ( int i = 0 ; i < quad_triangles->QUAD_POINTS->m ; i++)
-	{
-
-		fprintf(fp,"%lf,%lf\n",quad_triangles->QUAD_POINTS->me[i][0],
-			quad_triangles->QUAD_POINTS->me[i][1]);
-
-	}
-
-	fclose(fp);
-
-	fp = fopen("nodes.csv","w");
-	for ( int i =0 ; i < numnodes ; i++)
-	{
-		fprintf(fp, "%lf,%lf\n",tri_points[2*i],tri_points[2*i+1]);
-	}
-	fclose(fp);
+	// QUAD_TRIANGLE * quad_triangles = create_triangle_quadrature_points(tri_points, 
+	// 	triangles,number_of_triangles, quad_orders );
 
 
-	fp = fopen("triangles.csv","w");
-
-
-	for ( int i = 0 ; i < number_of_triangles ; i++)
-	{
-		fprintf(fp,"%d,%d,%d\n",triangles[3*i],triangles[3*i+1],triangles[3*i+2]);
-	}
-	fclose(fp);
+	// printf("got here \n ");
+	// m_foutput(stdout, quad_triangles->QUAD_POINTS);
 
 
 
-	printf("sum of volumes = %lf \n",v_sum(quad_triangles->VOLUMES));
-	// export triangles
-	MAT * xI = m_get(numnodes,2);
+	// int num_quad_points = quad_triangles->QUAD_POINTS->m;
+
+	// // export gauss points
+	// FILE * fp; 
+
+	// fp = fopen("quad_points.csv","w");
+	// for ( int i = 0 ; i < quad_triangles->QUAD_POINTS->m ; i++)
+	// {
+
+	// 	fprintf(fp,"%lf,%lf\n",quad_triangles->QUAD_POINTS->me[i][0],
+	// 		quad_triangles->QUAD_POINTS->me[i][1]);
+
+	// }
+
+	// fclose(fp);
+
+	// fp = fopen("nodes.csv","w");
+	// for ( int i =0 ; i < numnodes ; i++)
+	// {
+	// 	fprintf(fp, "%lf,%lf\n",tri_points[2*i],tri_points[2*i+1]);
+	// }
+	// fclose(fp);
 
 
-	// CREATE MATERIAL POINTS FROM SCNI OR TRIANGLE QUADRATURE
+	// fp = fopen("triangles.csv","w");
+
+
+	// for ( int i = 0 ; i < number_of_triangles ; i++)
+	// {
+	// 	fprintf(fp,"%d,%d,%d\n",triangles[3*i],triangles[3*i+1],triangles[3*i+2]);
+	// }
+	// fclose(fp);
+
+
+
+	// printf("sum of volumes = %lf \n",v_sum(quad_triangles->VOLUMES));
+	// // export triangles
+	// MAT * xI = m_get(numnodes,2);
+
+
+	// // CREATE MATERIAL POINTS FROM SCNI OR TRIANGLE QUADRATURE
 
 
 	/* code */

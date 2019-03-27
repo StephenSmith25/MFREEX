@@ -97,7 +97,8 @@ void report(io, markers, reporttriangles, reportneighbors, reportsegments,
 	}
 }
 
-struct triangulateio *  trigen(double ** output_points, int ** boundary, char * options, char * fileName, int * numPoints, int * numBoundary, int ** pointmarkers, double ** temperatures ){
+TRIANGLE  *  trigen(char * options, char * fileName)
+{
 
 	char nodesFile[20] ;
 	char segsFile[20] ;
@@ -113,9 +114,12 @@ struct triangulateio *  trigen(double ** output_points, int ** boundary, char * 
 	int i;
 
 
-	tri in = malloc(sizeof(struct triangulateio ));
-	tri out = malloc(sizeof(struct triangulateio));
-		/*  Input structure */
+	struct triangulateio in, out;
+
+
+	
+
+	/*  Input structure */
 	char buf[64];
 	char s[2] = " ";
 
@@ -124,30 +128,30 @@ struct triangulateio *  trigen(double ** output_points, int ** boundary, char * 
 	FILE * fp = fopen(nodesFile,"r");
 	if (fgets(buf,sizeof(buf),fp) != NULL)
 		token = strtok(buf,s);
-	in->numberofpoints = atoi(token);
+	in.numberofpoints = atoi(token);
 	token = strtok(NULL,s);
 	int isAttribute = atoi(token);
 
 
 	printf("is attruibute = %d \n", isAttribute);
 	if ( isAttribute == 1){
-		in->numberofpointattributes = 1;
-		in->pointattributelist = (double* )  malloc(in->numberofpoints*sizeof(double));
+		in.numberofpointattributes = 1;
+		in.pointattributelist = (double* )  malloc(in.numberofpoints*sizeof(double));
 	}else{
-		in->numberofpointattributes = 0;
-		in->pointattributelist = NULL;
+		in.numberofpointattributes = 0;
+		in.pointattributelist = NULL;
 	}
-	in->pointlist = malloc(in->numberofpoints*2*sizeof(double));
-	for ( i = 0 ; i < in->numberofpoints ;i++){
+	in.pointlist = malloc(in.numberofpoints*2*sizeof(double));
+	for ( i = 0 ; i < in.numberofpoints ;i++){
 		if (fgets(buf,sizeof(buf),fp) != NULL)
 			token = strtok(buf,s);
-		in->pointlist[2*i] = atof(token);
+		in.pointlist[2*i] = atof(token);
 		token = strtok(NULL,s);
-		in->pointlist[2*i+1] = atof(token);
+		in.pointlist[2*i+1] = atof(token);
 
 		if ( isAttribute == 1){
 			token = strtok(NULL,s);
-			in->pointattributelist[i] = atof(token);
+			in.pointattributelist[i] = atof(token);
 		}
 
 	}
@@ -155,118 +159,130 @@ struct triangulateio *  trigen(double ** output_points, int ** boundary, char * 
 
 	fp = fopen(segsFile,"r");
 	if (fgets(buf,sizeof(buf),fp) != NULL)
-		in->numberofsegments = atoi(buf);
+		in.numberofsegments = atoi(buf);
 
-	printf("number of segments = %d \n",in->numberofsegments);
-	in->segmentlist = malloc(2*in->numberofsegments*sizeof(int));
-	in->segmentmarkerlist = malloc(in->numberofsegments*sizeof(int));
+	printf("number of segments = %d \n",in.numberofsegments);
+	in.segmentlist = malloc(2*in.numberofsegments*sizeof(int));
+	in.segmentmarkerlist = malloc(in.numberofsegments*sizeof(int));
+	in.pointmarkerlist = (int * ) NULL;
 
 
 	printf("got here \n");
-	for ( i = 0 ; i < in->numberofsegments ;i++){
+	for ( i = 0 ; i < in.numberofsegments ;i++){
 		if (fgets(buf,sizeof(buf),fp) != NULL)
 			token = strtok(buf,s);
-		in->segmentlist[2*i] = atoi(token);
+		in.segmentlist[2*i] = atoi(token);
 		token = strtok(NULL,s);
-		in->segmentlist[2*i+1] = atoi(token);
+		in.segmentlist[2*i+1] = atoi(token);
 		token = strtok(NULL,s);
 		if ( token != NULL)
-			in->segmentmarkerlist[i] = atoi(token);
+			in.segmentmarkerlist[i] = atoi(token);
 
 	}
 
-	printf("got here \n");
-	in->numberofregions = 0;
-	in->regionlist = (double *) NULL;
-		//holes
-	in->numberofholes = 0;
-	in->holelist = (double *) NULL;
 
-	// set of options inserted
-	//printf("Input point set:\n");
-	//report(in, 1, 0, 0, 1, 0, 0);
+	in.numberofregions = 0;
+	in.regionlist = (REAL *) NULL;
+	//holes
+	in.numberofholes = 0;
+	in.holelist = (double *) NULL;
+
+	report(&in, 1, 0, 0, 1, 0, 0);
 
 	/* Make necessary initializations so that Triangle can return a */
 	/*   triangulation in `out' and a voronoi diagram in `vorout'.  */
 
-	out->pointlist = (double *) NULL;            /* Not needed if -N switch used. */
+	out.pointlist = (REAL *) NULL;            /* Not needed if -N switch used. */
 	/* Not needed if -N switch used or number of point attributes is zero: */
-	out->pointattributelist = (double *) NULL;
-	out->pointmarkerlist = (int *) NULL; /* Not needed if -N or -B switch used. */
-	out->trianglelist = (int *) NULL;          /* Not needed if -E switch used. */
+	out.pointattributelist = (double *) NULL;
+	out.pointmarkerlist = (int *) NULL; /* Not needed if -N or -B switch used. */
+	out.trianglelist = (int *) NULL;          /* Not needed if -E switch used. */
 	/* Not needed if -E switch used or number of triangle attributes is zero: */
-	out->triangleattributelist = (double *) NULL;
-	out->neighborlist = (int *) NULL;         /* Needed only if -n switch used. */
+	out.triangleattributelist = (double *) NULL;
+	out.neighborlist = (int *) NULL;         /* Needed only if -n switch used. */
 	/* Needed only if segments are output (-p or -c) and -P not used: */
-	out->segmentlist = (int *) NULL;
+	out.segmentlist = (int *) NULL;
 	/* Needed only if segments are output (-p or -c) and -P and -B not used: */
-	out->segmentmarkerlist = (int *) NULL;
-	out->edgelist = (int *) NULL;             /* Needed only if -e switch used. */
-	out->edgemarkerlist = (int *) NULL;   /* Needed if -e used and -B not used. */
-	out->holelist = (double *) NULL;
-	out->regionlist = (double * ) NULL;
+	out.segmentmarkerlist = (int *) NULL;
+
+
+	
 	/* Triangulate the points.  Switches are chosen to read and write a  */
 	/*   PSLG (p), preserve the convex hull (c), number everything from  */
 	/*   zero (z), assign a regional attribute to each element (A), and  */
 	/*   produce an edge list (e), a Voronoi diagram (v), and a triangle */
 	/*   neighbor list (n).                                              */
 
-	/*  Failed at triangulate */
-	triangulate(options,in,out, (struct trianglulateio *) NULL);
 
-	//printf("passed triangulate \n");
-	//report(out, 1, 0, 0, 0, 0, 0);
+	/*  Call triangulate */
+	triangulate(options,&in,&out, (struct trianglulateio * ) NULL);
+
+	report(&out, 1, 0, 0, 0, 0, 0);
 
 
 
 	// find boundary
 	int * connected_segments = NULL;
-	connect_segments(out->segmentlist, &connected_segments, out->numberofsegments);
+	connect_segments(out.segmentlist, &connected_segments, out.numberofsegments);
 
 
 	// prepare output points
-	int * boundaryPoints = malloc((out->numberofsegments)*sizeof(int));
+	int * boundaryPoints = malloc((out.numberofsegments)*sizeof(int));
 
-	for (i = 0; i < out->numberofsegments; i++) {
+	for (i = 0; i < out.numberofsegments; i++) {
 		boundaryPoints[i] = connected_segments[2*i] -1 ;
 		/* code */
 	}
 
-
-	*output_points = out->pointlist;
-	*boundary = boundaryPoints;
-	*numPoints = out->numberofpoints;
-	*numBoundary = out->numberofsegments ;
-	*pointmarkers = out->pointmarkerlist;
+	TRIANGLE * triangular_mesh = malloc(1*sizeof(TRIANGLE));
 
 	if ( isAttribute == 1)
 	{
-		*temperatures = out->pointattributelist;
+		triangular_mesh->temperatures = out.pointattributelist;
 
 	}
 
-	(*pointmarkers) = malloc(out->numberofpoints*sizeof(int));
 
-	for ( i = 0 ; i < out->numberofpoints ; i++)
-	{
-		(*pointmarkers)[i] = out->pointmarkerlist[i];
+	triangular_mesh->points = out.pointlist;
+	triangular_mesh->boundary = boundaryPoints;
+	triangular_mesh->num_points = out.numberofpoints;
+	triangular_mesh->num_boundary_points = out.numberofsegments;
+	triangular_mesh->pointmarkers = out.pointmarkerlist;
+	triangular_mesh->triangles = out.trianglelist;
+	triangular_mesh->num_triangles = out.numberoftriangles;
 
-	}
+
+
 
 	// end of program, free memory !
 
-	free(connected_segments);
-	free(in->pointlist);
- 	free(in->pointattributelist);
-  	free(in->segmentmarkerlist);
-  	free(in->segmentlist);
-  	free(in->regionlist);
-  	free(in);
+	// free(connected_segments);
+	// free(in.pointlist);
+ // 	free(in.pointattributelist);
+ //  	free(in.segmentmarkerlist);
+ //  	free(in.segmentlist);
+ //  	free(in.regionlist);
 
 
-  	return out;
+  	return triangular_mesh;
 	
 
 
 
 }
+
+
+	//in.pointlist = (REAL *) NULL;
+	//in.pointattributelist = (REAL * ) NULL;
+	//in.pointmarkerlist = (int * ) NULL;
+	// in.trianglelist = (int * ) NULL;
+	// in.triangleattributelist = (REAL*) NULL;
+	// in.trianglearealist = (REAL *) NULL;
+	// in.neighborlist = (int *) NULL;
+	// in.segmentlist = (int *) NULL;
+	// in.segmentmarkerlist = (int * ) NULL;
+	// in.holelist = (REAL*) NULL;
+	// in.regionlist = (REAL*) NULL;
+	// in.edgelist = (int *) NULL;
+	// in.edgemarkerlist = (int *) NULL;
+	// in.normlist = (REAL * ) NULL;

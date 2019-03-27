@@ -131,10 +131,16 @@ int main(int argc, char** argv) {
 	int  numnodes;
 	double * temperatures;
 
-
 	// TRIANGULATION
-	struct triangulateio * tri = trigen(&points_out,&boundaryNodes,opt,
-		fileName,&numnodes,&numBoundary,&nodalMarkers,&temperatures);	
+	TRIANGLE * tri = trigen(opt,fileName);	
+
+
+	boundaryNodes = tri->boundary;
+	numBoundary = tri->num_boundary_points;
+	nodalMarkers = tri->pointmarkers;
+	temperatures = tri->temperatures;
+	numnodes = tri->num_points;
+	points_out = tri->points;
 
 
 	MAT * xI = m_get(numnodes,dim);
@@ -409,9 +415,10 @@ int main(int argc, char** argv) {
 		// Write material points to file
 		write_material_points("materialpoints.csv", material_points);
 
-		double * tri_points = tri->pointlist;
-		int * triangles = tri->trianglelist;
-		int number_of_triangles = tri->numberoftriangles;
+
+		double * tri_points = tri->points;
+		int * triangles = tri->triangles;
+		int number_of_triangles = tri->num_triangles;
 
 
 		fp = fopen("triangles.csv","w");

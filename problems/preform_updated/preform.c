@@ -70,7 +70,7 @@ char * integration_type = "TRIANGLE";
 
 //#define WITH_MOULD 
 #define WITH_STRETCHROD
-#define NUMBER_OF_THREADS 4
+#define NUMBER_OF_THREADS 1
 
 
 
@@ -155,14 +155,14 @@ int main(int argc, char** argv) {
 	/*  Upstream parameters */
 	double P0 = 0;
 	double tLine = 304.724;
-	double pLine = 0.8; // 0.6 Mpa;
+	double pLine = 0.9; // 0.6 Mpa;
 	double pLine_FINAL = 3;
 	double aReduced_final = 0.001;
 	double molarMass = 29;
 	double Rg = 8.314;
 	double rLine = Rg/molarMass;
 	double gammaLine = 1.4;
-	double aReduced = 0.0003924;
+	double aReduced = 0.0013924;
 	double vDead = (85*1000) ; /*  dead volume in mL -> mm^3 */
 
 	/* ------------------------------------------*/
@@ -249,10 +249,18 @@ int main(int argc, char** argv) {
 	int  numnodes;
 	double * temperatures;
 
-
 	// TRIANGULATION
-	struct triangulateio * tri = trigen(&points_out,&boundaryNodes,opt,
-		fileName,&numnodes,&numBoundary,&nodalMarkers,&temperatures);	
+	TRIANGLE * tri = trigen(opt,fileName);	
+
+
+
+	boundaryNodes = tri->boundary;
+	numBoundary = tri->num_boundary_points;
+	nodalMarkers = tri->pointmarkers;
+	temperatures = tri->temperatures;
+	numnodes = tri->num_points;
+	points_out = tri->points;
+
 
 
 	MAT * xI = m_get(numnodes,dim);
@@ -325,11 +333,30 @@ int main(int argc, char** argv) {
 	// for ( int i = 0 ; i < numnodes ; i++)
 	// {
 	// 	xI_copy->me[i][1] += -30;
+	// 			xI_copy->me[i][0] += 0.2;
+
 	// }
 
 	// move_nodes(cells, &active_cells, cell_size, xI_copy);
 	// move_nodes(cells, &active_cells, cell_size, xI_copy);
 
+
+	// fp = fopen("nodes.csv","w");
+	// for ( int i =0 ; i < numnodes ; i++)
+	// {
+	// 	for ( int k = 0 ; k < dim ; k++)
+	// 	{
+	// 		fprintf(fp, "%lf",xI_copy->me[i][k]);
+
+	// 		if ( k < dim - 1)
+	// 		{
+	// 			fprintf(fp,",");
+	// 		}
+
+	// 	}
+	// 	fprintf(fp, "\n");
+	// }
+	// fclose(fp);
 	// write_active_cells("active_cells.csv",active_cells);
 
 	// exit(0);
@@ -388,9 +415,9 @@ int main(int argc, char** argv) {
 		// Write material points to file
 		write_material_points("materialpoints.csv", material_points);
 
-		double * tri_points = tri->pointlist;
-		int * triangles = tri->trianglelist;
-		int number_of_triangles = tri->numberoftriangles;
+		double * tri_points = tri->points;
+		int * triangles = tri->triangles;
+		int number_of_triangles = tri->num_triangles;
 
 
 		fp = fopen("triangles.csv","w");

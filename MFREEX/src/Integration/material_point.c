@@ -155,11 +155,13 @@ MATERIAL_POINTS * create_material_points(void * cells,
 	}else if ( strcmp(integration_type,"TRIANGLE") == 0)
 
 	{
-		struct triangulateio * tri = (struct triangulateio *) cells;
+		TRIANGLE * tri = (TRIANGLE *) cells;
 
-		double * tri_points = tri->pointlist;
-		int * triangles = tri->trianglelist;
-		int number_of_triangles = tri->numberoftriangles;
+		double * tri_points = tri->points;
+		int * triangles = tri->triangles;
+		int number_of_triangles = tri->num_triangles;
+
+		
 		int * quad_orders = malloc(number_of_triangles*sizeof(int));
 
 

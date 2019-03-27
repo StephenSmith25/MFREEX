@@ -86,7 +86,16 @@ int main(void )
 	int numBoundary;
 	int * nodalMarkers;
 	int  numnodes;
-	trigen(&points_out,&boundaryNodes,opt,fileName,&numnodes,&numBoundary,&nodalMarkers,NULL);
+	
+	TRIANGLE * tri = trigen(opt,fileName);	
+
+	boundaryNodes = tri->boundary;
+	numBoundary = tri->num_boundary_points;
+	nodalMarkers = tri->pointmarkers;
+	numnodes = tri->num_points;
+	points_out = tri->points;	
+
+
 	MAT * xI = m_get(numnodes,dim);
 
 

@@ -17,13 +17,29 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
 #define REAL double
 
 typedef struct triangulateio * tri ;
 
-struct triangulateio *  trigen(double **points, int ** boundary, 
-	char * options, char * fileName, int * numPoints, int * numBoundary, int ** pointmarkers, double ** temperatures);
+
+// struct used to represent the triangle 
+typedef struct _TRIANGLE{
+
+	double * points;
+	double * temperatures;
+	int * boundary;
+	int * triangles;
+	int * pointmarkers;
+
+	int num_points;
+	int num_triangles;
+	int num_boundary_points;
+
+
+
+}TRIANGLE;
+
+TRIANGLE  *  trigen(char * options, char * fileName);
 
 
 

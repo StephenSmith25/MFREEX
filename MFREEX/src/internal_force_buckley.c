@@ -3,7 +3,6 @@
 
 
 
-static double epsilon_penalty = -1e5;
 
 void internal_force_buckley(void *threadarg)
 
@@ -44,7 +43,7 @@ void internal_force_buckley(void *threadarg)
 	__zero__(RPEN->ve,RPEN->max_dim);
 
 
-
+	double epsilon_penalty = 0;
 
 
 
@@ -109,7 +108,7 @@ void internal_force_buckley(void *threadarg)
 
 		double b1 = 0.06;
 		double b2 = 1.44;
-		double Le = 1;
+		double Le =0;
 		double Cd = 1400;
 		double div_v = stateNew->div_v;
 		double qv =  rho*Le*b1*Cd * div_v;
