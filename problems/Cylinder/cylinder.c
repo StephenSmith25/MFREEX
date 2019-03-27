@@ -81,7 +81,6 @@ char * integration_type = "TRIANGLE";
 const double rho = 1000e-9;
 
 
-#define NUMBER_OF_THREADS 4
 
 
 int main(int argc, char** argv) {
@@ -99,6 +98,14 @@ int main(int argc, char** argv) {
 	FILE * fp;
 	int i;
 
+	int NUMBER_OF_THREADS = 4;
+	if ( argv[1] != NULL)
+	{
+		NUMBER_OF_THREADS = atoi(argv[1]);
+
+	}else{
+		NUMBER_OF_THREADS = 4;	
+	}
 
 
 	/*////////////////////////////////////////////////////////// */
