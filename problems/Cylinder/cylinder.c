@@ -45,7 +45,7 @@ char * basis_type = "linear";
 char * weight = "cubic";
 char * kernel_shape = "radial";
 
-double beta =2;
+double beta =1.2;
 
 
 // how much larger can the domains get 

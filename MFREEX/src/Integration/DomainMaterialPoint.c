@@ -126,7 +126,7 @@ int setDomainMaterialPoint(MAT * nodes, CELLS * cells, MATERIAL_POINT * MP)
 			v_sort(distances,order);
 	
 
-			MP->r_cutoff = 1.2 *  distances->ve[6];
+			MP->r_cutoff = MP->beta *  distances->ve[6];
 
 
 			MP->num_neighbours = neighbour_RangeSearch(MP->neighbours,
@@ -180,7 +180,7 @@ int updateDomainMaterialPoint(MAT * nodes, CELLS * cells,  MATERIAL_POINT * MP)
 	}
 
 
-	MP->r_cutoff = 1.2*distance[4];
+	MP->r_cutoff = MP->beta *distance[4];
 	 MP->num_neighbours = neighbour_RangeSearch(MP->neighbours
 	 		,cells, MP->coords_n_1, MP->r_cutoff, nodes);
 

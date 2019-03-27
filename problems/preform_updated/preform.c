@@ -46,7 +46,7 @@ double delta_t = 5e-7;
 const double dmax = 2;
 const double dmax_x =2;
 const double dmax_y =2;
-double beta = 1.1;
+double beta = 1.4;
 
 
 
