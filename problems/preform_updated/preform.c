@@ -43,7 +43,7 @@ const double TMAX = 1;
 double delta_t = 5e-7;
 
 // Meshfree parameters
-const double dmax = 2;
+const double dmax = 3;
 const double dmax_x =2;
 const double dmax_y =2;
 double beta = 1.4;
@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
 	matParams->ve[6] = (67.47); // Cv
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
-	matParams->ve[9] = 2.8e9; // Kb
+	matParams->ve[9] = 0.6e9; // Kb
 	matParams->ve[10] = 6e8;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
@@ -164,7 +164,7 @@ int main(int argc, char** argv) {
 	/*  Upstream parameters */
 	double P0 = 0;
 	double tLine = 304.724;
-	double pLine = 0.9; // 0.6 Mpa;
+	double pLine = 1.2; // 0.6 Mpa;
 	double pLine_FINAL = 3;
 	double aReduced_final = 0.001;
 	double molarMass = 29;
@@ -626,21 +626,15 @@ int main(int argc, char** argv) {
 	}
 	printf("total number of material points = %d \n", total_number_material_points);
 
-	// for ( int i = 0 ; i < number_of_material_points ; i++)
-	// {
-	// 	double y = material_points->MP[i]->coords_n_1[1];
+	for ( int i = 0 ; i < number_of_material_points ; i++)
+	{
 
-	// 	if ( y < 20)
-	// 	{
-	// 		material_points->MP[i]->stateNew->temperature=97.45+273.15;
-	// 		material_points->MP[i]->stateOld->temperature=97.45+273.15;
-	// 	}else{
-	// 		material_points->MP[i]->stateNew->temperature=104.45+273.15;
-	// 		material_points->MP[i]->stateOld->temperature=104.45+273.15;
+			material_points->MP[i]->stateNew->temperature=104.45+273.15;
+			material_points->MP[i]->stateOld->temperature=104.45+273.15;
 	
-	// 	}
+		
 
-	// }
+	}
 
 	// v_zero(nodal_mass);
 	// for ( int i = 0 ; i < number_of_material_points ; i++)
@@ -830,7 +824,6 @@ int main(int argc, char** argv) {
 
 		/*  Update time step */
 		t_n_1 = t_n + delta_t;
-
 
 
 		for ( int k = 0 ; k < eb1->nodes->max_dim; k++)
@@ -1096,14 +1089,6 @@ int main(int argc, char** argv) {
 
 
 
-
-
-		for (int i=0; i < NUMBER_OF_THREADS; i++){
-
-	 		__add__(RPEN[i]->ve, R_pen->ve,R_pen->ve, num_dof);
-	 		__add__(FINT[i]->ve, Fint_n_1->ve,Fint_n_1->ve, num_dof);
-
-		}
 		//v_foutput(stdout, d_n_1);
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/

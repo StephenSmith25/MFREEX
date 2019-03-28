@@ -3,11 +3,16 @@
 #include "Deformation/velocity_grad.h"
 
 
-static double epsilon_penalty = -1e5;
+static double epsilon_penalty = -1e6;
 
 static double mu = 4000;
 static double lambda = 1e5;
 static double rho = 1000e-9;
+
+
+//extern double * FINT_GLOBAL;
+//extern double * RPEN_GLOBAL;
+
 
 
 
