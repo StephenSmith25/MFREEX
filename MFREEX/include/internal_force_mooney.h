@@ -21,6 +21,8 @@ typedef struct internal_force_args
 
 	// Shared
 	MATERIAL_POINTS * material_points;
+
+	MATERIAL_POINT * MP;
 	VEC * inc_disp;
 	VEC * materialParameters;
 	CELLS * cells;

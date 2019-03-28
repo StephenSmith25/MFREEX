@@ -49,7 +49,6 @@ const double dmax_y =2;
 double beta = 1.4;
 
 
-
 char * basis_type = "linear";
 char * weight = "cubic";
 char * kernel_shape = "radial";
@@ -70,9 +69,6 @@ char * integration_type = "TRIANGLE";
 
 //#define WITH_MOULD 
 #define WITH_STRETCHROD
-#define NUMBER_OF_THREADS 1
-
-
 
 
 const int WRITE_FREQ =250;
@@ -84,6 +80,19 @@ int main(int argc, char** argv) {
 	/*			        Initialisation                           */
 	/*                                                           */
 	/*////////////////////////////////////////////////////////// */
+
+
+
+	int NUMBER_OF_THREADS = 2;
+	if ( argv[1] != NULL)
+	{
+		NUMBER_OF_THREADS = atoi(argv[1]);
+
+	}else{
+		NUMBER_OF_THREADS = 2;	
+	}
+
+
 
 	FILE * fp;
 
@@ -816,7 +825,7 @@ int main(int argc, char** argv) {
 
 	/*  Explicit Loop */
 	while ( t_n < TMAX)
-	//while ( n < 450)
+	//while ( n < 10000)
 	{
 
 		/*  Update time step */
@@ -1052,20 +1061,38 @@ int main(int argc, char** argv) {
 		__zero__(Fint_n_1->ve,Fint_n_1->max_dim);
 		__sub__(d_n_1->ve, d_n->ve,disp_inc->ve, num_dof);
 		__zero__(nodal_mass->ve,numnodes);
+		int i;
 
-		for (int i=0; i < NUMBER_OF_THREADS; i++){
-
-			
+		for ( i = 0 ; i  < NUMBER_OF_THREADS ; i++)
+		{
 			__add__(NODAL_MASS[i]->ve, nodal_mass->ve,nodal_mass->ve, numnodes);
-
-			 thpool_add_work( thpool, 
-			 (void*) internal_force_buckley, 
-			 (void*) &INTERNAL_FORCE_ARGS[i]);
+			__zero__(NODAL_MASS[i]->ve, numnodes);
+			__zero__(RPEN[i]->ve, num_dof);
+			__zero__(FINT[i]->ve, num_dof);
 
 		}
 
-		thpool_wait(thpool);
+		#pragma omp parallel for num_threads(NUMBER_OF_THREADS)
+		for (i=0; i < number_of_material_points; i++){
 
+			int ID = omp_get_thread_num();
+			INTERNAL_FORCE_ARGS[ID].MP = material_points->MP[i];
+			internal_force_buckley(&INTERNAL_FORCE_ARGS[ID]);
+			//thpool_add_work( thpool, (void*) internal_force_mooney, &INTERNAL_FORCE_ARGS[i]);
+
+		}
+
+		// for (int i = 0 ; i < NUMBER_OF_THREADS ; i++)
+		// {
+		// 	pthread_join( threads[i], NULL);
+
+		// }
+   
+		for (i=0; i < NUMBER_OF_THREADS; i++){
+		
+	 		__add__(RPEN[i]->ve, R_pen->ve,R_pen->ve, num_dof);
+	 		__add__(FINT[i]->ve, Fint_n_1->ve,Fint_n_1->ve, num_dof);
+		}
 
 
 

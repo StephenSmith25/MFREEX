@@ -45,11 +45,10 @@ char * basis_type = "linear";
 char * weight = "cubic";
 char * kernel_shape = "radial";
 
-double beta =1.2;
-
 
 // how much larger can the domains get 
 const double alpha = 1.2;
+double beta =1.2;
 
 // Meshfree parameters
 const double dmax =2;
@@ -98,13 +97,13 @@ int main(int argc, char** argv) {
 	FILE * fp;
 	int i;
 
-	int NUMBER_OF_THREADS = 4;
+	int NUMBER_OF_THREADS = 2;
 	if ( argv[1] != NULL)
 	{
 		NUMBER_OF_THREADS = atoi(argv[1]);
 
 	}else{
-		NUMBER_OF_THREADS = 4;	
+		NUMBER_OF_THREADS = 2;	
 	}
 
 
@@ -717,20 +716,20 @@ int main(int argc, char** argv) {
 	// create thread pool
 	//threadpool thpool = thpool_init(NUMBER_OF_THREADS);
 
-    pthread_t threads[NUMBER_OF_THREADS];
-   	pthread_attr_t attr[NUMBER_OF_THREADS];
+ //    pthread_t threads[NUMBER_OF_THREADS];
+ //   	pthread_attr_t attr[NUMBER_OF_THREADS];
 
-    for ( int i = 0 ;i < NUMBER_OF_THREADS ; i++)
-    {
-       pthread_attr_init(&attr[i]);
-       pthread_attr_setdetachstate(&attr[i], PTHREAD_CREATE_JOINABLE); 	
-    }
+ //    for ( int i = 0 ;i < NUMBER_OF_THREADS ; i++)
+ //    {
+ //       pthread_attr_init(&attr[i]);
+ //       pthread_attr_setdetachstate(&attr[i], PTHREAD_CREATE_JOINABLE); 	
+ //    }
 
 
-	threadpool thpool = thpool_init(NUMBER_OF_THREADS);
+	// threadpool thpool = thpool_init(NUMBER_OF_THREADS);
 
-	while ( t_n < tMax){
-	//while ( t_n < 0.01){
+	//while ( t_n < tMax){
+	while ( t_n < 0.01){
 
 
 
@@ -780,8 +779,6 @@ int main(int argc, char** argv) {
 
 
 
-
-
 		__add__(nodes_X->base, d_n_1->ve, XI_n_1->base, num_dof);
 		move_nodes(cells, &active_cells, cell_size, XI_n_1);
 
@@ -797,12 +794,6 @@ int main(int argc, char** argv) {
 		update_pressure_boundary(pB, XI_n_1);
 		v_zero(Fext_n_1);
 		assemble_pressure_load(Fext_n_1, pre_n_1, pB);
-	
-
-
-
-		// update incremental displacemnt
-		__sub__(d_n_1->ve, d_n->ve, inc_disp->ve, num_dof);
 
 
 
@@ -813,15 +804,27 @@ int main(int argc, char** argv) {
 		/* --------------------------------------------------------------*/
 		__zero__(R_pen->ve,num_dof);
 		__zero__(Fint_n_1->ve,Fint_n_1->max_dim);
+		
+
 		// update incremental displacemnt
 		__sub__(d_n_1->ve, d_n->ve, inc_disp->ve, num_dof);
 
-
-
-
-		for (i=0; i < NUMBER_OF_THREADS; i++){
+		for ( i = 0 ; i  < NUMBER_OF_THREADS ; i++)
+		{
 			__add__(NODAL_MASS[i]->ve, nodal_mass->ve,nodal_mass->ve, numnodes);
-			thpool_add_work( thpool, (void*) internal_force_mooney, &INTERNAL_FORCE_ARGS[i]);
+			__zero__(NODAL_MASS[i]->ve, numnodes);
+			__zero__(RPEN[i]->ve, num_dof);
+			__zero__(FINT[i]->ve, num_dof);
+
+		}
+
+		#pragma omp parallel for num_threads(NUMBER_OF_THREADS)
+		for (i=0; i < number_of_material_points; i++){
+
+			int ID = omp_get_thread_num();
+			INTERNAL_FORCE_ARGS[ID].MP = material_points->MP[i];
+			internal_force_mooney(&INTERNAL_FORCE_ARGS[ID]);
+			//thpool_add_work( thpool, (void*) internal_force_mooney, &INTERNAL_FORCE_ARGS[i]);
 
 		}
 
@@ -831,11 +834,12 @@ int main(int argc, char** argv) {
 
 		// }
    
-		thpool_wait(thpool);
 		for (i=0; i < NUMBER_OF_THREADS; i++){
 		
 	 		__add__(RPEN[i]->ve, R_pen->ve,R_pen->ve, num_dof);
 	 		__add__(FINT[i]->ve, Fint_n_1->ve,Fint_n_1->ve, num_dof);
+
+
 
 		}
 
@@ -1055,10 +1059,10 @@ int main(int argc, char** argv) {
 
 
 		// find change in displacement 
-		__sub__(d_n_1->ve, d_n->ve, delta_disp->ve, num_dof);
+		//__sub__(d_n_1->ve, d_n->ve, delta_disp->ve, num_dof);
 
-		Wext += in_prod(delta_disp, Fext_n) + in_prod(delta_disp, Fext_n_1);
-		Wint += in_prod(delta_disp, Fint_n) + in_prod(delta_disp, Fint_n_1);
+		Wext += in_prod(inc_disp, Fext_n) + in_prod(inc_disp, Fext_n_1);
+		Wint += in_prod(inc_disp, Fint_n) + in_prod(inc_disp, Fint_n_1);
 		Wkin = 0;
 		for ( int i = 0 ; i < mfree.num_nodes; i++ )
 		{
@@ -1081,7 +1085,7 @@ int main(int argc, char** argv) {
 		v_copy(Fint_n_1,Fint_n);
 		v_copy(Fext_n_1,Fext_n);
 		//deltaT = 0.85*delta_t_min; //delta_t_min;
-		v_copy(v_n_h,v_n_mh);
+		//v_copy(v_n_h,v_n_mh);
 		v_copy(d_n_1,d_n);
 		v_copy(v_n_1,v_n);
 		m_copy(XI_n_1,XI_n);
@@ -1089,8 +1093,8 @@ int main(int argc, char** argv) {
 		t_n = t_n_1;
 		// update iteration counter
 		n++	;
-
-		printf("%i  \t  %lf  \t %lf \t  %10.2E %10.2E \n",n,t_n,pre_n_1, Wbal, deltaT);
+		if ( n % 5000 == 0)
+			printf("%i  \t  %lf  \t %lf \t  %10.2E %10.2E \n",n,t_n,pre_n_1, Wbal, deltaT);
 	}
 
 
