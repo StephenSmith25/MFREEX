@@ -180,7 +180,7 @@ int updateDomainMaterialPoint(MAT * nodes, CELLS * cells,  MATERIAL_POINT * MP)
 	}
 
 
-	MP->r_cutoff = MP->beta *distance[4];
+	MP->r_cutoff = MP->beta *distance[5];
 	 MP->num_neighbours = neighbour_RangeSearch(MP->neighbours
 	 		,cells, MP->coords_n_1, MP->r_cutoff, nodes);
 
@@ -204,27 +204,27 @@ int updateDomainMaterialPoint(MAT * nodes, CELLS * cells,  MATERIAL_POINT * MP)
 
 
 
-	// // Test conditions
-	bool volume_condition = false;
- 	bool mat_point_contained = false;
+	// // // Test conditions
+	// bool volume_condition = false;
+ // 	bool mat_point_contained = false;
 
- 	// variables
- 	double area_support = 0;
+ // 	// variables
+ // 	double area_support = 0;
 
-	while ( volume_condition == false){
+	// while ( volume_condition == false){
 
-		area_support = MP->r_cutoff * MP->r_cutoff * PI;
+	// 	area_support = MP->r_cutoff * MP->r_cutoff * PI;
 
-		if ( area_support >= MP->volume){
-			volume_condition = true;
-		}else{
-		MP->r_cutoff = 1.1*MP->r_cutoff;
-		exit(0);
+	// 	if ( area_support >= MP->volume){
+	// 		volume_condition = true;
+	// 	}else{
+	// 	MP->r_cutoff = 1.1*MP->r_cutoff;
+	// 	exit(0);
 
 
-		}
+	// 	}
 
-	}
+	// }
 
 	// check particle disturbution is non-degenerate 
 

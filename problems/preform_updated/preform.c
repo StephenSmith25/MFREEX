@@ -43,10 +43,10 @@ const double TMAX = 1;
 double delta_t = 5e-7;
 
 // Meshfree parameters
-const double dmax = 3;
+const double dmax = 2;
 const double dmax_x =2;
 const double dmax_y =2;
-double beta = 1.4;
+double beta = 1.6;
 
 
 char * basis_type = "linear";
@@ -55,7 +55,7 @@ char * kernel_shape = "radial";
 
 
 const int is_stabalised = 0;
-const int constant_support_size = 1;
+const int constant_support_size = 0;
 
 // stretch rod
 const double DISP_ROD_MAX = 90; // 132;
@@ -68,10 +68,10 @@ char * integration_type = "TRIANGLE";
 
 
 //#define WITH_MOULD 
-#define WITH_STRETCHROD
+//#define WITH_STRETCHROD
 
 
-const int WRITE_FREQ =250;
+const int WRITE_FREQ =50;
 const int PRINT_FREQ = 250;
 int main(int argc, char** argv) {
 
@@ -905,9 +905,9 @@ int main(int argc, char** argv) {
 			if (distanceProj > 0){
 
 
-				f1Cor = 1*(2*distanceProj*msNormal->me[0][0]*
+				f1Cor = 0.1*(2*distanceProj*msNormal->me[0][0]*
 					nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-				f2Cor = 1*(2*distanceProj*msNormal->me[0][1]*
+				f2Cor = 0.1*(2*distanceProj*msNormal->me[0][1]*
 					nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
 
 				for ( int k = 0 ; k < neighbours->max_dim ; k++){
@@ -1011,10 +1011,41 @@ int main(int argc, char** argv) {
 		//mv_mlt(Lambda,d_n_1,nodal_disp);
 		__add__(nodes_X->base, d_n_1->ve, XI_n_1->base, num_dof);
 
-
-
-
 		move_nodes(cells, &active_cells, cell_size, XI_n_1);
+
+
+
+
+		/* ------------------------------------------*/
+		/* --------------Write outputs---------------*/
+		/* ------------------------------------------*/
+
+		// update nodal positions
+		if ( n % WRITE_FREQ == 0 ){
+
+			char filename[50];
+			// snprintf(filename, 50, "displacement_%d%s",fileCounter,".csv");
+			// saveDisp(updatedNodes,state_n_1,"./Displacement",filename);
+			snprintf(filename, 50, "displacement_%d%s",fileCounter,".txt");
+			mat2csv(XI_n_1,"./Displacement",filename);
+
+			snprintf(filename, 50, "srRod_%d%s",fileCounter,".csv");
+			disp2csv(srNodes,"./srRod",filename);
+
+			fp = fopen("pressureTime.txt","a");
+			fprintf(fp,"%lf %lf\n",t_n_1,pre_n_1);
+			fclose(fp);
+			fileCounter++;
+
+			write_active_cells("active_cells.csv",active_cells);
+
+
+		}
+
+
+
+
+
 
 		/* ------------------------------------------*/
 		/* ------------Find External Force-----------*/
@@ -1044,6 +1075,10 @@ int main(int argc, char** argv) {
 		/*  Update pressure load */
 		update_pressure_boundary(pB, XI_n_1);
 		assemble_pressure_load(Fext_n_1, pre_n_1, pB);
+
+
+
+
 
 
 
@@ -1131,32 +1166,6 @@ int main(int argc, char** argv) {
 
 
 
-
-		/* ------------------------------------------*/
-		/* --------------Write outputs---------------*/
-		/* ------------------------------------------*/
-
-		// update nodal positions
-		if ( n % WRITE_FREQ == 0 ){
-
-			char filename[50];
-			// snprintf(filename, 50, "displacement_%d%s",fileCounter,".csv");
-			// saveDisp(updatedNodes,state_n_1,"./Displacement",filename);
-			snprintf(filename, 50, "displacement_%d%s",fileCounter,".txt");
-			mat2csv(XI_n_1,"./Displacement",filename);
-
-			snprintf(filename, 50, "srRod_%d%s",fileCounter,".csv");
-			disp2csv(srNodes,"./srRod",filename);
-
-			fp = fopen("pressureTime.txt","a");
-			fprintf(fp,"%lf %lf\n",t_n_1,pre_n_1);
-			fclose(fp);
-			fileCounter++;
-
-			write_active_cells("active_cells.csv",active_cells);
-
-
-		}
 
 
 		/* ------------------------------------------*/

@@ -353,7 +353,9 @@ case(2):
 
 	if ( maxphi > 1)
 
-	{	
+	{
+		printf("coords of point = %lf %lf \n", compute_point[0],compute_point[1]);
+		v_foutput(stdout, sf_point->phi);	
 		iv_foutput(stdout, MP->neighbours);
 		assert(v_max(sf_point->phi,&index) < 1.00);
 

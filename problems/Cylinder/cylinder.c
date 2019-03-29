@@ -61,7 +61,7 @@ double deltaT = 5e-7;
 
 int update_domains_freq = 1;
 
-int writeFreq = 1000;
+int writeFreq = 10;
 
 const int dim = 2;
 const int is_AXI = 0;
@@ -419,7 +419,7 @@ int main(int argc, char** argv) {
 			is_AXI, dim, integration_type, material_type,  cells, rho, beta,  &mfree);
 		
 		// Write material points to file
-		write_material_points("materialpoints.csv", material_points);
+		write_material_points("materialpoints_0.csv", material_points);
 
 
 		double * tri_points = tri->points;
@@ -662,7 +662,6 @@ int main(int argc, char** argv) {
 	/*  Iteration counter */
 	int n= 0;
 	/*  File write counter */
-	int writeFreq = 500;
 	int fileCounter = 1;
 
 	double pre_n_1 = 0; 
@@ -727,8 +726,8 @@ int main(int argc, char** argv) {
 
 
 	// threadpool thpool = thpool_init(NUMBER_OF_THREADS);
-	//while ( t_n < 0.01){
-	for ( int v = 0 ; v < 20000 ; v++){
+	while ( t_n < tMax){
+	//for ( int v = 0 ; v < 20000 ; v++){
 
 
 	/*  Update time step */
@@ -859,7 +858,6 @@ int main(int argc, char** argv) {
 
 
 
-
 		// used for updated rotuine
 		__zero__(nodal_mass->ve,numnodes);
 
@@ -924,7 +922,6 @@ int main(int argc, char** argv) {
 		if ( n % 5000 == 0)
 			printf("%i  \t  %lf  \t %lf \t  %10.2E %10.2E \n",n,t_n,pre_n_1, Wbal, deltaT);
 
-		#pragma omp flush
 		}
 
 	/*////////////////////////////////////////////////////////// */

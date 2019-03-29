@@ -2,7 +2,7 @@
 #include "internal_force_buckley.h"
 
 
-static double epsilon_penalty = -2e6;
+static double epsilon_penalty = -1e6;
 
 void internal_force_buckley(void *threadarg){
 	// // Internal forces

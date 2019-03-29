@@ -165,6 +165,26 @@ hold on
 %plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
 %plot(disp(plot_point,1),disp(plot_point,2),'r*')
+
+
+hold on
+plot(disp(181,1),disp(181,2),'ro');
+hold on
+plot(disp(180,1),disp(180,2),'ro');
+hold on
+plot(disp(2,1),disp(2,2),'ro');
+hold on
+plot(disp(182,1),disp(182,2),'ro');
+
+hold on
+plot(disp(267,1),disp(267,2),'ro');
+hold on
+plot(disp(352,1),disp(352,2),'ro');
+hold on
+plot(disp(176,1),disp(176,2),'ro');
+hold on
+plot(0.724474,-2.774268,'m*');
+
 axis equal
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(10)),'.csv');
@@ -194,6 +214,23 @@ disp = csvread(filename);
 
 plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 
+hold on
+plot(disp(266,1),disp(266,2),'yo');
+hold on
+plot(disp(265,1),disp(265,2),'bo');
+hold on
+plot(disp(366,1),disp(366,2),'go');
+hold on
+plot(disp(365,1),disp(365,2),'ko');
+
+hold on
+plot(disp(465,1),disp(465,2),'cyo');
+hold on
+plot(disp(153,1),disp(153,2),'ro');
+hold on
+%plot(disp(176,1),disp(176,2),'ro');
+hold on
+plot(17.166,30.97,'m*');
 
 cells = csvread('./../../build/bin/preform_alt/search_cells.csv');
 active_cells =  csvread('./../../build/bin/preform_alt/active_cells.csv');

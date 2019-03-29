@@ -4,7 +4,7 @@
 #include "ShapeFunction/mls_shapefunction_materialpoint.h"
 #include "Integration/DomainMaterialPoint.h"
 #ifndef QUADRATURE_ORDER
-#define QUADRATURE_ORDER 1
+#define QUADRATURE_ORDER 2
 #endif
 
 
@@ -357,14 +357,9 @@ MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, CELLS * grid, MAT * 
 	}
 
 
-	// m_inverse_small(MP->inc_F, MP->temp);
-
-	// mtrm_mlt(MP->temp, MP->invMI, MP->temp_1);
-
-	// m_zero(MP->invMI);
-	// m_mlt(MP->temp_1,MP->temp,MP->invMI);
 
 
+	// update domain of material point 
 	updateDomainMaterialPoint(NODES, grid, MP);
 
 
@@ -376,6 +371,12 @@ MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, CELLS * grid, MAT * 
 	MP->B = BMAT(MP->B,MP->shape_function,dim,IS_AXI,MP->coords_n_1[0]);
 
 
+	if ( IS_AXI == 1)
+	{
+		MP->INTEGRATION_FACTOR = MP->coords_n_1[0]*2*PI;
+	}else{
+		// leave integration factor as 1
+	}
 
 
 
@@ -389,12 +390,6 @@ MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, CELLS * grid, MAT * 
 
 	MP->fInt = v_resize(MP->fInt, dim*MP->num_neighbours);
 
-	if ( IS_AXI == 1)
-	{
-		MP->INTEGRATION_FACTOR = MP->coords_n_1[0]*2*PI;
-	}else{
-		// leave integration factor as 1
-	}
 
 
 
