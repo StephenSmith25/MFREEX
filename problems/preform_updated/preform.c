@@ -46,7 +46,7 @@ double delta_t = 5e-7;
 const double dmax = 2;
 const double dmax_x =2;
 const double dmax_y =2;
-double beta = 1.6;
+double beta = 1.2;
 
 
 char * basis_type = "linear";
@@ -69,9 +69,9 @@ char * integration_type = "TRIANGLE";
 
 //#define WITH_MOULD 
 //#define WITH_STRETCHROD
+//#define IS_UPDATED
 
-
-const int WRITE_FREQ =50;
+const int WRITE_FREQ =250;
 const int PRINT_FREQ = 250;
 int main(int argc, char** argv) {
 

@@ -114,14 +114,23 @@ typedef struct BOUNDARY_POINT
 }BOUNDARY_POINT;
 
 
+typedef struct UPDATE_STRUCT
+{
+	MAT * nodes;
+	MATERIAL_POINT * MP;
+	CELLS * grid;
+}UPDATE_STRUCT;
+
 MATERIAL_POINTS * create_material_points(void * cealls, int IS_AXI, int dim, 
 	char * integration_type, MATERIAL_TYPE material_type, CELLS * cells, double rho, double beta, meshfreeDomain * mfree);
 
 int write_material_points(char * filename, MATERIAL_POINTS * MPS);
 
 MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, CELLS * grid, MAT * NODES, VEC * nodal_mass);
+void * update_material_point_a(void * threadarg);
 
 void set_material_point_temperature(double temperature , MATERIAL_POINT * MP);
+void update_material_point_coords(MATERIAL_POINT * MP, MAT * NODES);
 
 
 

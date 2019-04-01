@@ -54,19 +54,18 @@ double beta =1.2;
 const double dmax =2;
 const double dmax_x = 1.5;
 const double dmax_y = 1.5;
-double tMax = 0.2;
-static double epsilon_penalty = -100000;//-1e5; 
+double tMax = 0.4;
 double deltaT = 5e-7;
 
 
-int update_domains_freq = 1;
 
-int writeFreq = 10;
+int writeFreq = 1000;
+int printFreq = 1000;
 
 const int dim = 2;
 const int is_AXI = 0;
-const double pressure = 230;
-
+const double pressure = 0.230;
+const double T_RAMP_PRESSURE = 0.05;
 
 // Material type 
 MATERIAL_TYPE material_type = HYPERELASTIC;
@@ -79,7 +78,11 @@ char * integration_type = "TRIANGLE";
 /*  Material  */
 const double rho = 1000e-9;
 
-
+ 
+#define IS_UPDATED
+#ifdef IS_UPDATED
+	#define UPDATE_FREQUENCEY 1
+#endif
 
 
 int main(int argc, char** argv) {
@@ -116,9 +119,9 @@ int main(int argc, char** argv) {
 
 	/*  Material struct */
 	VEC * materialParameters = v_get(3);
-	materialParameters->ve[0] = 1835.0;
-	materialParameters->ve[1] = 146.8;
-	materialParameters->ve[2] = 1e5;
+	materialParameters->ve[0] = 1.8350;
+	materialParameters->ve[1] = 0.1468;
+	materialParameters->ve[2] = 1e3;
 
 
 
@@ -660,7 +663,7 @@ int main(int argc, char** argv) {
 
 	double delta_t_min  = -1000;
 	/*  Iteration counter */
-	int n= 0;
+	int n= 1;
 	/*  File write counter */
 	int fileCounter = 1;
 
@@ -777,8 +780,10 @@ int main(int argc, char** argv) {
 
 
 		__add__(nodes_X->base, d_n_1->ve, XI_n_1->base, num_dof);
-		move_nodes(cells, &active_cells, cell_size, XI_n_1);
 
+#ifdef IS_UPDATED
+		move_nodes(cells, &active_cells, cell_size, XI_n_1);
+#endif
 
 		/* --------------------------------------------------------------*/
 		/* --------------------------------------------------------------*/
@@ -787,7 +792,10 @@ int main(int argc, char** argv) {
 		/* --------------------------------------------------------------*/
 
 		/*  Update pressureload */
-		pre_n_1 = pressure * smoothstep(t_n_1,tMax,0);
+
+	
+		pre_n_1 = pressure* smoothstep(t_n_1,tMax,0);
+
 		update_pressure_boundary(pB, XI_n_1);
 		v_zero(Fext_n_1);
 		assemble_pressure_load(Fext_n_1, pre_n_1, pB);
@@ -804,24 +812,38 @@ int main(int argc, char** argv) {
 		
 
 		// update incremental displacemnt
-		__sub__(d_n_1->ve, d_n->ve, inc_disp->ve, num_dof);
+		__sub__(d_n_1->ve, D_N->ve, inc_disp->ve, num_dof);
+
 
 		for ( i = 0 ; i  < NUMBER_OF_THREADS ; i++)
 		{
-			__add__(NODAL_MASS[i]->ve, nodal_mass->ve,nodal_mass->ve, numnodes);
-			__zero__(NODAL_MASS[i]->ve, numnodes);
 			__zero__(RPEN[i]->ve, num_dof);
 			__zero__(FINT[i]->ve, num_dof);
 
 		}
-		#pragma omp parallel for num_threads(NUMBER_OF_THREADS) 
+		#pragma omp parallel for num_threads(NUMBER_OF_THREADS) schedule(guided)
 			for (i=0; i < number_of_material_points; i++){
 
+
+				// assemble internal force
 				int ID = omp_get_thread_num();
 				INTERNAL_FORCE_ARGS[ID].MP = material_points->MP[i];
 				internal_force_mooney(&INTERNAL_FORCE_ARGS[ID]);
 
+
+
+				// update_material points
+				#ifdef IS_UPDATED
+				if ( n % UPDATE_FREQUENCEY == 0){
+					material_points->MP[i] = update_material_point(material_points->MP[i], cells,
+					XI_n_1, NODAL_MASS[ID]);
+				}
+				#endif
+
+
 			}
+
+
 		for (i=0; i < NUMBER_OF_THREADS; i++){
 		
 	 		__add__(RPEN[i]->ve, R_pen->ve,R_pen->ve, num_dof);
@@ -831,6 +853,7 @@ int main(int argc, char** argv) {
 		/*  Balance of forces */
 		__sub__(Fint_n_1->ve, R_pen->ve, Fint_n_1->ve, num_dof);
 		__sub__(Fext_n_1->ve,Fint_n_1->ve,Fnet->ve,num_dof);
+
 
 		for (  i = 0 ; i < numnodes  ; i++ )
 		{
@@ -857,15 +880,20 @@ int main(int argc, char** argv) {
 		}
 
 
-
 		// used for updated rotuine
-		__zero__(nodal_mass->ve,numnodes);
+#ifdef IS_UPDATED
+		if ( n % UPDATE_FREQUENCEY == 0){
+			__zero__(nodal_mass->ve,numnodes);
+			for ( i = 0 ; i  < NUMBER_OF_THREADS ; i++){
+				__add__(NODAL_MASS[i]->ve, nodal_mass->ve,nodal_mass->ve, numnodes);
+				__zero__(NODAL_MASS[i]->ve, numnodes);
 
+			}
+		}
+#endif 
 
 		// save outputs
 		if ( n % writeFreq == 0 ){
-
-
 
 			char filename[50];
 			snprintf(filename, 50, "displacement_%d%s",fileCounter,".txt");
@@ -881,14 +909,10 @@ int main(int argc, char** argv) {
 		/* -----------------Find Energy--------------*/
 		/* ------------------------------------------*/
 
-
-
-
 		// find change in displacement 
-		//__sub__(d_n_1->ve, d_n->ve, delta_disp->ve, num_dof);
-
-		Wext += in_prod(inc_disp, Fext_n) + in_prod(inc_disp, Fext_n_1);
-		Wint += in_prod(inc_disp, Fint_n) + in_prod(inc_disp, Fint_n_1);
+		__sub__(d_n_1->ve, d_n->ve, delta_disp->ve, num_dof);
+		Wext += in_prod(delta_disp, Fext_n) + in_prod(delta_disp, Fext_n_1);
+		Wint += in_prod(delta_disp, Fint_n) + in_prod(delta_disp, Fint_n_1);
 		Wkin = 0;
 		for ( int i = 0 ; i < mfree.num_nodes; i++ )
 		{
@@ -905,21 +929,30 @@ int main(int argc, char** argv) {
 		}else{
 			Wbal = fabs(Wkin + Wint - Wext)/Wmax;
 		}
+
+
+
+
+
 		// Store previous time step quanities for the kinematic, and force variables.
-
-
 		v_copy(Fint_n_1,Fint_n);
 		v_copy(Fext_n_1,Fext_n);
 		//deltaT = 0.85*delta_t_min; //delta_t_min;
 		//v_copy(v_n_h,v_n_mh);
 		v_copy(d_n_1,d_n);
 		v_copy(v_n_1,v_n);
-		m_copy(XI_n_1,XI_n);
+
+		#ifdef IS_UPDATED	
+			if ( n % UPDATE_FREQUENCEY == 0){
+				m_copy(XI_n_1,XI_n);
+				v_copy(d_n_1,D_N);
+		}
+		#endif
 		v_copy(a_n_1,a_n);
 		t_n = t_n_1;
 		// update iteration counter
 		n++	;
-		if ( n % 5000 == 0)
+		if ( n % printFreq == 0)
 			printf("%i  \t  %lf  \t %lf \t  %10.2E %10.2E \n",n,t_n,pre_n_1, Wbal, deltaT);
 
 		}

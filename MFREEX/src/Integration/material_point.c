@@ -4,7 +4,7 @@
 #include "ShapeFunction/mls_shapefunction_materialpoint.h"
 #include "Integration/DomainMaterialPoint.h"
 #ifndef QUADRATURE_ORDER
-#define QUADRATURE_ORDER 2
+#define QUADRATURE_ORDER 1
 #endif
 
 
@@ -342,21 +342,11 @@ MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, CELLS * grid, MAT * 
 	/* UPDATE MATERIAL POINT COORDINATES*/
 	for ( int i = 0 ; i < MP->num_neighbours ; i++)
 	{	
-		index = MP->neighbours->ive[i];
-
 		for ( int k = 0 ; k < dim ; k++)
 		{
-			if ( i == 0)
-			{
-				MP->coords_n[k] = MP->coords_n_1[k];
-				MP->coords_n_1[k] = 0;	
-			}
-
-			MP->coords_n_1[k] += MP->shape_function->phi->ve[i] * NODES->me[index][k];
+			MP->coords_n[k] = MP->coords_n_1[k];
 		}
 	}
-
-
 
 
 	// update domain of material point 

@@ -2,18 +2,13 @@
 #include "internal_force_mooney.h"
 #include "Deformation/velocity_grad.h"
 
+static double epsilon_penalty = -60; // NORMAL VLAUE = -50
 
-static double epsilon_penalty = 0;
-
-static double mu = 4000;
-static double lambda = 1e5;
-static double rho = 1000e-9;
-
-
+static int call_count ;
 
 void internal_force_mooney(void *threadarg) {
 	
-
+	++call_count;
 	// Initial variables
 	double P11,P12,P13,P21,P22,P23,P31,P32,P33;
 	double Xp_n, Xp_n_1, Yp_n, Yp_n_1;
@@ -21,6 +16,7 @@ void internal_force_mooney(void *threadarg) {
 	MAT * F_r = internal_force_struct->MP->F_n;
 	MATERIAL_POINT * MP = internal_force_struct->MP;
 	int num_neighbours = internal_force_struct->MP->num_neighbours;
+	double DT = internal_force_struct->dt;
 
 
 	// Compute incremental deformation gradient
@@ -30,12 +26,23 @@ void internal_force_mooney(void *threadarg) {
 		num_neighbours, internal_force_struct->inc_disp);
 
 
+	/*  Find Rate of deformation tensors at n+h*/
+	velocity_grad(MP->stateNew,MP->stateOld, DT, 0.500);
+
+	m_copy(MP->stateNew->F,MP->stateOld->F);
+
+	m_inverse_small(MP->stateNew->F, MP->stateNew->invF);
+
+
 	// Compute total deformation gradient 
 	m_mlt(internal_force_struct->MP->inc_F,
 		internal_force_struct->MP->F_n,
 		internal_force_struct->MP->stateNew->F);
 
 	
+
+	MP->stateNew->Jacobian = determinant(MP->stateNew->F);
+
 	// Integration factor
 	double intFactor = internal_force_struct->MP->volume*
 	internal_force_struct->MP->INTEGRATION_FACTOR;
@@ -46,7 +53,38 @@ void internal_force_mooney(void *threadarg) {
 		internal_force_struct->materialParameters);
 
 
+	/* ------------------------------------------*/
+	/* -----------------Damping -----------------*/
+	/* ------------------------------------------*/
+	// double rho = 1180;
+	// double b1 = 1000;
+	// double b2 =2000;
+	// double Le =	MP->r_cutoff/1000;
+	// double mu = 4e6;
+	// double lambda = 1e3; 
+	// double Cd = sqrt(((lambda+2*mu)/rho));
+	// double div_v = MP->stateNew->div_v;
+	// double qv =  rho*Le*b1*Cd * div_v;
+	// if ( div_v < 0)
+	// {
+	// 	qv += rho*Le*(b2 * Le * pow(div_v,2)) ;
 
+	// }
+	// qv = qv/pow(10,6);
+	double qv = 0;
+
+	// if ( call_count % 10000000 == 0)
+	// {
+	// 	printf("stress max = %10.2E", internal_force_struct->MP->stressVoigt->ve[0]);
+	// 	printf("qv = %10.2E \n ",qv*MP->stateNew->invF->me[1][1]);
+	
+	// }
+	//printf(" qv %lf \n",qv*MP->stateNew->invF->me[0][0]);
+
+	//printf("qv = %10.2E \n ",qv*MP->stateNew->invF->me[1][1]);
+
+	internal_force_struct->MP->stressVoigt->ve[0] += qv*MP->stateNew->invF->me[0][0] * MP->stateNew->Jacobian;
+	internal_force_struct->MP->stressVoigt->ve[1] += qv*MP->stateNew->invF->me[1][1] * MP->stateNew->Jacobian;
 
 	// push forward piola kirchoff stress to Omega_n configuration
 	sv_mlt(1.00/internal_force_struct->MP->Jn,
@@ -86,9 +124,28 @@ void internal_force_mooney(void *threadarg) {
 	}
 
 
-	// update_material point neighbours
-	MP = update_material_point(MP, internal_force_struct->cells,
-		internal_force_struct->XI_n_1, internal_force_struct->NODAL_MASS);
+	// // update_material point neighbours
+	// MP = update_material_point(MP, internal_force_struct->cells,
+	// 	internal_force_struct->XI_n_1, internal_force_struct->NODAL_MASS);
+
+	MAT * XI_n_1 = internal_force_struct->XI_n_1;
+	MAT * XI_n = internal_force_struct->XI_n;
+
+
+	/* UPDATE MATERIAL POINT COORDINATES*/
+	for ( int i = 0 ; i < MP->num_neighbours ; i++)
+	{	
+		int index = MP->neighbours->ive[i];
+
+		for ( int k = 0 ; k < 2 ; k++)
+		{
+			if ( i == 0)
+			{
+				MP->coords_n_1[k] = 0;	
+			}
+			MP->coords_n_1[k] += MP->shape_function->phi->ve[i] * XI_n_1->me[index][k];
+		}
+	}
 
 
 	// * PENALTY METHOD TO ENFORCE LINEAR DISPLACEMENT FIELD *// 
@@ -99,8 +156,11 @@ void internal_force_mooney(void *threadarg) {
 	Yp_n_1 = MP->coords_n_1[1];
 	Yp_n = MP->coords_n[1];
 	num_neighbours = MP->num_neighbours;
-	MAT * XI_n_1 = internal_force_struct->XI_n_1;
-	MAT * XI_n = internal_force_struct->XI_n;
+
+
+
+	// MAT * XI_n_1 = internal_force_struct->XI_n_1;
+	// MAT * XI_n = internal_force_struct->XI_n;
 
 
 	for ( int k = 0 ; k < num_neighbours; k++){
@@ -118,6 +178,9 @@ void internal_force_mooney(void *threadarg) {
 			+ MP->inc_F->me[1][1]*delta_x_n[1]};
 
 		double norm_x = sqrt(pow(delta_x_n[0],2) + pow(delta_x_n[1],2));
+
+
+
 		double e_x  = (delta_x_n_1[0] - x_tilde[0])/norm_x;
 		double e_y =  (delta_x_n_1[1] - x_tilde[1])/norm_x ;
 

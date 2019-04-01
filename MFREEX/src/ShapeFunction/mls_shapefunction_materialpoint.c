@@ -1,6 +1,8 @@
 #include "ShapeFunction/mls_shapefunction_materialpoint.h"
+#include "m_inverse_small.h"
 
-shape_function * new_shape_function(int compute, char * basis_type, int dim)
+
+shape_function * new_shape_function(int compute, char * basis_type, int s)
 {
 
 
@@ -10,18 +12,18 @@ shape_function * new_shape_function(int compute, char * basis_type, int dim)
 	int dim_p;
 	if ( strcmp(basis_type,"linear") == 0 )
 	{
-		if ( dim == 1){
+		if ( _DIM == 1){
 			dim_p = 2;
-		}else if ( dim == 2){
+		}else if ( _DIM == 2){
 			dim_p = 3;
 		}else{
 			dim_p = 4;
 		}
 	}else if ( strcmp(basis_type,"quadratic") == 0)
 	{
-		if ( dim == 1){
+		if ( _DIM == 1){
 			dim_p = 3;
-		}else if ( dim == 2){
+		}else if ( _DIM == 2){
 			dim_p = 6;
 		}else{
 			dim_p = 10;
@@ -46,7 +48,7 @@ shape_function * new_shape_function(int compute, char * basis_type, int dim)
 	sf_point->ppT = m_get(dim_p,dim_p);
 	sf_point->bi = v_get(dim_p);
 	sf_point->p_xi = v_get(dim_p);
-	sf_point->weights = v_get(1+dim);
+	sf_point->weights = v_get(1+_DIM);
 	sf_point->basis = m_get(1,1);
 	sf_point->p = v_get(dim_p);
 	sf_point->invA = m_get(dim_p,dim_p);
@@ -54,6 +56,7 @@ shape_function * new_shape_function(int compute, char * basis_type, int dim)
 	sf_point->LU_A = m_get(dim_p,dim_p);
 	sf_point->gamma = v_get(dim_p);
 	sf_point->inter = v_get(12);
+
 
 
 	if (compute == 2)
@@ -65,19 +68,27 @@ shape_function * new_shape_function(int compute, char * basis_type, int dim)
 		sf_point->dphi_dk = v_get(10);
 		sf_point->dp_dk = v_get(dim_p);
 
+		sf_point->invA_x = m_get(dim_p,dim_p);
+		sf_point->invA_y = m_get(dim_p,dim_p);
+		sf_point->invA_z = m_get(dim_p,dim_p);
+		sf_point->m_temp = m_get(dim_p,dim_p);
 
-		sf_point->dA_dk = malloc(dim*sizeof(MAT*));
-		sf_point->dB_dk = malloc(dim*sizeof(MAT*));
+		sf_point->inv_A = m_get(dim_p,dim_p);
+
+		sf_point->dA_dk = malloc(_DIM*sizeof(MAT*));
+		sf_point->dB_dk = malloc(_DIM*sizeof(MAT*));
 
 		// LU decompostion variables
 		sf_point->gamma_k = v_get(dim_p);
 		sf_point->RHS = v_get(dim_p);
 
 		// Derivative variables
-		for ( int k = 0 ; k < dim ; k++)
-		{	
+		for ( int k = 0 ; k < _DIM ; k++)
+		{
 			sf_point->dA_dk[k] = m_get(dim_p,dim_p);
 			sf_point->dB_dk[k] = m_get(dim_p,10);
+
+
 
 		}
 
@@ -101,7 +112,6 @@ shape_function * mls_shapefunction_materialpoint(MATERIAL_POINT * MP, int comput
 	// nodes and domain size from meshfree structure
 	char * basis_type = "linear";
 	char * weight = "cubic_spline";
-	int dim = nodes->n;
 
 	shape_function * sf_point = MP->shape_function;
 	double * compute_point = MP->coords_n_1;
@@ -111,7 +121,7 @@ shape_function * mls_shapefunction_materialpoint(MATERIAL_POINT * MP, int comput
 
 	// Initialise some storage matricies
 	if ( sf_point == NULL){
-		sf_point = new_shape_function(compute,basis_type,dim);
+		sf_point = new_shape_function(compute,basis_type,_DIM);
 	}
 
 	double xS[3] = {0,0,0};
@@ -137,7 +147,7 @@ shape_function * mls_shapefunction_materialpoint(MATERIAL_POINT * MP, int comput
 
 
 			// get polynomial basis p(x), and derivatives if required
-			polynomial_basis(sf_point->basis, x, dim, basis_type , compute);
+			polynomial_basis(sf_point->basis, x, _DIM, basis_type , compute);
 			sf_point->p = get_col(sf_point->basis, 0, sf_point->p);
 
 
@@ -161,18 +171,18 @@ shape_function * mls_shapefunction_materialpoint(MATERIAL_POINT * MP, int comput
 				double * xi = nodes->me[MP->neighbours->ive[j]];
 
 
-				for ( int k = 0 ; k < dim ; k++)
+				for ( int k = 0 ; k < _DIM ; k++)
 				{
 
 					xS[k] = x[k] - xi[k];
 				}
 
 				// get p(x_i)
-				polynomial_basis(sf_point->basis_xi, xi, dim, basis_type, 1);
+				polynomial_basis(sf_point->basis_xi, xi, _DIM, basis_type, 1);
 				sf_point->p_xi = get_col(sf_point->basis_xi,0,sf_point->p_xi);
 
 				// get weight function for node I
-				weight_function_materialpoint(sf_point->weights, MP, xS, dim);
+				weight_function_materialpoint(sf_point->weights, MP, xS, _DIM);
 
 				// shape function matricies
 				// B;
@@ -186,18 +196,24 @@ shape_function * mls_shapefunction_materialpoint(MATERIAL_POINT * MP, int comput
 			} // end loop over neighbours
 
 
-			sf_point->LU_A = m_copy(sf_point->A,sf_point->LU_A);
+			// sf_point->LU_A = m_copy(sf_point->A,sf_point->LU_A);
 
 
-			// lu decomposition of A
-			tracecatch(
-				LUfactor(sf_point->LU_A,sf_point->pivot);
-				LUsolve(sf_point->LU_A,sf_point->pivot,sf_point->p,sf_point->gamma); 
-				,"Shape_function");
+			// // lu decomposition of A
+			// tracecatch(
+			// 	LUfactor(sf_point->LU_A,sf_point->pivot);
+			// 	LUsolve(sf_point->LU_A,sf_point->pivot,sf_point->p,sf_point->gamma); 
+			// 	,"Shape_function");
 
 
 
-			sf_point->phi = vm_mlt(sf_point->B,sf_point->gamma,sf_point->phi);
+			// sf_point->phi = vm_mlt(sf_point->B,sf_point->gamma,sf_point->phi);
+			// 		 v_foutput(stdout, sf_point->phi);
+
+			m_inverse_small(sf_point->A,sf_point->LU_A);
+			vm_mlt( sf_point->LU_A, sf_point->p, sf_point->v_inter_1);
+			sf_point->phi = vm_mlt(sf_point->B, sf_point->v_inter_1,sf_point->phi);
+
 
 			double phi_sum = 0;
 			phi_sum = v_sum(sf_point->phi);
@@ -234,11 +250,11 @@ case(2):
 	
 	// get output sizes
 	sf_point->phi = v_resize(sf_point->phi,num_neighbours);
-	sf_point->dphi = m_resize(sf_point->dphi,num_neighbours,dim);
+	sf_point->dphi = m_resize(sf_point->dphi,num_neighbours,_DIM);
 
 
 	// get polynomial basis p, and derivatives if required
-	polynomial_basis(sf_point->basis, x, dim, basis_type , compute);
+	polynomial_basis(sf_point->basis, x, _DIM, basis_type , compute);
 	sf_point->p = get_col(sf_point->basis, 0,sf_point->p);
 
 
@@ -249,26 +265,30 @@ case(2):
 	}
 
 	// zero A and B
-	m_zero(sf_point->B);
+
 	sf_point->A = m_zero(sf_point->A);
 
 
 	// resize dB_dk and zero dA_dk
-	for ( int k = 0 ; k < dim ; k++)
+	for ( int k = 0 ; k < _DIM ; k++)
 	{	
 		if ( sf_point->dB_dk[k]->n != num_neighbours)
 		{
 			sf_point->dB_dk[k] = m_resize(sf_point->dB_dk[k], dim_p, num_neighbours);
+
 			sf_point->dB_dk[k] = m_zero(sf_point->dB_dk[k]);
 
 		}else{
 			sf_point->dB_dk[k] = m_zero(sf_point->dB_dk[k]);
 		}
-		sf_point->dA_dk[k] = m_zero(sf_point->dA_dk[k]);
+
+		//sf_point->dA_dk[k] = m_zero(sf_point->dA_dk[k]);
+
 	}
 
 
-
+		sf_point->dA_dk[0] = m_zero(sf_point->dA_dk[0]);
+		sf_point->dA_dk[1] = m_zero(sf_point->dA_dk[1]);
 
 	// construct moment matrix A, and B matrix
 	for ( int j = 0 ; j < num_neighbours ; ++j)
@@ -276,19 +296,19 @@ case(2):
 		// find domain size, and coords of node xi;
 		double * xi = nodes->me[MP->neighbours->ive[j]];
 
-		for ( int k = 0 ; k < dim ; k++)
+		for ( int k = 0 ; k < _DIM ; k++)
 		{
 			xS[k] = x[k] - xi[k];
 		}
 
 
 		// get p(x_i)
-		polynomial_basis(sf_point->basis_xi, xi, dim, basis_type , 1);
+		polynomial_basis(sf_point->basis_xi, xi, _DIM, basis_type , 1);
 		sf_point->p_xi = get_col(sf_point->basis_xi,0,sf_point->p_xi);
 
 
 		// get weight function for node I
-		weight_function_materialpoint(sf_point->weights, MP, xS, dim);
+		weight_function_materialpoint(sf_point->weights, MP, xS, _DIM);
 
 		// shape function matricies
 		// B;
@@ -299,9 +319,11 @@ case(2):
 		sf_point->A = ms_mltadd(sf_point->A, sf_point->ppT, sf_point->weights->ve[0], sf_point->A);
 
 		// shape function derivative matrix 
-		for ( int k = 0 ; k < dim ; k++)
+		for ( int k = 0 ; k < _DIM ; k++)
 		{
 			sf_point->dA_dk[k] = ms_mltadd(sf_point->dA_dk[k], sf_point->ppT, sf_point->weights->ve[1+k], sf_point->dA_dk[k]);
+
+	
 			sf_point->bi = sv_mlt(sf_point->weights->ve[1+k],sf_point->p_xi, sf_point->bi);
 			sf_point->dB_dk[k] = set_col(sf_point->dB_dk[k],j,sf_point->bi);
 		}
@@ -312,22 +334,94 @@ case(2):
 
 
 	// store intermediate results
-	sf_point->v_inter_1 = v_resize(sf_point->v_inter_1, num_neighbours);
-	sf_point->v_inter_2 = v_resize(sf_point->v_inter_2, num_neighbours);
+
+// 	sf_point->v_inter_1 = v_resize(sf_point->v_inter_1, num_neighbours);
+// 	sf_point->v_inter_2 = v_resize(sf_point->v_inter_2, num_neighbours);
+// 	sf_point->dphi_dk = v_resize(sf_point->dphi_dk, num_neighbours);
+
+
+// 	m_inverse_small(sf_point->A,sf_point->inv_A);
+// 	vm_mlt( sf_point->inv_A, sf_point->p, sf_point->v_inter_1);
+// 	sf_point->phi = vm_mlt(sf_point->B, sf_point->v_inter_1,sf_point->phi);
+
+
+
+
+
+// 	// FInd inv A_x, and inv A_y
+// 	m_mlt(sf_point->inv_A,sf_point->dA_dk[0],sf_point->m_temp);
+// 	m_mlt(sf_point->m_temp, sf_point->inv_A, sf_point->invA_x);
+// 	sm_mlt(-1.00,sf_point->invA_x,sf_point->invA_x);
+// 	get_col(sf_point->basis, 1 ,sf_point->dp_dk);
+
+
+// 	// first term
+
+// 	v_zero(sf_point->dphi_dk);
+
+
+// 	vm_mlt(sf_point->inv_A,sf_point->dp_dk,sf_point->v_inter_1);
+// 	vm_mlt(sf_point->B,sf_point->v_inter_1,sf_point->v_inter_2);
+// 	v_add(sf_point->dphi_dk,sf_point->v_inter_2,sf_point->dphi_dk);
+
+
+// 	// second term
+// 	vm_mlt(sf_point->invA_x,sf_point->p,sf_point->v_inter_1);
+// 	vm_mlt(sf_point->B,sf_point->v_inter_1,sf_point->v_inter_2);
+// 	v_add(sf_point->dphi_dk,sf_point->v_inter_2,sf_point->dphi_dk);
+
+
+// 	// third term
+// 	vm_mlt(sf_point->inv_A,sf_point->p,sf_point->v_inter_1);
+// 	vm_mlt(sf_point->dB_dk[0],sf_point->v_inter_1,sf_point->v_inter_2);
+// 	v_add(sf_point->dphi_dk,sf_point->v_inter_2,sf_point->dphi_dk);
+// 	set_col(sf_point->dphi, 0, sf_point->dphi_dk);
+
+
+// #if _DIM == 2
+
+
+// 	get_col(sf_point->basis, 2 ,sf_point->dp_dk);
+
+// 	m_mlt(sf_point->inv_A,sf_point->dA_dk[1],sf_point->m_temp);
+// 	m_mlt(sf_point->m_temp, sf_point->inv_A, sf_point->invA_y);
+// 	sm_mlt(-1.00,sf_point->invA_y,sf_point->invA_y);
+
+// 	v_zero(sf_point->dphi_dk);
+
+// 	vm_mlt(sf_point->inv_A,sf_point->dp_dk,sf_point->v_inter_1);
+// 	vm_mlt(sf_point->B,sf_point->v_inter_1,sf_point->v_inter_2);
+// 	v_add(sf_point->dphi_dk,sf_point->v_inter_2,sf_point->dphi_dk);
+
+
+
+// 	// second term
+// 	vm_mlt(sf_point->invA_y,sf_point->p,sf_point->v_inter_1);
+// 	vm_mlt(sf_point->B,sf_point->v_inter_1,sf_point->v_inter_2);
+// 	v_add(sf_point->dphi_dk,sf_point->v_inter_2,sf_point->dphi_dk);
+// 	// third term
+// 	vm_mlt(sf_point->inv_A,sf_point->p,sf_point->v_inter_1);
+// 	vm_mlt(sf_point->dB_dk[1],sf_point->v_inter_1,sf_point->v_inter_2);
+// 	v_add(sf_point->dphi_dk,sf_point->v_inter_2,sf_point->dphi_dk);
+// 	set_col(sf_point->dphi, 1, sf_point->dphi_dk);
+
+
+// #elif _DIM == 3
+
+//   #endif
+	m_zero(sf_point->dphi);
 	sf_point->LU_A = m_copy(sf_point->A,sf_point->LU_A);
 
 
 	// lu decomposition of A
-	tracecatch(
-		LUfactor(sf_point->LU_A,sf_point->pivot);
-		LUsolve(sf_point->LU_A,sf_point->pivot,sf_point->p,sf_point->gamma); 
-		,"Shape_function");
+	LUfactor(sf_point->LU_A,sf_point->pivot);
+	LUsolve(sf_point->LU_A,sf_point->pivot,sf_point->p,sf_point->gamma); 
 
 	sf_point->phi = vm_mlt(sf_point->B,sf_point->gamma,sf_point->phi);
 	
-	double lc_sum[dim];
+	double lc_sum[_DIM];
 	// shape function derivatives
-	for ( int k = 0; k < dim ; k++)
+	for ( int k = 0; k < _DIM ; k++)
 	{
 		mv_mlt(sf_point->dA_dk[k],sf_point->gamma,sf_point->v_inter_1);
 		get_col(sf_point->basis, k+1,sf_point->dp_dk);
@@ -340,7 +434,9 @@ case(2):
 		lc_sum[k] = 0;
 	}
 
+	// m_foutput(stdout, sf_point->dphi);
 
+	// exit(0);
 	double phi_sum = 0;
 	phi_sum = v_sum(sf_point->phi);
 	double tol = 1e-4;
@@ -349,50 +445,50 @@ case(2):
 	int index = 0;
 
 
-	double maxphi = v_max(sf_point->phi,&index);
+	// double maxphi = v_max(sf_point->phi,&index);
 
-	if ( maxphi > 1)
+	// if ( maxphi > 1)
 
-	{
-		printf("coords of point = %lf %lf \n", compute_point[0],compute_point[1]);
-		v_foutput(stdout, sf_point->phi);	
-		iv_foutput(stdout, MP->neighbours);
-		assert(v_max(sf_point->phi,&index) < 1.00);
+	// {
+	// 	printf("coords of point = %lf %lf \n", compute_point[0],compute_point[1]);
+	// 	v_foutput(stdout, sf_point->phi);	
+	// 	iv_foutput(stdout, MP->neighbours);
+	// 	assert(v_max(sf_point->phi,&index) < 1.00);
 
-	}
-	assert(v_max(sf_point->phi,&index) < 1.00);
-
-
-	if ( fabs(phi_sum -1) > tol)
-		{	
-
-			printf("ERROR ERROR : PARTION OF UNITY FAILED \n");
-			printf("ERROR ERROR : PARTION OF UNITY FAILED  \n");
-
-		}
+	// // }
+	// assert(v_max(sf_point->phi,&index) < 1.00);
 
 
-	// derivative consistencey check
-	for ( int k = 0 ; k < num_neighbours; k++)
-	{	
-		double * xi = nodes->me[MP->neighbours->ive[k]];
-		for ( int l = 0 ; l < dim ; l++)
-		{
-			lc_sum[l] += xi[l]*sf_point->dphi->me[k][l];
-		}
+	// if ( fabs(phi_sum -1) > tol)
+	// 	{	
+
+	// 		printf("ERROR ERROR : PARTION OF UNITY FAILED \n");
+	// 		printf("ERROR ERROR : PARTION OF UNITY FAILED  \n");
+
+	// 	}
 
 
-	}
-	// derivative consistencey check
-	for ( int k = 0 ; k < dim ; k++)
-		{
-		if ( fabs(lc_sum[k]-1) > tol)
-			{	
-				printf("ERROR ERROR : FIRST ORDER DERIVATIVE CONSISTENCEY FAILED \n");
-				printf("ERROR ERROR : FIRST ORDER DERIVATIVE CONSISTENCEY FAILED \n");
+	// // derivative consistencey check
+	// for ( int k = 0 ; k < num_neighbours; k++)
+	// {	
+	// 	double * xi = nodes->me[MP->neighbours->ive[k]];
+	// 	for ( int l = 0 ; l < _DIM ; l++)
+	// 	{
+	// 		lc_sum[l] += xi[l]*sf_point->dphi->me[k][l];
+	// 	}
 
-			}
-		}
+
+	// }
+	// // derivative consistencey check
+	// for ( int k = 0 ; k < _DIM ; k++)
+	// 	{
+	// 	if ( fabs(lc_sum[k]-1) > tol)
+	// 		{	
+	// 			printf("ERROR ERROR : FIRST ORDER DERIVATIVE CONSISTENCEY FAILED \n");
+	// 			printf("ERROR ERROR : FIRST ORDER DERIVATIVE CONSISTENCEY FAILED \n");
+
+	// 		}
+	// 	}
 
 
 

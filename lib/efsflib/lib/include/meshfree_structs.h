@@ -90,7 +90,11 @@ typedef struct shape_function{
 	MAT * gamma_k_m ;
 	VEC * RHS ;
 
-
+	MAT * invA_x;
+	MAT * invA_y ;
+	MAT * invA_z ;
+	MAT * m_temp ;
+	MAT * inv_A;
 	/* END INTERNAL VARIABLES */
 
 

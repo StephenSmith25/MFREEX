@@ -295,7 +295,7 @@ void internal_force_buckley(void *threadarg){
 	double rho = 1380e-9;
 	double b1 = 0.06;
 	double b2 = 1.44;
-	double Le =0.1;
+	double Le =1;
 	double Cd = 1400;
 	double div_v = MP->stateNew->div_v;
 	double qv =  rho*Le*b1*Cd * div_v;

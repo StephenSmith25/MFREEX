@@ -12,6 +12,10 @@
 #include "ShapeFunction/neighbours_materialpoint.h"
 #include "ShapeFunction/weight_function_materialpoint.h"
 
+#ifndef _DIM
+#define _DIM  2
+#endif
+
 
 shape_function * mls_shapefunction_materialpoint(MATERIAL_POINT * MP, int compute, MAT * nodes);
 

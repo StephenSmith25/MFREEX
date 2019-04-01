@@ -180,8 +180,8 @@ int updateDomainMaterialPoint(MAT * nodes, CELLS * cells,  MATERIAL_POINT * MP)
 	}
 
 
-	MP->r_cutoff = MP->beta *distance[5];
-	 MP->num_neighbours = neighbour_RangeSearch(MP->neighbours
+	MP->r_cutoff = MP->beta *distance[6];
+	MP->num_neighbours = neighbour_RangeSearch(MP->neighbours
 	 		,cells, MP->coords_n_1, MP->r_cutoff, nodes);
 
 

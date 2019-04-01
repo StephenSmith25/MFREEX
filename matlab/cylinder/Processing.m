@@ -26,7 +26,7 @@ disp = csvread(filename);
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 axis equal
 hold on
-%plot(material_points(:,1),material_points(:,2),'r.');
+plot(material_points(:,1),material_points(:,2),'r.');
 xlim([0,40])
 ylim([0,30])
 
@@ -72,7 +72,7 @@ B = fscanf(fileID,formatSpec,sizeA);
 B = B';
 
 hold on 
-plot(B(:,1),B(:,2),'r-');
+plot(B(:,1),B(:,2)/1000,'r-');
 xlabel('dr')
 ylabel('Pressure')
 legend('Meshfree','Exact','Location','northwest');
