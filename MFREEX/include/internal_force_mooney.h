@@ -18,12 +18,14 @@ typedef struct internal_force_args
 	IVEC * mat_points;
 	MAT * G;
 	VEC * sigma;
+	VEC * mass;
 
 	// Shared
 	MATERIAL_POINTS * material_points;
 
 	MATERIAL_POINT * MP;
 	VEC * inc_disp;
+	VEC * velocity; 
 	VEC * materialParameters;
 	CELLS * cells;
 	MAT * XI_n;

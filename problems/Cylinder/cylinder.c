@@ -51,7 +51,7 @@ const double alpha = 1.2;
 double beta =1.2;
 
 // Meshfree parameters
-const double dmax =2;
+const double dmax =3;
 const double dmax_x = 1.5;
 const double dmax_y = 1.5;
 double tMax = 0.4;
@@ -81,7 +81,7 @@ const double rho = 1000e-9;
  
 #define IS_UPDATED
 #ifdef IS_UPDATED
-	#define UPDATE_FREQUENCEY 1
+	#define UPDATE_FREQUENCEY 1000
 #endif
 
 
@@ -701,6 +701,7 @@ int main(int argc, char** argv) {
 	{
 
 		INTERNAL_FORCE_ARGS[i].NODAL_MASS = NODAL_MASS[i];
+		INTERNAL_FORCE_ARGS[i].mass = nodal_mass;
 		INTERNAL_FORCE_ARGS[i].FINT = FINT[i];
 		INTERNAL_FORCE_ARGS[i].RPEN = RPEN[i];
 		INTERNAL_FORCE_ARGS[i].mat_points = material_point_groups[i];
@@ -711,6 +712,7 @@ int main(int argc, char** argv) {
 		INTERNAL_FORCE_ARGS[i].XI_n_1 = XI_n_1;
 		INTERNAL_FORCE_ARGS[i].cells = cells;
 		INTERNAL_FORCE_ARGS[i].dt = deltaT;
+		INTERNAL_FORCE_ARGS[i].velocity = v_n_h;
 
 
 	}
@@ -742,23 +744,8 @@ int main(int argc, char** argv) {
 	__mltadd__(d_n_1->ve,v_n_h->ve,deltaT, num_dof);
 	// implement boundary conditions
 
-			
-		// // Boundary conditions
-		// enforceBC(eb1,d_n_1); 
-		// // find velocity correction
-		// sv_mlt(1.00/(deltaT),eb1->uCorrect1,v_correct);
-		// for ( int k = 0 ; k < v_correct->max_dim; k++){
-		// 	v_n_h->ve[2*k] += v_correct->ve[k];
-		// }
 
-		// enforceBC(eb2,d_n_1); 
-		// sv_mlt(1.000/(deltaT),eb2->uCorrect2,v_correct);
-		// for ( int k = 0 ; k < v_correct->max_dim; k++){
-		// 	v_n_h->ve[2*k+1] += v_correct->ve[k];
-		// }
-
-
-		// Apply boundary conditions as corrective accelerations
+	// Apply boundary conditions as corrective accelerations
 
 
 		for ( int i =0 ; i < eb1->nodes->max_dim ; i++)

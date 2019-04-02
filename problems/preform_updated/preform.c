@@ -46,7 +46,7 @@ double delta_t = 5e-7;
 const double dmax = 2;
 const double dmax_x =2;
 const double dmax_y =2;
-double beta = 1.2;
+double beta = 1.4;
 
 
 char * basis_type = "linear";
@@ -68,11 +68,16 @@ char * integration_type = "TRIANGLE";
 
 
 //#define WITH_MOULD 
-//#define WITH_STRETCHROD
+#define WITH_STRETCHROD
+
+
 //#define IS_UPDATED
+#ifdef IS_UPDATED
+	#define UPDATE_FREQUENCEY 10000000000
+#endif
 
 const int WRITE_FREQ =250;
-const int PRINT_FREQ = 250;
+const int PRINT_FREQ = 1;
 int main(int argc, char** argv) {
 
 	/*////////////////////////////////////////////////////////// */
@@ -693,6 +698,7 @@ int main(int argc, char** argv) {
 	// Acceleration
 	VEC * a_n_1 = v_get(num_dof);
 	VEC * a_n = v_get(num_dof);
+	VEC * D_N = v_get(num_dof);
 
 	MAT * XI_n = m_get(mfree.num_nodes,2);
 	MAT * XI_n_1 = m_get(mfree.num_nodes,2);
@@ -712,7 +718,7 @@ int main(int argc, char** argv) {
 	int fileCounter = 0;
 
 	// time step counter;
-	int n = 0;
+	int n = 1;
 
 	// Energy
 	double Wext = 0;
@@ -757,9 +763,8 @@ int main(int argc, char** argv) {
 
 
 	// updated variables
+	VEC * inc_disp = v_get(num_dof);
 
-	VEC * disp_inc = v_get(num_dof);
-	VEC * disp_r = v_get(num_dof);
 
 	VEC * FINT[NUMBER_OF_THREADS];
 	VEC * RPEN[NUMBER_OF_THREADS];
@@ -776,7 +781,7 @@ int main(int argc, char** argv) {
 	internal_force_args * INTERNAL_FORCE_ARGS = 
 	calloc(NUMBER_OF_THREADS,sizeof(internal_force_args));
 
-		// check if problem is axisymmetric
+	// check if problem is axisymmetric
 	int dim_piola;
 	int dim_strain;
 	int dim_cauchy;
@@ -802,7 +807,7 @@ int main(int argc, char** argv) {
 		INTERNAL_FORCE_ARGS[i].RPEN = RPEN[i];
 		INTERNAL_FORCE_ARGS[i].mat_points = material_point_groups[i];
 		INTERNAL_FORCE_ARGS[i].material_points = material_points;
-		INTERNAL_FORCE_ARGS[i].inc_disp = disp_inc;
+		INTERNAL_FORCE_ARGS[i].inc_disp = inc_disp;
 		INTERNAL_FORCE_ARGS[i].materialParameters = matParams;
 		INTERNAL_FORCE_ARGS[i].XI_n = XI_n;
 		INTERNAL_FORCE_ARGS[i].XI_n_1 = XI_n_1;
@@ -810,11 +815,12 @@ int main(int argc, char** argv) {
 		INTERNAL_FORCE_ARGS[i].dt = delta_t;
 		INTERNAL_FORCE_ARGS[i].G = m_get(dim_piola,dim_cauchy);
 		INTERNAL_FORCE_ARGS[i].sigma = v_get(dim_cauchy);
+		INTERNAL_FORCE_ARGS[i].velocity = v_n_h;
+		INTERNAL_FORCE_ARGS[i].mass = nodal_mass;
 
 
 	}
 
-	threadpool thpool = thpool_init(NUMBER_OF_THREADS);
 
 
 	/*  Explicit Loop */
@@ -987,31 +993,12 @@ int main(int argc, char** argv) {
 
 
 
-		// /*  Implement BCs */
-		// enforceBC(eb1,d_n_1); 
-		// // find velocity correction
-		// sv_mlt(1.00/(delta_t),eb1->uCorrect1,v_correct);
-		// for ( int k = 0 ; k < v_correct->max_dim; k++){
-		// 	v_n_h->ve[2*k] += v_correct->ve[k];
-		// }
-
-		// sv_mlt(1.000/(delta_t),eb1->uCorrect2,v_correct);
-		// for ( int k = 0 ; k < v_correct->max_dim; k++){
-		// 	v_n_h->ve[2*k+1] += v_correct->ve[k];
-		// }
-
-		// // Symmetry boundary /
-		// enforceBC(eb2,d_n_1); 
-		// sv_mlt(1.00/(delta_t),eb2->uCorrect1,v_correct);
-		// for ( int k = 0 ; k < v_correct->max_dim; k++){
-		// 	v_n_h->ve[2*k] += v_correct->ve[k];
-		// }
-
-		// find new nodal positions
-		//mv_mlt(Lambda,d_n_1,nodal_disp);
+		
 		__add__(nodes_X->base, d_n_1->ve, XI_n_1->base, num_dof);
 
-		move_nodes(cells, &active_cells, cell_size, XI_n_1);
+		#ifdef IS_UPDATED
+			move_nodes(cells, &active_cells, cell_size, XI_n_1);
+		#endif
 
 
 
@@ -1087,14 +1074,15 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 		__zero__(R_pen->ve,num_dof);
 		__zero__(Fint_n_1->ve,Fint_n_1->max_dim);
-		__sub__(d_n_1->ve, d_n->ve,disp_inc->ve, num_dof);
-		__zero__(nodal_mass->ve,numnodes);
+
+
+		// update incremental displacemnt
+		__sub__(d_n_1->ve, D_N->ve, inc_disp->ve, num_dof);
 		int i;
+
 
 		for ( i = 0 ; i  < NUMBER_OF_THREADS ; i++)
 		{
-			__add__(NODAL_MASS[i]->ve, nodal_mass->ve,nodal_mass->ve, numnodes);
-			__zero__(NODAL_MASS[i]->ve, numnodes);
 			__zero__(RPEN[i]->ve, num_dof);
 			__zero__(FINT[i]->ve, num_dof);
 
@@ -1104,18 +1092,20 @@ int main(int argc, char** argv) {
 		for (i=0; i < number_of_material_points; i++){
 
 			int ID = omp_get_thread_num();
+
 			INTERNAL_FORCE_ARGS[ID].MP = material_points->MP[i];
 			internal_force_buckley(&INTERNAL_FORCE_ARGS[ID]);
-			//thpool_add_work( thpool, (void*) internal_force_mooney, &INTERNAL_FORCE_ARGS[i]);
 
+			// update_material points
+			#ifdef IS_UPDATED
+				if ( n % UPDATE_FREQUENCEY == 0){
+					material_points->MP[i] = update_material_point(material_points->MP[i], cells,
+					XI_n_1, NODAL_MASS[ID]);
+				}
+			#endif
 		}
 
-		// for (int i = 0 ; i < NUMBER_OF_THREADS ; i++)
-		// {
-		// 	pthread_join( threads[i], NULL);
-
-		// }
-   
+	
 		for (i=0; i < NUMBER_OF_THREADS; i++){
 		
 	 		__add__(RPEN[i]->ve, R_pen->ve,R_pen->ve, num_dof);
@@ -1123,16 +1113,13 @@ int main(int argc, char** argv) {
 		}
 
 
-
-		//v_foutput(stdout, d_n_1);
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/
 		/* ------------------------------------------*/
 
 		/*  Balance of forces */
-			__sub__(Fint_n_1->ve, R_pen->ve, Fint_n_1->ve, num_dof);
+		__sub__(Fint_n_1->ve, R_pen->ve, Fint_n_1->ve, num_dof);
 		__sub__(Fext_n_1->ve, Fint_n_1->ve, Fnet_n_1->ve,num_dof);
-
 
 
 
@@ -1142,8 +1129,8 @@ int main(int argc, char** argv) {
 
 		for ( int i = 0 ; i < numnodes  ; i++ )
 		{
-			a_n_1->ve[2*i] = Fnet_n_1->ve[2*i]*inv_nodal_mass->ve[i];
-			a_n_1->ve[2*i+1] = Fnet_n_1->ve[2*i+1]*inv_nodal_mass->ve[i];
+			a_n_1->ve[2*i] = Fnet_n_1->ve[2*i]/nodal_mass->ve[i];
+			a_n_1->ve[2*i+1] = Fnet_n_1->ve[2*i+1]/nodal_mass->ve[i];
 		}
 	
 		/*  Integer time step velocity */
@@ -1163,7 +1150,16 @@ int main(int argc, char** argv) {
 		}
 
 
+#ifdef IS_UPDATED
+		if ( n % UPDATE_FREQUENCEY == 0){
+			__zero__(nodal_mass->ve,numnodes);
+			for ( i = 0 ; i  < NUMBER_OF_THREADS ; i++){
+				__add__(NODAL_MASS[i]->ve, nodal_mass->ve,nodal_mass->ve, numnodes);
+				__zero__(NODAL_MASS[i]->ve, numnodes);
 
+			}
+		}
+#endif 
 
 
 
@@ -1206,8 +1202,14 @@ int main(int argc, char** argv) {
 		v_copy(a_n_1,a_n);
 		pre_n = pre_n_1;
 		disp_rod_n = disp_rod_n_1;
-		m_copy(XI_n_1,XI_n);
-		// update iteration counter
+
+		#ifdef IS_UPDATED	
+			if ( n % UPDATE_FREQUENCEY == 0){
+				m_copy(XI_n_1,XI_n);
+				v_copy(d_n_1,D_N);
+		}
+
+		#endif		// update iteration counter
 		double t_min = 0;
 		n++	;
 

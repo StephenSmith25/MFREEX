@@ -2,7 +2,13 @@
 #include "internal_force_mooney.h"
 #include "Deformation/velocity_grad.h"
 
-static double epsilon_penalty = -60; // NORMAL VLAUE = -50
+static double epsilon_penalty = 40; // NORMAL VLAUE = -50
+static double xi =0.01;
+
+#define HOURGLASS_CONTROL 
+//#define VISCOUS_HOURGLASS
+#define STIFFNESS_HOURGLASS
+
 
 static int call_count ;
 
@@ -56,13 +62,14 @@ void internal_force_mooney(void *threadarg) {
 	/* ------------------------------------------*/
 	/* -----------------Damping -----------------*/
 	/* ------------------------------------------*/
-	// double rho = 1180;
 	// double b1 = 1000;
 	// double b2 =2000;
 	// double Le =	MP->r_cutoff/1000;
-	// double mu = 4e6;
-	// double lambda = 1e3; 
-	// double Cd = sqrt(((lambda+2*mu)/rho));
+	double rho = 1180;
+	double mu = 4e6;
+	double lambda = 1e3; 
+	double Cd = sqrt(((lambda+2*mu)/rho));
+	Cd = Cd*1000;
 	// double div_v = MP->stateNew->div_v;
 	// double qv =  rho*Le*b1*Cd * div_v;
 	// if ( div_v < 0)
@@ -124,14 +131,8 @@ void internal_force_mooney(void *threadarg) {
 	}
 
 
-	// // update_material point neighbours
-	// MP = update_material_point(MP, internal_force_struct->cells,
-	// 	internal_force_struct->XI_n_1, internal_force_struct->NODAL_MASS);
-
 	MAT * XI_n_1 = internal_force_struct->XI_n_1;
 	MAT * XI_n = internal_force_struct->XI_n;
-
-
 	/* UPDATE MATERIAL POINT COORDINATES*/
 	for ( int i = 0 ; i < MP->num_neighbours ; i++)
 	{	
@@ -147,48 +148,124 @@ void internal_force_mooney(void *threadarg) {
 		}
 	}
 
+	// // update_material point neighbours
+	// MP = update_material_point(MP, internal_force_struct->cells,
+	// 	internal_force_struct->XI_n_1, internal_force_struct->NODAL_MASS);
 
-	// * PENALTY METHOD TO ENFORCE LINEAR DISPLACEMENT FIELD *// 
+#ifdef HOURGLASS_CONTROL
 
+
+	VEC * velocity = internal_force_struct->velocity;
 	// Find error in displacment field
 	Xp_n_1 = MP->coords_n_1[0];
 	Xp_n = MP->coords_n[0];
 	Yp_n_1 = MP->coords_n_1[1];
 	Yp_n = MP->coords_n[1];
 	num_neighbours = MP->num_neighbours;
+	VEC * mass = internal_force_struct->mass;
 
 
 
-	// MAT * XI_n_1 = internal_force_struct->XI_n_1;
-	// MAT * XI_n = internal_force_struct->XI_n;
+#ifdef VISCOUS_HOURGLASS
+	double v_p_x = 0;
+	double v_p_y = 0;
+	/* UPDATE MATERIAL POINT COORDINATES*/
+	for ( int i = 0 ; i < MP->num_neighbours ; i++)
+	{	
+		int index = MP->neighbours->ive[i];
+
+		v_p_x += MP->shape_function->phi->ve[i] * velocity->ve[2*index];
+		v_p_y += MP->shape_function->phi->ve[i] * velocity->ve[2*index+1];
+
+	}
+
+#endif
 
 
 	for ( int k = 0 ; k < num_neighbours; k++){
 
+
+		double phi = MP->shape_function->phi->ve[k];
 		int index = MP->neighbours->ive[k];
-
 		// Find vectors dX_n and dX_n_1
-		double delta_x_n[2] = {XI_n->me[index][0] - Xp_n,XI_n->me[index][1] - Yp_n};
-		double delta_x_n_1[2] = {XI_n_1->me[index][0] - Xp_n_1,XI_n_1->me[index][1] - Yp_n_1};
-
+		double X_j_p[2] = {XI_n->me[index][0] - Xp_n,XI_n->me[index][1] - Yp_n};
+		double x_j_p[2] = {XI_n_1->me[index][0] - Xp_n_1,XI_n_1->me[index][1] - Yp_n_1};
 		// Find error in displacement 
-		double x_tilde[2] = {MP->inc_F->me[0][0]*(delta_x_n[0])
-			+ MP->inc_F->me[0][1]*(delta_x_n[1]),
-			MP->inc_F->me[1][0]*delta_x_n[0]
-			+ MP->inc_F->me[1][1]*delta_x_n[1]};
+		double x_tilde[2] = {MP->inc_F->me[0][0]*(X_j_p[0])
+			+ MP->inc_F->me[0][1]*(X_j_p[1]),
+			MP->inc_F->me[1][0]*X_j_p[0]
+			+ MP->inc_F->me[1][1]*X_j_p[1]};
 
-		double norm_x = sqrt(pow(delta_x_n[0],2) + pow(delta_x_n[1],2));
+		double norm_X = sqrt(pow(X_j_p[0],2) + pow(X_j_p[1],2));
+		double norm_x = sqrt(pow(x_j_p[0],2) + pow(x_j_p[1],2));
+
+		double epsilon[2] = {x_tilde[0] -  x_j_p[0] ,x_tilde[1] -  x_j_p[1] };
 
 
+#ifdef STIFFNESS_HOURGLASS
 
-		double e_x  = (delta_x_n_1[0] - x_tilde[0])/norm_x;
-		double e_y =  (delta_x_n_1[1] - x_tilde[1])/norm_x ;
+
+		// ******************************************** //
+		//			Stiffness hour glass control	   //
+		// ********************************************//
+
+		double e_x  = epsilon[0] /norm_X;
+		double e_y = epsilon[1] /norm_X;
 
 		// assemble forces 
 		internal_force_struct->RPEN->ve[2*index] += epsilon_penalty*MP->shape_function->phi->ve[k]*e_x*intFactor;
 		internal_force_struct->RPEN->ve[2*index+1] += epsilon_penalty*MP->shape_function->phi->ve[k]*e_y*intFactor;
 
+#endif
+		// ******************************************** //
+		//			 Viscous hour glass control	       //
+		// ********************************************//
+#ifdef VISCOUS_HOURGLASS
+
+
+
+		double h = MP->r_cutoff;
+
+		// Find error based on deformation gradient
+		double error_mag = sqrt(pow((x_tilde[0] -  x_j_p[0] ),2) + pow(x_tilde[1] -  x_j_p[1],2));
+		double error_mag_normalised = error_mag/norm_X;
+		double unit_vectors_x[2] = {x_j_p[0]/norm_x, x_j_p[1]/norm_x};
+
+		// epsilon / || X || *  x / || x || 
+		double viscous_ep_x = unit_vectors_x[0] * error_mag_normalised;
+		double viscous_ep_y = unit_vectors_x[1] * error_mag_normalised;
+
+
+		// check if need to apply viscous control
+		double v_j_x = velocity->ve[2*index];
+		double v_j_y = velocity->ve[2*index+1];
+
+		// v_p - v_j
+		double v_rel_x = v_p_x - v_j_x;
+		double v_rel_y = v_p_y - v_j_y;
+		// v_pj dot dx 
+		double v_dot_x = v_rel_x*x_j_p[0] + v_rel_y*x_j_p[1]  ;
+
+		// Epsilon_pj dot x_pj
+		double ep_dot_x = epsilon[0]*x_j_p[0] + epsilon[1]*x_j_p[1];
+
+		double flag = v_dot_x * ep_dot_x;
+
+		if ( flag <= 0)
+		{
+				internal_force_struct->RPEN->ve[2*index] += xi*v_dot_x*phi*viscous_ep_x*h*intFactor*Cd;
+				internal_force_struct->RPEN->ve[2*index+1] += xi*v_dot_x*phi*viscous_ep_y*h*intFactor*Cd;
+
 		}
+
+	
+#endif
+	
+
+		}
+#endif
+
+
 
 		return ;
 	}
