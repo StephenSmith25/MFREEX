@@ -169,14 +169,14 @@ int main(int argc, char** argv) {
 	/*  Upstream parameters */
 	double P0 = 0;
 	double tLine = 304.724;
-	double pLine = 1.2; // 0.6 Mpa;
+	double pLine = 0.8; // 0.6 Mpa;
 	double pLine_FINAL = 3;
 	double aReduced_final = 0.001;
 	double molarMass = 29;
 	double Rg = 8.314;
 	double rLine = Rg/molarMass;
 	double gammaLine = 1.4;
-	double aReduced = 0.0013924;
+	double aReduced = 0.0003924;
 	double vDead = (85*1000) ; /*  dead volume in mL -> mm^3 */
 
 	/* ------------------------------------------*/
@@ -205,7 +205,7 @@ int main(int argc, char** argv) {
 		double theta = -PI/2.00 + (PI/2/(numPointsRod-1))*i;
 		srNodes->me[i][0] = stretchRodRad*cos(theta);
 		// either 10.3 or 9
-		srNodes->me[i][1] =9.3+stretchRodRad*sin(theta);
+		srNodes->me[i][1] =10.3+stretchRodRad*sin(theta);
 		srNodes_O->me[i][0] = srNodes->me[i][0];
 		srNodes_O->me[i][1] = srNodes->me[i][1];
 	}
@@ -911,9 +911,9 @@ int main(int argc, char** argv) {
 			if (distanceProj > 0){
 
 
-				f1Cor = 0.1*(2*distanceProj*msNormal->me[0][0]*
+				f1Cor = 1*(2*distanceProj*msNormal->me[0][0]*
 					nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-				f2Cor = 0.1*(2*distanceProj*msNormal->me[0][1]*
+				f2Cor = 1*(2*distanceProj*msNormal->me[0][1]*
 					nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
 
 				for ( int k = 0 ; k < neighbours->max_dim ; k++){
@@ -957,8 +957,8 @@ int main(int argc, char** argv) {
 		// /*  Find a corrective acceleration - method in pronto 3D manual*/
 		for ( int i = 0 ; i < numnodes  ; i++ )
 		{
-			a_n->ve[2*i] = Fcont_n_1->ve[2*i]*inv_nodal_mass->ve[i];
-			a_n->ve[2*i+1] = Fcont_n_1->ve[2*i+1]*inv_nodal_mass->ve[i];
+			a_n->ve[2*i] = Fcont_n_1->ve[2*i]/nodal_mass->ve[i];
+			a_n->ve[2*i+1] = Fcont_n_1->ve[2*i+1]/nodal_mass->ve[i];
 		}
 
 		/* ------------------------------------------*/

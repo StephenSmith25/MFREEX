@@ -129,21 +129,6 @@ void internal_force_buckley(void *threadarg){
 
 	vm_mlt(MP->B,MP->stressVoigt,MP->fInt);
 
-	// Assemble internal force vector
-	for ( int l = 0 ; l < num_neighbours; l++){
-
-		int index = MP->neighbours->ive[l];
-
-		internal_force_struct->FINT->ve[2*index] += intFactor * MP->fInt->ve[2*l];
-		internal_force_struct->FINT->ve[2*index + 1] += intFactor *MP->fInt->ve[2*l+1];
-
-
-	}
-
-
-	vm_mlt(internal_force_struct->MP->B,
-		internal_force_struct->MP->stressVoigt,
-		internal_force_struct->MP->fInt);
 
 
 	// Assemble into global internal force vector
