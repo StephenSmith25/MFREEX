@@ -17,6 +17,7 @@ This repository contains the code for a that implementents a variant on the elem
 - Create input deck 
 - Clean up redundant code 
 - Continue user guide
+- <h1> Lots of refactoring </h1>
 
 <h1> Notes </h1>
 This is currently a work in progress and therefore a number of issues are expected to exist within the code. 
