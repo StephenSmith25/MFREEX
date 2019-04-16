@@ -308,8 +308,7 @@ case(2):
 
 
 		// get weight function for node I
-		weight_function_materialpoint(sf_point->weights, MP, xS, _DIM);
-
+		weight_function_materialpoint(sf_point->weights, MP, xi, _DIM);
 		// shape function matricies
 		// B;
 		sf_point->bi = sv_mlt(sf_point->weights->ve[0], sf_point->p_xi, sf_point->bi);

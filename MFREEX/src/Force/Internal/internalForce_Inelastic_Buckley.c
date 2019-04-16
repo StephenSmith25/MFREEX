@@ -145,7 +145,7 @@ internalForce_Inelastic_Buckley(VEC * Fint, SCNI_OBJ * scni_obj,
 			/* ------------------------------------------*/
 
 
-			if ((i == 177) && (call_count % 1000 == 0)) {
+			if ((i == 140) && (call_count % 1000 == 0)) {
 
 
 				stateNew[i]->F->me[2][1] = t_n_1;

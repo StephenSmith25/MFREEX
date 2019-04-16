@@ -2,7 +2,7 @@
 #include "internal_force_mooney.h"
 #include "Deformation/velocity_grad.h"
 
-static double epsilon_penalty = 40; // NORMAL VLAUE = -50
+static double epsilon_penalty = 50; // NORMAL VLAUE = -50
 static double xi =0.01;
 
 #define HOURGLASS_CONTROL 
@@ -90,8 +90,8 @@ void internal_force_mooney(void *threadarg) {
 
 	//printf("qv = %10.2E \n ",qv*MP->stateNew->invF->me[1][1]);
 
-	internal_force_struct->MP->stressVoigt->ve[0] += qv*MP->stateNew->invF->me[0][0] * MP->stateNew->Jacobian;
-	internal_force_struct->MP->stressVoigt->ve[1] += qv*MP->stateNew->invF->me[1][1] * MP->stateNew->Jacobian;
+	// internal_force_struct->MP->stressVoigt->ve[0] += qv*MP->stateNew->invF->me[0][0] * MP->stateNew->Jacobian;
+	// internal_force_struct->MP->stressVoigt->ve[1] += qv*MP->stateNew->invF->me[1][1] * MP->stateNew->Jacobian;
 
 	// push forward piola kirchoff stress to Omega_n configuration
 	sv_mlt(1.00/internal_force_struct->MP->Jn,

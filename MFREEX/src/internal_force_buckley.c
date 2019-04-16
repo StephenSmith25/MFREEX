@@ -3,11 +3,11 @@
 
 
 
-static double epsilon_penalty = 100; // NORMAL VLAUE = -50
+static double epsilon_penalty = 100;  // NORMAL VLAUE = -50
 static double xi =0.01;
 
 #define HOURGLASS_CONTROL 
-//#define VISCOUS_HOURGLASS
+#define VISCOUS_HOURGLASS
 #define STIFFNESS_HOURGLASS
 
 void internal_force_buckley(void *threadarg){
@@ -34,7 +34,6 @@ void internal_force_buckley(void *threadarg){
 	m_mlt(internal_force_struct->MP->inc_F,
 		internal_force_struct->MP->F_n,
 		internal_force_struct->MP->stateNew->F);
-
 
 
 	/* ------------------------------------------*/
@@ -64,7 +63,7 @@ void internal_force_buckley(void *threadarg){
 	/* ------------------------------------------*/
 	double rho = 1380e-9;
 	double b1 = 0;
-	double b2 = 0;
+	double b2 = 1.44;
 	double Le =1;
 	double Cd = 1400;
 	double div_v = MP->stateNew->div_v;
@@ -249,7 +248,7 @@ void internal_force_buckley(void *threadarg){
 		// ********************************************//
 #ifdef VISCOUS_HOURGLASS
 
-
+		double mass = internal_force_struct->mass->ve[index];
 
 		double h = MP->r_cutoff;
 
@@ -280,8 +279,8 @@ void internal_force_buckley(void *threadarg){
 
 		if ( flag <= 0)
 		{
-				internal_force_struct->RPEN->ve[2*index] += xi*v_dot_x*phi*viscous_ep_x*h*intFactor*Cd;
-				internal_force_struct->RPEN->ve[2*index+1] += xi*v_dot_x*phi*viscous_ep_y*h*intFactor*Cd;
+				internal_force_struct->RPEN->ve[2*index] += mass*xi*v_dot_x*phi*viscous_ep_x*h*intFactor*(Cd*1000);
+				internal_force_struct->RPEN->ve[2*index+1] += mass*xi*v_dot_x*phi*viscous_ep_y*h*intFactor*(Cd*1000);
 
 		}
 

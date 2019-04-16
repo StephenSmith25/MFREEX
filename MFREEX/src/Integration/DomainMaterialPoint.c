@@ -11,6 +11,9 @@
 #include "ShapeFunction/neighbours_materialpoint.h"
 #include "cellSearch.h"
 
+#ifndef DIM 
+#define DIM 2 
+#endif 
 
 
 // n choose 3, n is atleast 3
@@ -123,17 +126,36 @@ int setDomainMaterialPoint(MAT * nodes, CELLS * cells, MATERIAL_POINT * MP)
 
 			}
 
+
 			v_sort(distances,order);
 	
 
-			MP->r_cutoff = MP->beta *  distances->ve[7];
+			MP->r_cutoff = MP->beta *  distances->ve[8];
 
 
+
+			// Initially spherical domain of influence: 
+			// MI = [r^2 0 0 ; 0 r^2 0 ; 0 0 r^2]
+#if DIM == 2 
+		MP->MI->me[0][0] =  distances->ve[8] *  distances->ve[8];
+		MP->MI->me[1][1] =  distances->ve[8] *  distances->ve[8];
+		MP->invMI->me[0][0] = 1.00/ MP->MI->me[1][1] ;
+		MP->invMI->me[1][1] = 1.00/ MP->MI->me[1][1] ;
+
+#elif DIM == 3
+			MP->MI->me[0][0] = distances->ve[8];
+			MP->MI->me[1][1] = distances->ve[8];
+			MP->MI->me[2][2] = distances->ve[8];
+			MP->invMI->me[0][0] = 1.00/distances->ve[8];
+			MP->invMI->me[1][1] = 1.00/distances->ve[8];
+			MP->invMI->me[2][2] = 1.00/distances->ve[8];
+#endif 
+
+
+
+			// Find neighbours 
 			MP->num_neighbours = neighbour_RangeSearch(MP->neighbours,
 			cells, MP->coords_n_1, MP->r_cutoff, nodes);
-
-
-
 
 			PX_FREE(order);
 			V_FREE(distances);
@@ -179,109 +201,32 @@ int updateDomainMaterialPoint(MAT * nodes, CELLS * cells,  MATERIAL_POINT * MP)
 		}
 	}
 
+	// update supports
+	MP->r_cutoff = MP->beta *distance[6];
 
-	MP->r_cutoff = MP->beta *distance[7];
-	MP->num_neighbours = neighbour_RangeSearch(MP->neighbours
-	 		,cells, MP->coords_n_1, MP->r_cutoff, nodes);
+#if DIM == 2 
+	MP->MI->me[0][0] = MP->r_cutoff *  MP->r_cutoff ;
+	MP->MI->me[1][1] =  MP->r_cutoff  *  MP->r_cutoff ;
+	MP->invMI->me[0][0] = 1.00/ MP->MI->me[1][1] ;
+	MP->invMI->me[1][1] = 1.00/ MP->MI->me[1][1] ;
+
+#elif DIM == 3
+	MP->MI->me[0][0] = distance[8];
+	MP->MI->me[1][1] = distance[8];
+	MP->MI->me[2][2] = distance[8];
+	MP->invMI->me[0][0] = 1.00/distance[8];
+	MP->invMI->me[1][1] = 1.00/distance[8];
+	MP->invMI->me[2][2] = 1.00/distance[8];
+#endif 
 
 
-	// // initial size of support domain 
-	// double base_distance = distance[0];
 
-
-	// MP->r_cutoff = MP->beta*base_distance;
+	// update neighbours 
 	// MP->num_neighbours = neighbour_RangeSearch(MP->neighbours
-	// 	,cells, MP->coords_n_1, MP->r_cutoff, nodes);
-
-	// while ( MP->num_neighbours < min_num_neighbours)
-	// {	
-	// 	MP->r_cutoff = 1.2*MP->r_cutoff;
-	// 	MP->num_neighbours = neighbour_RangeSearch(MP->neighbours
-	// 	,cells, MP->coords_n_1, MP->r_cutoff, nodes);
-
-	// }
+	//  		,cells, MP->coords_n_1, MP->r_cutoff, nodes);
 
 
-
-
-	// // // Test conditions
-	// bool volume_condition = false;
- // 	bool mat_point_contained = false;
-
- // 	// variables
- // 	double area_support = 0;
-
-	// while ( volume_condition == false){
-
-	// 	area_support = MP->r_cutoff * MP->r_cutoff * PI;
-
-	// 	if ( area_support >= MP->volume){
-	// 		volume_condition = true;
-	// 	}else{
-	// 	MP->r_cutoff = 1.1*MP->r_cutoff;
-	// 	exit(0);
-
-
-	// 	}
-
-	// }
-
-	// check particle disturbution is non-degenerate 
-
-
-
-	// forms a non zero 
-
- // 	while ( mat_point_contained == false)
- // 	{
-
-
- // 		int index = MP->num_neighbours-3;
-
- // 		//printf("MP->num_neighbours = %d \n", MP->num_neighbours);
-	//  	int num_combinations = nChoose3[MP->num_neighbours-3];
-
- //   		int combinations[num_combinations][3];
-
- //   		//printf("num_combinations = %d \n", num_combinations);
-
- // 		find_combinations(combinations,MP->neighbours, MP->num_neighbours);
-	//  	i = 0;
-	// 	while (( i < num_combinations) && (mat_point_contained == false))
-	// 	{
-	// 		int index_1 = combinations[i][0];
-	// 		int index_2 = combinations[i][1];
-	// 		int index_3 = combinations[i][2];
-
-	// 		mat_point_contained = PointInTriangle(MP->coords_n_1, 
-	// 			nodes->me[index_1], nodes->me[index_2],nodes->me[index_3]); 
-	// 		++i;
-
-	// 	}
-
-
-	// 	if ( mat_point_contained == false)
-	// 	{
-		
-	// 		//MP->beta = 1.05*MP->beta;
-	// 		MP->r_cutoff = 1.2*MP->r_cutoff;
-	// 		MP->num_neighbours = neighbour_RangeSearch(MP->neighbours
-	// 		,cells, MP->coords_n_1, MP->r_cutoff, nodes);
-
-	// 		//printf("num_neighbours = %d \n ", MP->num_neighbours);
-
-
-	// 	}
-
-	// }
-
-	 // MP->r_cutoff = 1.2*MP->r_cutoff;
-	 // MP->num_neighbours = neighbour_RangeSearch(MP->neighbours
-	 // 		,cells, MP->coords_n_1, MP->r_cutoff, nodes);
-
-
-
-
+	RangeSearchMaterialPoint(MP, nodes, cells);
 
 
 

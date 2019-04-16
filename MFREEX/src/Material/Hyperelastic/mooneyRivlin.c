@@ -78,7 +78,9 @@ int mooneyRivlin(VEC * stressVoigt, state_variables * state, VEC * params){
 
 	}
 
-
+	// m_temp3 contaisn the first piola kirchoff stress
+	sm_mlt(1.000/state->Jacobian,state->m_temp3,state->m_temp3);
+	mmtr_mlt(state->m_temp3, state->F, state->sigma);	
 
 
 

@@ -19,7 +19,7 @@ figure
 
 
 
-material_points = csvread('./../../build/bin/cylinder/materialpoints.csv');
+%material_points = csvread('./../../build/bin/cylinder/materialpoints.csv');
 
 filename = strcat(path,'/displacement_',num2str(plotFiles(10)),'.txt');
 disp = csvread(filename);
@@ -33,14 +33,14 @@ ylim([0,30])
 
 
 
-material_points = csvread('./../../build/bin/cylinder/materialpoints_0.csv');
+%material_points = csvread('./../../build/bin/cylinder/materialpoints_0.csv');
 
 filename = strcat(path,'/displacement_',num2str(plotFiles(1)),'.txt');
 disp = csvread(filename);
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 axis equal
 hold on
-plot(material_points(:,1),material_points(:,2),'r.');
+%plot(material_points(:,1),material_points(:,2),'r.');
 xlim([0,40])
 ylim([0,30])
 

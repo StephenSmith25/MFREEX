@@ -4,6 +4,42 @@
 
 #include <math.h>
 
+
+#ifndef DIM 
+#define DIM 2 
+#endif 
+
+// distance function: returns normalised distance from x to x_I
+static inline double distance_function(double *x_I, double * x, MAT * invMI)
+{
+
+	// norm_distance = beta * (x-x_I)' * invM_I * (x-x_I)
+	double norm_distance = 0;
+
+#if DIM == 2
+	double x_m_xI[2] = {x[0] - x_I[0], 
+						x[1] - x_I[1]}; 
+	norm_distance =(
+	  (x_m_xI[0])*(invMI->me[0][0]* x_m_xI[0] + invMI->me[0][1]* x_m_xI[1])	 // row 1 
+	+ (x_m_xI[1])*(invMI->me[1][0]* x_m_xI[0] + invMI->me[1][1]* x_m_xI[1])  // row 2
+	);
+
+#elif DIM == 3
+	double x_m_xI[3] = {x[0] - x_I[0],
+						x[1] - x_I[1],
+						x[2] - x_I[2]}; 
+	norm_distance = (
+	      (x_m_xI[0])*(invMI->me[0][0]* x_m_xI[0] + invMI->me[0][1]* x_m_xI[1] + invMI->me[0][2]* x_m_xI[2]) // row 1 
+		+ (x_m_xI[1])*(invMI->me[1][0]* x_m_xI[0] + invMI->me[1][1]* x_m_xI[1] + invMI->me[1][2]* x_m_xI[2] ); // row 2
+		+ (x_m_xI[1])*(invMI->me[2][0]* x_m_xI[0] + invMI->me[2][1]* x_m_xI[1] + invMI->me[2][2]* x_m_xI[2] ) // row 3
+		); 
+#endif
+
+	return sqrt(norm_distance);
+
+}
+
+
 static inline int cubic_spline_a(double w_arr[3], double r)
 {
 
@@ -51,58 +87,50 @@ static inline int quartic_spline_a(double w_arr[3], double r)
 	return 0; 
 }
 
-int weight_function_materialpoint(VEC * weights, MATERIAL_POINT * MP, double  * xS, int dim)
+int weight_function_materialpoint(VEC * weights, MATERIAL_POINT * MP, double * x,  int dim)
 {
-
-
-
-
 
 	char * weight_type = "cubic";
 
-	int m,n;
+	double * x_p = MP->coords_n_1;
 
-	double d_I_s = 0;
-	double r_norm_s = 0;
-	double r_norm;
-	double distance = 0;
-	double inter[dim] ;
-
-	double dI = MP->r_cutoff;
+	double r_norm = distance_function(x,x_p, MP->invMI);
 
 
-	/* Find r and dr/dk */
-	double drdk[dim];
-	switch (dim)
-	{
+	/* Find dr/dk = MkL x_L + x*/
+#if DIM == 2
+	double drdk[2];
+	double xS[2] = {-x[0] + x_p[0], -x[1] + x_p[1]};
+	drdk[0] = (1.00/(2*r_norm)) * (2*MP->invMI->me[0][0]*xS[0] + MP->invMI->me[0][1]*xS[1] ) ;
+	drdk[1] = (1.00/(2*r_norm)) * (MP->invMI->me[1][0]*xS[0] + 2*MP->invMI->me[1][1]*xS[1] ) ; 
+#elif DIM == 3
 
-		case(2):
-		{
-			r_norm = sqrt(xS[0]*xS[0] + xS[1]*xS[1])/dI;
+#endif 
 
-			drdk[0] = (1.00/(r_norm*dI *dI)) * (xS[0]) ;
-			drdk[1] = (1.00/(r_norm*dI*dI)) * (xS[1]) ;
+	// 	case(2):
+	// 	{
+	// 		r_norm = sqrt(xS[0]*xS[0] + xS[1]*xS[1])/dI;
 
-
-
-			break;
-		}
-		case(3):
-		{
-			// r_norm_s = xS[0]*(MP->invMI->me[0][0]*xS[0] + MP->invMI->me[0][1]*xS[1] + MP->invMI->me[0][2]*xS[2] ) + 
-			// xS[1]*(MP->invMI->me[1][0]*xS[0] + MP->invMI->me[1][1]*xS[1] + MP->invMI->me[1][2]*xS[2]) +
-			// xS[2]*(MP->invMI->me[2][0]*xS[0] + MP->invMI->me[2][1]*xS[1] + MP->invMI->me[2][2]*xS[2]) ;
-			// r_norm = sqrt(r_norm_s);
-			// // drdk
-			// drdk[0] = (1.00/(2*r_norm)) * (2*MP->invMI->me[0][0]*xS[0] + MP->invMI->me[0][1]*xS[1] + MP->invMI->me[0][2]*xS[2]) ;
-			// drdk[1] = (1.00/(2*r_norm)) * (MP->invMI->me[1][0]*xS[0] + 2*MP->invMI->me[1][1]*xS[1] + MP->invMI->me[1][2]*xS[2]); 
-			// drdk[2] = (1.00/(2*r_norm)) * (MP->invMI->me[2][0]*xS[0] + MP->invMI->me[2][1]*xS[1] + 2*MP->invMI->me[2][2]*xS[2]);
-
-		}
-	}
+	// 		drdk[0] = (1.00/(r_norm*dI *dI)) * (xS[0]) ;
+	// 		drdk[1] = (1.00/(r_norm*dI*dI)) * (xS[1]) ;
 
 
 
+	// 		break;
+	// 	}
+	// 	case(3):
+	// 	{
+	// 		// r_norm_s = xS[0]*(MP->invMI->me[0][0]*xS[0] + MP->invMI->me[0][1]*xS[1] + MP->invMI->me[0][2]*xS[2] ) + 
+	// 		// xS[1]*(MP->invMI->me[1][0]*xS[0] + MP->invMI->me[1][1]*xS[1] + MP->invMI->me[1][2]*xS[2]) +
+	// 		// xS[2]*(MP->invMI->me[2][0]*xS[0] + MP->invMI->me[2][1]*xS[1] + MP->invMI->me[2][2]*xS[2]) ;
+	// 		// r_norm = sqrt(r_norm_s);
+	// 		// // drdk
+	// 		// drdk[0] = (1.00/(2*r_norm)) * (2*MP->invMI->me[0][0]*xS[0] + MP->invMI->me[0][1]*xS[1] + MP->invMI->me[0][2]*xS[2]) ;
+	// 		// drdk[1] = (1.00/(2*r_norm)) * (MP->invMI->me[1][0]*xS[0] + 2*MP->invMI->me[1][1]*xS[1] + MP->invMI->me[1][2]*xS[2]); 
+	// 		// drdk[2] = (1.00/(2*r_norm)) * (MP->invMI->me[2][0]*xS[0] + MP->invMI->me[2][1]*xS[1] + 2*MP->invMI->me[2][2]*xS[2]);
+
+	// 	}
+	// }
 
 
 	/* Evaluate weight function */

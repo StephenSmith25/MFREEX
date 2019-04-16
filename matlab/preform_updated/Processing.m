@@ -6,7 +6,7 @@ PLOT_GRAPHS = false;
 PLOT_DOMAINS_INFLUENCE = true; 
 
 
-WITH_MOULD = true;
+WITH_MOULD = false;
 TMAX = 0.6;
 
 

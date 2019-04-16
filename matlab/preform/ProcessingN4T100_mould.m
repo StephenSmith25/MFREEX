@@ -1,7 +1,7 @@
 clear all
 close all
 
-PLOT_GRAPHS = false;
+PLOT_GRAPHS = true;
 PLOT_DOMAINS_INFLUENCE = true; 
 
 
@@ -30,7 +30,7 @@ numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
 
-plot_point =177;
+plot_point =141;
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.csv');
 disp = csvread(filename,1);
 
@@ -132,7 +132,7 @@ plot(disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
 ymax = max(disp(:,2));
-%plot(disp(plot_point,1),disp(plot_point,2),'r*')
+plot(disp(plot_point,1),disp(plot_point,2),'r*')
 
 
 
@@ -340,6 +340,8 @@ ylabel('Pressure');
 xlim([0,TMAX])
 ylim([0,5])
 
+a1 = [m(1:2:end,1),m(1:2:end,2)];
+
 b = csvread("Experimental/N4T100_exp_pressure.csv");
 hold on
 plot(b(:,1),b(:,2)/1000,'b--')
@@ -445,6 +447,12 @@ for i = 1:length(plotFiles)
     
 end
 
+
+n = smoothdata(axial_strain(1:end));
+axial_strain(40:end) = n(40:end);
+
+a2 = [time(1:1:end)',axial_strain(1:1:end)'];
+a3 = [time(1:1:end)',hoop_strain(1:1:end)'];
 
 strain = figure('Position', get(0, 'Screensize'));
 subplot(1,2,1)
@@ -597,6 +605,8 @@ for i = 1:length(plotFiles)
 
   
 end
+
+
 
 figure
 subplot(1,2,1)

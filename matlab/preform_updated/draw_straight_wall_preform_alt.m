@@ -17,8 +17,8 @@ NUM_NODES_THICKNESS=3;
 %% NUMBER OF NODES
 N1  = 120 ;
 N2 = 5;
-N3 = 6;
-ntheta =25;
+N3 = 5;
+ntheta =20;
 
 % starting from 0,0
 nodes = [];

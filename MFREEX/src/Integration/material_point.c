@@ -13,6 +13,40 @@ static int IS_AXI = -1;
 
 
 
+#ifndef DIM 
+#define DIM 2
+#endif 
+
+// distance function: returns normalised distance from x to x_I
+inline double distance_function(double *x_I, double * x, MAT * invMI)
+{
+
+	// norm_distance = beta * (x-x_I)' * invM_I * (x-x_I)
+	double norm_distance = 0;
+
+#if DIM == 2
+	double x_m_xI[2] = {x[0] - x_I[0], 
+						x[1] - x_I[1]}; 
+	norm_distance =(
+	  (x_m_xI[0])*(invMI->me[0][0]* x_m_xI[0] + invMI->me[0][1]* x_m_xI[1])	 // row 1 
+	+ (x_m_xI[1])*(invMI->me[1][0]* x_m_xI[0] + invMI->me[1][1]* x_m_xI[1])  // row 2
+	);
+
+#elif DIM == 3
+	double x_m_xI[3] = {x[0] - x_I[0],
+						x[1] - x_I[1],
+						x[2] - x_I[2]}; 
+	norm_distance = (
+	      (x_m_xI[0])*(invMI->me[0][0]* x_m_xI[0] + invMI->me[0][1]* x_m_xI[1] + invMI->me[0][2]* x_m_xI[2]) // row 1 
+		+ (x_m_xI[1])*(invMI->me[1][0]* x_m_xI[0] + invMI->me[1][1]* x_m_xI[1] + invMI->me[1][2]* x_m_xI[2] ); // row 2
+		+ (x_m_xI[1])*(invMI->me[2][0]* x_m_xI[0] + invMI->me[2][1]* x_m_xI[1] + invMI->me[2][2]* x_m_xI[2] ) // row 3
+		); 
+#endif
+
+	return sqrt(norm_distance);
+
+}
+
 static inline MATERIAL_POINT * create_material_point(double coords[3], double volume)
 {
 
@@ -116,7 +150,6 @@ MATERIAL_POINTS * create_material_points(void * cells,
 			MPS[i]->temperature = 0; 
 
 
-
 			// Density
 			MPS[i]->rho = rho;
 
@@ -169,6 +202,10 @@ MATERIAL_POINTS * create_material_points(void * cells,
 		for ( int i = 0 ; i < number_of_triangles ; i++)
 		{
 			quad_orders[i] = QUADRATURE_ORDER;
+			if ( ( i == 21) || ( i == 77) || (i == 80) )
+			{
+				quad_orders[i] = 2;
+			}
 		}	
 
 		//  create quadrature points
@@ -206,6 +243,11 @@ MATERIAL_POINTS * create_material_points(void * cells,
 			MPS[i]->kernel_support=RADIAL;
 			MPS[i]->neighbours = iv_get(50);
 
+
+			// Support parameters 
+			MPS[i]->MI = m_get(dim,dim);
+			MPS[i]->invMI = m_get(dim,dim);
+
 			// set the initial domain of the material points 
 			setDomainMaterialPoint(mfree->nodes, grid, MPS[i]);
 
@@ -238,7 +280,6 @@ MATERIAL_POINTS * create_material_points(void * cells,
 					MPS[i]->temperature += MPS[i]->shape_function->phi->ve[k]*mfree->temperatures[index];
 				}
 			}
-
 
 
 			// Density
@@ -295,11 +336,18 @@ static inline int delete_material_point()
 int write_material_points(char * filename, MATERIAL_POINTS * MPS)
 {
 	FILE * fp = fopen(filename,"w");
-
+	fprintf(fp,"x,y,z,s11,s22,s12\n");
 
 	for ( int i = 0 ; i < MPS->num_material_points ; i++ )
 	{
-		fprintf(fp,"%lf,%lf,%lf\n",MPS->MP[i]->coords_n_1[0],MPS->MP[i]->coords_n_1[1],MPS->MP[i]->coords_n_1[2]);
+		double s11 = MPS->MP[i]->stateNew->sigma->me[0][0];
+		double s22 = MPS->MP[i]->stateNew->sigma->me[1][1];
+		double s12 = MPS->MP[i]->stateNew->sigma->me[0][1];
+
+		// print stress as well
+		fprintf(fp,"%lf,%lf,%lf,%lf,%lf,%lf\n",MPS->MP[i]->coords_n_1[0],MPS->MP[i]->coords_n_1[1],MPS->MP[i]->coords_n_1[2],
+			s11,s22,s12
+		);
 	}
 
 	fclose(fp);
@@ -385,4 +433,69 @@ MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, CELLS * grid, MAT * 
 
 
 	return MP;
+}
+
+int RangeSearchMaterialPoint(
+MATERIAL_POINT * MP, MAT * nodes,CELLS * cells)
+{
+
+	// NOTE - IMPLEMENTED JUST FOR 2D AT THE MOMENT d
+	// Find all nodes that are within this range 
+	int num_neighbours = 0;
+	int dim = nodes->n;
+	iv_zero(MP->neighbours);
+
+	double * x = MP->coords_n_1;
+	double * x_I;
+	
+	// convert x into its i,j components
+	int j = (int)floor((x[0]-cells->Bx_min)/cells->CX);
+	int i = (int)floor((x[1]-cells->By_min)/cells->CY);
+
+	// number of cells in each direction
+	int nx = cells->nx;
+	int ny = cells->ny;
+
+
+
+	NODELIST * current_p = NULL;
+	double * node_check = NULL;
+	double distance = 0;
+	for ( int indx_j = j-1 ; indx_j <= j+1 ; indx_j++)
+		for ( int indx_i = i-1 ; indx_i <= i+1 ; indx_i++)
+	{
+
+
+		if (( indx_j >= 0) && (indx_j < nx) && ( indx_i >= 0) && (indx_i < ny))
+		{
+			current_p = cells->cells[indx_i][indx_j].nodes;
+			while ( current_p != NULL)
+			{
+
+				x_I = nodes->me[current_p->node_number];
+
+				double norm_distance = distance_function(x_I, x, MP->invMI);
+
+				if ( norm_distance <= 1.00)
+				{
+					MP->neighbours->ive[num_neighbours] = current_p->node_number;
+					++num_neighbours;
+				}
+
+
+				current_p = current_p->next;
+
+			}
+
+
+		}else{
+			// skip
+		}
+
+
+	}
+
+	MP->num_neighbours = num_neighbours;
+
+	return 0;
 }

@@ -43,10 +43,10 @@ const double TMAX = 1;
 double delta_t = 5e-7;
 
 // Meshfree parameters
-const double dmax = 2;
+const double dmax = 2.5;
 const double dmax_x =2;
 const double dmax_y =2;
-double beta = 1.4;
+double beta = 1.6;
 
 
 char * basis_type = "linear";
@@ -55,7 +55,7 @@ char * kernel_shape = "radial";
 
 
 const int is_stabalised = 0;
-const int constant_support_size = 0;
+const int constant_support_size = 1;
 
 // stretch rod
 const double DISP_ROD_MAX = 90; // 132;
@@ -68,12 +68,12 @@ char * integration_type = "TRIANGLE";
 
 
 //#define WITH_MOULD 
-#define WITH_STRETCHROD
+//define WITH_STRETCHROD
 
 
-//#define IS_UPDATED
+#define IS_UPDATED
 #ifdef IS_UPDATED
-	#define UPDATE_FREQUENCEY 10000000000
+	#define UPDATE_FREQUENCEY 5000
 #endif
 
 const int WRITE_FREQ =250;
@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
 	matParams->ve[6] = (67.47); // Cv
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
-	matParams->ve[9] = 0.6e9; // Kb
+	matParams->ve[9] = 1.0e9; // Kb
 	matParams->ve[10] = 6e8;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
@@ -205,7 +205,7 @@ int main(int argc, char** argv) {
 		double theta = -PI/2.00 + (PI/2/(numPointsRod-1))*i;
 		srNodes->me[i][0] = stretchRodRad*cos(theta);
 		// either 10.3 or 9
-		srNodes->me[i][1] =10.3+stretchRodRad*sin(theta);
+		srNodes->me[i][1] =10.1+stretchRodRad*sin(theta);
 		srNodes_O->me[i][0] = srNodes->me[i][0];
 		srNodes_O->me[i][1] = srNodes->me[i][1];
 	}
@@ -316,7 +316,7 @@ int main(int argc, char** argv) {
 	// CREATE NODES
 	// 
 	BOUNDING_BOX * bounding_box = create_bounding_box(-1, 40,
-	-100, 100 , 0, 0);
+	-150, 100 , 0, 0);
 
 	double cell_size[2] = {1.5,2};
 
@@ -505,7 +505,7 @@ int main(int argc, char** argv) {
 
 
 	// /*  EB3 */
-	int numB3 = 18;
+	int numB3 = 13;
 	IVEC * eb3_nodes = iv_get(numB3);
 	MAT * contact_nodes_coords = m_get(numB3,dim);
 
@@ -864,12 +864,17 @@ int main(int argc, char** argv) {
 			v_n_h->ve[2*index] = 0;
 		}
 
+		// for ( int k = 0 ; k < eb3_nodes->max_dim ; k++)
+		// {
+		// 	int index = eb3_nodes->ive[k];
+		// 	v_n_h->ve[2*index+1] = -250*smoothstep(t_n_1,0.03,0);					
+
+		// }
 
 
 		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
 
 
-		//mv_mlt(Lambda,d_n_1,nodal_disp);
 		__add__(nodes_X->base, d_n_1->ve, XI_n_1->base, num_dof);
 
 
@@ -885,7 +890,7 @@ int main(int argc, char** argv) {
 		if ( disp_rod_n < DISP_ROD_MAX){
 
 		/*  Update stretch rod */
-			double x = t_n_1*smoothstep(t_n_1,0.015,0);
+			double x = t_n_1*smoothstep(t_n_1,0.03,0);
 			disp_rod_n_1 = a0*pow(x,7) + a1*pow(x,6) + a2*pow(x,5) + a3*pow(x,4) + a4*pow(x,3) + a5*pow(x,2) +a6*pow(x,1) + a7;
 			disp_rod_n_1 = disp_rod_n_1;
 			for ( int i = 0 ; i < srNodes->m ; i++){
@@ -911,7 +916,7 @@ int main(int argc, char** argv) {
 			if (distanceProj > 0){
 
 
-				f1Cor = 1*(2*distanceProj*msNormal->me[0][0]*
+				f1Cor =1*(2*distanceProj*msNormal->me[0][0]*
 					nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
 				f2Cor = 1*(2*distanceProj*msNormal->me[0][1]*
 					nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);

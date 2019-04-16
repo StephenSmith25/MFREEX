@@ -1,5 +1,8 @@
 #include "cellSearch.h"
 
+
+
+
 static inline double sq_distance(double *point_1, double * point_2, int  dim)
 {
 	double distance = 0;
@@ -533,7 +536,6 @@ double * x, double range,  MAT * nodes)
 				node_check = nodes->me[current_p->node_number];
 
 				distance = sq_distance(x,node_check, dim);
-
 				if ( distance <= range)
 				{
 					neighbours->ive[num_neighbours] = current_p->node_number;
@@ -552,6 +554,6 @@ double * x, double range,  MAT * nodes)
 
 
 	}
-
 	return num_neighbours;
 }
+

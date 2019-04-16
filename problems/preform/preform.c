@@ -56,10 +56,10 @@ const int is_stabalised = 0;
 const int is_constant_support_size = 1;
 
 // stretch rod
-const double DISP_ROD_MAX = -90; // 132;
+const double DISP_ROD_MAX = 90; // 132;
 
 // 
-const int WITH_MOULD = 0;
+const int WITH_MOULD = 1;
 
 const int WRITE_FREQ = 250;
 

@@ -43,7 +43,7 @@ plot(nodes(:,1),nodes(:,2),'b.');
 
 tri = csvread('./../../build/bin/preform_alt/triangles.csv');
 
-%triplot(tri,nodes(:,1),nodes(:,2));
+triplot(tri,nodes(:,1),nodes(:,2));
 
 axis equal
 

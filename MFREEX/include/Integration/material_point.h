@@ -82,6 +82,9 @@ typedef struct MATERIAL_POINT
 	// Support
 	double beta;
 	enum SUPPORT_TYPE kernel_support;
+	MAT * MI;
+	MAT * invMI;
+
 
 }MATERIAL_POINT;
 
@@ -132,7 +135,8 @@ void * update_material_point_a(void * threadarg);
 void set_material_point_temperature(double temperature , MATERIAL_POINT * MP);
 void update_material_point_coords(MATERIAL_POINT * MP, MAT * NODES);
 
-
+int RangeSearchMaterialPoint(
+MATERIAL_POINT * MP, MAT * nodes, CELLS * cells);
 
 
 #endif
