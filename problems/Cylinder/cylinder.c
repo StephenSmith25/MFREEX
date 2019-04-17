@@ -82,12 +82,6 @@ const double rho = 1000e-9;
 	#define UPDATE_FREQUENCEY 100
 #endif
 
-enum MyBcTypes {
-	PRESSURE_FACE = 1,
-	FIX_NODES_X_DIR = 2,
-	FIX_NODES_Y_DIR = 3
-};
-
 
 int main(int argc, char** argv) {
 
