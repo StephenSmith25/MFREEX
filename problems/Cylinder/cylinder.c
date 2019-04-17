@@ -126,8 +126,31 @@ int main(int argc, char** argv) {
 
  	// WRITE NODES AND MESH TO FILE
 	mat2csv(domain->NODES,"./Geometry","nodes.csv");
+	WriteBlockSetElementsToFile(domain->blocksets, "./Geometry/triangles.csv");
+	WriteSideSetElementsToFile(domain->sidesets, "./Geometry/pressureset.csv");
+	WriteNodeSetElementsToFile(domain->nodesets, "./Geometry/nodeset_1.csv");
+	WriteNodeSetElementsToFile(domain->nodesets->next, "./Geometry/nodeset_2.csv");
+
+	printf("NUBMER OF BLOCKSETS = %d \n", domain->NUM_BLOCK_SETS);
+	printf("NUMBER OF SIDESETS = %d \n", domain->NUM_SIDE_SETS);
+	printf("NUMBER OF NODESETS = %d \n", domain->NUM_NODE_SETS);
 
 
+    // USE CONFIG FILE TO GET BOUNDARY CONDITIONS AND MATERIAL PROPERTIES 
+
+	//  /*
+		//  This can be done manual
+	//  //  But easier if its done with an input file
+	
+		// prototype read_input_config(argv[2] <-- name of config file )
+			// should set loading applied to each sideset
+			// should set material, including parameters and 
+			// should get boundary conditions on each nodeset
+
+
+	// */
+
+	//WriteNodeSetToFile();
 
 	exit(0);
 

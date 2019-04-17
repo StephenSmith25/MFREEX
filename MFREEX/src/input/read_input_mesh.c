@@ -56,16 +56,24 @@ static inline void read_physical_names(FILE * fp, DOMAIN * domain )
     int count = 0;
     read = getline(&line, &len, fp);
     line = trim(line);
-    int number_of_physical_groups = atoi(line);
-    domain->number_of_physical_groups = number_of_physical_groups;
-    PHYSICAL_GROUP * physical_groups = malloc(number_of_physical_groups * sizeof(PHYSICAL_GROUP));
     
-
-    printf("number of physcial groups = %d \n", number_of_physical_groups);
     // READ NEXT LINE
+    // FIRST LINE WILL BE FIRST PHYSICAL GROUP WITH FORM
+    // {DIM, ID, NAME}
     read = getline(&line, &len, fp);
     line = trim(line);
     int ID = -1;
+
+
+    // CREATE EACH NODESET
+ 	domain->NUM_BLOCK_SETS = 0;
+ 	domain->NUM_SIDE_SETS = 0;
+ 	domain->NUM_NODE_SETS = 0;
+ 	domain->sidesets = NULL;
+ 	domain->nodesets = NULL;
+ 	domain->blocksets = NULL;
+
+
     // LOOP OVER UNTIL END OF PHYSCIAL NAMES 
 	while (strcmp (line, "$EndPhysicalNames") != 0){
       char * p = strtok(line," ");
@@ -74,22 +82,35 @@ static inline void read_physical_names(FILE * fp, DOMAIN * domain )
       {
       	if ( count == 1 )
       		ID = atoi(p);
-
       	if ( count == 2 ){
-      		if ( strcmp(p,"PRESSURE") == 0)
-      		{
-      			physical_groups[ID-1] = PRESSURE_TYPE;
-      		}else if (strcmp(p,"PRESSURE") == 0)
+      		if ( strncmp(p,"\"PRESSURE\"",4) == 0)
+      		{ 
+      			// Note: This may be redundent
+      			AddPhysicalNameToDomain(domain, PRESSURE_TYPE, ID);
+
+      			// add SIDESET to domain list
+      			AddSideSetToDomain(domain, ID);
+
+      		}else if ( strncmp(p,"\"MATERIAL\"",4) == 0)
 			{
-      			physical_groups[ID-1] = PHYSICAL_MATERIAL_TYPE;
-			}else{
-      			physical_groups[ID-1] = DISPLACEMENT_TYPE;
-			}
+				// Note: This may be redundent
+      			AddPhysicalNameToDomain(domain, PHYSICAL_MATERIAL_TYPE, ID);
+
+      			// add BLOCKSET to domain list
+      			AddBlockSetToDomain(domain,ID);
+			}else if ( strncmp(p,"\"DISPLACEMENT\"",4) == 0 ){
+				//  Note: This may be redundent
+      			AddPhysicalNameToDomain(domain, DISPLACEMENT_TYPE, ID);
+      			// add NODESET to domain list 
+      			AddNodeSetToDomain(domain, ID);			
+      		}else{
+
+      		}
 
       	}
 		p = strtok(NULL, " ");
 
-
+		// INCREMENT COUNTER 
 		count++;
       }
 
@@ -126,6 +147,22 @@ int read_elements(FILE * fp, DOMAIN * domain)
 
     int eType = 0;
     int pType = 0;
+    int eDim = 0;
+    int ID = -1;
+
+    // pointer to physcial name struct 
+    PHYSICAL_NAME * physical_name = NULL;
+    BLOCKSET * blockset = NULL;
+    NODESET * nodeset = NULL;
+    SIDESET * sideset = NULL;
+	
+
+	// verticies
+	int elementVerticies[20];
+
+
+
+
 
     // Loop over each line of elements
 	while (strcmp (line, "$EndElements") != 0){
@@ -135,35 +172,96 @@ int read_elements(FILE * fp, DOMAIN * domain)
       while ( p != NULL) 
       {
 
-      	// second entry gives element type
-      	// 1 = line
-      	// 2 = triangle
-      	// 3 = quad
-      	// 4 = tet 
+        /* Get element type */ 
       	if ( count == 1 )
       	{
       		eType = atoi(p);
       	}
 
+      	// CHECK WETHER IT IS A NODESET, SIDESET OF MATERIALSET 
       	// fourth entry gives physical type element belongs to 
       	if ( count == 3 ){
-      		pType = atoi(p);
+      		ID = atoi(p);
+
+      	// FIND physcial_name matching this ID
+  			physical_name = FindPhysicalNameByID(domain,ID);
+
+  			// This error should never be reached 
+  			if ( physical_name == NULL)
+  			{
+  				fprintf(stderr,"Cannot find the physical name with ID specified \n");
+  				return -1;
+  			}
+
       	}
 
-      	if ( pType == PHYSICAL_MATERIAL_TYPE)
-      	{
-
-      	}
       	// >6th entry gives element nodes
-      	if ( count > 5 )
+      	if ( count >= 5 )
       	{
 
+
+          // if blockset
+	      	if ( physical_name->type == PHYSICAL_MATERIAL_TYPE)
+	      	{
+	      		// Find Blockset that matches this ID;
+	      		blockset = FindBlockSetByID(domain, ID);
+            
+            // create element
+             count = 0;
+             while ( p != NULL) 
+             {
+              elementVerticies[count] = atoi(p)-1;
+
+              count++;
+              p = strtok(NULL, " ");
+             }
+             blockset->elements = AddElementToBlockSet(blockset, eType, elementVerticies);
+
+
+	      	}else if ( physical_name->type == PRESSURE_TYPE)
+          {
+            sideset = FindSideSetByID(domain, ID);
+
+            // create element
+             count = 0;
+             while ( p != NULL) 
+             {
+              elementVerticies[count] = atoi(p)-1;
+
+              count++;
+              p = strtok(NULL, " ");
+             }
+             sideset->elements = AddElementToSideSet(sideset, eType, elementVerticies);
+
+          }else if ( physical_name->type == DISPLACEMENT_TYPE)
+          {
+            nodeset = FindNodeSetByID(domain, ID);
+            // create element
+             count = 0;
+             while ( p != NULL) 
+             {
+              elementVerticies[count] = atoi(p)-1;
+              count++;
+              p = strtok(NULL, " ");
+             }
+             nodeset->elements = AddElementToNodeSet(nodeset, eType, elementVerticies);
+
+          }else{
+              fprintf(stderr,"physical type not supported\n");
+          }
+
+          // if sideset 
+
+
+
+
+
+
       	}
+        // move to next token in string
+        p = strtok(NULL, " ");
+        count++;
 
-
-      	// move to next token in string
-		p = strtok(NULL, " ");
-		count++;
       }
 
       read = getline(&line, &len, fp);
@@ -174,18 +272,6 @@ int read_elements(FILE * fp, DOMAIN * domain)
 
 	// loop over each physcial group and find the elements belonging to each group
 	
-	int ID = 0;
-	// FIND WHICH GROUP THESE NODES BELONG TO 
-	// 5TH ENTRY IN EACH LINE CONTAINS THE ID WHICH REPRESENTS THE PHYSCIAL GROUP OF (ID)
-
-	if ( ID == PHYSICAL_MATERIAL_TYPE)
-	{
-		// create a blockset
-
-		// ELEMENT TYPE 
-
-	}
-
 	// if ( ID == DISPLACEMENT_TYPE)
 	// {
 	// 	// create a nodeset
@@ -299,7 +385,6 @@ DOMAIN * read_intput_mesh(char * input_file_name)
         free(line);
 
 
-    // read config file to get boundary conditions and 
 
 	return domain;
 }
