@@ -2,7 +2,16 @@
 
 
 
-char *trim(char *str)
+
+
+
+
+
+
+
+
+
+static char *trim(char *str)
 {
     size_t len = 0;
     char *frontp = str;
@@ -43,6 +52,177 @@ if( frontp != str )
 return str;
 }
 
+
+
+
+
+
+
+// Displacement bcs are read into nodesets
+static int read_displacementBCs(DOMAIN * domain, FILE * fp)
+{
+	// INITIALISE 
+    char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    char * token;
+    read = getline(&line, &len, fp);
+    line = trim(line);
+
+
+    // FILE FORMAT 
+
+    // $DisplacementBC
+    // name
+    // ID
+    // disp flags - ( where bcs are applied)
+    // disp prescribed ( what value are prescribed)
+    // $EndDisplacementBC
+
+    // $
+    char * name;
+    int ID;
+    int BC;
+
+    NODESET * nodeset;
+    SIDESET * sideset;
+    BLOCKSET * blockset;
+
+	while (strcmp (line, "$ENDDISPLACEMENTBCS") != 0){
+      // split string into tokens seperated by equals sign 
+      
+      while ((strcmp (line, "$EndDisplacementBC") != 0) ){
+
+		  // split string into tokens seperated by equals sign 
+	      char * p = strtok(line,"=");
+
+	      // get nodeset by ID
+	      if ( strcmp(p, "ID") == 0)
+	      {
+	      	p = strtok(NULL, " ");
+	      	ID = atoi(p);
+	      	nodeset = FindNodeSetByID(domain, ID);
+	      }
+
+
+	      // CONSTRAINT IN X DIRECTION
+	      if ( strcmp(p, "disp_flag1") == 0)
+	      {
+	      	p = strtok(NULL, " ");
+	      	BC= atoi(p);
+	      	if ( BC == 1)
+	      	{
+	      		//  add a x constraint to the problem
+	      		DOF_CONSTRAINT  * dof_constraint = malloc(1*sizeof(DOF_CONSTRAINT));
+	      		dof_constraint->next = NULL;
+
+	      		dof_constraint->dir=X;
+	      		// add dof constraint to nodeset
+	      		AddDOFConstraintToNodeSet(nodeset, dof_constraint);
+
+
+	      	}
+	      }
+
+	      if (( strcmp(p, "disp_ux") == 0 )  && (FindDOFConstraintInNodeSet(nodeset,X) != NULL))
+	      {
+	      	p = strtok(NULL, " ");
+	      	int BC_TYPE= atoi(p);
+	      	DOF_CONSTRAINT * dof_constraint = FindDOFConstraintInNodeSet(nodeset,X);
+	      	// add dof constraint to nodeset
+		    if ( BC_TYPE == 0 )
+		    {
+		      	dof_constraint->type = DOF_FIXED;
+		    }
+
+	      }
+
+
+	    // CONSTRAINT IN Y DIRECTION
+      	if ( strcmp(p, "disp_flag2") == 0)
+	      {
+	      	p = strtok(NULL, " ");
+	      	BC= atoi(p);
+	      	if ( BC == 1)
+	      	{
+	      		//  add a x constraint to the problem
+	      		DOF_CONSTRAINT  * dof_constraint = malloc(1*sizeof(DOF_CONSTRAINT));
+	      		dof_constraint->next = NULL;
+	      		dof_constraint->dir=Y;
+	      		// add dof constraint to nodeset
+	      		AddDOFConstraintToNodeSet(nodeset, dof_constraint);
+
+	      	}
+	      }
+	      // check that a y constraint exists
+	      if (( strcmp(p, "disp_uy") == 0 )  && (FindDOFConstraintInNodeSet(nodeset,Y) != NULL))
+	      {
+	      	p = strtok(NULL, " ");
+	      	int BC_TYPE= atoi(p);
+	      	DOF_CONSTRAINT * dof_constraint = FindDOFConstraintInNodeSet(nodeset,Y);
+	      	// add dof constraint to nodeset
+		    if ( BC_TYPE == 0 )
+		     {
+		      	dof_constraint->type = DOF_FIXED;
+		    }
+
+	      }
+
+	      // CONSTRAINT IN Z DIRECTION
+	      if ( strcmp(p, "disp_flag3") == 0)
+	      	{
+	      	p = strtok(NULL, " ");
+	      	BC= atoi(p);
+	      	if ( BC == 1)
+	      	{
+	      		//  add a x constraint to the problem
+	      		DOF_CONSTRAINT  * dof_constraint = malloc(1*sizeof(DOF_CONSTRAINT));
+	      		dof_constraint->next = NULL;
+	      		dof_constraint->dir=Z;
+	      		// add dof constraint to nodeset
+	      		AddDOFConstraintToNodeSet(nodeset, dof_constraint);
+
+	      	}
+	      }
+	      // check that a z constraint exists
+	      if (( strcmp(p, "disp_uz") == 0 ) && (FindDOFConstraintInNodeSet(nodeset,Z) != NULL))
+	      {
+	      	p = strtok(NULL, " ");
+	      	int BC_TYPE= atoi(p);
+	      	DOF_CONSTRAINT * dof_constraint = FindDOFConstraintInNodeSet(nodeset,Z);
+	      	// add dof constraint to nodeset
+		    if ( BC_TYPE == 0 )
+		     {
+		      	dof_constraint->type = DOF_FIXED;
+		    }
+
+	      }
+		  /* Move to next line  */
+	      read = getline(&line, &len, fp);
+	      line = trim(line);
+ 
+	}
+	  // read next line 
+      read = getline(&line, &len, fp);
+      line = trim(line);
+ 
+    }
+
+    // FREE ANY ALLOCATED MEMORY
+    if (line)
+        free(line);
+
+    return 0;
+
+
+
+}
+
+
+
+
+
+
 int read_config_file(DOMAIN * domain, char * filename)
 {
 
@@ -66,12 +246,18 @@ int read_config_file(DOMAIN * domain, char * filename)
 	while ((read = getline(&line, &len, fp)) != -1) {
         line = trim(line);
 
-        if ( strcmp (line, "$PhysicalNames")== 0){
-        	//read_physical_names(fp, domain);
+        if ( strcmp (line, "$DISPLACEMENTBCS")== 0){
+        	read_displacementBCs(domain, fp);
         }
 
-        if ( strcmp (line, "$Nodes")== 0){
+        if ( strcmp (line, "$MATERIALS")== 0){
         	//read_nodes(fp, domain);
+
+        	// READ EACH MATERIAL 
+
+        	// READ ID
+
+        	// ADD TO BLOCKSET
         }
 
         if ( strcmp (line, "$Elements")== 0){

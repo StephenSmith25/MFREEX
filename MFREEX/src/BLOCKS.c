@@ -34,6 +34,7 @@ int AddNodeSetToDomain(DOMAIN * domain, int ID )
 	// create a new nodeset with ID
 	NODESET * newNodeSet = malloc(1*sizeof(NODESET));
 	newNodeSet->ID = ID;
+	newNodeSet->dof_constrained = NULL;
 	// add to domain
 	newNodeSet->next = domain->nodesets;
 	domain->nodesets = newNodeSet;
@@ -201,7 +202,6 @@ ELEMENT * AddElementToSideSet(SIDESET * sideset, ELEMENT_TYPE etype, int * verti
 {
 
 	// Create a new element
-
 	ELEMENT * newElement = CreateNewElement(etype, verticies);
 	newElement->next = NULL;
 
@@ -234,7 +234,6 @@ ELEMENT * AddElementToNodeSet(NODESET * nodeset, ELEMENT_TYPE etype, int * verti
 {
 
 	// Create a new element
-
 	ELEMENT * newElement = CreateNewElement(etype, verticies);
 	newElement->next = NULL;
 
@@ -371,4 +370,52 @@ int WriteNodeSetElementsToFile(NODESET * nodeset, char * FILENAME)
 
 	return 0;
 
+}
+
+
+
+//DisplacmentBCS;
+int AddDOFConstraintToNodeSet(NODESET * nodeset,DOF_CONSTRAINT * new_constraint )
+{
+
+	// add new element to tail
+	DOF_CONSTRAINT * end = nodeset->dof_constrained;
+
+	if ( end == NULL)
+	{
+		nodeset->dof_constrained = new_constraint;
+		return 0;
+
+	}else{
+
+		// loop until find the end of list
+		while ( end->next != NULL)
+		{
+			end = end->next;
+		}
+		end->next = new_constraint;
+	}
+
+
+	return 0;
+
+
+}
+
+DOF_CONSTRAINT * FindDOFConstraintInNodeSet(NODESET * nodeset, DIRECTION dir)
+{
+	// loop over each constraint in nodeset to find one that adheres to the direction:
+	DOF_CONSTRAINT * dof_constraint = nodeset->dof_constrained; 
+	while (dof_constraint != NULL)
+	{
+		if (dof_constraint->dir ==dir)
+		{
+			return dof_constraint;
+		}
+
+		dof_constraint = dof_constraint->next;
+	}
+
+
+	return NULL;
 }

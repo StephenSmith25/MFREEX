@@ -6,7 +6,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "BLOCKS.h"
-
+#include "Boundary/Displacement/DisplacementBC.h"
 #ifndef DIM
 #define DIM 2
 #endif
@@ -14,9 +14,6 @@
 
 // read inputs into domain configuration
 int read_config_file(DOMAIN * domain, char * filename);
-
-// Displacement bcs are read into nodesets
-int read_displacementBCs();
 
 // pressure conditions are read into sidesets
 int read_pressure_loads();

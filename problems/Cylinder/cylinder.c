@@ -35,7 +35,7 @@
 #include <pthread.h>
 #include "internal_force_mooney.h"
 #include "input/read_input_mesh.h"
-
+#include "input/read_config.h"
 
 
 
@@ -128,6 +128,9 @@ int main(int argc, char** argv) {
 	printf("NUBMER OF BLOCKSETS = %d \n", domain->NUM_BLOCK_SETS);
 	printf("NUMBER OF SIDESETS = %d \n", domain->NUM_SIDE_SETS);
 	printf("NUMBER OF NODESETS = %d \n", domain->NUM_NODE_SETS);
+
+	read_config_file(domain, "cylinder.cfg");
+
 
 
     // USE CONFIG FILE TO GET BOUNDARY CONDITIONS AND MATERIAL PROPERTIES 

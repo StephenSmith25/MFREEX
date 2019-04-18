@@ -7,6 +7,7 @@
 #include "matrix.h"
 #include <stdbool.h>
 #include "Mesh/Elements.h"
+#include "Boundary/Displacement/DisplacementBC.h"
 
 
 
@@ -26,21 +27,6 @@ typedef struct _PHYSICAL_GROUPS
 }PHYSICAL_NAME;
 
 
-
-typedef enum BC_TYPE
-{
-	DOF_FIXED=1,
-	DOF_PRESCRIBED=2,
-}BC_TYPE;
-
-typedef enum DOF_CONSTRAINT
-{
-	X = 1,
-	Y = 2,
-	Z = 3,
-	ALL=4
-}DOF_CONSTRAINT;
-
 typedef struct _BLOCKSET 
 {
 
@@ -56,7 +42,7 @@ typedef struct _BLOCKSET
 typedef struct _NODESET
 {
 	ELEMENT * elements;
-	DOF_CONSTRAINT dof_constrained;
+	DOF_CONSTRAINT * dof_constrained;
 	BC_TYPE bc_type;
 
 	// nodes which belong to nodeset
@@ -137,5 +123,9 @@ ELEMENT * AddElementToNodeSet(NODESET * nodeset, ELEMENT_TYPE etype, int * verti
 int WriteBlockSetElementsToFile(BLOCKSET * blockset, char * FILENAME);
 int WriteSideSetElementsToFile(SIDESET * sideset, char * FILENAME);
 int WriteNodeSetElementsToFile(NODESET * nodeset, char * FILENAME);
+
+//DisplacmentBCS;
+int AddDOFConstraintToNodeSet(NODESET * nodeset,DOF_CONSTRAINT * dof_constraint );
+DOF_CONSTRAINT *  FindDOFConstraintInNodeSet(NODESET * nodeset, DIRECTION dir);
 
 #endif 
