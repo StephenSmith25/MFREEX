@@ -376,7 +376,7 @@ MATERIAL * create_new_material(MATERIAL_TYPE material_type, void * MATERIAL_LAW,
 				case (MOONEY_RIVLIN):
 				{
 					MOONEY_RIVLIN_MATERIAL * material_rivlin = malloc(1*sizeof(MOONEY_RIVLIN_MATERIAL));
-					material_rivlin->params = params;
+					//material_rivlin->params = params;
 					material->MATERIAL_LAW = material;
 					printf("MOONEY_RIVLIN LAW");
 					break;

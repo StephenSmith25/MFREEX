@@ -14,6 +14,16 @@ typedef enum MATERIAL_TYPE{
 	BUCKLEY
 }MATERIAL_TYPE;
 
+typedef enum MATERIAL_FORMULATION
+{
+	MAT_ST_VENANT_KIRCHOFF=1,
+	MAT_RIVLIN=2,
+	MAT_YEOH=6,
+	MAT_J2_PLASTICITY=3,
+	MAT_BUCKLEY=4
+
+}MATERIAL_FORMULATION;
+
 typedef enum HYPERELASTIC_LAW
 {
 	MOONEY_RIVLIN,
@@ -34,8 +44,13 @@ typedef struct MATERIAL
 {
 	MATERIAL_TYPE material_type;
 	void * MATERIAL_LAW;
-
+	MATERIAL_FORMULATION material;
+	
 	VEC * params;
+
+
+
+
 }MATERIAL;
 
 
@@ -43,9 +58,8 @@ typedef struct MOONEY_RIVLIN_MATERIAL
 {
 	// FUNCTION POINTER
 	//int (*GET_STRESS)(VEC*,MAT*,VEC*) = &mooneyRivlin;
-
 	// CONSTANTS
-	VEC * params;
+	double c1,c2,kappa;
 
 
 }MOONEY_RIVLIN_MATERIAL;

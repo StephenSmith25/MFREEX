@@ -2,7 +2,6 @@
 #define DISPLACEMENTBC_H_
 
 #include "Boundary/amplitude.h"
-#include "BLOCKS.h"
 
 typedef enum BC_TYPE
 {
@@ -15,13 +14,6 @@ typedef enum DOF_TYPE
 	DISPLACEMENT=1,
 	VELOCITY=2,
 }DOF_TYPE;
-
-typedef enum AMPLITUDE
-{
-	SMOOTH=1,
-	TABULAR=2,
-	INSTANT=3
-}AMPLITUDE;
 
 
 typedef enum DIRECTION
@@ -52,7 +44,5 @@ typedef struct DOF_CONSTRAINT
 }DOF_CONSTRAINT;
 
 void PrintConstraintType(DOF_CONSTRAINT * dof_constraint);
-
-//int NewDOFConstraint(DIRECTION * dir, BC_TYPE type, AMPLITUDE amp, );
 
 #endif

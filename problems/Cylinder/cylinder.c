@@ -36,6 +36,7 @@
 #include "internal_force_mooney.h"
 #include "input/read_input_mesh.h"
 #include "input/read_config.h"
+#include "Boundary/Displacement/DisplacementBC.h"
 
 
 
@@ -131,8 +132,23 @@ int main(int argc, char** argv) {
 
 	read_config_file(domain, "cylinder.cfg");
 
+	DOF_CONSTRAINT * dof_constraint = NULL;
+	NODESET * nodeset = domain->nodesets;
 
+	while ( nodeset != NULL)
+	{
+		DOF_CONSTRAINT * dof_constraint = nodeset->dof_constrained;
 
+	while ( dof_constraint != NULL)
+	{
+		PrintConstraintType(dof_constraint);
+		dof_constraint = dof_constraint->next;
+	}
+		nodeset=nodeset->next;
+
+	}
+
+	
     // USE CONFIG FILE TO GET BOUNDARY CONDITIONS AND MATERIAL PROPERTIES 
 
 	//  /*

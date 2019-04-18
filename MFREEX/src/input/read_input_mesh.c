@@ -86,7 +86,7 @@ static inline void read_physical_names(FILE * fp, DOMAIN * domain )
       		if ( strncmp(p,"\"PRESSURE\"",4) == 0)
       		{ 
       			// Note: This may be redundent
-      			AddPhysicalNameToDomain(domain, PRESSURE_TYPE, ID);
+      			AddPhysicalNameToDomain(domain, PHYSICAL_PRESSURE_TYPE, ID);
 
       			// add SIDESET to domain list
       			AddSideSetToDomain(domain, ID);
@@ -100,7 +100,7 @@ static inline void read_physical_names(FILE * fp, DOMAIN * domain )
       			AddBlockSetToDomain(domain,ID);
 			}else if ( strncmp(p,"\"DISPLACEMENT\"",4) == 0 ){
 				//  Note: This may be redundent
-      			AddPhysicalNameToDomain(domain, DISPLACEMENT_TYPE, ID);
+      			AddPhysicalNameToDomain(domain, PHYSICAL_DISPLACEMENT_TYPE, ID);
       			// add NODESET to domain list 
       			AddNodeSetToDomain(domain, ID);			
       		}else{
@@ -218,7 +218,7 @@ int read_elements(FILE * fp, DOMAIN * domain)
              blockset->elements = AddElementToBlockSet(blockset, eType, elementVerticies);
 
 
-	      	}else if ( physical_name->type == PRESSURE_TYPE)
+	      	}else if ( physical_name->type == PHYSICAL_PRESSURE_TYPE)
           {
             sideset = FindSideSetByID(domain, ID);
 
@@ -233,7 +233,7 @@ int read_elements(FILE * fp, DOMAIN * domain)
              }
              sideset->elements = AddElementToSideSet(sideset, eType, elementVerticies);
 
-          }else if ( physical_name->type == DISPLACEMENT_TYPE)
+          }else if ( physical_name->type == PHYSICAL_DISPLACEMENT_TYPE)
           {
             nodeset = FindNodeSetByID(domain, ID);
             // create element
@@ -251,10 +251,6 @@ int read_elements(FILE * fp, DOMAIN * domain)
           }
 
           // if sideset 
-
-
-
-
 
 
       	}

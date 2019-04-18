@@ -6,6 +6,14 @@
 
 #include <stdio.h>
 
+typedef enum AMPLITUDE
+{
+	SMOOTH=1,
+	TABULAR=2,
+	INSTANT=3
+}AMPLITUDE;
+
+
 
 typedef struct TABLE
 {

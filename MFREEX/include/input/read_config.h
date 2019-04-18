@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include "BLOCKS.h"
 #include "Boundary/Displacement/DisplacementBC.h"
+#include "Boundary/Traction/Pressure/pressure_load.h"
 #ifndef DIM
 #define DIM 2
 #endif
@@ -15,14 +16,9 @@
 // read inputs into domain configuration
 int read_config_file(DOMAIN * domain, char * filename);
 
-// pressure conditions are read into sidesets
-int read_pressure_loads();
-
 // timestep parameters are read into the timestep structure
 int read_timestep_parameters();
 
-// material parameters are read into blockset 
-int read_material_parameters();
 
 // meshfree parameters are read into meshfree domain 
 int read_meshfree_parameters();

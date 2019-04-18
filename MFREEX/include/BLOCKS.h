@@ -8,13 +8,14 @@
 #include <stdbool.h>
 #include "Mesh/Elements.h"
 #include "Boundary/Displacement/DisplacementBC.h"
-
+#include "Boundary/Traction/Pressure/pressure_load.h"
+#include "Material/material.h"
 
 
 typedef enum PHYSICAL_TYPE
 {
-	PRESSURE_TYPE=1,
-	DISPLACEMENT_TYPE=2,
+	PHYSICAL_PRESSURE_TYPE=1,
+	PHYSICAL_DISPLACEMENT_TYPE=2,
 	PHYSICAL_MATERIAL_TYPE=3,
 
 }PHYSICAL_TYPE;
@@ -32,7 +33,7 @@ typedef struct _BLOCKSET
 
 	MAT * nodes;
 	ELEMENT * elements;
-	char * material;
+	MATERIAL * material;
 	int ID; 
 
 	struct _BLOCKSET * next;
@@ -55,7 +56,7 @@ typedef struct _NODESET
 
 typedef struct _SIDESET
 {
-	double pressure_magnitude;
+	PRESSURE_LOAD * pressure_load;
 
 	ELEMENT * elements;
 
