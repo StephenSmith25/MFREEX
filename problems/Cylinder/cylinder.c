@@ -148,7 +148,31 @@ int main(int argc, char** argv) {
 
 	}
 
-	
+
+	BLOCKSET * blockset = domain->blocksets;
+
+
+	// MATERIAL INFORMATION 
+	v_foutput(stdout, blockset->material->params);
+	PrintMaterialType(blockset->material);
+
+
+
+
+	/* LOOP OVER EACH NODSET AND FIND INTERNAL FORCE*/
+
+
+		// how to handle updated formulation - DO THIS LATER 
+
+
+
+	/* LOOP OVER EACH SIDESET AND FIND EXTERNAL FORCE */
+
+	/* LOOP OVER EACH NODSET AND APPLY BOUNDARY CONDITIONS */ 
+
+
+
+
     // USE CONFIG FILE TO GET BOUNDARY CONDITIONS AND MATERIAL PROPERTIES 
 
 	//  /*

@@ -220,7 +220,7 @@ static int read_material_parameters(DOMAIN * domain, FILE * fp)
     char * token;
     read = getline(&line, &len, fp);
     line = trim(line);
-
+    int num_parameters = 0;
     int ID;
 
     BLOCKSET * blockset; 
@@ -245,13 +245,17 @@ static int read_material_parameters(DOMAIN * domain, FILE * fp)
 		      		blockset = FindBlockSetByID(domain, ID);
 		      	}
 
-
 		      	if (strcmp(p,"material_name") == 0 )
 		      	{
+
+
+		      		p = strtok(NULL, " ");
+
 
 		      		if ( strcmp(p,"MAT_RIVLIN") == 0)
 		      		{
 		      			new_material->material = MAT_RIVLIN;
+
 
 
 		      			//new_material->params = v_get(NUM_PARAMETERS);
@@ -259,25 +263,68 @@ static int read_material_parameters(DOMAIN * domain, FILE * fp)
 		      			// c1 c2 and kappa
 
 						read = getline(&line, &len, fp);
-	      	 	   			line = trim(line);
+	      	 	   		line = trim(line);
 	      	 	   		 p = strtok(line,"=");
 
-	      	 	   		 if ( strcmp(p, "C1") == 0)
+	      	 	   		 // FInd num of paramters
+
+	      	 	   		 if ( strcmp(p,"NUM_PARAMETERS") == 0)
 	      	 	   		 {
 		      				p = strtok(NULL, " ");
-		      				// new->material->material->
+		      				num_parameters = atoi(p);
+		      				new_material->params = v_get(num_parameters);
 
 	      	 	   		 }
- 	 	   				 if ( strcmp(p, "C2") == 0)
+
+
+						read = getline(&line, &len, fp);
+	      	 	   		line = trim(line);
+
+	      	 	   		if ( strcmp(line,"$Constants") == 0){
+							read = getline(&line, &len, fp);
+		      	 	   		line = trim(line);
+
+
+		      	 	   		while ( strcmp(line,"$EndConstants") != 0)
+		      	 	   		{
+
+			      	 	   		p = strtok(line,"=");
+
+			      	 	   		if ( strcmp(p, "C1") == 0)
+			      	 	   		{
+				      				p = strtok(NULL, " ");
+				      				new_material->params->ve[0] = atof(p);
+				      			
+			      	 	   		}
+		 	 	   				 if ( strcmp(p, "C2") == 0)
+			      	 	   		 {
+									p = strtok(NULL, "");
+				      				new_material->params->ve[1] = atof(p);
+			      	 	   		 }
+			      	 	   		 if ( strcmp(p, "kappa") == 0)
+			      	 	   		 {
+									p = strtok(NULL, "");
+				      				new_material->params->ve[2] = atof(p);
+			      	 	   		 }
+			      	 	   		read = getline(&line, &len, fp);
+			      	 	   		line = trim(line);
+		      	 	   		}
+	      	 	   		}
+
+	      	 	   		 if ( strcmp(p,"density") == 0)
 	      	 	   		 {
+		      				p = strtok(NULL, " ");
+		      				new_material->density = atof(p);
 
 	      	 	   		 }
+
+
+
+						read = getline(&line, &len, fp);
+	      	 	   		line = trim(line);
 
 
 		      		}
-		      		printf("got here in material_name \n");
-
-
 
 		      	}
 
@@ -291,6 +338,7 @@ static int read_material_parameters(DOMAIN * domain, FILE * fp)
 		}
 
 		blockset->material = new_material;
+
      	read = getline(&line, &len, fp);
       	line = trim(line);
 
@@ -305,6 +353,19 @@ static int read_material_parameters(DOMAIN * domain, FILE * fp)
 
 	return 0;
 }
+
+// timestep parameters are read into the timestep structure
+static int read_timestep_parameters()
+{
+
+
+
+	return 0;
+}
+
+
+
+
 
 // pressure conditions are read into sidesets
 static int read_pressure_loads(DOMAIN * domain, FILE * fp)

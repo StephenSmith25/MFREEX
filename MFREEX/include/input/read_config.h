@@ -16,9 +16,6 @@
 // read inputs into domain configuration
 int read_config_file(DOMAIN * domain, char * filename);
 
-// timestep parameters are read into the timestep structure
-int read_timestep_parameters();
-
 
 // meshfree parameters are read into meshfree domain 
 int read_meshfree_parameters();

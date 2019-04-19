@@ -2,6 +2,21 @@
 
 
 
+int PrintMaterialType(MATERIAL * material)
+{
+
+	if ( material->material == MAT_RIVLIN )
+	{
+		printf("Material formulation is based on Mooney-Rivlin model \n");
+
+	}else if ( material->material == MAT_BUCKLEY)
+	{
+		printf("Material formulation is based on Buckley model \n");
+	}
+
+
+	return 0;
+}
 
 state_variables ** new_material_states(double * temperatures, int num_Points, int is_buckley,
 	int is_plastic, int dim, int is_AXI)

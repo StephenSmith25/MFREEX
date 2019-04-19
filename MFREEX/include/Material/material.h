@@ -45,13 +45,17 @@ typedef struct MATERIAL
 	MATERIAL_TYPE material_type;
 	void * MATERIAL_LAW;
 	MATERIAL_FORMULATION material;
-	
+	int (*get_stress)(VEC*,MAT*,VEC*);
 	VEC * params;
+
+	double density;
 
 
 
 
 }MATERIAL;
+
+int PrintMaterialType(MATERIAL * material);
 
 
 typedef struct MOONEY_RIVLIN_MATERIAL
