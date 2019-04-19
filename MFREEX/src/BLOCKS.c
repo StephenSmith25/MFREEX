@@ -421,5 +421,171 @@ DOF_CONSTRAINT * FindDOFConstraintInNodeSet(NODESET * nodeset, DIRECTION dir)
 }
 
 
+#include "Integration/quad.h"
+int GetMaterialPointsBlockSet(DOMAIN * domain , int order)
+{
+
+	int number_of_quadrature_points = 0;
+
+	BLOCKSET * blockset = domain->blocksets;
 
 
+	while ( blockset != NULL){
+
+
+	//  create quadrature points
+    // LOOP OVER EACH ELEMENT 
+	ELEMENT * element;
+	while ( element != NULL)
+	{	
+		// GET QUADRATURE POINTS AT EACH ELEMENT 
+		QUAD * quad = GetQuadPoints(domain->NODES, element, order);
+		element = element->next;
+
+		// Create a material point for each quadarture-point
+		for ( int i = 0 ; i < quad->points->m ; i++)
+		{
+
+		}
+
+
+		// Add material point to blockset
+
+		// prototype
+		// AddMaterialPointToBlockSet(BLOCKSET * blocket, MATERIAL_POINT * mp)
+
+
+
+
+
+
+
+
+	}
+
+	blockset = blockset->next;
+	}
+
+	// 	QUAD_TRIANGLE * quad_triangles = create_triangle_quadrature_points(tri_points, 
+	// 	triangles,number_of_triangles, quad_orders );
+
+
+
+	// 	int number_of_quadrature_points = quad_triangles->QUAD_POINTS->m;
+	// 	material_points->num_material_points = number_of_quadrature_points;
+
+
+	// 	MATERIAL_POINT ** MPS = malloc(number_of_quadrature_points * sizeof(MATERIAL_POINT));
+
+
+
+	// 	double point_coords[3] = {0,0,0};
+
+
+
+
+	// 	for ( int i = 0 ; i < number_of_quadrature_points ; i++)
+	// 	{	
+
+	// 		// Generate the coordinates
+	// 		for  (  int k = 0 ; k < dim ; k++)
+	// 		{
+	// 			point_coords[k] = quad_triangles->QUAD_POINTS->me[i][k];
+	// 		}
+
+	// 		// Create the material points
+	// 		//MPS[i] = create_material_point(point_coords,quad_triangles->VOLUMES->ve[i]);
+
+	// 		MPS[i]->beta = beta;
+	// 		MPS[i]->kernel_support=RADIAL;
+	// 		MPS[i]->neighbours = iv_get(50);
+
+
+	// 		// Support parameters 
+	// 		MPS[i]->MI = m_get(dim,dim);
+	// 		MPS[i]->invMI = m_get(dim,dim);
+
+	// 		// set the initial domain of the material points 
+	// 		setDomainMaterialPoint(mfree->nodes, grid, MPS[i]);
+
+
+
+	// 		MPS[i]->shape_function = NULL;
+	// 		MPS[i]->shape_function = mls_shapefunction_materialpoint(MPS[i],2,mfree->nodes);
+
+
+	// 		// Strain Displacement relationship 
+	// 		MPS[i]->B = BMAT(MNULL,MPS[i]->shape_function,dim,IS_AXI,MPS[i]->coords_n_1[0]);
+
+
+	// 		// Matricies used in internal force calculation
+	// 		MPS[i]->fInt = v_get(dim*MPS[i]->num_neighbours);
+
+	// 		// Deformation gradient 
+	// 		MPS[i]->F_n = m_get(dim_s,dim_s);
+	// 		MPS[i]->inc_F = m_get(dim_s,dim_s);
+	// 		m_ident(MPS[i]->inc_F);
+	// 		m_ident(MPS[i]->F_n);
+	// 		MPS[i]->Jn = 1.00;
+
+	// 		// Temperature
+	// 		MPS[i]->temperature = 0;
+	// 		if ( mfree->temperatures != NULL){
+	// 			for ( int k = 0 ; k < MPS[i]->num_neighbours ; k++)
+	// 			{
+	// 				int index = MPS[i]->neighbours->ive[k];
+	// 				MPS[i]->temperature += MPS[i]->shape_function->phi->ve[k]*mfree->temperatures[index];
+	// 			}
+	// 		}
+
+
+	// 		// Density
+	// 		MPS[i]->rho = rho;
+
+	// 		// Stress Voigt
+	// 		MPS[i]->stressVoigt = v_get(dim_p);
+
+	// 		MPS[i]->temp = m_get(dim_s,dim_s);
+	// 		MPS[i]->temp_1 = m_get(dim_s,dim_s);
+
+	// 		// Modify integration factor if problem is axisymmetric
+	// 		if ( IS_AXI == 1)
+	// 		{
+	// 			MPS[i]->INTEGRATION_FACTOR = 2*PI*MPS[i]->coords_n_1[0];
+	// 		}else{
+	// 			MPS[i]->INTEGRATION_FACTOR = 1.00;
+	// 		}
+
+
+	// 		// Create material state for eahc material point 
+	// 		MPS[i]->stateOld= new_material_state(MPS[i]->temperature, material_type,
+	// 			dim, IS_AXI);
+	// 		MPS[i]->stateNew = new_material_state(MPS[i]->temperature, material_type,
+	// 			dim, IS_AXI);
+
+
+	// 	}
+
+
+
+	// 	material_points->MP = MPS;
+	// 	material_points->dim = dim;
+	// 	material_points->IS_AXI = IS_AXI;
+
+
+
+
+
+	// }
+
+
+
+
+
+
+
+
+
+
+
+}

@@ -12,7 +12,7 @@
 #include "Integration/Triangle/triangle_quadrature.h"
 #include "determinant.h"
 #include "cellSearch.h"
-
+#include "BLOCKS.h"
 #define PI 3.14159265358979323846
 
 
@@ -138,5 +138,8 @@ void update_material_point_coords(MATERIAL_POINT * MP, MAT * NODES);
 int RangeSearchMaterialPoint(
 MATERIAL_POINT * MP, MAT * nodes, CELLS * cells);
 
+
+
+int CreateMaterialPoints(DOMAIN * domain, int quad_order);
 
 #endif

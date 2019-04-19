@@ -10,7 +10,7 @@
 #include "Boundary/Displacement/DisplacementBC.h"
 #include "Boundary/Traction/Pressure/pressure_load.h"
 #include "Material/material.h"
-
+#include "Integration/material_point.h"
 
 typedef enum PHYSICAL_TYPE
 {
@@ -34,6 +34,12 @@ typedef struct _BLOCKSET
 	MAT * nodes;
 	ELEMENT * elements;
 	MATERIAL * material;
+
+
+	MATERIAL_POINTS * material_points;
+
+
+
 	int ID; 
 
 	struct _BLOCKSET * next;
@@ -128,5 +134,9 @@ int WriteNodeSetElementsToFile(NODESET * nodeset, char * FILENAME);
 //DisplacmentBCS;
 int AddDOFConstraintToNodeSet(NODESET * nodeset,DOF_CONSTRAINT * dof_constraint );
 DOF_CONSTRAINT *  FindDOFConstraintInNodeSet(NODESET * nodeset, DIRECTION dir);
+
+
+// integration
+int GetMaterialPointsBlockSets(DOMAIN * domain, int order);
 
 #endif 
