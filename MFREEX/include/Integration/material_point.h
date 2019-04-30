@@ -128,6 +128,7 @@ MATERIAL_POINTS * create_material_points(void * cealls, int IS_AXI, int dim,
 	char * integration_type, MATERIAL_TYPE material_type, CELLS * cells, double rho, double beta, meshfreeDomain * mfree);
 
 int write_material_points(char * filename, MATERIAL_POINTS * MPS);
+int write_domains(char * filename, MATERIAL_POINTS * MPS);
 
 MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, CELLS * grid, MAT * NODES, VEC * nodal_mass);
 void * update_material_point_a(void * threadarg);
@@ -140,6 +141,6 @@ MATERIAL_POINT * MP, MAT * nodes, CELLS * cells);
 
 
 
-int CreateMaterialPoints(DOMAIN * domain, int quad_order);
+//int CreateMaterialPoints(DOMAIN * domain, int quad_order);
 
 #endif

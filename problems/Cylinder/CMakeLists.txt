@@ -8,6 +8,7 @@ include_directories(${Meschach_SOURCE_DIR})
 include_directories(${CVLIB_SOURCE_DIR}/lib/include)
 include_directories(${CVLIB_SOURCE_DIR}/test/include)
 include_directories(${util_SOURCE_DIR}/include)
+include_directories(${EIGEN_SOURCE_DIR}/include)
 
 include_directories(${GPC_SOURCE_DIR})
 include_directories(${MFREEX_SOURCE_DIR}/MFREEX/include)
@@ -34,7 +35,7 @@ SET(GCC_COVERAGE_COMPILE_FLAGS "-O3 -g -std=c99 -pthread -lpthread")
 add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
 add_executable(cylinder cylinder.c)
-target_link_libraries(cylinder CVLIB thread_pool triangulate MFREEX EFSFLIB meschach m gpc util )
+target_link_libraries(cylinder  CVLIB thread_pool triangulate MFREEX Eigen EFSFLIB meschach m gpc util )
 
 
 # copy input files to location

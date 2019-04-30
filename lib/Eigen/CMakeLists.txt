@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project(Eigen)
 SET(EIGEN_INTERNAL_SRC
+	${CMAKE_CURRENT_SOURCE_DIR}/src/dsyev2.c 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/dsytrd3.c 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/dsyevc3.c 
 	${CMAKE_CURRENT_SOURCE_DIR}/src/dsyevj3.c 

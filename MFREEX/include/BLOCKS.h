@@ -11,6 +11,7 @@
 #include "Boundary/Traction/Pressure/pressure_load.h"
 #include "Material/material.h"
 #include "Integration/material_point.h"
+#include "Integration/quad.h"
 
 typedef enum PHYSICAL_TYPE
 {
@@ -36,7 +37,7 @@ typedef struct _BLOCKSET
 	MATERIAL * material;
 
 
-	MATERIAL_POINTS * material_points;
+	//MATERIAL_POINTS * material_points;
 
 
 

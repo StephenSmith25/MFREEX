@@ -6,7 +6,7 @@ SET(EIGEN_INTERNAL_SRC
 	dsytrd3.c
 	dsyevc3.c
 	dsyevj3.c
-	dsyevq3.c
+	d111syevq3.c
 	dsyevv3.c 
 	dsyevh3.c 
 	dsyevd3.c 

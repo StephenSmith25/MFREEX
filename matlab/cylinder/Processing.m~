@@ -37,17 +37,14 @@ ylim([0,30])
 
 filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(10)),'.txt');
 domains = csvread(filename);
-ellipse_drawer = @(t) draw_ellipse(domains(t,1),domains(t,2),material_points(t,1),material_points(t,2));
+hold on
+draw_ellipse(domains(1,1),domains(1,2),material_points(1,1),material_points(1,2));
 
-
-
-
+ellipse_drawer =
 
 hold on
-ellipse_drawer(1);
+draw_ellipse(domains(1,1),domains(1,2),material_points(1,1),material_points(1,2));
 
-hold on
-ellipse_drawer(200);
 
 
 filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(1)),'.txt');
@@ -67,10 +64,7 @@ filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles
 domains = csvread(filename);
 hold on
 draw_ellipse(domains(1,1),domains(1,2),material_points(1,1),material_points(1,2));
-hold on
-ellipse_drawer = @(t) draw_ellipse(domains(t,1),domains(t,2),material_points(t,1),material_points(t,2));
 
-ellipse_drawer(200);
 saveas(gcf,'Displacement_cylinder','epsc')
 
 

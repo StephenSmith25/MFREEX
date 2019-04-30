@@ -69,11 +69,6 @@ figure
 
 
 
-% -------------------------------------------------------------------------%
-%                           PLOT 1
-% -------------------------------------------------------------------------%
-
-
 
 subplot(1,3,1)       % add first plot in 2 x 2 grid
 
@@ -113,17 +108,7 @@ plot(-disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 xlim([-50,50])
 ylim([-170,ymax])
 
-filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(1)),'.txt');
-material_points = csvread(filename,1);
-filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(1)),'.txt');
-domains = csvread(filename);
-ellipse_drawer = @(t) draw_ellipse(domains(t,1),domains(t,2),material_points(t,1),material_points(t,2));
-ellipse_drawer(570);
-
-
-% -------------------------------------------------------------------------%
-%                           PLOT 2
-% -------------------------------------------------------------------------%
+       % line plot
 
 
 
@@ -160,26 +145,8 @@ plot(-disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 xlim([-50,50])
 ylim([-170,ymax])
 
-filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(6)),'.txt');
-material_points = csvread(filename,1);
-filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(6)),'.txt');
-domains = csvread(filename);
-ellipse_drawer = @(t) draw_ellipse(domains(t,1),domains(t,2),material_points(t,1),material_points(t,2));
-
-for i = 1:10:length(material_points);
-    
-   ellipse_drawer(i); 
-end
-
-
-
-% -------------------------------------------------------------------------%
-%                           PLOT 3
-% -------------------------------------------------------------------------%
 filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.txt');
 disp = csvread(filename);
-
-
 
 
 subplot(1,3,3)       % add first plot in 2 x 2 grid
@@ -217,39 +184,34 @@ filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles
 domains = csvread(filename);
 ellipse_drawer = @(t) draw_ellipse(domains(t,1),domains(t,2),material_points(t,1),material_points(t,2));
 
-for i = 1:10:length(material_points);
-    
-   ellipse_drawer(i); 
-end
-
 
 print -dpng2 Displacement.png
 
 
-% figure
-% 
-% cells = csvread('./../../build/bin/preform_alt/search_cells.csv');
-% active_cells =  csvread('./../../build/bin/preform_alt/active_cells.csv');
-% 
-% 
-% filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.txt');
-% disp = csvread(filename);
-% 
-% 
-% plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
-% 
-% cells = csvread('./../../build/bin/preform_alt/search_cells.csv');
-% active_cells =  csvread('./../../build/bin/preform_alt/active_cells.csv');
-% 
-% 
-% 
-% for k = 1:length(active_cells)
-% hold on
-%     i = active_cells(k)+1;
-% rectangle('Position',[cells(i,1), cells(i,3), cells(i,2)-cells(i,1), cells(i,4)-cells(i,3)])
-% end
-% 
-% axis equal
+figure
+
+cells = csvread('./../../build/bin/preform_alt/search_cells.csv');
+active_cells =  csvread('./../../build/bin/preform_alt/active_cells.csv');
+
+
+filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.txt');
+disp = csvread(filename);
+
+
+plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
+
+cells = csvread('./../../build/bin/preform_alt/search_cells.csv');
+active_cells =  csvread('./../../build/bin/preform_alt/active_cells.csv');
+
+
+
+for k = 1:length(active_cells)
+hold on
+    i = active_cells(k)+1;
+rectangle('Position',[cells(i,1), cells(i,3), cells(i,2)-cells(i,1), cells(i,4)-cells(i,3)])
+end
+
+axis equal
 
 m = dlmread('./../../build/bin/preform_alt/pressureTime.txt',' ');
 %m(ceil(length(m)/4):end,:) = smoothdata(m(ceil(length(m)/4):end,:))
@@ -312,30 +274,4 @@ print -dpng2 pressure.png
 
 
 set(gcf, 'Color', 'w');
-
-
-
-
-function [] = draw_ellipse(a,b,x0,y0)
-
-    t = linspace(0,360,50);
-    
-    
-    a = sqrt(a);
-    b = sqrt(b);
-    x = x0 + a*cosd(t);
-    y = y0 + b*sind(t);
-    
-    hold on
-    plot(x,y,'r-');
-    
-    
-    
-    
-
-
-end
-
-
-
 

@@ -16,10 +16,10 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 // ----------------------------------------------------------------------------
-#ifndef __DSYEV3_H
-#define __DSYEV3_H
+#ifndef __DSYEV2_H
+#define __DSYEV2_H
 
-inline void dsyev2(double A, double B, double C, double *rt1, double *rt2,
+void dsyev2(double A, double B, double C, double *rt1, double *rt2,
                    double *cs, double *sn);
 
 #endif

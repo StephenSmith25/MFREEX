@@ -26,7 +26,7 @@
 
 
 // ----------------------------------------------------------------------------
-inline void dsyev2(double A, double B, double C, double *rt1, double *rt2,
+void dsyev2(double A, double B, double C, double *rt1, double *rt2,
                    double *cs, double *sn)
 // ----------------------------------------------------------------------------
 // Calculates the eigensystem of a real symmetric 2x2 matrix

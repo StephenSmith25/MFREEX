@@ -10,6 +10,7 @@
 #include "Integration/DomainMaterialPoint.h"
 #include "ShapeFunction/neighbours_materialpoint.h"
 #include "cellSearch.h"
+#include "dsyev2.h"
 
 #ifndef DIM 
 #define DIM 2 
@@ -130,16 +131,16 @@ int setDomainMaterialPoint(MAT * nodes, CELLS * cells, MATERIAL_POINT * MP)
 			v_sort(distances,order);
 	
 
-			MP->r_cutoff = MP->beta *  distances->ve[8];
+			MP->r_cutoff = MP->beta *  distances->ve[4];
 
 
 
 			// Initially spherical domain of influence: 
 			// MI = [r^2 0 0 ; 0 r^2 0 ; 0 0 r^2]
 #if DIM == 2 
-		MP->MI->me[0][0] =  distances->ve[8] *  distances->ve[8];
-		MP->MI->me[1][1] =  distances->ve[8] *  distances->ve[8];
-		MP->invMI->me[0][0] = 1.00/ MP->MI->me[1][1] ;
+		MP->MI->me[0][0] =  distances->ve[5] *  distances->ve[5];
+		MP->MI->me[1][1] =  distances->ve[7] *  distances->ve[7];
+		MP->invMI->me[0][0] = 1.00/ MP->MI->me[0][0] ;
 		MP->invMI->me[1][1] = 1.00/ MP->MI->me[1][1] ;
 
 #elif DIM == 3
@@ -170,54 +171,91 @@ int setDomainMaterialPoint(MAT * nodes, CELLS * cells, MATERIAL_POINT * MP)
 int updateDomainMaterialPoint(MAT * nodes, CELLS * cells,  MATERIAL_POINT * MP)
 {
 
-	int num_nodes = nodes->m;
-	int dim = nodes->n;
-	double distance_min = 1000;
-	int i,j;
 
-	int min_num_neighbours = 6;
+	MAT * F = MP->inc_F;
+	MAT * C = MP->stateNew->C;
+	mtrm_mlt(F,F,C);
 
-	double distance[MP->num_neighbours];
+	// Find eigen values of network strain
+	//m_inverse_small(MP->inc_F,MP->stateNew->m_temp4);
+	double lambda1 = 0;
+	double lambda2 = 0;
+	double cs = 0;
+	double sn = 0;
 
-	// find min_num_neighbours for material point x_p
-	for (j = 0; j < MP->num_neighbours; ++j)
-	{
-			// find distance to point;
-			int index = MP->neighbours->ive[j];
-			distance[j] = sq_distance(MP->coords_n_1, nodes->me[index], dim);
+	dsyev2(C->me[0][0], C->me[0][1], C->me[1][1], &lambda1, &lambda2,
+                   &cs,&sn);
 
-	}
-	double a;
-	for (i = 0 ; i < MP->num_neighbours ; i++)
-	{
-		for (  j = i+1 ; j < MP->num_neighbours ; j++)
-		{
-			if (distance[i] > distance[j])
-			{
-				a = distance[i];
-				distance[i] = distance[j];
-				distance[j] = a;
-			}
-		}
-	}
+	lambda1 = sqrt(lambda1);
+	lambda2 = sqrt(lambda2);
 
-	// update supports
-	MP->r_cutoff = MP->beta *distance[6];
+	double N1[2] = {cs,sn};
+	double N2[2] = {-sn,cs};
 
-#if DIM == 2 
-	MP->MI->me[0][0] = MP->r_cutoff *  MP->r_cutoff ;
-	MP->MI->me[1][1] =  MP->r_cutoff  *  MP->r_cutoff ;
-	MP->invMI->me[0][0] = 1.00/ MP->MI->me[1][1] ;
-	MP->invMI->me[1][1] = 1.00/ MP->MI->me[1][1] ;
+	double N1_N1[2][2] = {{N1[0]*N1[0],N1[0]*N1[1]},{N1[0]*N1[1],N1[1]*N1[1]}};
+	double N2_N2[2][2] = {{N2[0]*N2[0],N2[0]*N2[1]},{N2[0]*N2[1],N2[1]*N2[1]}};
 
-#elif DIM == 3
-	MP->MI->me[0][0] = distance[8];
-	MP->MI->me[1][1] = distance[8];
-	MP->MI->me[2][2] = distance[8];
-	MP->invMI->me[0][0] = 1.00/distance[8];
-	MP->invMI->me[1][1] = 1.00/distance[8];
-	MP->invMI->me[2][2] = 1.00/distance[8];
-#endif 
+	double U[2][2] ;
+	U[0][0] = N1_N1[0][0]*lambda1 + N2_N2[0][0]*lambda2;
+	U[1][1] = N1_N1[1][1]*lambda1 + N2_N2[1][1]*lambda2;
+
+
+	double a_t = sqrt(MP->MI->me[0][0])*U[0][0];
+	double b_t = sqrt(MP->MI->me[1][1])*U[1][1];
+
+	MP->MI->me[0][0] = a_t*a_t;
+	MP->MI->me[1][1] = b_t*b_t;
+
+
+
+
+	// // mtrm_mlt(F,MP->MI,MP->invMI);
+	// // m_mlt(MP->invMI,F,MP->MI);
+	// m_inverse_small(MP->MI,MP->invMI);
+
+
+
+// 	double distance[MP->num_neighbours];
+
+// 	// find min_num_neighbours for material point x_p
+// 	for (j = 0; j < MP->num_neighbours; ++j)
+// 	{
+// 			// find distance to point;
+// 			int index = MP->neighbours->ive[j];
+// 			distance[j] = sq_distance(MP->coords_n_1, nodes->me[index], dim);
+
+// 	}
+// 	double a;
+// 	for (i = 0 ; i < MP->num_neighbours ; i++)
+// 	{
+// 		for (  j = i+1 ; j < MP->num_neighbours ; j++)
+// 		{
+// 			if (distance[i] > distance[j])
+// 			{
+// 				a = distance[i];
+// 				distance[i] = distance[j];
+// 				distance[j] = a;
+// 			}
+// 		}
+// 	}
+
+// 	// update supports
+// 	MP->r_cutoff = MP->beta *distance[6];
+
+// #if DIM == 2 
+// 	MP->MI->me[0][0] = MP->r_cutoff *  MP->r_cutoff ;
+// 	MP->MI->me[1][1] =  MP->r_cutoff  *  MP->r_cutoff ;
+// 	MP->invMI->me[0][0] = 1.00/ MP->MI->me[1][1] ;
+// 	MP->invMI->me[1][1] = 1.00/ MP->MI->me[1][1] ;
+
+// #elif DIM == 3
+// 	MP->MI->me[0][0] = distance[8];
+// 	MP->MI->me[1][1] = distance[8];
+// 	MP->MI->me[2][2] = distance[8];
+// 	MP->invMI->me[0][0] = 1.00/distance[8];
+// 	MP->invMI->me[1][1] = 1.00/distance[8];
+// 	MP->invMI->me[2][2] = 1.00/distance[8];
+// #endif 
 
 
 

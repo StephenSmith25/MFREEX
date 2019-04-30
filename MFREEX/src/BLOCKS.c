@@ -282,9 +282,9 @@ int WriteBlockSetElementsToFile(BLOCKSET * blockset, char * FILENAME)
 			fprintf(fp,"%d,%d,%d\n",current->verticies[0],current->verticies[1],current->verticies[2]);
 		else if ( current->etype == LINE)
 			fprintf(fp,"%d,%d\n",current->verticies[0],current->verticies[1]);
-		else if ( current->etype == QUAD)
-			fprintf(fp,"%d,%d,%d,%d\n",current->verticies[0],current->verticies[1],
-				current->verticies[2],current->verticies[3]);
+		//else if ( current->etype == QUAD)
+		//	fprintf(fp,"%d,%d,%d,%d\n",current->verticies[0],current->verticies[1],
+		//D		current->verticies[2],current->verticies[3]);
 		else if ( current->etype == TETRAHEDRON)
 			fprintf(fp,"%d,%d,%d,%d\n",current->verticies[0],current->verticies[1],
 				current->verticies[2],current->verticies[3]);
@@ -318,9 +318,9 @@ int WriteSideSetElementsToFile(SIDESET * sideset, char * FILENAME)
 			fprintf(fp,"%d,%d,%d\n",current->verticies[0],current->verticies[1],current->verticies[2]);
 		else if ( current->etype == LINE)
 			fprintf(fp,"%d,%d\n",current->verticies[0],current->verticies[1]);
-		else if ( current->etype == QUAD)
-			fprintf(fp,"%d,%d,%d,%d\n",current->verticies[0],current->verticies[1],
-				current->verticies[2],current->verticies[3]);
+		//else if ( current->etype == QUAD)
+		//	fprintf(fp,"%d,%d,%d,%d\n",current->verticies[0],current->verticies[1],
+		//		current->verticies[2],current->verticies[3]);
 		else if ( current->etype == TETRAHEDRON)
 			fprintf(fp,"%d,%d,%d,%d\n",current->verticies[0],current->verticies[1],
 				current->verticies[2],current->verticies[3]);
@@ -355,9 +355,9 @@ int WriteNodeSetElementsToFile(NODESET * nodeset, char * FILENAME)
 			fprintf(fp,"%d,%d,%d\n",current->verticies[0],current->verticies[1],current->verticies[2]);
 		else if ( current->etype == LINE)
 			fprintf(fp,"%d,%d\n",current->verticies[0],current->verticies[1]);
-		else if ( current->etype == QUAD)
-			fprintf(fp,"%d,%d,%d,%d\n",current->verticies[0],current->verticies[1],
-				current->verticies[2],current->verticies[3]);
+		// else if ( current->etype == QUAD)
+		// 	fprintf(fp,"%d,%d,%d,%d\n",current->verticies[0],current->verticies[1],
+		// 		current->verticies[2],current->verticies[3]);
 		else if ( current->etype == TETRAHEDRON)
 			fprintf(fp,"%d,%d,%d,%d\n",current->verticies[0],current->verticies[1],
 				current->verticies[2],current->verticies[3]);
@@ -421,7 +421,6 @@ DOF_CONSTRAINT * FindDOFConstraintInNodeSet(NODESET * nodeset, DIRECTION dir)
 }
 
 
-#include "Integration/quad.h"
 int GetMaterialPointsBlockSet(DOMAIN * domain , int order)
 {
 
@@ -445,7 +444,8 @@ int GetMaterialPointsBlockSet(DOMAIN * domain , int order)
 		// Create a material point for each quadarture-point
 		for ( int i = 0 ; i < quad->points->m ; i++)
 		{
-
+			// prototype
+			// CreateMaterialPoint(double * point, i)
 		}
 
 

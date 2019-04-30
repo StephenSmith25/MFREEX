@@ -73,7 +73,7 @@ char * integration_type = "TRIANGLE";
 
 #define IS_UPDATED
 #ifdef IS_UPDATED
-	#define UPDATE_FREQUENCEY 5000
+	#define UPDATE_FREQUENCEY 100
 #endif
 
 const int WRITE_FREQ =250;
@@ -1027,9 +1027,17 @@ int main(int argc, char** argv) {
 			fp = fopen("pressureTime.txt","a");
 			fprintf(fp,"%lf %lf\n",t_n_1,pre_n_1);
 			fclose(fp);
-			fileCounter++;
 
 			write_active_cells("active_cells.csv",active_cells);
+
+
+			snprintf(filename, 50, "MaterialPoints/materialpoints_%d%s",fileCounter,".txt");
+			write_material_points(filename, material_points);
+
+			snprintf(filename, 50, "MaterialPoints/Domains/domains_%d%s",fileCounter,".txt");
+			write_domains(filename, material_points);	
+
+			fileCounter++;
 
 
 		}

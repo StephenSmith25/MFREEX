@@ -334,12 +334,42 @@ static inline int delete_material_point()
 {
 	return 0;
 }
+static call_count = 0;
+
+int write_domains(char * filename, MATERIAL_POINTS * MPS)
+{
+	FILE * fp = fopen(filename,"w");
+
+	printf("number of material points = %d \n", MPS->num_material_points);
+
+	int k = 0;
+	for ( int k = 0 ; k < MPS->num_material_points ; k++ )
+	{
+		double M11 = MPS->MP[k]->MI->me[0][0];
+		double M22 = MPS->MP[k]->MI->me[1][1];
+		// print stress as well
+		fprintf(fp,"%5.7lf,%5.7lf\n",M11,M22);
 
 
+
+	}
+
+		++call_count;
+
+
+	if ( call_count ==50)
+	{
+		exit(0);
+	}
+
+	return 0;
+
+}
 int write_material_points(char * filename, MATERIAL_POINTS * MPS)
 {
 	FILE * fp = fopen(filename,"w");
 	fprintf(fp,"x,y,z,s11,s22,s12\n");
+
 
 	for ( int i = 0 ; i < MPS->num_material_points ; i++ )
 	{
@@ -352,6 +382,8 @@ int write_material_points(char * filename, MATERIAL_POINTS * MPS)
 			s11,s22,s12
 		);
 	}
+
+
 
 	fclose(fp);
 
