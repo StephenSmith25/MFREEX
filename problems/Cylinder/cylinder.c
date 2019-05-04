@@ -51,7 +51,7 @@ char * kernel_shape = "radial";
 
 
 // how much larger can the domains get 
-double beta =1.2;
+double beta =1.6;
 
 // Meshfree parameters
 const double dmax =3;
@@ -320,8 +320,8 @@ int main(int argc, char** argv) {
 
 
 	int count1 = 0;
-	eb1->nodes = iv_get(4);
-	eb2->nodes = iv_get(4);
+	eb1->nodes = iv_get(5);
+	eb2->nodes = iv_get(5);
 	int count = 0;
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
@@ -627,7 +627,7 @@ int main(int argc, char** argv) {
 #endif 
 
 		// save outputs
-		if ( n % writeFreq == 0 ){
+		if (( n % writeFreq == 0 ) || (n == 0) ){
 
 			char filename[50];
 			snprintf(filename, 50, "displacement_%d%s",fileCounter,".txt");
@@ -691,7 +691,8 @@ int main(int argc, char** argv) {
 		// update iteration counter
 		n++	;
 		if ( n % printFreq == 0)
-			printf("%i  \t  %lf  \t %lf \t  %10.2E %10.2E \n",n,t_n,pre_n_1, Wbal, deltaT);
+			printf("%i  \t  %lf  \t %lf \t  %10.2E %10.2E   %7lf     %7lf      %7lf \n",n,t_n,pre_n_1, Wbal,
+			 deltaT,v_sum(Fext_n_1),v_sum(nodal_mass),v_sum(Fint_n_1));
 
 		}
 

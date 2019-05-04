@@ -11,7 +11,7 @@
 #include "ShapeFunction/neighbours_materialpoint.h"
 #include "cellSearch.h"
 #include "dsyev2.h"
-
+#include "math/cmath3d.h"
 #ifndef DIM 
 #define DIM 2 
 #endif 
@@ -138,8 +138,8 @@ int setDomainMaterialPoint(MAT * nodes, CELLS * cells, MATERIAL_POINT * MP)
 			// Initially spherical domain of influence: 
 			// MI = [r^2 0 0 ; 0 r^2 0 ; 0 0 r^2]
 #if DIM == 2 
-		MP->MI->me[0][0] =  distances->ve[5] *  distances->ve[5];
-		MP->MI->me[1][1] =  distances->ve[7] *  distances->ve[7];
+		MP->MI->me[0][0] =  MP->beta * MP->beta * distances->ve[4] *  distances->ve[4];
+		MP->MI->me[1][1] =  MP->beta * MP->beta * distances->ve[4] *  distances->ve[4];
 		MP->invMI->me[0][0] = 1.00/ MP->MI->me[0][0] ;
 		MP->invMI->me[1][1] = 1.00/ MP->MI->me[1][1] ;
 
@@ -155,11 +155,14 @@ int setDomainMaterialPoint(MAT * nodes, CELLS * cells, MATERIAL_POINT * MP)
 
 
 			// Find neighbours 
-			MP->num_neighbours = neighbour_RangeSearch(MP->neighbours,
-			cells, MP->coords_n_1, MP->r_cutoff, nodes);
+			RangeSearchMaterialPoint(MP, nodes, cells);
+
 
 			PX_FREE(order);
 			V_FREE(distances);
+
+			MP->l_0 = sqrt(MP->MI->me[0][0]);
+			MP->l_1 = sqrt(MP->MI->me[1][1]);
 
 	
 
@@ -172,9 +175,14 @@ int updateDomainMaterialPoint(MAT * nodes, CELLS * cells,  MATERIAL_POINT * MP)
 {
 
 
-	MAT * F = MP->inc_F;
+	MAT * F = MP->stateNew->F;
 	MAT * C = MP->stateNew->C;
-	mtrm_mlt(F,F,C);
+
+
+
+
+	//mtrm_mlt(F,F,C);
+	mmtr_mlt(F, F,C);
 
 	// Find eigen values of network strain
 	//m_inverse_small(MP->inc_F,MP->stateNew->m_temp4);
@@ -189,27 +197,56 @@ int updateDomainMaterialPoint(MAT * nodes, CELLS * cells,  MATERIAL_POINT * MP)
 	lambda1 = sqrt(lambda1);
 	lambda2 = sqrt(lambda2);
 
-	double N1[2] = {cs,sn};
-	double N2[2] = {-sn,cs};
-
-	double N1_N1[2][2] = {{N1[0]*N1[0],N1[0]*N1[1]},{N1[0]*N1[1],N1[1]*N1[1]}};
-	double N2_N2[2][2] = {{N2[0]*N2[0],N2[0]*N2[1]},{N2[0]*N2[1],N2[1]*N2[1]}};
-
-	double U[2][2] ;
-	U[0][0] = N1_N1[0][0]*lambda1 + N2_N2[0][0]*lambda2;
-	U[1][1] = N1_N1[1][1]*lambda1 + N2_N2[1][1]*lambda2;
 
 
-	double a_t = sqrt(MP->MI->me[0][0])*U[0][0];
-	double b_t = sqrt(MP->MI->me[1][1])*U[1][1];
+	// if ( MP->index == 1412)
+	// {
+	// 	m_foutput(stdout,F );
+	// 	m_foutput(stdout,C );
 
-	MP->MI->me[0][0] = a_t*a_t;
-	MP->MI->me[1][1] = b_t*b_t;
+	// 	printf("cs and sin = %lf %lf \n",cs,sn);
+
+	// 	exit(0);
+	// }
+
+	// Find new lengths of the ellipse
+	double l_0 = MP->l_0*lambda1;
+	double l_1 = MP->l_1*lambda2;
+
+
+	// Find ellipse in global axis
+	struct mat33 D = mdiag(1.00/(l_0*l_0),1.00/(l_1*l_1),0);
+	struct mat33 R = mzero();
+
+	R.m[0][0] = cs;
+	R.m[0][1] = sn;
+	R.m[1][0] = -sn;
+	R.m[1][1] = cs;
+	R.m[2][2] = 1;
+
+	double theta = acos(cs);
+	MP->theta = theta;
+
+	struct mat33 RD = mtrmul(R, D);
+	struct mat33 A = mmul(RD, R);
+
+	MP->invMI->me[0][0] = A.m[0][0];
+	MP->invMI->me[0][1] = A.m[0][1];
+	MP->invMI->me[1][0] = A.m[1][0];
+	MP->invMI->me[1][1] = A.m[1][1];
 
 
 
+	RangeSearchMaterialPoint(MP, nodes, cells);
 
-	// // mtrm_mlt(F,MP->MI,MP->invMI);
+
+
+	return 0;
+
+}
+
+
+// // mtrm_mlt(F,MP->MI,MP->invMI);
 	// // m_mlt(MP->invMI,F,MP->MI);
 	// m_inverse_small(MP->MI,MP->invMI);
 
@@ -262,12 +299,3 @@ int updateDomainMaterialPoint(MAT * nodes, CELLS * cells,  MATERIAL_POINT * MP)
 	// update neighbours 
 	// MP->num_neighbours = neighbour_RangeSearch(MP->neighbours
 	//  		,cells, MP->coords_n_1, MP->r_cutoff, nodes);
-
-
-	RangeSearchMaterialPoint(MP, nodes, cells);
-
-
-
-	return 0;
-
-}

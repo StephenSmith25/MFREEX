@@ -3,11 +3,11 @@
 
 
 
-static double epsilon_penalty = 100;  // NORMAL VLAUE = -50
+static double epsilon_penalty = 50;  // NORMAL VLAUE = -50
 static double xi =0.01;
 
 #define HOURGLASS_CONTROL 
-#define VISCOUS_HOURGLASS
+//#define VISCOUS_HOURGLASS
 #define STIFFNESS_HOURGLASS
 
 void internal_force_buckley(void *threadarg){
@@ -72,7 +72,7 @@ void internal_force_buckley(void *threadarg){
 	{
 		qv += rho*Le*(b2 * (Le/1000) * pow(div_v,2)) ;
 	}
-
+	qv = 0;
 
 	// Integration factor
 	double intFactor = MP->volume*MP->INTEGRATION_FACTOR;

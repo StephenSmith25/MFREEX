@@ -39,14 +39,14 @@
 const int BUCKLEY_MATERIAL = 1;
 
 // time step parameters
-const double TMAX = 1;
-double delta_t = 5e-7;
+const double TMAX = 0.10;
+double delta_t = 4e-7;
 
 // Meshfree parameters
 const double dmax = 2.5;
 const double dmax_x =2;
 const double dmax_y =2;
-double beta = 1.6;
+double beta = 1.2;
 
 
 char * basis_type = "linear";
@@ -73,11 +73,11 @@ char * integration_type = "TRIANGLE";
 
 #define IS_UPDATED
 #ifdef IS_UPDATED
-	#define UPDATE_FREQUENCEY 100
+	#define UPDATE_FREQUENCEY 1000
 #endif
 
 const int WRITE_FREQ =250;
-const int PRINT_FREQ = 1;
+const int PRINT_FREQ = 200;
 int main(int argc, char** argv) {
 
 	/*////////////////////////////////////////////////////////// */
@@ -476,13 +476,12 @@ int main(int argc, char** argv) {
 	m_foutput(stdout,pB->coords);
 	pB->is_axi = is_AXI;
 
-
 	// /*  EB1  */
 	EBC * eb1 = malloc(1*sizeof(EBC));
 	eb1->dofFixed = 3;
 	getBoundary(&eb1->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,5);
 	//iv_addNode(eb1->nodes,traction_nodes->ive[0],'s');
-	//iv_addNode(eb1->nodes,traction_nodes->ive[traction_nodes->max_dim -1  ],'s');
+	iv_addNode(eb1->nodes,traction_nodes->ive[traction_nodes->max_dim -1  ],'s');
 	int num_nodes_eb1 = eb1->nodes->max_dim;
 	setUpBC(eb1,inv_nodal_mass,&mfree);
 	
@@ -492,7 +491,7 @@ int main(int argc, char** argv) {
 	eb2->dofFixed = 1;
 	getBoundary(&eb2->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,4);
 	//iv_addNode(eb2->nodes,traction_nodes->ive[traction_nodes->max_dim - 1],'e');
-	iv_addNode(eb2->nodes,traction_nodes->ive[0],'e');
+	//iv_addNode(eb2->nodes,traction_nodes->ive[0],'e');
 
 	int num_nodes_eb2 = eb2->nodes->max_dim;
 	setUpBC(eb2,inv_nodal_mass,&mfree);
@@ -501,7 +500,6 @@ int main(int argc, char** argv) {
 
 
 	m_foutput(stdout,eb2->coords);
-
 
 
 	// /*  EB3 */
@@ -1013,7 +1011,7 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 
 		// update nodal positions
-		if ( n % WRITE_FREQ == 0 ){
+		if (( n % WRITE_FREQ == 0 ) || (n == 1) ){
 
 			char filename[50];
 			// snprintf(filename, 50, "displacement_%d%s",fileCounter,".csv");
@@ -1036,6 +1034,38 @@ int main(int argc, char** argv) {
 
 			snprintf(filename, 50, "MaterialPoints/Domains/domains_%d%s",fileCounter,".txt");
 			write_domains(filename, material_points);	
+
+
+
+			/* ------------------------------------------*/
+			/* --------------Print Outputs--------------*/
+			/* ------------------------------------------*/
+			state_variables * stateNew = material_points->MP[240]->stateNew;
+			stateNew->F->me[2][1] = t_n_1;
+
+			snprintf(filename, 50, "strain_%d%s",fileCounter,".txt");
+			mat2csv(stateNew->F,"./History/Strain",filename);
+
+			//snprintf(filename, 50, "Stress_%d%s",print_count,".txt");
+			//mat2csv(stateNew[i]->sigma,"./History/Stress",filename);
+
+			snprintf(filename, 50, "Bond_Stress_%d%s",fileCounter,".txt");
+			mat2csv(stateNew->Sb,"./History/Stress",filename);
+			snprintf(filename, 50, "Conformational_Stress_%d%s",fileCounter,".txt");
+			mat2csv(stateNew->Sc,"./History/Stress",filename);
+			stateNew->F->me[2][1] = 0;
+			++print_count;
+
+
+
+	
+
+
+
+
+
+
+
 
 			fileCounter++;
 
@@ -1114,6 +1144,8 @@ int main(int argc, char** argv) {
 				if ( n % UPDATE_FREQUENCEY == 0){
 					material_points->MP[i] = update_material_point(material_points->MP[i], cells,
 					XI_n_1, NODAL_MASS[ID]);
+
+
 				}
 			#endif
 		}
@@ -1171,10 +1203,11 @@ int main(int argc, char** argv) {
 				__zero__(NODAL_MASS[i]->ve, numnodes);
 
 			}
+
 		}
+
+
 #endif 
-
-
 
 
 		/* ------------------------------------------*/
@@ -1230,11 +1263,11 @@ int main(int argc, char** argv) {
 		{
 			if ( print_count % 40 == 0)
 			{
-			printf("Iteration |    Time(s)  |   Energy    |  Pressure(MPa) | Volume (mL) |\n");
+			printf("Iteration |    Time(s)  |   Energy    |  Pressure(MPa) | Volume (mL) | EXT  | MASS | INT |\n");
 
 			}
-			printf("%7i   |  %10.2E | %10.2E  |    %6lf    |   %7lf  |\n",n,t_n,Wbal,
-				pre_n_1,volume/1e3);
+			printf("%7i   |  %10.2E | %10.2E  |    %6lf    |   %7lf  |   %7lf  |  %7lf  |  %7lf    | \n",n,t_n,Wbal,
+				pre_n_1,volume/1e3,v_sum(Fext_n_1),v_sum(nodal_mass),v_sum(Fint_n_1));
 			++print_count;
 
 

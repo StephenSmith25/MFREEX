@@ -52,6 +52,7 @@ typedef struct MATERIAL_POINT
 	double INTEGRATION_FACTOR;
 	double * coords_n_1;
 	double * coords_n;
+	int index;
 
 	// shape functions
 	MAT * B;
@@ -84,6 +85,9 @@ typedef struct MATERIAL_POINT
 	enum SUPPORT_TYPE kernel_support;
 	MAT * MI;
 	MAT * invMI;
+	double theta;
+	double l_0;
+	double l_1;
 
 
 }MATERIAL_POINT;

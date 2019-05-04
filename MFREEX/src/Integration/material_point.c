@@ -285,6 +285,9 @@ MATERIAL_POINTS * create_material_points(void * cells,
 			// Density
 			MPS[i]->rho = rho;
 
+
+			MPS[i]->index = i;
+
 			// Stress Voigt
 			MPS[i]->stressVoigt = v_get(dim_p);
 
@@ -334,33 +337,36 @@ static inline int delete_material_point()
 {
 	return 0;
 }
-static call_count = 0;
+//static call_count = 0;
 
 int write_domains(char * filename, MATERIAL_POINTS * MPS)
 {
 	FILE * fp = fopen(filename,"w");
 
-	printf("number of material points = %d \n", MPS->num_material_points);
 
 	int k = 0;
 	for ( int k = 0 ; k < MPS->num_material_points ; k++ )
 	{
-		double M11 = MPS->MP[k]->MI->me[0][0];
-		double M22 = MPS->MP[k]->MI->me[1][1];
-		// print stress as well
-		fprintf(fp,"%5.7lf,%5.7lf\n",M11,M22);
-
+		double M11 =  MPS->MP[k]->invMI->me[0][0];
+		double M12 =  MPS->MP[k]->invMI->me[0][1];
+		double M21 =  MPS->MP[k]->invMI->me[1][0];
+		double M22 =  MPS->MP[k]->invMI->me[1][1]; 
+		double theta = MPS->MP[k]->theta;
+		// print domains
+		fprintf(fp,"%lf,%lf,%lf,%lf,%lf\n",M11,M12,M21,M22,theta);
 
 
 	}
 
-		++call_count;
+	fclose(fp);
+
+	// 	++call_count;
 
 
-	if ( call_count ==50)
-	{
-		exit(0);
-	}
+	// if ( call_count ==50)
+	// {
+	// 	exit(0);
+	// }
 
 	return 0;
 
@@ -415,10 +421,18 @@ MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, CELLS * grid, MAT * 
 
 
 	// Incremental deformation gradient
+	if ( IS_AXI == 1)
+	{
+		MP->inc_F->me[2][2] = 1.00;
+	}
 	double inc_Jacobian = determinant(MP->inc_F);
 
-	// update volume and density of material points
-	MP->rho = MP->rho / inc_Jacobian;
+	// Save old volume 
+	double int_factor_old = MP->INTEGRATION_FACTOR;
+	double volume_old = MP->volume*int_factor_old;
+
+
+	// update volume 
 	MP->volume = MP->volume*inc_Jacobian;
 
 
@@ -431,10 +445,29 @@ MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, CELLS * grid, MAT * 
 		}
 	}
 
+	if ( IS_AXI == 1)
+	{
+		MP->INTEGRATION_FACTOR = MP->coords_n_1[0]*2*PI;
+	}else{
+		// leave integration factor as 1
+	}
+
+	double volume_new = MP->volume*MP->INTEGRATION_FACTOR;
+	MP->rho = MP->rho * (volume_old/volume_new);
+
+
+
+
+
+
 
 	// update domain of material point 
 	updateDomainMaterialPoint(NODES, grid, MP);
 
+	// if ( MP->index == 1412)
+	// {
+	// 	//iv_foutput(stdout, MP->neighbours);
+	// }
 
 
 	//REFORM SHAPE FUNCTIONS
@@ -444,12 +477,6 @@ MATERIAL_POINT * update_material_point(MATERIAL_POINT * MP, CELLS * grid, MAT * 
 	MP->B = BMAT(MP->B,MP->shape_function,dim,IS_AXI,MP->coords_n_1[0]);
 
 
-	if ( IS_AXI == 1)
-	{
-		MP->INTEGRATION_FACTOR = MP->coords_n_1[0]*2*PI;
-	}else{
-		// leave integration factor as 1
-	}
 
 
 
