@@ -37,7 +37,7 @@ THICKNESS_BOT_CAP = 3.2;
 CIRCLE_BOT_OFFSET = (ROUT_BOT - RIN_BOT) - THICKNESS_BOT_CAP;
 
 % number of nodes through the thickness
-NUM_NODES_THICKNESS = 4;
+NUM_NODES_THICKNESS = 5;
 
 % LENGTHS
 LENGTH_PREFORM = 77.6986;
@@ -50,17 +50,15 @@ RADIUS_NECK = 25 ;
 
 
 %% NUMBER OF NODES
-NUM_NODES_SIDEWALL =90;
-NUM_NODES_SIDEWALL_1 =90;
-NUM_NODES_TAPER = 22;
-NUM_NODES_TAPER_1=22;
+NUM_NODES_SIDEWALL =80;
+NUM_NODES_TAPER = 30;
 NUM_NODES_SPHERICAL_CAP = 30;
-NUM_NODES_TOP_FIXTURE =6;
+NUM_NODES_TOP_FIXTURE =8;
 NUM_NODES_TOP = NUM_NODES_THICKNESS+2;
 NUM_NODES_BOT_FIXTURE = 6;
 
 NUM_NODES_RADIUS_TAPER_IN = 15;
-NUM_NODES_RADIUS_TAPER_OUT = 12;
+NUM_NODES_RADIUS_TAPER_OUT = 10;
 
 
 
@@ -148,8 +146,8 @@ x_pos_start = (ROUT_TOP_SIDEWALL + (RADIUS_NECK) + cosd(180-theta_radius_max)*RA
 
 
 
-nodes(count:1:count+NUM_NODES_TAPER_1-1,:) = [linspace(ROUT_NECK,x_pos_start,NUM_NODES_TAPER_1)',linspace(y_pos,51.16,NUM_NODES_TAPER_1)'];
-count = count + NUM_NODES_TAPER_1;
+nodes(count:1:count+NUM_NODES_TAPER-1,:) = [linspace(ROUT_NECK,x_pos_start,NUM_NODES_TAPER)',linspace(y_pos,51.16,NUM_NODES_TAPER)'];
+count = count + NUM_NODES_TAPER;
 
 
 for i = 1:length(theta)
@@ -157,12 +155,12 @@ for i = 1:length(theta)
     count = count +1;
 end
 
-x_list = linspace(ROUT_TOP_SIDEWALL,ROUT_BOT_SIDEWALL,NUM_NODES_SIDEWALL_1)';
-y_list = linspace(46.18,0,NUM_NODES_SIDEWALL_1)';
+x_list = linspace(ROUT_TOP_SIDEWALL,ROUT_BOT_SIDEWALL,NUM_NODES_SIDEWALL)';
+y_list = linspace(46.18,0,NUM_NODES_SIDEWALL)';
 
-nodes(count:1:count+NUM_NODES_SIDEWALL_1-2,:) = [x_list(2:end),y_list(2:end)];
+nodes(count:1:count+NUM_NODES_SIDEWALL-2,:) = [x_list(2:end),y_list(2:end)];
 
-count = count + NUM_NODES_SIDEWALL_1-1;
+count = count + NUM_NODES_SIDEWALL-1;
 
 theta = linspace(0,-90,NUM_NODES_SPHERICAL_CAP);
 
@@ -189,7 +187,7 @@ boundaryNodes(3:(NUM_NODES_SPHERICAL_CAP + NUM_NODES_SIDEWALL + + NUM_NODES_RADI
 count = NUM_NODES_SPHERICAL_CAP + NUM_NODES_SIDEWALL +NUM_NODES_TAPER + NUM_NODES_RADIUS_TAPER_IN +NUM_NODES_TOP_FIXTURE- 2;
 %boundaryNodes(count:count+NUM_NODES_TOP_FIXTURE*1-1,2) = 5;
 count = count+NUM_NODES_TOP_FIXTURE+NUM_NODES_TOP-1;
-boundaryNodes(count:count + NUM_NODES_SIDEWALL_1+NUM_NODES_SPHERICAL_CAP + NUM_NODES_TAPER , 2) = 6;
+boundaryNodes(count:count + NUM_NODES_SIDEWALL+NUM_NODES_SPHERICAL_CAP + NUM_NODES_TAPER , 2) = 6;
 
 boundaryNodes(end:-1:end-(NUM_NODES_BOT_FIXTURE-2),2) = 4;
 % 

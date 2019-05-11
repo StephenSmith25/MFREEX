@@ -2,7 +2,7 @@
 clear all
 close all
 
-PLOT_GRAPHS = true;
+PLOT_GRAPHS = false;
 PLOT_DOMAINS_INFLUENCE = true; 
 
 
@@ -103,12 +103,6 @@ height = max(disp(:,2));
 
 
 hold on
-filename = strcat(pathSR,'srRod_',num2str(plotFiles(1)),'.csv');
-disp = csvread(filename,1);
-hold on
-plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
-hold on
-plot(-disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 xlim([-50,50])
 ylim([-170,ymax])
 
@@ -118,7 +112,7 @@ filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles
 domains = csvread(filename);
 general_ellipse_drawer = @(t) draw_general_ellipse_alt(domains(t,1:4),domains(t,5),material_points(t,1),material_points(t,2));
 
-for i = 1:10:length(domains)
+for i = 1:5 :length(domains)
     
   general_ellipse_drawer(i);
 end
@@ -156,11 +150,6 @@ hold on
 %plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(6)),'.csv');
-disp = csvread(filename,1);
-hold on
-plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
-hold on
-plot(-disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
 xlim([-50,50])
 ylim([-170,ymax])
 
@@ -170,7 +159,7 @@ filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles
 domains = csvread(filename);
 general_ellipse_drawer = @(t) draw_general_ellipse_alt(domains(t,1:4),domains(t,5),material_points(t,1),material_points(t,2));
 
-for i = 1:10:length(domains)
+for i = 1:50:length(domains)
     
    general_ellipse_drawer(i); 
     
@@ -207,22 +196,21 @@ hold on
 
 axis equal
 hold on
-filename = strcat(pathSR,'srRod_',num2str(plotFiles(10)),'.csv');
-disp = csvread(filename,1);
-hold on
-plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
-hold on
-plot(-disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
+
 xlim([-50,50])
 ylim([-170,ymax])
 
 filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(10)),'.txt');
 material_points = csvread(filename,1);
+
+%plot(material_points(:,1),material_points(:,2),'bx');
+
+
 filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(10)),'.txt');
 domains = csvread(filename);
 general_ellipse_drawer = @(t) draw_general_ellipse_alt(domains(t,1:4),domains(t,5),material_points(t,1),material_points(t,2));
 
-for i = 1:10:length(domains)
+for i = 1:50:length(domains)
     
    general_ellipse_drawer(i); 
     hold on 
@@ -277,13 +265,15 @@ material_points = csvread(filename,1);
 filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(10)),'.txt');
 domains = csvread(filename);
 general_ellipse_drawer = @(t) draw_general_ellipse_alt(domains(t,1:4),domains(t,5),material_points(t,1),material_points(t,2));
+hold on
+plot(material_points(:,1),material_points(:,2),'bx');
 
-PLOT_POINT=1413;
+PLOT_POINT=2;
 
 
 general_ellipse_drawer(PLOT_POINT); 
     hold on 
-plot(material_points(PLOT_POINT,1),material_points(PLOT_POINT,2),'bx');
+plot(material_points(PLOT_POINT,1),material_points(PLOT_POINT,2),'b.');
 hold on
 
 filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.txt');
@@ -305,33 +295,21 @@ neighbours = [262;
 
 %plot(disp(neighbours,1),disp(neighbours,2),'ro');
 
+cells = csvread('./../../build/bin/preform_alt/search_cells.csv');
+active_cells =  csvread('./../../build/bin/preform_alt/active_cells.csv');
+
+cells = csvread('./../../build/bin/preform_alt/search_cells.csv');
+active_cells =  csvread('./../../build/bin/preform_alt/active_cells.csv');
 
 
 
-% figure
-% 
-% cells = csvread('./../../build/bin/preform_alt/search_cells.csv');
-% active_cells =  csvread('./../../build/bin/preform_alt/active_cells.csv');
-% 
-% 
-% filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.txt');
-% disp = csvread(filename);
-% 
-% 
-% plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
-% 
-% cells = csvread('./../../build/bin/preform_alt/search_cells.csv');
-% active_cells =  csvread('./../../build/bin/preform_alt/active_cells.csv');
-% 
-% 
-% 
-% for k = 1:length(active_cells)
-% hold on
-%     i = active_cells(k)+1;
-% rectangle('Position',[cells(i,1), cells(i,3), cells(i,2)-cells(i,1), cells(i,4)-cells(i,3)])
-% end
-% 
-% axis equal
+for k = 1:length(active_cells)
+hold on
+    i = active_cells(k)+1;
+rectangle('Position',[cells(i,1), cells(i,3), cells(i,2)-cells(i,1), cells(i,4)-cells(i,3)])
+end
+
+axis equal
 
 m = dlmread('./../../build/bin/preform_alt/pressureTime.txt',' ');
 %m(ceil(length(m)/4):end,:) = smoothdata(m(ceil(length(m)/4):end,:))

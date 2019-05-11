@@ -3,7 +3,7 @@
 
 
 
-static double epsilon_penalty = 50;  // NORMAL VLAUE = -50
+static double epsilon_penalty =150;  // NORMAL VLAUE = -50
 static double xi =0.01;
 
 #define HOURGLASS_CONTROL 
@@ -63,7 +63,7 @@ void internal_force_buckley(void *threadarg){
 	/* ------------------------------------------*/
 	double rho = 1380e-9;
 	double b1 = 0;
-	double b2 = 1.44;
+	double b2 = 0;
 	double Le =1;
 	double Cd = 1400;
 	double div_v = MP->stateNew->div_v;

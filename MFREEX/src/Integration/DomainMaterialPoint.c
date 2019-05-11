@@ -213,6 +213,26 @@ int updateDomainMaterialPoint(MAT * nodes, CELLS * cells,  MATERIAL_POINT * MP)
 	double l_0 = MP->l_0*lambda1;
 	double l_1 = MP->l_1*lambda2;
 
+	double MAX_ASPECT_RATIO = 3;
+	double max_l0_l1 = max(l_0,l_1);
+	double aspect_ratio = 0;
+	if ( max_l0_l1 == l_0)
+	{
+		aspect_ratio = l_0/l_1;
+
+		if ( aspect_ratio > MAX_ASPECT_RATIO)
+		{
+			l_1 = l_0/MAX_ASPECT_RATIO;
+		}	
+
+	}else{
+		aspect_ratio = l_1/l_0;
+
+		if ( aspect_ratio > MAX_ASPECT_RATIO)
+			l_0 = l_1/MAX_ASPECT_RATIO;
+	}
+
+	
 
 	// Find ellipse in global axis
 	struct mat33 D = mdiag(1.00/(l_0*l_0),1.00/(l_1*l_1),0);

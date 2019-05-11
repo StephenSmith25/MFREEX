@@ -39,7 +39,7 @@
 const int BUCKLEY_MATERIAL = 1;
 
 // time step parameters
-const double TMAX = 0.10;
+const double TMAX = 0.3;
 double delta_t = 4e-7;
 
 // Meshfree parameters
@@ -73,11 +73,11 @@ char * integration_type = "TRIANGLE";
 
 #define IS_UPDATED
 #ifdef IS_UPDATED
-	#define UPDATE_FREQUENCEY 1000
+	#define UPDATE_FREQUENCEY 100
 #endif
 
 const int WRITE_FREQ =250;
-const int PRINT_FREQ = 200;
+const int PRINT_FREQ = 10;
 int main(int argc, char** argv) {
 
 	/*////////////////////////////////////////////////////////// */
@@ -632,8 +632,8 @@ int main(int argc, char** argv) {
 	for ( int i = 0 ; i < number_of_material_points ; i++)
 	{
 
-			material_points->MP[i]->stateNew->temperature=104.45+273.15;
-			material_points->MP[i]->stateOld->temperature=104.45+273.15;
+			material_points->MP[i]->stateNew->temperature=97.45+273.15;
+			material_points->MP[i]->stateOld->temperature=97.45+273.15;
 	
 		
 
