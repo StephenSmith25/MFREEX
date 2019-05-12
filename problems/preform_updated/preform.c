@@ -39,14 +39,14 @@
 const int BUCKLEY_MATERIAL = 1;
 
 // time step parameters
-const double TMAX = 0.3;
+const double TMAX = 0.2;
 double delta_t = 4e-7;
 
 // Meshfree parameters
 const double dmax = 2.5;
 const double dmax_x =2;
 const double dmax_y =2;
-double beta = 1.2;
+double beta = 1.4;
 
 
 char * basis_type = "linear";
@@ -73,7 +73,7 @@ char * integration_type = "TRIANGLE";
 
 #define IS_UPDATED
 #ifdef IS_UPDATED
-	#define UPDATE_FREQUENCEY 100
+	#define UPDATE_FREQUENCEY 1000
 #endif
 
 const int WRITE_FREQ =250;

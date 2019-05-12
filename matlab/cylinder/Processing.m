@@ -72,7 +72,7 @@ disp = csvread(filename);
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 axis equal
 hold on
-%plot(material_points(:,1),material_points(:,2),'r.');
+plot(material_points(:,1),material_points(:,2),'r.');
 xlim([0,40])
 ylim([0,40])
 
