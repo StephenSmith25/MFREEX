@@ -39,14 +39,14 @@
 const int BUCKLEY_MATERIAL = 1;
 
 // time step parameters
-const double TMAX = 0.2;
-double delta_t = 4e-7;
+const double TMAX = 0.3;
+double delta_t = 5e-7;
 
 // Meshfree parameters
 const double dmax = 2.5;
 const double dmax_x =2;
 const double dmax_y =2;
-double beta = 1.4;
+double beta = 1.5;
 
 
 char * basis_type = "linear";
@@ -77,7 +77,7 @@ char * integration_type = "TRIANGLE";
 #endif
 
 const int WRITE_FREQ =250;
-const int PRINT_FREQ = 10;
+const int PRINT_FREQ = 100;
 int main(int argc, char** argv) {
 
 	/*////////////////////////////////////////////////////////// */

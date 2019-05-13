@@ -3,7 +3,7 @@
 
 
 
-static double epsilon_penalty =100;  // NORMAL VLAUE = -50
+static double epsilon_penalty =300;  // NORMAL VLAUE = -50
 static double xi =0.01;
 
 #define HOURGLASS_CONTROL 

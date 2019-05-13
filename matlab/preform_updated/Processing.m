@@ -7,7 +7,7 @@ PLOT_DOMAINS_INFLUENCE = true;
 
 
 WITH_MOULD = false;
-TMAX = 0.6;
+TMAX = 0.3;
 
 
 
