@@ -41,13 +41,12 @@ general_ellipse_drawer = @(t) draw_general_ellipse(domains(t,:),material_points(
 
 general_ellipse_drawer(200);
 
-for i = 1:50:length(domains)
+ellipses = [];
+
+for i = 1:200:length(domains)
     
-   general_ellipse_drawer(i); 
-    
+   ellipses = [ellipses ; general_ellipse_drawer(i)]; 
 end
-
-
 
 %-------------------------------------------------------------------------%
 %                          Plot 2 
@@ -72,17 +71,17 @@ disp = csvread(filename);
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 axis equal
 hold on
-plot(material_points(:,1),material_points(:,2),'r.');
+%plot(material_points(:,1),material_points(:,2),'r.');
 xlim([0,40])
 ylim([0,40])
 
 filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(10)),'.txt');
 domains = csvread(filename);
 general_ellipse_drawer = @(t) draw_general_ellipse_alt(domains(t,1:4),domains(t,5),material_points(t,1),material_points(t,2));
-
-for i = 1:50:length(domains)
+ellipses = [];
+for i = 1:200:length(domains)
     
-   general_ellipse_drawer(i); 
+   ellipses = [ellipses ; general_ellipse_drawer(i)]; 
     
 end
 
@@ -121,7 +120,7 @@ figure
 
 
 
-plot(A(1:10:end,1),A(1:10:end,2),'kx','markersize',6);
+plot(A(1:25:end,1),A(1:25:end,2),'kx','markersize',6);
 % 
 sizeA = [2 inf];
 formatSpec = '%f %f';
@@ -139,7 +138,11 @@ legend('Meshfree','Exact','Location','northwest');
 
 saveas(gcf,'Solution_cylinder','epsc')
 
-function [] = draw_general_ellipse_alt(M,theta,Cx,Cy)
+latex_var_1 = [B(:,1),B(:,2)/1000];
+latex_var_2 = A(1:25:end,:);
+
+
+function [output] = draw_general_ellipse_alt(M,theta,Cx,Cy)
 
     t = linspace(0,360,50);
     
@@ -159,6 +162,7 @@ function [] = draw_general_ellipse_alt(M,theta,Cx,Cy)
     hold on
     plot(x+Cx,y+Cy,'r-');
     
+    output = [x'+Cx,y'+Cy];
     
     
     
@@ -168,7 +172,7 @@ end
 
 
 
-function [] = draw_general_ellipse(M,x0,y0)
+function [X_prime] = draw_general_ellipse(M,x0,y0)
 
     t = linspace(0,360,50);
     
@@ -193,6 +197,7 @@ function [] = draw_general_ellipse(M,x0,y0)
     
     hold on
     plot(X_prime(1,:)+x0,X_prime(2,:)+y0,'r-');
+    X_prime = [X_prime(1,:)'+x0, X_prime(2,:)'+y0];
     
     
     

@@ -46,8 +46,14 @@ double delta_t = 5e-7;
 const double dmax = 2.5;
 const double dmax_x =2;
 const double dmax_y =2;
-double beta = 1.5;
+double beta = 1.3;
 
+#define V_ROD
+#ifdef V_ROD
+const double STRETCH_ROD_SPEED = 800;
+#endif
+
+const int PLOT_POINT = 859;
 
 char * basis_type = "linear";
 char * weight = "cubic";
@@ -69,11 +75,12 @@ char * integration_type = "TRIANGLE";
 
 //#define WITH_MOULD 
 //define WITH_STRETCHROD
+	const int numB3 = 8;
 
 
 #define IS_UPDATED
 #ifdef IS_UPDATED
-	#define UPDATE_FREQUENCEY 1000
+	#define UPDATE_FREQUENCEY 100
 #endif
 
 const int WRITE_FREQ =250;
@@ -121,7 +128,7 @@ int main(int argc, char** argv) {
 	matParams->ve[6] = (67.47); // Cv
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
-	matParams->ve[9] = 1.0e9; // Kb
+	matParams->ve[9] = 4.8e9; // Kb
 	matParams->ve[10] = 6e8;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
@@ -129,25 +136,25 @@ int main(int argc, char** argv) {
 	matParams->ve[15] = 1.8098e17;// Ns_c
 	matParams->ve[16] = 1.38e-17;// boltzmann constant kB
 	// slippage
-	matParams->ve[17] = 100;// lambdaCrit
-	matParams->ve[18] = 383.15;// Ts 
-	matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
-	matParams->ve[20] = 10612;// Cs 10612
-	matParams->ve[21] = 95.48;// Tinf 95.48
-	matParams->ve[22] = 0.1565;// C1
-	matParams->ve[23] = 39.937;// C2
-	matParams->ve[24] = 0.9878;// beta
-	matParams->ve[25] = 0.33;// poissons ratio
-
 	// matParams->ve[17] = 100;// lambdaCrit
 	// matParams->ve[18] = 383.15;// Ts 
-	// matParams->ve[19] = 0.359e6;// gamma0_ref = 0.653
-	// matParams->ve[20] = 7307.8;// Cs 10612
-	// matParams->ve[21] = 152.95;// Tinf 95.48
+	// matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
+	// matParams->ve[20] = 10612;// Cs 10612
+	// matParams->ve[21] = 95.48;// Tinf 95.48
 	// matParams->ve[22] = 0.1565;// C1
 	// matParams->ve[23] = 39.937;// C2
 	// matParams->ve[24] = 0.9878;// beta
 	// matParams->ve[25] = 0.33;// poissons ratio
+
+	matParams->ve[17] = 100;// lambdaCrit
+	matParams->ve[18] = 383.15;// Ts 
+	matParams->ve[19] = 0.359e6;// gamma0_ref = 0.653
+	matParams->ve[20] = 7307.8;// Cs 10612
+	matParams->ve[21] = 152.95;// Tinf 95.48
+	matParams->ve[22] = 0.1565;// C1
+	matParams->ve[23] = 39.937;// C2
+	matParams->ve[24] = 0.9878;// beta
+	matParams->ve[25] = 0.33;// poissons ratio
 
 
 	
@@ -160,7 +167,10 @@ int main(int argc, char** argv) {
 	matParams->ve[31] = rho; // b 
 
 
-
+	// // new stuff
+	matParams->ve[2] = (1.8165e6); // mu*_0
+	matParams->ve[3] = (342.61); // Tinf
+	matParams->ve[6] = (56.09); // Cv
 
 	/* ------------------------------------------*/
 	/* --------------Flow restrictor-------------*/
@@ -503,7 +513,6 @@ int main(int argc, char** argv) {
 
 
 	// /*  EB3 */
-	int numB3 = 13;
 	IVEC * eb3_nodes = iv_get(numB3);
 	MAT * contact_nodes_coords = m_get(numB3,dim);
 
@@ -862,12 +871,24 @@ int main(int argc, char** argv) {
 			v_n_h->ve[2*index] = 0;
 		}
 
-		// for ( int k = 0 ; k < eb3_nodes->max_dim ; k++)
-		// {
-		// 	int index = eb3_nodes->ive[k];
-		// 	v_n_h->ve[2*index+1] = -250*smoothstep(t_n_1,0.03,0);					
 
-		// }
+#ifdef V_ROD
+
+
+
+		double x = t_n_1*smoothstep(t_n_1,0.03,0);
+		double v_rod_poly = 7*a0*pow(x,6) + 6*a1*pow(x,5) + 5*a2*pow(x,4) + 4*a3*pow(x,3) + 3*a4*pow(x,2) 
+		+ 2*a5*pow(x,1) +a6;
+
+		for ( int k = 0 ; k < eb3_nodes->max_dim ; k++)
+		{
+			int index = eb3_nodes->ive[k];
+			//v_n_h->ve[2*index+1] = -STRETCH_ROD_SPEED*smoothstep(t_n_1,0.03,0);			
+			v_n_h->ve[2*index+1] = -v_rod_poly;				
+		
+
+		}
+#endif
 
 
 		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
@@ -1040,7 +1061,7 @@ int main(int argc, char** argv) {
 			/* ------------------------------------------*/
 			/* --------------Print Outputs--------------*/
 			/* ------------------------------------------*/
-			state_variables * stateNew = material_points->MP[240]->stateNew;
+			state_variables * stateNew = material_points->MP[PLOT_POINT]->stateNew;
 			stateNew->F->me[2][1] = t_n_1;
 
 			snprintf(filename, 50, "strain_%d%s",fileCounter,".txt");

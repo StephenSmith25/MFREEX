@@ -50,17 +50,14 @@ RADIUS_NECK = 25 ;
 
 
 %% NUMBER OF NODES
-NUM_NODES_SIDEWALL =90;
-NUM_NODES_SIDEWALL_1 =87;
-NUM_NODES_TAPER = 22;
-NUM_NODES_TAPER_1=28;
-NUM_NODES_SPHERICAL_CAP = 30;
+NUM_NODES_SIDEWALL =80;
+NUM_NODES_TAPER = 25;
+NUM_NODES_SPHERICAL_CAP = 20;
 NUM_NODES_TOP_FIXTURE =6;
-NUM_NODES_TOP = NUM_NODES_THICKNESS+2;
 NUM_NODES_BOT_FIXTURE = 6;
 
-NUM_NODES_RADIUS_TAPER_IN = 18;
-NUM_NODES_RADIUS_TAPER_OUT = 13;
+NUM_NODES_RADIUS_TAPER_IN = 15;
+NUM_NODES_RADIUS_TAPER_OUT = 12;
 
 
 
@@ -123,8 +120,8 @@ x_pos = nodes(end,1);
 y_pos = nodes(end,2);
 
 
-nodes(count:1:count+NUM_NODES_TOP-1,:) = [linspace(RIN_NECK,ROUT_NECK,NUM_NODES_TOP)',linspace(y_pos,y_pos,NUM_NODES_TOP)'];
-count = count + NUM_NODES_TOP;
+nodes(count:1:count+NUM_NODES_TOP_FIXTURE-1,:) = [linspace(RIN_NECK,ROUT_NECK,NUM_NODES_TOP_FIXTURE)',linspace(y_pos,y_pos,NUM_NODES_TOP_FIXTURE)'];
+count = count + NUM_NODES_TOP_FIXTURE;
 
 
 
@@ -148,8 +145,8 @@ x_pos_start = (ROUT_TOP_SIDEWALL + (RADIUS_NECK) + cosd(180-theta_radius_max)*RA
 
 
 
-nodes(count:1:count+NUM_NODES_TAPER_1-1,:) = [linspace(ROUT_NECK,x_pos_start,NUM_NODES_TAPER_1)',linspace(y_pos,51.16,NUM_NODES_TAPER_1)'];
-count = count + NUM_NODES_TAPER_1;
+nodes(count:1:count+NUM_NODES_TAPER-1,:) = [linspace(ROUT_NECK,x_pos_start,NUM_NODES_TAPER)',linspace(y_pos,51.16,NUM_NODES_TAPER)'];
+count = count + NUM_NODES_TAPER;
 
 
 for i = 1:length(theta)
@@ -157,12 +154,12 @@ for i = 1:length(theta)
     count = count +1;
 end
 
-x_list = linspace(ROUT_TOP_SIDEWALL,ROUT_BOT_SIDEWALL,NUM_NODES_SIDEWALL_1)';
-y_list = linspace(46.18,0,NUM_NODES_SIDEWALL_1)';
+x_list = linspace(ROUT_TOP_SIDEWALL,ROUT_BOT_SIDEWALL,NUM_NODES_SIDEWALL)';
+y_list = linspace(46.18,0,NUM_NODES_SIDEWALL)';
 
-nodes(count:1:count+NUM_NODES_SIDEWALL_1-2,:) = [x_list(2:end),y_list(2:end)];
+nodes(count:1:count+NUM_NODES_SIDEWALL-2,:) = [x_list(2:end),y_list(2:end)];
 
-count = count + NUM_NODES_SIDEWALL_1-1;
+count = count + NUM_NODES_SIDEWALL-1;
 
 theta = linspace(0,-90,NUM_NODES_SPHERICAL_CAP);
 
@@ -185,11 +182,11 @@ nodes = nodes(ib,:);
 %boundary nodes
 
 boundaryNodes = linspace(1,length(nodes),length(nodes))';
-boundaryNodes(3:(NUM_NODES_SPHERICAL_CAP + NUM_NODES_SIDEWALL + + NUM_NODES_RADIUS_TAPER_IN + NUM_NODES_TAPER -1 +NUM_NODES_TOP_FIXTURE ),2) = 2;
-count = NUM_NODES_SPHERICAL_CAP + NUM_NODES_SIDEWALL +NUM_NODES_TAPER + NUM_NODES_RADIUS_TAPER_IN +NUM_NODES_TOP_FIXTURE- 2;
-%boundaryNodes(count:count+NUM_NODES_TOP_FIXTURE*1-1,2) = 5;
-count = count+NUM_NODES_TOP_FIXTURE+NUM_NODES_TOP-1;
-boundaryNodes(count:count + NUM_NODES_SIDEWALL_1+NUM_NODES_SPHERICAL_CAP + NUM_NODES_TAPER , 2) = 6;
+boundaryNodes(1:(NUM_NODES_SPHERICAL_CAP + NUM_NODES_SIDEWALL + + NUM_NODES_RADIUS_TAPER_IN + NUM_NODES_TAPER -1  ),2) = 2;
+count = NUM_NODES_SPHERICAL_CAP + NUM_NODES_SIDEWALL +NUM_NODES_TAPER + NUM_NODES_RADIUS_TAPER_IN - 2;
+boundaryNodes(count:count+NUM_NODES_TOP_FIXTURE*3-2,2) = 5;
+count = count+NUM_NODES_TOP_FIXTURE*3-2;
+boundaryNodes(count:count + NUM_NODES_SIDEWALL+NUM_NODES_SPHERICAL_CAP + NUM_NODES_TAPER , 2) = 6;
 
 boundaryNodes(end:-1:end-(NUM_NODES_BOT_FIXTURE-2),2) = 4;
 % 
@@ -212,10 +209,10 @@ end
 
 
 
-segments(2:(NUM_NODES_SPHERICAL_CAP + NUM_NODES_SIDEWALL + + NUM_NODES_RADIUS_TAPER_IN + NUM_NODES_TAPER -1 +NUM_NODES_TOP_FIXTURE ),3) = 2;
-count = NUM_NODES_SPHERICAL_CAP + NUM_NODES_SIDEWALL +NUM_NODES_TAPER + NUM_NODES_RADIUS_TAPER_IN - 2 + NUM_NODES_TOP_FIXTURE;
-segments(count:count+NUM_NODES_TOP_FIXTURE*1-1,3) = 5;
-count = count+NUM_NODES_TOP*1-1;
+segments(3:(NUM_NODES_SPHERICAL_CAP + NUM_NODES_SIDEWALL + + NUM_NODES_RADIUS_TAPER_IN + NUM_NODES_TAPER -1  ),3) = 2;
+count = NUM_NODES_SPHERICAL_CAP + NUM_NODES_SIDEWALL +NUM_NODES_TAPER + NUM_NODES_RADIUS_TAPER_IN - 1;
+segments(count:count+NUM_NODES_TOP_FIXTURE*3-1,3) = 5;
+count = count+NUM_NODES_TOP_FIXTURE*3-3;
 segments(count:count + NUM_NODES_SIDEWALL+NUM_NODES_SPHERICAL_CAP + NUM_NODES_TAPER + 4 , 3) = 6;
 segments(end:-1:end-(NUM_NODES_BOT_FIXTURE-2),3) = 4;
 % 
@@ -229,7 +226,7 @@ RADII_BOT = linspace(RIN_BOT,ROUT_BOT,NUM_NODES_THICKNESS+2);
 RADII_BOT_SIDEWALL = linspace(RIN_BOT_SIDEWALL,ROUT_BOT_SIDEWALL,NUM_NODES_THICKNESS+2);
 CIRCLE_BOT_OFFSETS = linspace(CIRCLE_BOT_OFFSET, 0, NUM_NODES_THICKNESS+2);
 RADII_TOP_SIDEWALL = linspace(RIN_TOP_SIDEWALL,ROUT_TOP_SIDEWALL,NUM_NODES_THICKNESS+2);
-RADII_NECK = linspace(RIN_NECK,ROUT_NECK,NUM_NODES_THICKNESS+2);
+RADII_NECK = linspace(RIN_NECK,ROUT_NECK,NUM_NODES_THICKNESS+1);
 
 nodes1 = [];
 count = 1;
@@ -272,9 +269,11 @@ for j = 1:length(theta)-1
     
 end
  
-xpos = nodes1(end,1);
+xpos = nodes1(end,1)+0.45;
 ypos = nodes1(end,2);
- 
+
+
+if ( i < NUM_NODES_THICKNESS)
 %  
 nodes1(count:1:count+NUM_NODES_TAPER-1,:) = [linspace(xpos,RADII_NECK(i+1),NUM_NODES_TAPER)',linspace(ypos,75.76-ROUT_BOT,NUM_NODES_TAPER)'];
 count = count + NUM_NODES_TAPER;
@@ -290,7 +289,7 @@ count = count + NUM_NODES_TOP_FIXTURE-1;
 % 
 % 
 
-
+end
 
  end
   

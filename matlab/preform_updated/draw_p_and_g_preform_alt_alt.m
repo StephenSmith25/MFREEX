@@ -50,17 +50,17 @@ RADIUS_NECK = 25 ;
 
 
 %% NUMBER OF NODES
-NUM_NODES_SIDEWALL =60;
-NUM_NODES_SIDEWALL_1 =56;
-NUM_NODES_TAPER = 16;
-NUM_NODES_TAPER_1=18;
+NUM_NODES_SIDEWALL =70;
+NUM_NODES_SIDEWALL_1 =66;
+NUM_NODES_TAPER = 21;
+NUM_NODES_TAPER_1=25;
 NUM_NODES_SPHERICAL_CAP = 19;
 NUM_NODES_TOP_FIXTURE =5;
 NUM_NODES_TOP = NUM_NODES_THICKNESS+2;
 NUM_NODES_BOT_FIXTURE = 5;
 
 NUM_NODES_RADIUS_TAPER_IN = 11;
-NUM_NODES_RADIUS_TAPER_OUT = 9;
+NUM_NODES_RADIUS_TAPER_OUT = 8;
 
 
 
@@ -371,6 +371,10 @@ dlmwrite('../../problems/preform_updated/preform.segs',segments,'-append',......
     'delimiter',' ')
 
 
+
+
+
+outside_nodes = nodes(boundaryNodes(:,1),1:2);
 
 
 
