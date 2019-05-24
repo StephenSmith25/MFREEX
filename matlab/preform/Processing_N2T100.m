@@ -7,16 +7,16 @@ PLOT_DOMAINS_INFLUENCE = true;
 
 
 WITH_MOULD = false;
-TMAX = 0.3;
+TMAX = 0.5;
 
 
 
 
 
-path = './../../build/bin/preform_alt/Displacement/';
-pathSR = './../../build/bin/preform_alt/srRod/';
-boundaryNodes = csvread('./../../build/bin/preform_alt/boundary.txt');
-path_base = './../../build/bin/preform_alt';
+path = './../../build/bin/preform/Displacement/';
+pathSR = './../../build/bin/preform/srRod/';
+boundaryNodes = csvread('./../../build/bin/preform/boundary.txt');
+path_base = './../../build/bin/preform';
 
 boundaryNodes = [boundaryNodes;boundaryNodes(1)];
 
@@ -28,9 +28,9 @@ numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
 
-plot_point =660; %%2241
-filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.txt');
-disp = csvread(filename);
+plot_point =122; %%2241
+filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.csv');
+disp = csvread(filename,1);
 
 % draw mould
 Radius_mould = 24;
@@ -88,16 +88,6 @@ plot(-disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
 ymax = max(disp(:,2));
 
 
-[ix] = find(disp(:,2) >30);
-[iys] = ix(find(disp(ix,2) <40));
-
-
-
-
-
-c = disp(iys,:);
-
-save('disp_domain_tstart.dat', 'c', '-ascii', '-double', '-tabs')
 
 
 
@@ -131,36 +121,7 @@ hold on
 xlim([-50,50])
 ylim([-170,ymax])
 
-filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(1)),'.txt');
-material_points = csvread(filename,1);
-filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(1)),'.txt');
-domains = csvread(filename);
-general_ellipse_drawer = @(t) draw_general_ellipse_alt(domains(t,1:4),domains(t,5),material_points(t,1),material_points(t,2));
 
-for i = 1:50 :length(domains)
-    
-  general_ellipse_drawer(i);
-end
-hold on
-plot(material_points(plot_point,1),material_points(plot_point,2),'g*');
-
-
-c =  general_ellipse_drawer(plot_point);
-
-save('disp_ellipse_tstart.dat', 'c', '-ascii', '-double', '-tabs')
-
-
-% FInd strain plotting point
-[ia] = find(material_points(:,2) >30);
-[ib] = ia(find(material_points(ia,2) <40));
-
-x = material_points(ib,1:2);
-
-[ic] = ib(find(x(:,1) > 10.63));
-
-x = material_points(ic,1:2);
-[~,ibb] = min(abs(x(:,2)-37));
-iaaa = ic(ibb)
 
 % -------------------------------------------------------------------------%
 %                           PLOT 2
@@ -169,8 +130,8 @@ iaaa = ic(ibb)
 
 
 
-filename = strcat(path,'displacement_',num2str(plotFiles(5)),'.txt');
-disp = csvread(filename);
+filename = strcat(path,'displacement_',num2str(plotFiles(5)),'.csv');
+disp = csvread(filename,1);
 subplot(1,3,2)       % add first plot in 2 x 2 grid
 hold on 
 fill(mould_nodes(:,1),mould_nodes(:,2),'w');
@@ -184,8 +145,6 @@ plot(disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'k.','markersize',3) % line plot
 hold on
-c = disp(iys,:);
-save('disp_domain_tmid.dat', 'c', '-ascii', '-double', '-tabs')
 
 
 c = [[disp(:,1);-disp(:,1)],[disp(:,2);disp(:,2)]]
@@ -206,24 +165,6 @@ filename = strcat(pathSR,'srRod_',num2str(plotFiles(6)),'.csv');
 xlim([-50,50])
 ylim([-170,ymax])
 
-filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(6)),'.txt');
-material_points = csvread(filename,1);
-filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(6)),'.txt');
-domains = csvread(filename);
-general_ellipse_drawer = @(t) draw_general_ellipse_alt(domains(t,1:4),domains(t,5),material_points(t,1),material_points(t,2));
-
-for i = 1:50:length(domains)
-    
-   general_ellipse_drawer(i); 
-    
-end
-
-hold on
-plot(material_points(plot_point,1),material_points(plot_point,2),'g*');
-
-c =  general_ellipse_drawer(plot_point);
-
-save('disp_ellipse_tmid.dat', 'c', '-ascii', '-double', '-tabs')
 
 
 print -dpng2 Displacement.png
@@ -231,8 +172,8 @@ print -dpng2 Displacement.png
 % -------------------------------------------------------------------------%
 %                           PLOT 3
 % -------------------------------------------------------------------------%
-filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.txt');
-disp = csvread(filename);
+filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.csv');
+disp = csvread(filename,1);
 
 
 
@@ -254,8 +195,6 @@ hold on
 %plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
 %plot(disp(plot_point,1),disp(plot_point,2),'r*')
-c = disp(iys,:);
-save('disp_domain_tend.dat', 'c', '-ascii', '-double', '-tabs')
 
 
 c = [[disp(:,1);-disp(:,1)],[disp(:,2);disp(:,2)]]
@@ -269,121 +208,11 @@ hold on
 xlim([-50,50])
 ylim([-170,ymax])
 
-filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(10)),'.txt');
-material_points = csvread(filename,1);
-
-hold on
-plot(material_points(plot_point,1),material_points(plot_point,2),'g*');
-%plot(material_points(:,1),material_points(:,2),'bx');
 
 
-filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(10)),'.txt');
-domains = csvread(filename);
-general_ellipse_drawer = @(t) draw_general_ellipse_alt(domains(t,1:4),domains(t,5),material_points(t,1),material_points(t,2));
+%% PRESSURE
 
-for i = 1:50:length(domains)
-    
-   %general_ellipse_drawer(i); 
-  %  hold on 
-%plot(material_points(i,1),material_points(i,2),'bx');
-end
-
-
-
-
-
-figure 
-% -------------------------------------------------------------------------%
-%                           PLOT 3
-% -------------------------------------------------------------------------%
-filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.txt');
-disp = csvread(filename);
-
-
-
-
-
-hold on 
-fill(mould_nodes(:,1),mould_nodes(:,2),'w');
-hold on
-fill(-mould_nodes(:,1),mould_nodes(:,2),'w');
-hold on
-
-plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
-hold on
-plot(-disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
-hold on
-%plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
-hold on
-%plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
-hold on
-%plot(disp(plot_point,1),disp(plot_point,2),'r*')
-
-axis equal
-hold on
-filename = strcat(pathSR,'srRod_',num2str(plotFiles(10)),'.csv');
-disp = csvread(filename,1);
-hold on
-plot(disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
-hold on
-plot(-disp(:,1),disp(:,2),'r-','linewidth',1)           % line plot
-xlim([-50,50])
-ylim([-170,ymax])
-
-
-
-filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(10)),'.txt');
-material_points = csvread(filename,1);
-filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(10)),'.txt');
-domains = csvread(filename);
-general_ellipse_drawer = @(t) draw_general_ellipse_alt(domains(t,1:4),domains(t,5),material_points(t,1),material_points(t,2));
-hold on
-plot(material_points(:,1),material_points(:,2),'bx');
-
-PLOT_POINT=2;
-
-
-general_ellipse_drawer(PLOT_POINT); 
-    hold on 
-plot(material_points(PLOT_POINT,1),material_points(PLOT_POINT,2),'b.');
-hold on
-
-filename = strcat(path,'displacement_',num2str(plotFiles(10)),'.txt');
-disp = csvread(filename);
-
-
-neighbours = [262;
-              1209;
-              1027;
-              1028;
-              1212;
-              260;
-              1211;
-              1210;
-              261
-              ]+1;
-
-
-
-%plot(disp(neighbours,1),disp(neighbours,2),'ro');
-
-cells = csvread('./../../build/bin/preform_alt/search_cells.csv');
-active_cells =  csvread('./../../build/bin/preform_alt/active_cells.csv');
-
-cells = csvread('./../../build/bin/preform_alt/search_cells.csv');
-active_cells =  csvread('./../../build/bin/preform_alt/active_cells.csv');
-
-
-
-for k = 1:length(active_cells)
-hold on
-    i = active_cells(k)+1;
-rectangle('Position',[cells(i,1), cells(i,3), cells(i,2)-cells(i,1), cells(i,4)-cells(i,3)])
-end
-
-axis equal
-
-m = dlmread('./../../build/bin/preform_alt/pressureTime.txt',' ');
+m = dlmread('./../../build/bin/preform/pressureTime.txt',' ');
 %m(ceil(length(m)/4):end,:) = smoothdata(m(ceil(length(m)/4):end,:))
 figure
 plot(m(:,1),m(:,2),'k-','linewidth',3);
@@ -396,10 +225,10 @@ m = m(1:10:end,:);
 
 save('pressure_num.dat', 'm', '-ascii', '-double', '-tabs')
 
-b = csvread("../preform/Experimental/N4T100_exp_pressure.csv");
+b = csvread("../preform/Experimental/N2T100_exp_pressure.csv");
 hold on
-plot(b(:,1),b(:,2)/1000,'b--')
-b(:,2) = b(:,2)/1000;
+plot(b(:,1)-0.014,b(:,2),'b--')
+b(:,2) = b(:,2);
 
 
 save('pressure_exp.dat', 'b', '-ascii', '-double', '-tabs')
@@ -407,12 +236,12 @@ save('pressure_exp.dat', 'b', '-ascii', '-double', '-tabs')
 
 
 
-c = csvread("../preform/Experimental/N4T100_fe_pressure.csv");
+c = csvread("../preform/Experimental/N2T100_fe_pressure.csv");
 
 hold on
-plot(c(:,1),c(:,2)/1000,'r--')
+plot(c(:,1)-0.014,c(:,2),'r--')
 
-c(:,2) = c(:,2)/1000;
+c(:,2) = c(:,2);
 
 legend('Mesh-free','Experiemntal','FE (Abaqus)')
 ylabel('Pressure (MPa)')
@@ -460,7 +289,7 @@ print -dpng2 pressure.png
 set(gcf, 'Color', 'w');
  if ( PLOT_GRAPHS)
 
-path = './../../build/bin/preform_alt/History/Strain';
+path = './../../build/bin/preform/History/Strain';
 
 addpath(path)
 displacementdir = path ;
@@ -473,7 +302,7 @@ for i = 1:length(plotFiles)
     
     
 
-    filename = strcat('./../../build/bin/preform_alt/History/Strain/strain_',num2str(plotFiles(i)),'.txt');
+    filename = strcat('./../../build/bin/preform/History/Strain/strain_',num2str(plotFiles(i)),'.txt');
 
     strain = csvread(filename);
     
@@ -486,7 +315,7 @@ for i = 1:length(plotFiles)
     [R U V] = poldecomp(F);
     
     
-    true_strain = logm(U);
+    true_strain = logm(V);
 
     
     hoop_strain(i) =true_strain(3,3);
@@ -527,7 +356,7 @@ save('strain_hoop_num.dat', 'cc', '-ascii', '-double', '-tabs')
 
 
 
-c = csvread("Experimental/N4100_exp_strain_axial.csv");
+c = csvread("Experimental/N2100_exp_strain_axial.csv");
 
 
 save('strain_axial_exp.dat', 'c', '-ascii', '-double', '-tabs')
@@ -537,7 +366,7 @@ save('strain_axial_exp.dat', 'c', '-ascii', '-double', '-tabs')
 hold on
 plot(c(:,1),c(:,2),'b--')
 
-c = csvread("Experimental/N4100_fe_strain_axial.csv");
+c = csvread("Experimental/N2100_fe_strain_axial.csv");
 
 save('strain_axial_FE.dat', 'c', '-ascii', '-double', '-tabs')
 
@@ -590,14 +419,14 @@ subplot(1,2,2)
 plot(time,(hoop_strain),'k','linewidth',2);
 
 
-c = csvread("Experimental/N4100_exp_strain_hoop.csv");
+c = csvread("Experimental/N2100_exp_strain_hoop.csv");
 save('strain_hoop_exp.dat', 'c', '-ascii', '-double', '-tabs')
 
 hold on
 plot(c(:,1),c(:,2),'b--')
 
 
-c = csvread("Experimental/N4100_fe_strain_hoop.csv");
+c = csvread("Experimental/N2100_fe_strain_hoop.csv");
 save('strain_hoop_FE.dat', 'c', '-ascii', '-double', '-tabs')
 
 hold on
@@ -646,7 +475,7 @@ print -dpng2 strain.png
 
 
 % legend
-path = './../../build/bin/preform_alt/History/Stress';
+path = './../../build/bin/preform/History/Stress';
 
 
 

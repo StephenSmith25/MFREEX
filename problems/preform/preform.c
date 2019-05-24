@@ -30,17 +30,21 @@
 #include "Integration/SCNI/scni_update_B.h"
 #include "PostProcess/saveDisp.h"
 #include "input/read_input_points.h"
+#include "Integration/material_point.h"
+#include "internal_force_buckley.h"
+#include "stress_points.h"
+#include "Integration/mass_matrix.h"
 
 char * MATERIAL_NAME = "BUCKLEY";
 const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
 // time step parameters
-const double TMAX = 1;
+const double TMAX = 0.5;
 double delta_t = 5e-7;
 
 // Meshfree parameters
-const double dmax = 3;
+const double dmax =2.0;
 const double dmax_x =2;
 const double dmax_y =2;
 double beta = 1.2;
@@ -48,18 +52,21 @@ double beta = 1.2;
 
 
 char * basis_type = "linear";
-char * weight = "quartic";
+char * weight = "cubic";
 char * kernel_shape = "radial";
 
 
 const int is_stabalised = 0;
-const int is_constant_support_size = 1;
+const int is_constant_support_size = 0;
+
+const int PLOT_POINT = 121;
 
 // stretch rod
 const double DISP_ROD_MAX = 90; // 132;
+	double v_rod = 350; // mm/s
 
 // 
-const int WITH_MOULD = 1;
+const int WITH_MOULD = 0;
 
 const int WRITE_FREQ = 250;
 
@@ -70,6 +77,16 @@ int main(int argc, char** argv) {
 	/*			        Initialisation                           */
 	/*                                                           */
 	/*////////////////////////////////////////////////////////// */
+
+	int NUMBER_OF_THREADS = 2;
+	if ( argv[1] != NULL)
+	{
+		NUMBER_OF_THREADS = atoi(argv[1]);
+
+	}else{
+		NUMBER_OF_THREADS = 2;	
+	}
+
 
 	FILE * fp;
 
@@ -93,7 +110,7 @@ int main(int argc, char** argv) {
 	matParams->ve[6] = (67.47); // Cv
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
-	matParams->ve[9] = 2.8e9; // Kb
+	matParams->ve[9] = 1.8e9; // Kb
 	matParams->ve[10] = 6e8;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
@@ -101,27 +118,31 @@ int main(int argc, char** argv) {
 	matParams->ve[15] = 1.8098e17;// Ns_c
 	matParams->ve[16] = 1.38e-17;// boltzmann constant kB
 	// slippage
-	matParams->ve[17] = 100;// lambdaCrit
-	matParams->ve[18] = 383.15;// Ts 
-	matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
-	matParams->ve[20] = 10612;// Cs 10612
-	matParams->ve[21] = 95.48;// Tinf 95.48
-	matParams->ve[22] = 0.1565;// C1
-	matParams->ve[23] = 39.937;// C2
-	matParams->ve[24] = 0.9878;// beta
-	matParams->ve[25] = 0.33;// poissons ratio
-
 	// matParams->ve[17] = 100;// lambdaCrit
 	// matParams->ve[18] = 383.15;// Ts 
-	// matParams->ve[19] = 0.359e6;// gamma0_ref = 0.653
-	// matParams->ve[20] = 7307.8;// Cs 10612
-	// matParams->ve[21] = 152.95;// Tinf 95.48
+	// matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
+	// matParams->ve[20] = 10612;// Cs 10612
+	// matParams->ve[21] = 95.48;// Tinf 95.48
 	// matParams->ve[22] = 0.1565;// C1
 	// matParams->ve[23] = 39.937;// C2
 	// matParams->ve[24] = 0.9878;// beta
 	// matParams->ve[25] = 0.33;// poissons ratio
 
+	matParams->ve[17] = 100;// lambdaCrit
+	matParams->ve[18] = 383.15;// Ts 
+	matParams->ve[19] = 0.359e6;// gamma0_ref = 0.653
+	matParams->ve[20] = 7307.8;// Cs 10612
+	matParams->ve[21] = 152.95;// Tinf 95.48
+	matParams->ve[22] = 0.1565;// C1
+	matParams->ve[23] = 39.937;// C2
+	matParams->ve[24] = 0.9878;// beta
+	matParams->ve[25] = 0.33;// poissons ratio
 
+
+	// // new stuff
+	// matParams->ve[2] = (1.8165e6); // mu*_0
+	// matParams->ve[3] = (342.61); // Tinf
+	// matParams->ve[6] = (56.09); // Cv
 	
 	// crit lambda properties
 	matParams->ve[26] = -0.0111; // C1
@@ -148,7 +169,7 @@ int main(int argc, char** argv) {
 	double Rg = 8.314;
 	double rLine = Rg/molarMass;
 	double gammaLine = 1.4;
-	double aReduced = 0.0003924;
+	double aReduced = 0.000154; //0.0003924;
 	double vDead = (85*1000) ; /*  dead volume in mL -> mm^3 */
 
 	/* ------------------------------------------*/
@@ -177,7 +198,7 @@ int main(int argc, char** argv) {
 		double theta = -PI/2.00 + (PI/2/(numPointsRod-1))*i;
 		srNodes->me[i][0] = stretchRodRad*cos(theta);
 		// either 10.3 or 9
-		srNodes->me[i][1] =10.3+stretchRodRad*sin(theta);
+		srNodes->me[i][1] =9.1+stretchRodRad*sin(theta);
 		srNodes_O->me[i][0] = srNodes->me[i][0];
 		srNodes_O->me[i][1] = srNodes->me[i][1];
 	}
@@ -223,25 +244,43 @@ int main(int argc, char** argv) {
 	/*////////////////////////////////////////////////////////// */
 
 
+	// CREATE POINTS BASED ON DELAUNAY TRIANGULATION
 
-	/*  Create points 
-	 *
-	 *	Via a 2D triangulation 
-	 *
-	 *  */
-	// Read PLSG 
 
+	char opt[20] = "p";
 	char fileName[30] = "preform";
 	double * points_out ;
-	int * boundaryNodes = NULL;
-	int numBoundary = 0;
+	int * boundaryNodes;
+	int numBoundary;
 	int * nodalMarkers;
-	int  numnodes = 0;;
+	int  numnodes;
 	double * temperatures;
 
-	read_input_points(fileName,&points_out, &boundaryNodes, &nodalMarkers, &temperatures,&numnodes, &numBoundary);
+	// TRIANGULATION
+	TRIANGLE * tri = trigen(opt,fileName);	
 
 
+
+	boundaryNodes = tri->boundary;
+	numBoundary = tri->num_boundary_points;
+	nodalMarkers = tri->pointmarkers;
+	temperatures = tri->temperatures;
+	numnodes = tri->num_points;
+	points_out = tri->points;
+
+
+	// Triangulate input points:
+
+	double * tri_points = tri->points;
+	int * triangles = tri->triangles;
+	int number_of_triangles = tri->num_triangles;
+
+	fp = fopen("triangles.csv","w");
+		for ( int i = 0 ; i < number_of_triangles ; i++)
+		{
+			fprintf(fp,"%d,%d,%d\n",triangles[3*i],triangles[3*i+1],triangles[3*i+2]);
+		}
+	fclose(fp);
 
 
 	MAT * xI = m_get(numnodes,dim);
@@ -252,7 +291,16 @@ int main(int argc, char** argv) {
 		xI->me[i][1] = points_out[2*i+1];
 
 	}
-	m_foutput(stdout, xI);
+
+
+	fp = fopen("nodes.csv","w");
+	for ( int i = 0 ; i < numnodes ; i++)
+	{
+		fprintf(fp,"%lf,%lf\n",xI->me[i][0],xI->me[i][1]);
+	}
+	fclose(fp);
+
+
 	fp = fopen("boundary.txt","w");
 	for (int i = 0; i < numBoundary; ++i)
 	{
@@ -262,12 +310,73 @@ int main(int argc, char** argv) {
 	fclose(fp);
 
 
+	// create stress points as barycenters of triangles
+
+	MAT * stress_points = m_get(number_of_triangles,2);
+
+	int number_of_stress_points = stress_points->m;
+	printf("number_of_stress_points %d \n",number_of_stress_points);
+
+	double * all_temperatures =malloc((number_of_stress_points + numnodes)*sizeof(double)) ;
+
+	for ( int i = 0 ; i < numnodes ; i++)
+	{
+		all_temperatures[i] = temperatures[i];
+	}
+
+	for ( int i = 0 ; i < number_of_triangles ; i++)
+	{
+		int index_1 = triangles[3*i]-1;
+		int index_2 = triangles[3*i+1]-1;
+		int index_3 = triangles[3*i+2]-1;
+
+		stress_points->me[i][0] = (xI->me[index_1][0] + xI->me[index_2][0] + xI->me[index_3][0])/3.00;
+		stress_points->me[i][1] = (xI->me[index_1][1] + xI->me[index_2][1] + xI->me[index_3][1])/3.00;
+
+		int indx = numnodes + i;
+		all_temperatures[indx] = (all_temperatures[index_1] + all_temperatures[index_2] + all_temperatures[index_3])/3.00; 
+
+	}
+
+	for ( int i = 0 ; i < numnodes+number_of_stress_points ; i++)
+	{
+		printf("temperature of point i = %lf \n", all_temperatures[i]);
+	}
+
+
+	fp = fopen("stress_points.csv","w");
+	for ( int i = 0 ; i < number_of_stress_points ; i++)
+	{
+		fprintf(fp,"%lf,%lf\n",stress_points->me[i][0],stress_points->me[i][1]);
+	}
+	fclose(fp);
+
+
+	// all points together
+
+
+	MAT * ALL_POINTS = m_get(numnodes + number_of_stress_points,2);
+	for ( int i = 0 ; i < numnodes + number_of_stress_points ; i++)
+	{
+
+		if ( i < numnodes)
+		{
+			ALL_POINTS->me[i][0] = xI->me[i][0];
+			ALL_POINTS->me[i][1] = xI->me[i][1];
+		}else{
+			int idx = i - numnodes;
+			ALL_POINTS->me[i][0] = stress_points->me[idx][0];
+			ALL_POINTS->me[i][1] = stress_points->me[idx][1];
+
+		}
+
+	}
 	
 	struct timeval start, end;
 	// generate clipped voronoi diagram
 	gettimeofday(&start, NULL);
 	voronoi_diagram * vor = NULL;
-	vor = generate_voronoi(xI->base, boundaryNodes, xI->m, numBoundary, 2);
+	vor = generate_voronoi(ALL_POINTS->base, boundaryNodes,ALL_POINTS->m, numBoundary, 2);
  	// get time took to run
 	gettimeofday(&end, NULL);
 	double delta = ((end.tv_sec  - start.tv_sec) * 1000000u + 
@@ -303,118 +412,146 @@ int main(int argc, char** argv) {
 	setDomain(&mfree);
 
 
-
-
-	fp = fopen("domains.txt","w");
-	if ( mfree.kernel_support == RADIAL)
-	{
-		for ( int i = 0 ; i < mfree.num_nodes ; i++)
-			fprintf(fp,"%lf\n",mfree.di->ve[i]);
-
-	}else if ( mfree.kernel_support == RECTANGULAR)
-	{
-		for ( int i = 0 ; i < mfree.num_nodes ; i++)
-			fprintf(fp,"%lf,%lf\n",mfree.di_tensor->me[i][0],mfree.di_tensor->me[i][1]);
-	}else if ( mfree.kernel_support == ELLIPTICAL)
-	{		
-			for ( int i = 0 ; i < mfree.num_nodes ; i++)
-			fprintf(fp,"%lf,%lf,%lf,%lf\n",mfree.MI[i]->me[0][0],mfree.MI[i]->me[0][1],
-				mfree.MI[i]->me[1][0],mfree.MI[i]->me[1][1]);
-
-	}
-	fclose(fp);
-	
 	/* ------------------------------------------*/
 	/* ------------------SCNI--------------------*/
 	/* ------------------------------------------*/
 
 	SCNI_OBJ * _scni_obj = NULL;
-	MSCNI_OBJ * _mscni_obj = NULL;
 
-	struct timeval start2, end2;
-	gettimeofday(&start2, NULL);
-	// set up return container
 	// generate shape functions at sample points 
 	_scni_obj = generate_scni(vor, NULL , is_stabalised, is_AXI, dim, &mfree);
-	gettimeofday(&end2, NULL);
-	delta = ((end2.tv_sec  - start2.tv_sec) * 1000000u + 
-         end2.tv_usec - start2.tv_usec) / 1.e6;
-	printf("scni function took %lf seconds to run\n", delta);
 
-	// Test divergence free condition
-	IVEC * index ;
-	MAT * B; 
-	MAT * check_B = m_get(dim*dim,2);
-	printf("checking scni \n \n");
-	int checkPoint = 33;
+	printf("number of stress points = %d \n", number_of_stress_points);
+	// Create stress points
+	STRESS_POINT ** StressPoints = NULL;
+	if (number_of_stress_points > 0)
+		StressPoints = create_stress_points(stress_points, vor,&mfree);
 
-	m_foutput(stdout,_scni_obj->scni[checkPoint]->B);
-	iv_foutput(stdout, _scni_obj->scni[checkPoint]->sfIndex);
+	int number_of_material_points = mfree.num_nodes+ number_of_stress_points;
 
-	printf("checking divergence free condition at point %d\n", checkPoint);
-	printf("with coordinates %lf %lf\n", mfree.nodes->me[checkPoint][0], mfree.nodes->me[checkPoint][1]);
-	printf("cell area = %lf \n", _scni_obj->scni[checkPoint]->area);
-	printf("and neighbours \n");
-	for ( int i = 0 ; i < _scni_obj->num_points ; i++)
+	// CREATE material points and then move forward after that:
+	// Create the material points
+	MATERIAL_POINTS * material_points = malloc(1*sizeof(material_points));
+	material_points->MP = malloc(number_of_material_points*sizeof(MATERIAL_POINT*));
+	material_points->num_material_points = number_of_material_points;
+
+
+
+	double temperature = 97.45;
+
+	for ( int i = 0 ; i < number_of_material_points ; i++)
 	{
-		index = _scni_obj->scni[i]->sfIndex;
-		B = _scni_obj->scni[i]->B;
 
-		for (int k = 0 ; k < index->max_dim ; k++){
-			int indx = index->ive[k];
 
-			if ( indx == checkPoint)
-			{
-				check_B->me[0][0] += B->me[0][2*k]*_scni_obj->scni[i]->area;
-				check_B->me[1][1] += B->me[1][2*k+1]*_scni_obj->scni[i]->area;
-				check_B->me[2][0] += B->me[2][2*k]*_scni_obj->scni[i]->area;
-				check_B->me[3][1] += B->me[3][2*k+1]*_scni_obj->scni[i]->area;
-			}
+		if ( i < numnodes)
+		{
+
+		material_points->MP[i] = malloc(1*sizeof(MATERIAL_POINT));
+		material_points->MP[i]->inc_F = m_get(3,3);
+		material_points->MP[i]->temp = m_get(3,3);
+
+		material_points->MP[i]->temp_1 = m_get(3,3);
+		material_points->MP[i]->index = i;
+		material_points->MP[i]->fInt = _scni_obj->scni[i]->fInt;
+		material_points->MP[i]->F_n = m_get(3,3);
+		m_ident(material_points->MP[i]->inc_F);
+		m_ident(material_points->MP[i]->F_n);
+		material_points->MP[i]->Jn = 1;
+		material_points->MP[i]->stressVoigt = v_get(5);
+		material_points->MP[i]->coords_n = malloc(2*sizeof(double));
+						material_points->MP[i]->coords_n_1 = malloc(2*sizeof(double));
+
+		material_points->MP[i]->coords_n[0] = xI->me[i][0];
+		material_points->MP[i]->coords_n[1] = xI->me[i][1];
+		material_points->MP[i]->coords_n_1[0] = xI->me[i][0];
+		material_points->MP[i]->coords_n_1[1] = xI->me[i][1];
+		material_points->MP[i]->rho = rho;
+
+
+
+		material_points->MP[i]->neighbours = _scni_obj->scni[i]->sfIndex;
+		material_points->MP[i]->num_neighbours = _scni_obj->scni[i]->sfIndex->max_dim;
+		material_points->MP[i]->shape_function = malloc(1*sizeof(shape_function));
+		material_points->MP[i]->shape_function->phi = _scni_obj->scni[i]->phi;
+
+		material_points->MP[i]->INTEGRATION_FACTOR = 2*PI*_scni_obj->scni[i]->r;
+		material_points->MP[i]->volume = _scni_obj->scni[i]->area;
+
+		material_points->MP[i]->stateNew = new_material_state(all_temperatures[i], BUCKLEY,
+				dim, is_AXI);
+		material_points->MP[i]->stateOld = new_material_state(all_temperatures[i], BUCKLEY,
+				dim, is_AXI);
+
+		material_points->MP[i]->B = _scni_obj->scni[i]->B;
+		}else{
+			int indx = i - numnodes;
+			material_points->MP[i] = malloc(1*sizeof(MATERIAL_POINT));
+			material_points->MP[i]->inc_F = m_get(3,3);
+			material_points->MP[i]->temp = m_get(3,3);
+			material_points->MP[i]->temp_1 = m_get(3,3);
+			material_points->MP[i]->fInt = StressPoints[indx]->fInt;
+			material_points->MP[i]->F_n = m_get(3,3);
+			m_ident(material_points->MP[i]->inc_F);
+			m_ident(material_points->MP[i]->F_n);
+		material_points->MP[i]->rho = rho;
+
+			material_points->MP[i]->Jn = 1;
+			material_points->MP[i]->stressVoigt = v_get(5);
+			material_points->MP[i]->coords_n = malloc(2*sizeof(double));
+			material_points->MP[i]->coords_n_1 = malloc(2*sizeof(double));
+
+			material_points->MP[i]->coords_n[0] = stress_points->me[indx][0];
+			material_points->MP[i]->coords_n[1] = stress_points->me[indx][1];
+			material_points->MP[i]->coords_n_1[0] = stress_points->me[indx][0];
+			material_points->MP[i]->coords_n_1[1] = stress_points->me[indx][1];
+
+
+
+			material_points->MP[i]->neighbours = StressPoints[indx]->neighbours;
+			material_points->MP[i]->num_neighbours = StressPoints[indx]->neighbours->max_dim;
+			material_points->MP[i]->shape_function = malloc(1*sizeof(shape_function));
+			material_points->MP[i]->shape_function->phi = StressPoints[indx]->phi;
+
+			material_points->MP[i]->INTEGRATION_FACTOR = 2*PI*StressPoints[indx]->r;
+			material_points->MP[i]->volume = StressPoints[indx]->volume;
+
+			material_points->MP[i]->stateNew = new_material_state(all_temperatures[i], BUCKLEY,
+				dim, is_AXI);
+			material_points->MP[i]->stateOld = new_material_state(all_temperatures[i], BUCKLEY,
+				dim, is_AXI);
+
+			material_points->MP[i]->B = StressPoints[indx]->B;
 		}
+
+
 	}
-	// m_foutput(stdout, check_B);
+	double area = 0 ;
+	double volumeaa = 0;
+	for ( int i = 0 ; i < number_of_material_points ; i++)
+	{
+		area += material_points->MP[i]->volume;
+		volumeaa += material_points->MP[i]->volume * material_points->MP[i]->INTEGRATION_FACTOR;
+	}
+
+	printf("area = %lf \n volume = %lf \n",area,volumeaa);
 
 
-	// m_foutput(stdout,_scni_obj->scni[checkPoint]->B);
-	// iv_foutput(stdout, _scni_obj->scni[checkPoint]->sfIndex);
-	
-
-
-	/* ------------------------------------------*/
-	/* ----------------Mass Vector---------------*/
-	/* ------------------------------------------*/
-	VEC * phi;
+	/* --------------------------------------------*/
+	/* ----------------LUMPED MASSES---------------*/
+	/* --------------------------------------------*/
+	VEC * nodal_mass = mass_vector(material_points, &mfree);
 	IVEC * neighbours;
-	VEC * nodal_mass = v_get(mfree.num_nodes);
+	VEC * phi;
+
 	VEC * inv_nodal_mass = v_get(mfree.num_nodes);
-	// get shape function and contact nodes
-	shape_function_container * phi_nodes = mls_shapefunction(mfree.nodes, 1, &mfree);
 
-	for ( int i = 0 ; i < mfree.num_nodes ; i++)
-	{
-		phi = phi_nodes->sf_list[i]->phi;
-		neighbours = phi_nodes->sf_list[i]->neighbours;
-
-		double volume = _scni_obj->scni[i]->area;
-		if ( is_AXI == 1)
-		{
-			double r = _scni_obj->scni[i]->r;
-			volume = volume*r*2*PI;
-		}
-		for ( int k = 0 ; k < neighbours->max_dim ; k++)
-		{
-			int index = neighbours->ive[k];
-			nodal_mass->ve[index] += phi->ve[k]*rho*volume;
-		}
-
-		//nodal_mass->ve[i] = volume*rho;
-		//inv_nodal_mass->ve[i] = 1.000/nodal_mass->ve[i];
-
-	}
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
 		inv_nodal_mass->ve[i] = 1.00/nodal_mass->ve[i];
 	}
+
+
+
 
 	/* ------------------------------------------*/
 	/* ------------Boundaries--------------------*/
@@ -459,16 +596,24 @@ int main(int argc, char** argv) {
 
 
 	// /*  EB3 */
-	int numB3 = 15;
+	int numB3 = 10;
 	IVEC * eb3_nodes = iv_get(numB3);
 	MAT * contact_nodes_coords = m_get(numB3,dim);
 
 	for ( int i = 0 ; i < numB3 ; i++){
-		eb3_nodes->ive[i] = traction_nodes->ive[ i];
+		eb3_nodes->ive[i] = traction_nodes->ive[ i ];
 		contact_nodes_coords->me[i][0] = mfree.nodes->me[eb3_nodes->ive[i]][0];
 		contact_nodes_coords->me[i][1] = mfree.nodes->me[eb3_nodes->ive[i]][1];
 
 	}
+
+
+	EBC * eb3 = malloc(1*sizeof(EBC));
+	eb3->nodes = eb3_nodes;
+	iv_foutput(stdout,eb3_nodes);
+	eb3->dofFixed = 2;
+	setUpBC(eb3,inv_nodal_mass,&mfree);
+
 
 		// get shape function and contact nodes
 	shape_function_container * phi_contact = mls_shapefunction(contact_nodes_coords,1, &mfree);
@@ -551,6 +696,16 @@ int main(int argc, char** argv) {
 		BUCKLEY_MATERIAL , 
 		PLASTIC_MATERIAL , 
 		dim, is_AXI);
+
+
+	int num_dof = dim*mfree.num_nodes;
+
+
+
+	
+
+
+
 	// ///////////////////////////////////////////////////////////////
 
 	// /*////////////////////////////////////////////////////////// */
@@ -566,11 +721,6 @@ int main(int argc, char** argv) {
 
 
 
-
-
-	int num_dof = dim*mfree.num_nodes;
-
-
 	// External Forces
 	VEC * Fext_n_1 = v_get(num_dof);
 	VEC * Fext_n = v_get(num_dof);
@@ -578,6 +728,7 @@ int main(int argc, char** argv) {
 	// Internal Forces
 	VEC * Fint_n_1 = v_get(num_dof);
 	VEC * Fint_n = v_get(num_dof);
+	VEC * R_pen= v_get(num_dof);
 
 	// Conctact Forces
 	VEC * Fcont_n_1 = v_get(num_dof);
@@ -607,7 +758,7 @@ int main(int argc, char** argv) {
 	eb1->uBar1 = v_get(eb1->nodes->max_dim);
 	eb1->uBar2 = v_get(eb1->nodes->max_dim);
 	eb2->uBar1 = v_get(eb2->nodes->max_dim);
-	eb2->uBar1 = v_get(eb2->nodes->max_dim);
+	eb3->uBar2 = v_get(eb3->nodes->max_dim);
 
 
 	VEC * v_correct = v_get(num_dof);
@@ -641,7 +792,6 @@ int main(int argc, char** argv) {
 	double volume_t = 0;
 	double pLine_n;
 
-	double v_rod = 0;
 
 	/*  For writing to file */
 	fp = fopen("pressureTime.txt","w");
@@ -665,6 +815,68 @@ int main(int argc, char** argv) {
 	VEC * disp_r = v_get(num_dof);
 
 
+	// updated variables
+	VEC * inc_disp = v_get(num_dof);
+
+
+	VEC * FINT[NUMBER_OF_THREADS];
+	VEC * RPEN[NUMBER_OF_THREADS];
+
+	VEC * NODAL_MASS[NUMBER_OF_THREADS];
+	for ( int i = 0 ; i < NUMBER_OF_THREADS ; i++)
+	{
+
+		NODAL_MASS[i] = v_get(numnodes);
+		FINT[i] = v_get(num_dof);
+		RPEN[i] = v_get(num_dof);
+
+	}
+	internal_force_args * INTERNAL_FORCE_ARGS = 
+	calloc(NUMBER_OF_THREADS,sizeof(internal_force_args));
+
+	// check if problem is axisymmetric
+	int dim_piola;
+	int dim_strain;
+	int dim_cauchy;
+
+
+	if ( is_AXI== 1){
+		dim_piola = 5;
+		dim_strain = 3;
+		dim_cauchy = 4;
+	}else{
+		dim_piola = dim*dim;
+		dim_strain = dim;
+		dim_cauchy = (dim*dim) - (dim -1);
+	}
+
+
+	MAT * XI_n = m_get(numnodes,2);
+	MAT * XI_n_1 = m_get(numnodes,2);
+
+	m_copy(nodes_X,XI_n);
+	m_copy(nodes_X,XI_n_1);
+
+
+	printf("NUMBER_OF_THREADS = %d \n", NUMBER_OF_THREADS);
+
+	for ( int i = 0 ; i < NUMBER_OF_THREADS ; i++)
+	{
+
+		INTERNAL_FORCE_ARGS[i].FINT = FINT[i];
+		INTERNAL_FORCE_ARGS[i].RPEN = RPEN[i];
+		INTERNAL_FORCE_ARGS[i].inc_disp = d_n_1;
+		INTERNAL_FORCE_ARGS[i].materialParameters = matParams;
+		INTERNAL_FORCE_ARGS[i].XI_n = XI_n;
+		INTERNAL_FORCE_ARGS[i].XI_n_1 = XI_n_1;
+		INTERNAL_FORCE_ARGS[i].dt = delta_t;
+		INTERNAL_FORCE_ARGS[i].G = m_get(dim_piola,dim_cauchy);
+		INTERNAL_FORCE_ARGS[i].sigma = v_get(dim_cauchy);
+		INTERNAL_FORCE_ARGS[i].velocity = v_n_h;
+
+	}
+
+
 
 	/*  Explicit Loop */
 	while ( t_n < TMAX)
@@ -675,101 +887,128 @@ int main(int argc, char** argv) {
 		t_n_1 = t_n + delta_t;
 		/*  Make a time step  */ 
 		__mltadd__(v_n_h->ve, a_n->ve,delta_t,num_dof);
+
+
+		double x = t_n_1*smoothstep(t_n_1,0.03,0);
+		 double v_rod_poly = 7*a0*pow(x,6) + 6*a1*pow(x,5) + 5*a2*pow(x,4) + 4*a3*pow(x,3) + 3*a4*pow(x,2) 
+		 + 2*a5*pow(x,1) +a6;
+		//double v_rod_poly = 800;
+		v_rod_poly = v_rod*smoothstep(t_n_1,0.0003,0);
+		for ( int k = 0 ; k < eb3_nodes->max_dim ; k++)
+		{
+			int index = eb3_nodes->ive[k];
+			v_n_h->ve[2*index+1] = -v_rod_poly;				
+		
+
+		}
+
 		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
+
+
 
 
 		mv_mlt(Lambda,d_n_1,nodal_disp);
 		__add__(nodes_X->base, nodal_disp->ve, updatedNodes->base, num_dof);
 
+
+		// 
+		__add__(XI_n->base, d_n_1->ve, XI_n_1->base, num_dof);
+
+
+
 		/* ------------------------------------------*/
 		/* -----------Contact Conditions-------------*/
 		/* ------------------------------------------*/
-		__zero__(Fcont_n_1->ve, num_dof);
+		// __zero__(Fcont_n_1->ve, num_dof);
 
-		// STRETCH ROD 
-		// update stretch rod position
-		if ( disp_rod_n < DISP_ROD_MAX){
-		/*  Update stretch rod */
-			double x = t_n_1*smoothstep(t_n_1,0.001,0);
+		// // STRETCH ROD 
+		// // update stretch rod position
+		// if ( disp_rod_n < DISP_ROD_MAX){
+		// /*  Update stretch rod */
+		// 	//double x = t_n_1*smoothstep(t_n_1,0.05,0);
+		// 	double x = t_n_1;
+		// 	//disp_rod_n_1 = a0*pow(x,7) + a1*pow(x,6) + a2*pow(x,5) + a3*pow(x,4) + a4*pow(x,3) + a5*pow(x,2) +a6*pow(x,1) + a7;
+		// 	//disp_rod_n_1 = disp_rod_n_1;
 
-			disp_rod_n_1 = a0*pow(x,7) + a1*pow(x,6) + a2*pow(x,5) + a3*pow(x,4) + a4*pow(x,3) + a5*pow(x,2) +a6*pow(x,1) + a7;
-			disp_rod_n_1 = disp_rod_n_1;
+		// 	disp_rod_n_1 += v_rod*delta_t;
+
+		// 	for ( int i = 0 ; i < srNodes->m ; i++){
 	
-			for ( int i = 0 ; i < srNodes->m ; i++){
-	
-				//srNodes->me[i][1] = srNodes_O->me[i][1] + disp_rod_n_1;
-				srNodes->me[i][1] = srNodes_O->me[i][1] - disp_rod_n_1;
+		// 		//srNodes->me[i][1] = srNodes_O->me[i][1] + disp_rod_n_1;
+		// 		srNodes->me[i][1] = srNodes_O->me[i][1] - disp_rod_n_1;
 
-			}
-		}
-		// STRETCH ROD CONTACT CONDITIONS
+		// 	}
+		// }
+		// //STRETCH ROD CONTACT CONDITIONS
 
-		for ( int i = 0 ; i < eb3_nodes->max_dim ; i++){
+		// for ( int i = 0 ; i < eb3_nodes->max_dim ; i++){
 
-			neighbours = phi_contact->sf_list[i]->neighbours;
-			phi = phi_contact->sf_list[i]->phi;
-			testPoint->me[0][0] = updatedNodes->me[eb3_nodes->ive[i]][0];
-			testPoint->me[0][1] = updatedNodes->me[eb3_nodes->ive[i]][1];
-			distanceProj = contactDetection(testPoint,srNodes,msNormal);
-			if (distanceProj > 0){
+		// 	neighbours = phi_contact->sf_list[i]->neighbours;
+		// 	phi = phi_contact->sf_list[i]->phi;
+		// 	testPoint->me[0][0] = updatedNodes->me[eb3_nodes->ive[i]][0];
+		// 	testPoint->me[0][1] = updatedNodes->me[eb3_nodes->ive[i]][1];
+		// 	distanceProj = contactDetection(testPoint,srNodes,msNormal);
+		// 	if (distanceProj > 0){
 
-				f1Cor = (2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-				f2Cor = (2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+		// 		f1Cor = (2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+		// 		f2Cor = (2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
 
 
-				for ( int k = 0 ; k < neighbours->max_dim ; k++){
-					Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
-					Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
-				}
+		// 		for ( int k = 0 ; k < neighbours->max_dim ; k++){
+		// 			Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
+		// 			Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
+		// 		}
 
-			}
-
-
-		}
-		if ( WITH_MOULD == 1){
-		// MOULD CONTACT CONDITIONS
-		for ( int i = 0 ; i < eb4_nodes->max_dim ; i++){
-
-			neighbours = phi_contact_mould->sf_list[i]->neighbours;
-			phi = phi_contact_mould->sf_list[i]->phi;
-			testPoint->me[0][0] = updatedNodes->me[eb4_nodes->ive[i]][0];
-			testPoint->me[0][1] = updatedNodes->me[eb4_nodes->ive[i]][1];
-
-			distanceProj = contactDetection(testPoint,mould_Nodes,msNormal);
-
-			if (distanceProj > 0){
+		// 	}
 
 
-				f1Cor = (2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
-				f2Cor = (2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
+		// }
+		// if ( WITH_MOULD == 1){
+		// // MOULD CONTACT CONDITIONS
+		// for ( int i = 0 ; i < eb4_nodes->max_dim ; i++){
+
+		// 	neighbours = phi_contact_mould->sf_list[i]->neighbours;
+		// 	phi = phi_contact_mould->sf_list[i]->phi;
+		// 	testPoint->me[0][0] = updatedNodes->me[eb4_nodes->ive[i]][0];
+		// 	testPoint->me[0][1] = updatedNodes->me[eb4_nodes->ive[i]][1];
+
+		// 	distanceProj = contactDetection(testPoint,mould_Nodes,msNormal);
+
+		// 	if (distanceProj > 0){
 
 
-				for ( int k = 0 ; k < neighbours->max_dim ; k++){
-					Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
-					Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
-				}
-
-			}
+		// 		f1Cor = (2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
+		// 		f2Cor = (2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
 
 
-		}
-		}
+		// 		for ( int k = 0 ; k < neighbours->max_dim ; k++){
+		// 			Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
+		// 			Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
+		// 		}
+
+		// 	}
 
 
-		// /*  Find a corrective acceleration - method in pronto 3D manual*/
-		for ( int i = 0 ; i < numnodes  ; i++ )
-		{
-			a_n->ve[2*i] = Fcont_n_1->ve[2*i]*inv_nodal_mass->ve[i];
-			a_n->ve[2*i+1] = Fcont_n_1->ve[2*i+1]*inv_nodal_mass->ve[i];
-		}
+		// }
+		// }
 
-		__mltadd__(v_n_h->ve, a_n->ve,delta_t,num_dof);
-		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
+
+		// // /*  Find a corrective acceleration - method in pronto 3D manual*/
+		// for ( int i = 0 ; i < numnodes  ; i++ )
+		// {
+		// 	a_n->ve[2*i] = Fcont_n_1->ve[2*i]*inv_nodal_mass->ve[i];
+		// 	a_n->ve[2*i+1] = Fcont_n_1->ve[2*i+1]*inv_nodal_mass->ve[i];
+		// }
+
+		// __mltadd__(v_n_h->ve, a_n->ve,delta_t,num_dof);
+		// __mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
 
 
 		/* ------------------------------------------*/
 		/* -----------Boundary Conditions------------*/
 		/* ------------------------------------------*/
+		v_zero(v_correct);
+
 		/*  Implement BCs */
 		enforceBC(eb1,d_n_1); 
 		// find velocity correction
@@ -782,6 +1021,7 @@ int main(int argc, char** argv) {
 		for ( int k = 0 ; k < v_correct->max_dim; k++){
 			v_n_h->ve[2*k+1] += v_correct->ve[k];
 		}
+		v_zero(v_correct);
 
 		// Symmetry boundary /
 		enforceBC(eb2,d_n_1); 
@@ -790,9 +1030,83 @@ int main(int argc, char** argv) {
 			v_n_h->ve[2*k] += v_correct->ve[k];
 		}
 
+
+		// eb3 /
+
+
+
+		// double x = t_n_1*smoothstep(t_n_1,0.03,0);
+
+		// disp_rod_n_1 = (a0*pow(x,7) + a1*pow(x,6) + a2*pow(x,5) + 
+		// 	a3*pow(x,4) + a4*pow(x,3) + a5*pow(x,2) +a6*pow(x,1) + a7);
+		// for ( int i = 0 ; i < srNodes->m ; i++){
+		// 		srNodes->me[i][1] = srNodes_O->me[i][1] - disp_rod_n_1;
+
+		// }
+		// for ( int i = 0 ; i < eb3->nodes->max_dim ; i++)
+		// {
+		// 	eb3->uBar2->ve[i] = -disp_rod_n_1;
+		// }
+		// v_zero(v_correct);
+		// enforceBC(eb3,d_n_1); 
+		// sv_mlt(1.00/(1*delta_t),eb3->uCorrect2,v_correct);
+		// for ( int k = 0 ; k < v_correct->max_dim; k++){
+		// 	v_n_h->ve[2*k+1] += v_correct->ve[k];
+		// }
+
 		// find new nodal positions
 		mv_mlt(Lambda,d_n_1,nodal_disp);
 		__add__(nodes_X->base, nodal_disp->ve, updatedNodes->base, num_dof);
+
+			/* ------------------------------------------*/
+		/* --------------Write outputs---------------*/
+		/* ------------------------------------------*/
+
+		// update nodal positions
+		if (( n % WRITE_FREQ == 0 ) || (n == 1) ){
+
+
+
+			char filename[50];
+			snprintf(filename, 50, "displacement_%d%s",fileCounter,".csv");
+			saveDisp(updatedNodes,state_n_1,"./Displacement",filename);
+
+			snprintf(filename, 50, "srRod_%d%s",fileCounter,".csv");
+			disp2csv(srNodes,"./srRod",filename);
+
+			fp = fopen("pressureTime.txt","a");
+			fprintf(fp,"%lf %lf\n",t_n_1,pre_n_1);
+			fclose(fp);
+
+	
+
+			/* ------------------------------------------*/
+			/* --------------Print Outputs--------------*/
+			/* ------------------------------------------*/
+			state_variables * stateNew = material_points->MP[PLOT_POINT]->stateNew;
+			stateNew->F->me[2][1] = t_n_1;
+
+			snprintf(filename, 50, "strain_%d%s",fileCounter,".txt");
+			mat2csv(stateNew->F,"./History/Strain",filename);
+
+			//snprintf(filename, 50, "Stress_%d%s",print_count,".txt");
+			//mat2csv(stateNew[i]->sigma,"./History/Stress",filename);
+
+			snprintf(filename, 50, "Bond_Stress_%d%s",fileCounter,".txt");
+			mat2csv(stateNew->Sb,"./History/Stress",filename);
+			snprintf(filename, 50, "Conformational_Stress_%d%s",fileCounter,".txt");
+			mat2csv(stateNew->Sc,"./History/Stress",filename);
+			stateNew->F->me[2][1] = 0;
+
+
+			fileCounter++;
+
+
+		}
+
+
+
+
 
 	
 		/* ------------------------------------------*/
@@ -802,15 +1116,8 @@ int main(int argc, char** argv) {
 		/*  Find Cavity volume */
 		volume = cavityVolume(traction_nodes,updatedNodes);
 
-
-		if ( t_n_1 < 0.35)
-		{
-			pLine_n = pLine;
-		}else{
-			pLine_n = pLine + (pLine_FINAL-pLine) * smoothstep(t_n_1, 0.40, 0.350);
-			aReduced = aReduced_final;
-		}
-
+		pLine_n = pLine;
+		
 		/*  Find Cavity pressure */
 		pRatio = pre_n/pLine_n;
 		if ( pRatio <= 0.528){
@@ -829,12 +1136,38 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 		/* ------------Find Internal Force-----------*/
 		/* ------------------------------------------*/
-		__sub__(d_n_1->ve, disp_r->ve,disp_inc->ve, num_dof);
+		__zero__(R_pen->ve,num_dof);
+		__zero__(Fint_n_1->ve,Fint_n_1->max_dim);
 
-		internalForce_Inelastic_Buckley(Fint_n_1, _scni_obj,
-		disp_inc, v_n_h,
-		matParams, state_n_1, state_n,
-		mfree.IS_AXI, dim,delta_t,t_n_1, MATERIAL_NAME);
+
+		int i;
+
+
+		for ( i = 0 ; i  < NUMBER_OF_THREADS ; i++)
+		{
+			__zero__(RPEN[i]->ve, num_dof);
+			__zero__(FINT[i]->ve, num_dof);
+
+		}
+
+		#pragma omp parallel for num_threads(NUMBER_OF_THREADS)
+		for (i=0; i < number_of_material_points; i++){
+
+			int ID = omp_get_thread_num();
+
+			INTERNAL_FORCE_ARGS[ID].MP = material_points->MP[i];
+			internal_force_buckley(&INTERNAL_FORCE_ARGS[ID]);
+
+		}
+
+	
+		for (i=0; i < NUMBER_OF_THREADS; i++){
+		
+	 		__add__(RPEN[i]->ve, R_pen->ve,R_pen->ve, num_dof);
+	 		__add__(FINT[i]->ve, Fint_n_1->ve,Fint_n_1->ve, num_dof);
+		}
+
+
 
 
 		/* ------------------------------------------*/
@@ -842,6 +1175,7 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 
 		/*  Balance of forces */
+		__sub__(Fint_n_1->ve, R_pen->ve, Fint_n_1->ve, num_dof);
 		__sub__(Fext_n_1->ve, Fint_n_1->ve, Fnet_n_1->ve,num_dof);
 
 
@@ -872,26 +1206,6 @@ int main(int argc, char** argv) {
 		}
 
 
-		/* ------------------------------------------*/
-		/* --------------Write outputs---------------*/
-		/* ------------------------------------------*/
-
-		// update nodal positions
-		if ( n % WRITE_FREQ == 0 ){
-
-			char filename[50];
-			snprintf(filename, 50, "displacement_%d%s",fileCounter,".csv");
-			saveDisp(updatedNodes,state_n_1,"./Displacement",filename);
-
-			snprintf(filename, 50, "srRod_%d%s",fileCounter,".csv");
-			disp2csv(srNodes,"./srRod",filename);
-
-			fp = fopen("pressureTime.txt","a");
-			fprintf(fp,"%lf %lf\n",t_n_1,pre_n_1);
-			fclose(fp);
-
-			fileCounter++;
-		}
 
 
 		/* ------------------------------------------*/
@@ -983,12 +1297,3 @@ int main(int argc, char** argv) {
 }
 
 
-static inline int heaviside(int x)
-{
-
-	if (x > 0){
-		return 1;
-	}else{
-		return 0;
-	}
-}

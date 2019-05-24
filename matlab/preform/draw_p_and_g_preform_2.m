@@ -50,14 +50,14 @@ RADIUS_NECK = 25 ;
 
 
 %% NUMBER OF NODES
-NUM_NODES_SIDEWALL =60;
-NUM_NODES_TAPER = 20;
+NUM_NODES_SIDEWALL =70;
+NUM_NODES_TAPER =18;
 NUM_NODES_SPHERICAL_CAP = 20;
 NUM_NODES_TOP_FIXTURE =4;
 NUM_NODES_BOT_FIXTURE = 6;
 
 NUM_NODES_RADIUS_TAPER_IN = 15;
-NUM_NODES_RADIUS_TAPER_OUT = 10;
+NUM_NODES_RADIUS_TAPER_OUT = 12;
 
 
 
@@ -82,7 +82,7 @@ end
 
 % Left wall
 %% traction nodes
-nodes(count:1:count+NUM_NODES_SIDEWALL-1,:) = [linspace(RIN_BOT_SIDEWALL,RIN_TOP_SIDEWALL,NUM_NODES_SIDEWALL)',linspace(0,46.62,NUM_NODES_SIDEWALL)'];
+nodes(count:1:count+NUM_NODES_SIDEWALL-1,:) = [linspace(RIN_BOT_SIDEWALL,RIN_TOP_SIDEWALL,NUM_NODES_SIDEWALL)',linspace(-0.5,46.62,NUM_NODES_SIDEWALL)'];
 count = count + NUM_NODES_SIDEWALL;
 
 theta_radius_max = asind((54.20-46.62)/(RADIUS_NECK));
@@ -220,7 +220,7 @@ end
 %Left wall
 %%traction nodes
 nodes1(count:1:count+NUM_NODES_SIDEWALL-1,:) = [linspace(RADII_BOT_SIDEWALL(i+1),RADII_TOP_SIDEWALL(i+1),NUM_NODES_SIDEWALL)',....
-    linspace(0,46.62,NUM_NODES_SIDEWALL)'];
+    linspace(-0.5,46.62,NUM_NODES_SIDEWALL)'];
  count = count + NUM_NODES_SIDEWALL;
  
  theta_radius_max = asind((54.20-46.62)/(RADIUS_NECK));

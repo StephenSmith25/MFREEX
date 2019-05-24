@@ -50,17 +50,17 @@ RADIUS_NECK = 25 ;
 
 
 %% NUMBER OF NODES
-NUM_NODES_SIDEWALL =70;
-NUM_NODES_SIDEWALL_1 =66;
-NUM_NODES_TAPER = 16;
-NUM_NODES_TAPER_1=18;
-NUM_NODES_SPHERICAL_CAP = 19;
+NUM_NODES_SIDEWALL =40;
+NUM_NODES_SIDEWALL_1 =40;
+NUM_NODES_TAPER = 10;
+NUM_NODES_TAPER_1=12;
+NUM_NODES_SPHERICAL_CAP = 15;
 NUM_NODES_TOP_FIXTURE =5;
 NUM_NODES_TOP = NUM_NODES_THICKNESS+2;
 NUM_NODES_BOT_FIXTURE = 5;
 
-NUM_NODES_RADIUS_TAPER_IN = 11;
-NUM_NODES_RADIUS_TAPER_OUT = 8;
+NUM_NODES_RADIUS_TAPER_IN = 9;
+NUM_NODES_RADIUS_TAPER_OUT = 7;
 
 
 
@@ -361,13 +361,13 @@ end
 
 
 %% write files
-dlmwrite('../../problems/preform_updated/preform.nodes',[length(nodes),1],'delimiter',' ')
-dlmwrite('../../problems/preform_updated/preform.nodes',nodes,'-append','delimiter',' ')
+dlmwrite('../../problems/preform/preform.nodes',[length(nodes),1],'delimiter',' ')
+dlmwrite('../../problems/preform/preform.nodes',nodes,'-append','delimiter',' ')
 
 
 %segments
-dlmwrite('../../problems/preform_updated/preform.segs',length(segments),'delimiter',' ')
-dlmwrite('../../problems/preform_updated/preform.segs',segments,'-append',.........
+dlmwrite('../../problems/preform/preform.segs',length(segments),'delimiter',' ')
+dlmwrite('../../problems/preform/preform.segs',segments,'-append',.........
     'delimiter',' ')
 
 

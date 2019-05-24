@@ -5,7 +5,6 @@
 #include "Integration/defgrad.h"
 #include "Material/material.h"
 #include "Force/Internal/internalForce_hyperelastic.h"
-#include "thpool.h"
 
 typedef struct internal_force_args
 {

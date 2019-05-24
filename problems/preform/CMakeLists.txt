@@ -46,8 +46,8 @@ target_link_libraries(preform CVLIB MFREEX Eigen EFSFLIB util triangulate mescha
 add_custom_command(
         TARGET preform POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_CURRENT_SOURCE_DIR}/preform.boundary
-                ${EXECUTABLE_OUTPUT_PATH}/preform.boundary)
+                ${CMAKE_CURRENT_SOURCE_DIR}/preform.segs
+                ${EXECUTABLE_OUTPUT_PATH}/preform.segs)
 add_custom_command(
         TARGET preform POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy

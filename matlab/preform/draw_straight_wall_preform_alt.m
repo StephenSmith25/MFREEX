@@ -13,7 +13,7 @@ length_wall = length_preform - Radius_in;
 
 NUM_NODES_THICKNESS=4;
 %% NUMBER OF NODES
-N1 = 70;
+N1 = 60;
 N2 = 5;
 N3 = 6;
 ntheta = 25

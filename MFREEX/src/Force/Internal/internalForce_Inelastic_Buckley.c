@@ -26,18 +26,10 @@ internalForce_Inelastic_Buckley(VEC * Fint, SCNI_OBJ * scni_obj,
 
 	// create pointer to correct material function
 	int (*mat_func_ptr)(state_variables *,state_variables * ,VEC *, double) = NULL;
-
-	if ( strcmp (Material, "BUCKLEY") == 0 )
-	{
-		mat_func_ptr = &buckleyStress;
-		rho = matParams->ve[31];
-
-	}else if( strcmp(Material, "J2") == 0 )
-	{
-		//mat_func_ptr = &yeoh;
+	mat_func_ptr = &buckleyStress;
+	rho = matParams->ve[31];
 
 
-	}
 
 	// Get dimensions of working vectors and matricies
 	int dim_piola = 0;
@@ -69,7 +61,7 @@ internalForce_Inelastic_Buckley(VEC * Fint, SCNI_OBJ * scni_obj,
 
 
 	// set number of threads
-	omp_set_num_threads(8);
+	omp_set_num_threads(3);
 
 	int i;
 #pragma omp parallel 
@@ -139,13 +131,12 @@ internalForce_Inelastic_Buckley(VEC * Fint, SCNI_OBJ * scni_obj,
 			mat_func_ptr(stateNew[i],stateOld[i],matParams,DT);
 
 
-
 			/* ------------------------------------------*/
 			/* --------------Print Outputs--------------*/
 			/* ------------------------------------------*/
 
 
-			if ((i == 140) && (call_count % 1000 == 0)) {
+			if ((i == 170) && (call_count % 1000 == 0)) {
 
 
 				stateNew[i]->F->me[2][1] = t_n_1;
@@ -176,10 +167,10 @@ internalForce_Inelastic_Buckley(VEC * Fint, SCNI_OBJ * scni_obj,
 
 			double b1 = 0.06;
 			double b2 = 1.44;
-			double Le = 0.1;
-			double Cd = 1400;
+			double Le = 4;
+			double Cd = 2800;
 			double div_v = stateNew[i]->div_v;
-			double qv =  rho*Le*b1*Cd * div_v;
+			double qv =  0;
 			if ( div_v < 0)
 			{
 				qv += rho*Le*(b2 * (Le/1000) * pow(div_v,2)) ;
@@ -220,6 +211,8 @@ internalForce_Inelastic_Buckley(VEC * Fint, SCNI_OBJ * scni_obj,
 			sv_mlt(stateNew[i]->Jacobian,stressVoigt,stressVoigt);
 
 		
+
+
 			//-------------------------------------------------//
 			//            Assemble Internal Force              //
 			//-------------------------------------------------//

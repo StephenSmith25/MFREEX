@@ -46,14 +46,14 @@ double delta_t = 5e-7;
 const double dmax = 2.5;
 const double dmax_x =2;
 const double dmax_y =2;
-double beta = 1.3;
+double beta = 1.15;
 
 #define V_ROD
 #ifdef V_ROD
 const double STRETCH_ROD_SPEED = 800;
 #endif
 
-const int PLOT_POINT = 859;
+const int PLOT_POINT = 659;
 
 char * basis_type = "linear";
 char * weight = "cubic";
@@ -80,7 +80,7 @@ char * integration_type = "TRIANGLE";
 
 #define IS_UPDATED
 #ifdef IS_UPDATED
-	#define UPDATE_FREQUENCEY 100
+	#define UPDATE_FREQUENCEY 10000000000
 #endif
 
 const int WRITE_FREQ =250;
@@ -128,7 +128,7 @@ int main(int argc, char** argv) {
 	matParams->ve[6] = (67.47); // Cv
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
-	matParams->ve[9] = 4.8e9; // Kb
+	matParams->ve[9] = 1.8e9; // Kb
 	matParams->ve[10] = 6e8;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
@@ -469,6 +469,7 @@ int main(int argc, char** argv) {
 	{
 		inv_nodal_mass->ve[i] = 1.00/nodal_mass->ve[i];
 	}
+
 
 	printf("total mass = %lf \n", v_sum(nodal_mass));
 

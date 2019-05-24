@@ -50,17 +50,21 @@ RADIUS_NECK = 25 ;
 
 
 %% NUMBER OF NODES
-NUM_NODES_SIDEWALL =70;
-NUM_NODES_SIDEWALL_1 =66;
-NUM_NODES_TAPER = 16;
-NUM_NODES_TAPER_1=18;
-NUM_NODES_SPHERICAL_CAP = 19;
-NUM_NODES_TOP_FIXTURE =5;
-NUM_NODES_TOP = NUM_NODES_THICKNESS+2;
-NUM_NODES_BOT_FIXTURE = 5;
+NUM_NODES_SIDEWALL =60;
 
-NUM_NODES_RADIUS_TAPER_IN = 11;
-NUM_NODES_RADIUS_TAPER_OUT = 8;
+NUM_NODES_SIDEWALL_1 =66;
+
+
+NUM_NODES_TAPER =12;
+NUM_NODES_TAPER_1 =15;
+
+
+NUM_NODES_SPHERICAL_CAP = 20;
+NUM_NODES_TOP_FIXTURE =5;
+NUM_NODES_BOT_FIXTURE = 6;
+
+NUM_NODES_RADIUS_TAPER_IN =10;
+NUM_NODES_RADIUS_TAPER_OUT = 7;
 
 
 
@@ -84,13 +88,8 @@ end
 
 
 % Left wall
-x_pos = nodes(end,1);
-y_pos = nodes(end,2);
-nodes(count:1:count+2,:) = [linspace(x_pos,RIN_BOT_SIDEWALL,3)',linspace(y_pos,0,3)'];
-count = count+3;
-
 %% traction nodes
-nodes(count:1:count+NUM_NODES_SIDEWALL-1,:) = [linspace(RIN_BOT_SIDEWALL,RIN_TOP_SIDEWALL,NUM_NODES_SIDEWALL)',linspace(0,46.62,NUM_NODES_SIDEWALL)'];
+nodes(count:1:count+NUM_NODES_SIDEWALL-1,:) = [linspace(RIN_BOT_SIDEWALL,RIN_TOP_SIDEWALL,NUM_NODES_SIDEWALL)',linspace(-0.5,46.62,NUM_NODES_SIDEWALL)'];
 count = count + NUM_NODES_SIDEWALL;
 
 theta_radius_max = asind((54.20-46.62)/(RADIUS_NECK));
@@ -106,9 +105,6 @@ end
 x_pos = nodes(end,1);
 y_pos = nodes(end,2);
 %% NECK RADIUS
-
-
-
 nodes(count:1:count+NUM_NODES_TAPER-1,:) = [linspace(x_pos,RIN_NECK,NUM_NODES_TAPER)',linspace(y_pos,75.76-ROUT_BOT,NUM_NODES_TAPER)'];
 count = count + NUM_NODES_TAPER;
 
@@ -123,8 +119,8 @@ x_pos = nodes(end,1);
 y_pos = nodes(end,2);
 
 
-nodes(count:1:count+NUM_NODES_TOP-1,:) = [linspace(RIN_NECK,ROUT_NECK,NUM_NODES_TOP)',linspace(y_pos,y_pos,NUM_NODES_TOP)'];
-count = count + NUM_NODES_TOP;
+nodes(count:1:count+NUM_NODES_TOP_FIXTURE-1,:) = [linspace(RIN_NECK,ROUT_NECK,NUM_NODES_TOP_FIXTURE)',linspace(y_pos,y_pos,NUM_NODES_TOP_FIXTURE)'];
+count = count + NUM_NODES_TOP_FIXTURE;
 
 
 
@@ -185,41 +181,15 @@ nodes = nodes(ib,:);
 %boundary nodes
 
 boundaryNodes = linspace(1,length(nodes),length(nodes))';
-boundaryNodes(3:(NUM_NODES_SPHERICAL_CAP + NUM_NODES_SIDEWALL + + NUM_NODES_RADIUS_TAPER_IN + NUM_NODES_TAPER -1 +NUM_NODES_TOP_FIXTURE ),2) = 2;
-count = NUM_NODES_SPHERICAL_CAP + NUM_NODES_SIDEWALL +NUM_NODES_TAPER + NUM_NODES_RADIUS_TAPER_IN +NUM_NODES_TOP_FIXTURE- 2;
-%boundaryNodes(count:count+NUM_NODES_TOP_FIXTURE*1-1,2) = 5;
-count = count+NUM_NODES_TOP_FIXTURE+NUM_NODES_TOP-1;
-boundaryNodes(count:count + NUM_NODES_SIDEWALL_1+NUM_NODES_SPHERICAL_CAP + NUM_NODES_TAPER , 2) = 6;
+boundaryNodes(1:(NUM_NODES_SPHERICAL_CAP + NUM_NODES_SIDEWALL + + NUM_NODES_RADIUS_TAPER_IN + NUM_NODES_TAPER -1 +NUM_NODES_TOP_FIXTURE ),2) = 2;
+count = NUM_NODES_SPHERICAL_CAP + NUM_NODES_SIDEWALL +NUM_NODES_TAPER + NUM_NODES_RADIUS_TAPER_IN - 3 + NUM_NODES_TOP_FIXTURE;
+boundaryNodes(count:count+NUM_NODES_TOP_FIXTURE*1,2) = 5;
+count = count+NUM_NODES_TOP_FIXTURE*1;
+boundaryNodes(count:count + NUM_NODES_SIDEWALL+NUM_NODES_SPHERICAL_CAP + NUM_NODES_TAPER , 2) = 6;
 
 boundaryNodes(end:-1:end-(NUM_NODES_BOT_FIXTURE-2),2) = 4;
 % 
-   
 
-
-% SEGEMNTS% Write the segments 
-segments = [];
-for i = 1:length(nodes)
-
-        
-    if ( i == length(nodes))
-        segments(i,:) = [i,1];
-    else
-        segments(i,:) = [i,i+1]; 
-    end
-  
-    
-end
-
-
-
-segments(2:(NUM_NODES_SPHERICAL_CAP + NUM_NODES_SIDEWALL + + NUM_NODES_RADIUS_TAPER_IN + NUM_NODES_TAPER -1 +NUM_NODES_TOP_FIXTURE ),3) = 2;
-count = NUM_NODES_SPHERICAL_CAP + NUM_NODES_SIDEWALL +NUM_NODES_TAPER + NUM_NODES_RADIUS_TAPER_IN - 2 + NUM_NODES_TOP_FIXTURE;
-segments(count:count+NUM_NODES_TOP_FIXTURE*1-1,3) = 5;
-count = count+NUM_NODES_TOP*1-1;
-segments(count:count + NUM_NODES_SIDEWALL+NUM_NODES_SPHERICAL_CAP + NUM_NODES_TAPER + 4 , 3) = 6;
-segments(end:-1:end-(NUM_NODES_BOT_FIXTURE-2),3) = 4;
-% 
-   
 
 %  Through thickness nodes
 nodes1 = [];
@@ -251,15 +221,13 @@ for j = 1:length(theta)-1
     
 end
 
-x_pos = nodes1(end,1);
-y_pos = nodes1(end,2);
-nodes1(count:1:count+2,:) = [linspace(x_pos,RADII_BOT_SIDEWALL(i+1),3)',linspace(y_pos,0,3)'];
-count = count+3;
+
+
 
 %Left wall
 %%traction nodes
 nodes1(count:1:count+NUM_NODES_SIDEWALL-1,:) = [linspace(RADII_BOT_SIDEWALL(i+1),RADII_TOP_SIDEWALL(i+1),NUM_NODES_SIDEWALL)',....
-    linspace(0,46.62,NUM_NODES_SIDEWALL)'];
+    linspace(-0.5,46.62,NUM_NODES_SIDEWALL)'];
  count = count + NUM_NODES_SIDEWALL;
  
  theta_radius_max = asind((54.20-46.62)/(RADIUS_NECK));
@@ -315,8 +283,11 @@ end
 for i = round ((length(nodes)+1)/2):length(nodes)
    nodes(i,3) = interp1q(tempProfile(:,1),tempProfile(:,2),nodes(i,2));
 end
+
+
 figure
 
+subplot(1,2,1);
 plot(nodes(:,1),nodes(:,2),'k.');
 hold on
 plot(nodes(boundaryNodes(:,1),1),nodes(boundaryNodes(:,1),2),'b-')
@@ -326,55 +297,56 @@ hold on
 C = [];
 
 
-%% plot segments
-for i = 1:length(segments)
-    if ( segments(i,3) == 2)
-        color = 'r';
+for i = 1:length(boundaryNodes)
+    
+    if ( boundaryNodes(i,2) == 2)
+        color = 'r.';
         hold on
-        plot(nodes(segments(i,1:2),1),nodes(segments(i,1:2),2),color);
+        plot(nodes(boundaryNodes(i,1),1),nodes(boundaryNodes(i,1),2),color);
         
-    elseif ( segments(i,3) == 5)
-        color = 'g';
+    elseif (boundaryNodes(i,2)  == 5)
+        color = 'go';
         hold on
-        plot(nodes(segments(i,1:2),1),nodes(segments(i,1:2),2),color);
+        plot(nodes(boundaryNodes(i,1),1),nodes(boundaryNodes(i,1),2),color);
         
-    elseif ( segments(i,3) == 0)
-        color = 'k';
+    elseif ( boundaryNodes(i,2)  == 0)
+        color = 'k.';
         hold on
-        plot(nodes(segments(i,1:2),1),nodes(segments(i,1:2),2),color);
+        plot(nodes(boundaryNodes(i,1),1),nodes(boundaryNodes(i,1),2),color);
         
-    elseif ( segments(i,3) == 4)
-        color = 'g';
+    elseif ( boundaryNodes(i,2)  == 4)
+        color = 'go';
         hold on
-        plot(nodes(segments(i,1:2),1),nodes(segments(i,1:2),2),color);
+        plot(nodes(boundaryNodes(i,1),1),nodes(boundaryNodes(i,1),2),color);
+                
+    elseif ( boundaryNodes(i,2)  == 6)
+        color = 'mo';
+        hold on
+        plot(nodes(boundaryNodes(i,1),1),nodes(boundaryNodes(i,1),2),color);   
+        
         
     else
-        hold on
-        plot(nodes(segments(i,1:2),1),nodes(segments(i,1:2),2),'m');
-        
-        
+      
+         
     end
     
     
 end
 % 
+subplot(1,2,2)
+fill(nodes(boundaryNodes(:,1),1),nodes(boundaryNodes(:,1),2),'b')
+axis equal
 
 
-%% write files
-dlmwrite('../../problems/preform_updated/preform.nodes',[length(nodes),1],'delimiter',' ')
-dlmwrite('../../problems/preform_updated/preform.nodes',nodes,'-append','delimiter',' ')
 
+% 
+% 
+% write files
+dlmwrite('../../problems/preform/preform.nodes',[length(nodes),1],'delimiter',' ')
+dlmwrite('../../problems/preform/preform.nodes',nodes,'-append','delimiter',' ')
 
 %segments
-dlmwrite('../../problems/preform_updated/preform.segs',length(segments),'delimiter',' ')
-dlmwrite('../../problems/preform_updated/preform.segs',segments,'-append',.........
+dlmwrite('../../problems/preform/preform.boundary',length(boundaryNodes),'delimiter',' ')
+dlmwrite('../../problems/preform/preform.boundary',boundaryNodes,'-append',.........
     'delimiter',' ')
-
-
-
-
-
-outside_nodes = nodes(boundaryNodes(:,1),1:2);
-
-
 
