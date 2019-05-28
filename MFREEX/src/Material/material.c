@@ -153,7 +153,7 @@ state_variables ** new_material_states(double * temperatures, int num_Points, in
 
 			// Material constants
 			state[i]->gamma = 0.653e6;
-			state[i]->critLambdaBar = 100.00;
+			state[i]->critLambdaBar = 1.1;
 			state[i]->tau = 0;
 			state[i]->lambdaNMax = 1;
 
@@ -324,7 +324,7 @@ state_variables * new_material_state( double temperature, MATERIAL_TYPE mat_type
 
 			// Material constants
 			state->gamma = 0.653e6;
-			state->critLambdaBar = 100.00;
+			state->critLambdaBar = 1.1;
 			state->tau = 0;
 			state->lambdaNMax = 1;
 

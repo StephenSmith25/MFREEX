@@ -1,5 +1,6 @@
-close all
-clear all
-fh = plot(-10:10);
 
 
+
+
+
+[nodes(:,3)] = get_node_temperature(105,18,nodes(:,1),nodes(:,2));

@@ -5,6 +5,7 @@ close all;
 
 %% RADII
 
+tempProfile = xlsread('IRprofile_P_AND_G.xlsx');
 
 
 
@@ -54,15 +55,14 @@ NUM_NODES_SIDEWALL =40;
 NUM_NODES_SIDEWALL_1 =40;
 NUM_NODES_TAPER = 10;
 NUM_NODES_TAPER_1=12;
-NUM_NODES_SPHERICAL_CAP = 15;
-NUM_NODES_TOP_FIXTURE =5;
+NUM_NODES_SPHERICAL_CAP = 12;
+NUM_NODES_TOP_FIXTURE =4;
 NUM_NODES_TOP = NUM_NODES_THICKNESS+2;
 NUM_NODES_BOT_FIXTURE = 5;
 
-NUM_NODES_RADIUS_TAPER_IN = 9;
-NUM_NODES_RADIUS_TAPER_OUT = 7;
-
-
+NUM_NODES_RADIUS_TAPER_IN = 7;
+NUM_NODES_RADIUS_TAPER_OUT = 6;
+NUM_NODES_BOT_JOIN=2;
 
 % starting from 0,0
 nodes = [];
@@ -86,8 +86,8 @@ end
 % Left wall
 x_pos = nodes(end,1);
 y_pos = nodes(end,2);
-nodes(count:1:count+2,:) = [linspace(x_pos,RIN_BOT_SIDEWALL,3)',linspace(y_pos,0,3)'];
-count = count+3;
+nodes(count:1:count+NUM_NODES_BOT_JOIN-1,:) = [linspace(x_pos,RIN_BOT_SIDEWALL,NUM_NODES_BOT_JOIN)',linspace(y_pos,0,NUM_NODES_BOT_JOIN)'];
+count = count+NUM_NODES_BOT_JOIN;
 
 %% traction nodes
 nodes(count:1:count+NUM_NODES_SIDEWALL-1,:) = [linspace(RIN_BOT_SIDEWALL,RIN_TOP_SIDEWALL,NUM_NODES_SIDEWALL)',linspace(0,46.62,NUM_NODES_SIDEWALL)'];
@@ -253,8 +253,8 @@ end
 
 x_pos = nodes1(end,1);
 y_pos = nodes1(end,2);
-nodes1(count:1:count+2,:) = [linspace(x_pos,RADII_BOT_SIDEWALL(i+1),3)',linspace(y_pos,0,3)'];
-count = count+3;
+nodes1(count:1:count+NUM_NODES_BOT_JOIN-1,:) = [linspace(x_pos,RADII_BOT_SIDEWALL(i+1),NUM_NODES_BOT_JOIN)',linspace(y_pos,0,NUM_NODES_BOT_JOIN)'];
+count = count+NUM_NODES_BOT_JOIN;
 
 %Left wall
 %%traction nodes
@@ -302,8 +302,11 @@ nodes_total = [nodes;nodes1];
 
 nodes = nodes_total;
 nodes(:,2) = nodes(:,2) - min(nodes(:,2));
+
+
+
+
 % Find temperature of each node
-tempProfile = xlsread('IRprofile_P_AND_G.xlsx');
 tempProfile(:,2) = flipud(tempProfile(:,2));
 tempProfile(:,3) = flipud(tempProfile(:,3));
 
@@ -315,15 +318,7 @@ end
 for i = round ((length(nodes)+1)/2):length(nodes)
    nodes(i,3) = interp1q(tempProfile(:,1),tempProfile(:,2),nodes(i,2));
 end
-figure
 
-plot(nodes(:,1),nodes(:,2),'k.');
-hold on
-plot(nodes(boundaryNodes(:,1),1),nodes(boundaryNodes(:,1),2),'b-')
-axis off
-axis equal
-hold on
-C = [];
 
 
 %% plot segments
@@ -372,7 +367,8 @@ dlmwrite('../../problems/preform/preform.segs',segments,'-append',.........
 
 
 
-
+axis off
+axis equal
 
 outside_nodes = nodes(boundaryNodes(:,1),1:2);
 

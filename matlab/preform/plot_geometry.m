@@ -8,11 +8,14 @@ tri = csvread('./../../build/bin/preform/triangles.csv');
 
 stress_points = csvread('./../../build/bin/preform/stress_points.csv');
 
-plot_cells();
+%plot_cells();
 hold on
 plot(stress_points(:,1),stress_points(:,2),'r.');
 hold on
 plot(nodes(:,1),nodes(:,2),'b.');
+axis equal
+hold on
+triplot(tri,nodes(:,1),nodes(:,2));
 
 
 function [] = plot_cells()

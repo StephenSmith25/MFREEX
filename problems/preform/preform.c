@@ -44,11 +44,22 @@ const double TMAX = 0.5;
 double delta_t = 5e-7;
 
 // Meshfree parameters
-const double dmax =2.0;
+const double dmax =1.8;
 const double dmax_x =2;
 const double dmax_y =2;
 double beta = 1.2;
 
+
+
+// SIMULATION INPUTS
+double SIMULATION_TEMPERATURE = 97.45;
+double SIMULATION_LINE_PRESSURE = 0.8;
+ 
+
+double PRESASURE_DELAY = 0.014; // 0.015 for n6t105
+
+
+int numB3 = 8;
 
 
 char * basis_type = "linear";
@@ -59,11 +70,12 @@ char * kernel_shape = "radial";
 const int is_stabalised = 0;
 const int is_constant_support_size = 0;
 
-const int PLOT_POINT = 121;
+const int PLOT_POINT = 111;
 
 // stretch rod
-const double DISP_ROD_MAX = 90; // 132;
-	double v_rod = 350; // mm/s
+//const double DISP_ROD_MAX = 132; // N4T100;
+const double DISP_ROD_MAX = 128.3; // N2T100;
+	double v_rod = 500; // mm/s
 
 // 
 const int WITH_MOULD = 0;
@@ -110,13 +122,15 @@ int main(int argc, char** argv) {
 	matParams->ve[6] = (67.47); // Cv
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
-	matParams->ve[9] = 1.8e9; // Kb
+	matParams->ve[9] = 1.0e9; // Kb
 	matParams->ve[10] = 6e8;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
 	matParams->ve[14] = 0.001;// eta_c
 	matParams->ve[15] = 1.8098e17;// Ns_c
 	matParams->ve[16] = 1.38e-17;// boltzmann constant kB
+	
+
 	// slippage
 	// matParams->ve[17] = 100;// lambdaCrit
 	// matParams->ve[18] = 383.15;// Ts 
@@ -130,7 +144,7 @@ int main(int argc, char** argv) {
 
 	matParams->ve[17] = 100;// lambdaCrit
 	matParams->ve[18] = 383.15;// Ts 
-	matParams->ve[19] = 0.359e6;// gamma0_ref = 0.653
+	matParams->ve[19] = 0.319e6;// gamma0_ref = 0.653
 	matParams->ve[20] = 7307.8;// Cs 10612
 	matParams->ve[21] = 152.95;// Tinf 95.48
 	matParams->ve[22] = 0.1565;// C1
@@ -169,7 +183,7 @@ int main(int argc, char** argv) {
 	double Rg = 8.314;
 	double rLine = Rg/molarMass;
 	double gammaLine = 1.4;
-	double aReduced = 0.000154; //0.0003924;
+	double aReduced = 0.000154;//0.0003924; // 0.000154 // 0.000614
 	double vDead = (85*1000) ; /*  dead volume in mL -> mm^3 */
 
 	/* ------------------------------------------*/
@@ -177,15 +191,35 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 
 
-	// stretch rod polynomial
-	double a0 = -2.2264e7;
-	double a1 = 2.3704e7;
-	double a2 = -9.3769e6;
-	double a3 = 1.6212e6;
-	double a4 =-9.7380e4;
-	double a5 = -1.8801e3;
-	double a6 = 559.3131;
-	double a7 = 0.2565;
+	// stretch rod polynomial for N4T100
+	// double a0 = -2.2264e7;
+	// double a1 = 2.3704e7;
+	// double a2 = -9.3769e6;
+	// double a3 = 1.6212e6;
+	// double a4 =-9.7380e4;
+	// double a5 = -1.8801e3;
+	// double a6 = 559.3131;
+	// double a7 = 0;
+
+	// streth rod polynomial for N2T100
+	double a0 = -2.94e6;
+	double a1 = 3.8984e6;
+	double a2 = -1.8985e6;
+	double a3 = 3.8688e5;
+	double a4 =-1.9832e4;
+	double a5 = -2.5384e3;
+	double a6 = 472.5339;
+	double a7 = 0;
+
+	// stretch rod polynomial for N6T105
+	// double a0 = 5.4691e5;
+	// double a1 = -1.8203e6;
+	// double a2 = 1.9071e6;
+	// double a3 = -8.9036e5;
+	// double a4 =1.9474e5;
+	// double a5 = -1.7991e4;
+	// double a6 = 931.6448;
+	// double a7 = 0;
 
 
 	double stretchRodRad = 5.5;
@@ -596,7 +630,6 @@ int main(int argc, char** argv) {
 
 
 	// /*  EB3 */
-	int numB3 = 10;
 	IVEC * eb3_nodes = iv_get(numB3);
 	MAT * contact_nodes_coords = m_get(numB3,dim);
 
@@ -889,20 +922,25 @@ int main(int argc, char** argv) {
 		__mltadd__(v_n_h->ve, a_n->ve,delta_t,num_dof);
 
 
-		double x = t_n_1*smoothstep(t_n_1,0.03,0);
-		 double v_rod_poly = 7*a0*pow(x,6) + 6*a1*pow(x,5) + 5*a2*pow(x,4) + 4*a3*pow(x,3) + 3*a4*pow(x,2) 
-		 + 2*a5*pow(x,1) +a6;
-		//double v_rod_poly = 800;
-		v_rod_poly = v_rod*smoothstep(t_n_1,0.0003,0);
-		for ( int k = 0 ; k < eb3_nodes->max_dim ; k++)
-		{
-			int index = eb3_nodes->ive[k];
-			v_n_h->ve[2*index+1] = -v_rod_poly;				
-		
+		// double x = t_n_1*smoothstep(t_n_1,0.03,0);
+		//  double v_rod_poly = 7*a0*pow(x,6) + 6*a1*pow(x,5) + 5*a2*pow(x,4) + 4*a3*pow(x,3) + 3*a4*pow(x,2) 
+		//  + 2*a5*pow(x,1) +a6;
 
-		}
 
-		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
+
+		//  if ( disp_rod_n_1 < 132){
+
+		// 	disp_rod_n_1 += v_rod_poly * delta_t;
+
+		// 	for ( int k = 0 ; k < eb3_nodes->max_dim ; k++)
+		// 	{
+		// 		int index = eb3_nodes->ive[k];
+		// 		v_n_h->ve[2*index+1] = -v_rod_poly;				
+			
+
+		// 	}
+		// }
+		// __mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
 
 
 
@@ -919,89 +957,89 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 		/* -----------Contact Conditions-------------*/
 		/* ------------------------------------------*/
-		// __zero__(Fcont_n_1->ve, num_dof);
+		__zero__(Fcont_n_1->ve, num_dof);
 
-		// // STRETCH ROD 
-		// // update stretch rod position
-		// if ( disp_rod_n < DISP_ROD_MAX){
-		// /*  Update stretch rod */
-		// 	//double x = t_n_1*smoothstep(t_n_1,0.05,0);
-		// 	double x = t_n_1;
-		// 	//disp_rod_n_1 = a0*pow(x,7) + a1*pow(x,6) + a2*pow(x,5) + a3*pow(x,4) + a4*pow(x,3) + a5*pow(x,2) +a6*pow(x,1) + a7;
-		// 	//disp_rod_n_1 = disp_rod_n_1;
+		// STRETCH ROD 
+		// update stretch rod position
+		if ( disp_rod_n < DISP_ROD_MAX){
+		/*  Update stretch rod */
+			//double x = t_n_1*smoothstep(t_n_1,0.05,0);
+			double x = t_n_1;
+			disp_rod_n_1 = a0*pow(x,7) + a1*pow(x,6) + a2*pow(x,5) + a3*pow(x,4) + a4*pow(x,3) + a5*pow(x,2) +a6*pow(x,1) + a7;
+			//disp_rod_n_1 = disp_rod_n_1;
 
-		// 	disp_rod_n_1 += v_rod*delta_t;
+			//disp_rod_n_1 += v_rod*delta_t;
 
-		// 	for ( int i = 0 ; i < srNodes->m ; i++){
+			for ( int i = 0 ; i < srNodes->m ; i++){
 	
-		// 		//srNodes->me[i][1] = srNodes_O->me[i][1] + disp_rod_n_1;
-		// 		srNodes->me[i][1] = srNodes_O->me[i][1] - disp_rod_n_1;
+				//srNodes->me[i][1] = srNodes_O->me[i][1] + disp_rod_n_1;
+				srNodes->me[i][1] = srNodes_O->me[i][1] - disp_rod_n_1;
 
-		// 	}
-		// }
-		// //STRETCH ROD CONTACT CONDITIONS
+			}
+		}
+		//STRETCH ROD CONTACT CONDITIONS
 
-		// for ( int i = 0 ; i < eb3_nodes->max_dim ; i++){
+		for ( int i = 0 ; i < eb3_nodes->max_dim ; i++){
 
-		// 	neighbours = phi_contact->sf_list[i]->neighbours;
-		// 	phi = phi_contact->sf_list[i]->phi;
-		// 	testPoint->me[0][0] = updatedNodes->me[eb3_nodes->ive[i]][0];
-		// 	testPoint->me[0][1] = updatedNodes->me[eb3_nodes->ive[i]][1];
-		// 	distanceProj = contactDetection(testPoint,srNodes,msNormal);
-		// 	if (distanceProj > 0){
+			neighbours = phi_contact->sf_list[i]->neighbours;
+			phi = phi_contact->sf_list[i]->phi;
+			testPoint->me[0][0] = updatedNodes->me[eb3_nodes->ive[i]][0];
+			testPoint->me[0][1] = updatedNodes->me[eb3_nodes->ive[i]][1];
+			distanceProj = contactDetection(testPoint,srNodes,msNormal);
+			if (distanceProj > 0){
 
-		// 		f1Cor = (2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-		// 		f2Cor = (2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
-
-
-		// 		for ( int k = 0 ; k < neighbours->max_dim ; k++){
-		// 			Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
-		// 			Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
-		// 		}
-
-		// 	}
+				f1Cor = (2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
+				f2Cor = (2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb3_nodes->ive[i]])/pow(delta_t,2);
 
 
-		// }
-		// if ( WITH_MOULD == 1){
-		// // MOULD CONTACT CONDITIONS
-		// for ( int i = 0 ; i < eb4_nodes->max_dim ; i++){
+				for ( int k = 0 ; k < neighbours->max_dim ; k++){
+					Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
+					Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
+				}
 
-		// 	neighbours = phi_contact_mould->sf_list[i]->neighbours;
-		// 	phi = phi_contact_mould->sf_list[i]->phi;
-		// 	testPoint->me[0][0] = updatedNodes->me[eb4_nodes->ive[i]][0];
-		// 	testPoint->me[0][1] = updatedNodes->me[eb4_nodes->ive[i]][1];
-
-		// 	distanceProj = contactDetection(testPoint,mould_Nodes,msNormal);
-
-		// 	if (distanceProj > 0){
+			}
 
 
-		// 		f1Cor = (2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
-		// 		f2Cor = (2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
+		}
+		if ( WITH_MOULD == 1){
+		// MOULD CONTACT CONDITIONS
+		for ( int i = 0 ; i < eb4_nodes->max_dim ; i++){
+
+			neighbours = phi_contact_mould->sf_list[i]->neighbours;
+			phi = phi_contact_mould->sf_list[i]->phi;
+			testPoint->me[0][0] = updatedNodes->me[eb4_nodes->ive[i]][0];
+			testPoint->me[0][1] = updatedNodes->me[eb4_nodes->ive[i]][1];
+
+			distanceProj = contactDetection(testPoint,mould_Nodes,msNormal);
+
+			if (distanceProj > 0){
 
 
-		// 		for ( int k = 0 ; k < neighbours->max_dim ; k++){
-		// 			Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
-		// 			Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
-		// 		}
-
-		// 	}
+				f1Cor = (2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
+				f2Cor = (2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
 
 
-		// }
-		// }
+				for ( int k = 0 ; k < neighbours->max_dim ; k++){
+					Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
+					Fcont_n_1->ve[2*neighbours->ive[k]+1] += phi->ve[k]*f2Cor; 
+				}
+
+			}
 
 
-		// // /*  Find a corrective acceleration - method in pronto 3D manual*/
-		// for ( int i = 0 ; i < numnodes  ; i++ )
-		// {
-		// 	a_n->ve[2*i] = Fcont_n_1->ve[2*i]*inv_nodal_mass->ve[i];
-		// 	a_n->ve[2*i+1] = Fcont_n_1->ve[2*i+1]*inv_nodal_mass->ve[i];
-		// }
+		}
+		}
 
-		// __mltadd__(v_n_h->ve, a_n->ve,delta_t,num_dof);
-		// __mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
+
+		// /*  Find a corrective acceleration - method in pronto 3D manual*/
+		for ( int i = 0 ; i < numnodes  ; i++ )
+		{
+			a_n->ve[2*i] = Fcont_n_1->ve[2*i]*inv_nodal_mass->ve[i];
+			a_n->ve[2*i+1] = Fcont_n_1->ve[2*i+1]*inv_nodal_mass->ve[i];
+		}
+
+		__mltadd__(v_n_h->ve, a_n->ve,delta_t,num_dof);
+		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
 
 
 		/* ------------------------------------------*/
@@ -1112,10 +1150,18 @@ int main(int argc, char** argv) {
 		/* ------------------------------------------*/
 		/* ------------Find External Force-----------*/
 		/* ------------------------------------------*/
+		
+
+
 		__zero__(Fext_n_1->ve,num_dof);
-		/*  Find Cavity volume */
+
+
+
 		volume = cavityVolume(traction_nodes,updatedNodes);
 
+		if ( t_n_1 > PRESASURE_DELAY)
+		{
+		/*  Find Cavity volume */
 		pLine_n = pLine;
 		
 		/*  Find Cavity pressure */
@@ -1126,6 +1172,9 @@ int main(int argc, char** argv) {
 			massAir += flowRate(pRatio,tLine,pLine_n*1e6, rLine, aReduced,gammaLine)*delta_t;
 		}
 		pre_n_1 = ((P0*(volume - volumeInitial) + 1000*massAir*rLine*tLine)/(volume+vDead));
+		}else{
+			pre_n_1 = 1e-9;
+		}
 
 		/*  Update pressure load */
 		update_pressure_boundary(pB, updatedNodes);
@@ -1253,8 +1302,8 @@ int main(int argc, char** argv) {
 
 
 		if ( n % WRITE_FREQ == 0)
-			printf("%i  \t  %lf %10.2E %lf %lf %lf %lf %10.2E \n",n,t_n,Wbal,
-				pre_n_1,disp_rod_n,v_rod,volume/1e3,delta_t);
+			printf("%i  \t  %lf %10.2E %lf %lf %lf %10.2E \n",n,t_n,Wbal,
+				pre_n_1,disp_rod_n_1,volume/1e3,delta_t);
 
 
 

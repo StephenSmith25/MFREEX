@@ -28,7 +28,7 @@ numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
 
-plot_point =122; %%2241
+plot_point =123; %%2241
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.csv');
 disp = csvread(filename,1);
 
@@ -91,6 +91,9 @@ ymax = max(disp(:,2));
 
 
 
+
+
+
 c = [[disp(:,1);-disp(:,1)],[disp(:,2);disp(:,2)]]
 
 
@@ -115,7 +118,19 @@ Rout = max(disp(:,1));
 height = max(disp(:,2));
 
 
+hold on
+filename = strcat(pathSR,'srRod_',num2str(plotFiles(1)),'.csv');
+disp = csvread(filename,1);
+hold on
+plot(disp(:,1),disp(:,2),'r');
+hold on
+plot(-disp(:,1),disp(:,2),'r');
 
+
+c = [[disp(1:end-1,1);-disp(end:-1:1,1)],[disp(1:end-1,2);disp(end:-1:1,2)]]
+
+
+save('disp_rod_tstart.dat', 'c', '-ascii', '-double', '-tabs')
 
 hold on
 xlim([-50,50])
@@ -161,7 +176,18 @@ hold on
 %plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 %plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
-filename = strcat(pathSR,'srRod_',num2str(plotFiles(6)),'.csv');
+filename = strcat(pathSR,'srRod_',num2str(plotFiles(5)),'.csv');
+disp = csvread(filename,1);
+hold on
+plot(disp(:,1),disp(:,2),'r');
+hold on
+plot(-disp(:,1),disp(:,2),'r');
+
+
+c = [[disp(1:end-1,1);-disp(end:-1:1,1)],[disp(1:end-1,2);disp(end:-1:1,2)]]
+
+
+save('disp_rod_tmid.dat', 'c', '-ascii', '-double', '-tabs')
 xlim([-50,50])
 ylim([-170,ymax])
 
@@ -200,6 +226,21 @@ hold on
 c = [[disp(:,1);-disp(:,1)],[disp(:,2);disp(:,2)]]
 save('disp_tend.dat', 'c', '-ascii', '-double', '-tabs')
 
+hold on
+filename = strcat(pathSR,'srRod_',num2str(plotFiles(10)),'.csv');
+disp = csvread(filename,1);
+hold on
+plot(disp(:,1),disp(:,2),'r');
+hold on
+plot(-disp(:,1),disp(:,2),'r');
+
+
+c = [[disp(1:end-1,1);-disp(end:-1:1,1)],[disp(1:end-1,2);disp(end:-1:1,2)]]
+
+
+save('disp_rod_tend.dat', 'c', '-ascii', '-double', '-tabs')
+
+
 
 
 axis equal
@@ -227,7 +268,7 @@ save('pressure_num.dat', 'm', '-ascii', '-double', '-tabs')
 
 b = csvread("../preform/Experimental/N2T100_exp_pressure.csv");
 hold on
-plot(b(:,1)-0.014,b(:,2),'b--')
+plot(b(:,1)+0.014,b(:,2),'b--')
 b(:,2) = b(:,2);
 
 
@@ -239,7 +280,7 @@ save('pressure_exp.dat', 'b', '-ascii', '-double', '-tabs')
 c = csvread("../preform/Experimental/N2T100_fe_pressure.csv");
 
 hold on
-plot(c(:,1)-0.014,c(:,2),'r--')
+plot(c(:,1),c(:,2),'r--')
 
 c(:,2) = c(:,2);
 

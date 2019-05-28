@@ -12,7 +12,6 @@ TMAX = 0.3;
 
 
 
-
 path = './../../build/bin/preform/Displacement/';
 pathSR = './../../build/bin/preform/srRod/';
 boundaryNodes = csvread('./../../build/bin/preform/boundary.txt');
@@ -28,7 +27,7 @@ numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
 
-plot_point =122; %%2241
+plot_point =113; %%2241
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.csv');
 disp = csvread(filename,1);
 
@@ -86,7 +85,10 @@ plot(disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
 ymax = max(disp(:,2));
-
+hold on
+plot(-disp(plot_point,1),disp(plot_point,2),'r*')
+hold on
+plot(disp(plot_point,1),disp(plot_point,2),'r*')
 
 
 
@@ -145,6 +147,10 @@ plot(disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
 hold on
 plot(-disp(:,1),disp(:,2),'k.','markersize',3) % line plot
 hold on
+hold on
+plot(-disp(plot_point,1),disp(plot_point,2),'r*')
+hold on
+plot(disp(plot_point,1),disp(plot_point,2),'r*')
 
 
 c = [[disp(:,1);-disp(:,1)],[disp(:,2);disp(:,2)]]
@@ -195,6 +201,10 @@ hold on
 %plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
 %plot(disp(plot_point,1),disp(plot_point,2),'r*')
+hold on
+plot(-disp(plot_point,1),disp(plot_point,2),'r*')
+hold on
+plot(disp(plot_point,1),disp(plot_point,2),'r*')
 
 
 c = [[disp(:,1);-disp(:,1)],[disp(:,2);disp(:,2)]]

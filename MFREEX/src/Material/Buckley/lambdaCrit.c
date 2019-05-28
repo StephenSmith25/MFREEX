@@ -27,6 +27,8 @@ double lambdaCrit(double critLambda_n, state_variables * state, VEC * para, doub
 	int  index = 0;
 	int dim = lambdaDot->max_dim;
 	MAT * Dbar = state->dbar;
+	
+
 
 
 	// Find maximum strain rate 
@@ -94,8 +96,13 @@ double lambdaCrit(double critLambda_n, state_variables * state, VEC * para, doub
 	double shifted_temperature = temperature*shift_factor;
 	critLambda = k * shifted_temperature + b;
 
+
+	//if ( critLambda < critLambda_n)
+	//		return critLambda_n;
+	
 	// return
 	return critLambda;
+
 
 
 
