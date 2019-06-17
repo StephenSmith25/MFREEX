@@ -50,7 +50,10 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 		if ( stateOld->lambdaNMax < stateNew->critLambdaBar){
 			gamma_n_1 = gammaV(stateNew,stateOld->lambdaNMax,
 				stateNew->critLambdaBar,para, deltaT);
-			sm_mlt(1.0000/gamma_n_1,stateOld->Sc_R,Ds);
+
+
+			//printf("gamma_n_1 = %lf \n",gamma_n_1);
+			sm_mlt(1.0000/(2*gamma_n_1),stateOld->Sc_R,Ds);
 
 		}else{
 			Ds = m_zero(Ds);
@@ -103,7 +106,6 @@ int buckleyConf(state_variables * stateNew, state_variables * stateOld,
 	// double lambda1 = exp(stateNew->ep_n->me[0][0]);
 	// double lambda2 = exp(stateNew->ep_n->me[1][1]);
 	// double lambda3 = exp(stateNew->ep_n->me[2][2]);
-
 
 	double lambda1 = exp(eigValB->ve[0]);
 	double lambda2 = exp(eigValB->ve[1]);

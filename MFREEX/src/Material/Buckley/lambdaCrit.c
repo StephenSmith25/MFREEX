@@ -39,14 +39,18 @@ double lambdaCrit(double critLambda_n, state_variables * state, VEC * para, doub
 
 	double maxSr = max(V1,V2);
 	maxSr = max(maxSr,V3);
+	state->maxSr = maxSr;
 
-	//double maxSr = v_max(state->lambdaDot, &index);
+	//maxSr = v_max(state->lambdaDot, &index);
 
-	if ( maxSr == 0){
-	 	maxSr = 0.01; 
+
+	if ( maxSr < 1.0){
+	 	maxSr = 1.00; 
 	}
 
-
+	// if (maxSr > 50){
+	// 	maxSr = 50;
+	// }
 
 	double D1 = 0;
 	double D2 = 0;
@@ -75,12 +79,13 @@ double lambdaCrit(double critLambda_n, state_variables * state, VEC * para, doub
 
 	xi = (2*theta + 1.00)/(theta+2.00);
 
-	if ( xi > 0)
+	if ( xi > 1)
 	{
 		xi = 1;
-	}else if ( xi < -1)
+
+	}else if ( xi < 0)
 	{
-		xi = -1;
+		xi = 0;
 	}
 
 
@@ -91,9 +96,22 @@ double lambdaCrit(double critLambda_n, state_variables * state, VEC * para, doub
 	double k =  para->ve[29];
 	double b = para->ve[30];
 
+	C1 = -1.125e-2;
+	C2 = 4.5850;
+	beta = 0.97884;
+	k = -2.5322e-2;
+	b = 1.1552e1;
+
+
+
+
 	// Shifted temperature 
 	double shift_factor = pow(10,(C1*(maxSr-1.00)/(C2 + maxSr -1.00))*pow(beta,2-2*xi)   );
+
+
 	double shifted_temperature = temperature*shift_factor;
+
+
 	critLambda = k * shifted_temperature + b;
 
 

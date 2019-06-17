@@ -154,6 +154,7 @@ typedef struct state_variables
 	MAT * Ubar;
 	MAT * delta_Ubar;
 	MAT * delta_ep_bar;
+	double maxSr;
 
 	// Conformational branch network left cauchy green tensor
 	MAT * Bbar;

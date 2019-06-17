@@ -55,8 +55,12 @@ voronoi_diagram * generate_voronoi(double *points, int * boundary, int numPoints
 
 
 
+
 	// generate clipped voronoi diagram
 	gpc_polygon ** voronoi_1 = callVoronoi(points,numPoints);
+
+
+
 	clipVoronoi(&voronoi_1,points,boundary,numPoints,numBoundary);
 
 

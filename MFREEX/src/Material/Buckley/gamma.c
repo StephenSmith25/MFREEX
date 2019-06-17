@@ -52,8 +52,19 @@ double gammaV(state_variables * state, double maxLambdaN,double critLambda,
 
 	double maxSr = max(V1,V2);
 	maxSr = max(maxSr,V3);
+	state->maxSr = maxSr;
 
-	//double maxSr = v_max(state->lambdaDot, &indx);
+	if (maxSr > 50){
+		maxSr = 50;
+	}
+
+	//maxSr = v_max(state->lambdaDot, &indx);
+
+	if ( maxSr < 1)
+	{
+		maxSr = 1;
+	}
+
 
 	double log2sr = log2(maxSr);
 	if ( maxSr < 0.01){
@@ -97,17 +108,36 @@ double gammaV(state_variables * state, double maxLambdaN,double critLambda,
 	}
 
 
+	double N = 0.334; // LAST GUESS 0.40
+	double K = (1.6322e6); // LAST GUESS 0.75
+	double DM = 1.48;
+	double star_T = 383;
+	double C_s = 2.5895e2;
+	double vogel_t = 3.3491e2;
+
+	double effSR = maxSr * pow(DM,(2.00*xi - 1.00) / (2.00 - xi) );
+	 effSR = maxSr;
 
 
-	double shiftTemperature = temperature * 
-	pow(10, ( ( shiftTSlope*log2sr ) / ( shiftTIntercept + log2sr))*pow(beta,2-2*xi)   );
-	gamma0 = exp( Cs/(shiftTemperature - Tinf) - Cs/(starT - Tinf));
-	gamma0 = gamma0*refGamma;
+	double refGamma0 = K*pow(effSR,N-1);
+
+	gamma0 = refGamma0* exp(       C_s/(temperature - vogel_t) - C_s/(star_T - vogel_t)      );
+
+
+
+
+
+
+	 double shiftTemperature = temperature * 
+	  pow(10, ( ( shiftTSlope*log2sr ) / ( shiftTIntercept + log2sr))*pow(beta,2-2*xi)   );
+
+	  gamma0 = exp(       Cs/(shiftTemperature - Tinf) - Cs/(starT - Tinf)      );
+	  gamma0 = gamma0*refGamma;
 
 	if ( maxLambdaN >= critLambda ){
 		gamma_n_1 = 1e50;
 	}else{
-		gamma_n_1 = gamma0/( 1 - maxLambdaN/critLambda);
+		gamma_n_1 = 1*gamma0/( 1 - maxLambdaN/critLambda);
 	}
 
 	state->gamma = gamma_n_1; 

@@ -1,7 +1,7 @@
 
 
 close all
-clear all 
+clear all
 
 N = csvread('./../../build/bin/biaxial/Stress_11_nominal.txt');
 
@@ -34,7 +34,7 @@ trueStress_S = N(:,2);
 
 hold on
 
-plot(nominalStrain_S(1:100:end),trueStress_S(1:100:end),'k+')
+plot(nominalStrain_S(1:10:end),trueStress_S(1:10:end),'k')
 
 
 %set axis

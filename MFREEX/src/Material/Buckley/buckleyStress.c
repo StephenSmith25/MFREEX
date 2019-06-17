@@ -98,30 +98,32 @@ buckleyStress(state_variables * stateNew,
 			// m_sub(stateNew->delta_Ubar,ident,stateNew->delta_ep_bar);
 	
 			// Find Vbar dot
-			m_zero(stateNew->m_temp1);
-			m_zero(stateNew->m_temp2);
+			// m_zero(stateNew->m_temp1);
+			// m_zero(stateNew->m_temp2);
 
-			sm_mlt(pow(stateOld->Jacobian,-1.00/3.00)/dt,stateOld->V,stateNew->m_temp1);
-			sm_mlt(pow(stateNew->Jacobian,-1.00/3.00)/dt,stateNew->V,stateNew->m_temp2);
-			m_sub(stateNew->m_temp2,stateNew->m_temp1,stateNew->Vdot);
+			// sm_mlt(pow(stateOld->Jacobian,-1.00/3.00)/dt,stateOld->V,stateNew->m_temp1);
+			// sm_mlt(pow(stateNew->Jacobian,-1.00/3.00)/dt,stateNew->V,stateNew->m_temp2);
+			// m_sub(stateNew->m_temp2,stateNew->m_temp1,stateNew->Vdot);
 
-			m_zero(stateNew->m_temp1);
-			mtrm_mlt(stateNew->R,stateNew->Vdot,stateNew->m_temp1);
-			m_mlt(stateNew->m_temp1,stateNew->R,stateNew->Vdot);
+			// m_zero(stateNew->m_temp1);
+			// mtrm_mlt(stateNew->R,stateNew->Vdot,stateNew->m_temp1);
+			// m_mlt(stateNew->m_temp1,stateNew->R,stateNew->Vdot);
 
 
 			/* ------------------------------------------*/
 			/* ----------Eigen value routines------------*/
 			/* ------------------------------------------*/
 
+			sm_mlt(pow(stateNew->Jacobian,-1.00/3.00),stateNew->Vdot,stateNew->Vdot);
 
 			dsyevc3(stateNew->Vdot->me, stateNew->lambdaDot->ve);
+			// sm_mlt(pow(stateOld->Jacobian,-1.00/3.00)/dt,stateOld->V,stateNew->m_temp1);
 
 			// update critical network stretch 
 			stateNew->critLambdaBar =lambdaCrit(stateOld->critLambdaBar,stateNew,
 				matParams, stateNew->temperature, dt);
 
-			//stateNew->critLambdaBar = 2.7;
+			//stateNew->critLambdaBar = 1.5;
 
 
 			/* ------------------------------------------*/

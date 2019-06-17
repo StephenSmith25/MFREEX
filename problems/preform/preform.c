@@ -40,11 +40,11 @@ const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
 // time step parameters
-const double TMAX = 0.5;
+const double TMAX = 0.8;
 double delta_t = 5e-7;
 
 // Meshfree parameters
-const double dmax =1.8;
+const double dmax =2.0;
 const double dmax_x =2;
 const double dmax_y =2;
 double beta = 1.2;
@@ -54,9 +54,9 @@ double beta = 1.2;
 // SIMULATION INPUTS
 double SIMULATION_TEMPERATURE = 97.45;
 double SIMULATION_LINE_PRESSURE = 0.8;
- 
+double STRETCH_ROD_DELAY = 0; // 0.014
 
-double PRESASURE_DELAY = 0.014; // 0.015 for n6t105
+double PRESASURE_DELAY = 0.008; // 0.014 for n6t105 
 
 
 int numB3 = 8;
@@ -70,12 +70,12 @@ char * kernel_shape = "radial";
 const int is_stabalised = 0;
 const int is_constant_support_size = 0;
 
-const int PLOT_POINT = 111;
+const int PLOT_POINT = 128;
 
 // stretch rod
 //const double DISP_ROD_MAX = 132; // N4T100;
-const double DISP_ROD_MAX = 128.3; // N2T100;
-	double v_rod = 500; // mm/s
+const double DISP_ROD_MAX = 100; // N2T100;
+	double v_rod = 1000; // mm/s
 
 // 
 const int WITH_MOULD = 0;
@@ -116,18 +116,18 @@ int main(int argc, char** argv) {
 	matParams->ve[0] = 2.814e-3; // VS
 	matParams->ve[1] = 0.526e-3; // VP
 	matParams->ve[2] = (1.7057e6); // mu*_0
-	matParams->ve[3] = (328.76); // Tinf
+	matParams->ve[3] = (336.61); // Tinf 328.76
 	matParams->ve[4] = 358.15; // T*
 	matParams->ve[5] = matParams->ve[4]; // Tf*
-	matParams->ve[6] = (67.47); // Cv
+	matParams->ve[6] = (67.47); // Cv 67.47
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
-	matParams->ve[9] = 1.0e9; // Kb
+	matParams->ve[9] = 0.35e9; // Kb
 	matParams->ve[10] = 6e8;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
 	matParams->ve[14] = 0.001;// eta_c
-	matParams->ve[15] = 1.8098e17;// Ns_c
+	matParams->ve[15] = 1.8859e17;// Ns_c
 	matParams->ve[16] = 1.38e-17;// boltzmann constant kB
 	
 
@@ -142,22 +142,31 @@ int main(int argc, char** argv) {
 	// matParams->ve[24] = 0.9878;// beta
 	// matParams->ve[25] = 0.33;// poissons ratio
 
-	matParams->ve[17] = 100;// lambdaCrit
-	matParams->ve[18] = 383.15;// Ts 
-	matParams->ve[19] = 0.319e6;// gamma0_ref = 0.653
-	matParams->ve[20] = 7307.8;// Cs 10612
-	matParams->ve[21] = 152.95;// Tinf 95.48
-	matParams->ve[22] = 0.1565;// C1
-	matParams->ve[23] = 39.937;// C2
-	matParams->ve[24] = 0.9878;// beta
-	matParams->ve[25] = 0.33;// poissons ratio
+
+	 matParams->ve[17] = 100;// lambdaCrit
+	 matParams->ve[18] = 383.15;// Ts 
+	 matParams->ve[19] = 0.353e6;// gamma0_ref = 0.653
+	 matParams->ve[20] = 7307.8;// Cs 10612
+	 matParams->ve[21] = 152.95;// Tinf 152.95
+	 matParams->ve[22] = 0.1565;// C1
+	 matParams->ve[23] = 39.937;// C2
+	 matParams->ve[24] = 0.9878;// beta
+	 matParams->ve[25] = 0.33;// poissons ratio
 
 
 	// // new stuff
-	// matParams->ve[2] = (1.8165e6); // mu*_0
-	// matParams->ve[3] = (342.61); // Tinf
-	// matParams->ve[6] = (56.09); // Cv
-	
+	//matParams->ve[2] = (1.8165e6 );
+	//matParams->ve[3] = (345.61 ) ; // Tinf 342.61
+	//matParams->ve[6] = (56.09  ); // Cv
+	//matParams->ve[2] = (2e6 ); // mu*_0
+	//matParams->ve[2] = (1.8165e6 + (1.7057e6))/2.00; // mu*_0
+ 	//matParams->ve[3] = (342.61 + (328.76) )/2.00 ; // Tinf
+	//matParams->ve[6] = (56.09+(67.47))/2.00; // Cv
+
+
+	// matParams->ve[2] = (0.00/4.00)*(1.8165e6) + (4.000/4.00)*(1.7057e6); // mu*_0
+	// matParams->ve[3] = (0.00/4.00)*(342.61)+ (4.00/4.00)*(328.76); // Tinf
+	// matParams->ve[6] = (0.00/4.00)*(56.09)+ (4.00/4.00)*(67.47); // Cv
 	// crit lambda properties
 	matParams->ve[26] = -0.0111; // C1
 	matParams->ve[27] = 3.627; // C2
@@ -167,6 +176,12 @@ int main(int argc, char** argv) {
 	matParams->ve[31] = rho; // b 
 
 
+	 //matParams->ve[0] = 2.1537e-3; // VS
+	 //matParams->ve[1] = 0.4027419e-3; // VP
+	// matParams->ve[2] = 4.9117e6; // mu*_0
+	// matParams->ve[3] = 348.91; // Tinf
+	// matParams->ve[4] = 358.15; // T*
+	// matParams->ve[6] = 2.2516e1; // Cv
 
 
 	/* ------------------------------------------*/
@@ -177,13 +192,13 @@ int main(int argc, char** argv) {
 	double P0 = 0;
 	double tLine = 304.724;
 	double pLine = 0.8; // 0.6 Mpa;
-	double pLine_FINAL = 3;
 	double aReduced_final = 0.001;
 	double molarMass = 29;
 	double Rg = 8.314;
 	double rLine = Rg/molarMass;
 	double gammaLine = 1.4;
-	double aReduced = 0.000154;//0.0003924; // 0.000154 // 0.000614
+	double aReduced = 7.67e-5;//0.0003924; // 0.000154 // 0.000614 // 0.000585
+	// Flow rates N8 - 0.00092, N5 - 0.00049 , N2 - 7.67e-5
 	double vDead = (85*1000) ; /*  dead volume in mL -> mm^3 */
 
 	/* ------------------------------------------*/
@@ -193,36 +208,36 @@ int main(int argc, char** argv) {
 
 	// stretch rod polynomial for N4T100
 	// double a0 = -2.2264e7;
-	// double a1 = 2.3704e7;
-	// double a2 = -9.3769e6;
-	// double a3 = 1.6212e6;
-	// double a4 =-9.7380e4;
-	// double a5 = -1.8801e3;
-	// double a6 = 559.3131;
-	// double a7 = 0;
+	//  double a1 = 2.3704e7;
+	//  double a2 = -9.3769e6;
+ // 	double a3 = 1.6212e6;
+	//  double a4 =-9.7380e4;
+	//  double a5 = -1.8801e3;
+	//  double a6 = 559.3131;
+	//  double a7 = 0;
 
 	// streth rod polynomial for N2T100
-	double a0 = -2.94e6;
-	double a1 = 3.8984e6;
-	double a2 = -1.8985e6;
-	double a3 = 3.8688e5;
-	double a4 =-1.9832e4;
-	double a5 = -2.5384e3;
-	double a6 = 472.5339;
-	double a7 = 0;
-
-	// stretch rod polynomial for N6T105
-	// double a0 = 5.4691e5;
-	// double a1 = -1.8203e6;
-	// double a2 = 1.9071e6;
-	// double a3 = -8.9036e5;
-	// double a4 =1.9474e5;
-	// double a5 = -1.7991e4;
-	// double a6 = 931.6448;
+	// double a0 = -7.5604e4;
+	// double a1 = 7.3641e4;
+	// double a2 = 5.0745e4;
+	// double a3 = -8.9995e4;
+	// double a4 =3.8882e4;
+	// double a5 = -6.2235e3;
+	// double a6 = 603.1885;
 	// double a7 = 0;
 
+	// stretch rod polynomial for N6T105
+	double a0 = 5.4691e5;
+	double a1 = -1.8203e6;
+	double a2 = 1.9071e6;
+	double a3 = -8.9036e5;
+	double a4 =1.9474e5;
+	double a5 = -1.7991e4;
+	double a6 = 931.6448;
+	double a7 = 0;
 
-	double stretchRodRad = 5.5;
+
+	double stretchRodRad = 5.00;
 	int numPointsRod = 15;
 
 	MAT * srNodes = m_get(numPointsRod+2,2);
@@ -232,7 +247,7 @@ int main(int argc, char** argv) {
 		double theta = -PI/2.00 + (PI/2/(numPointsRod-1))*i;
 		srNodes->me[i][0] = stretchRodRad*cos(theta);
 		// either 10.3 or 9
-		srNodes->me[i][1] =9.1+stretchRodRad*sin(theta);
+		srNodes->me[i][1] = -88.5 + stretchRodRad*sin(theta);
 		srNodes_O->me[i][0] = srNodes->me[i][0];
 		srNodes_O->me[i][1] = srNodes->me[i][1];
 	}
@@ -606,7 +621,7 @@ int main(int argc, char** argv) {
 	eb1->dofFixed = 3;
 	getBoundary(&eb1->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,5);
 	//iv_addNode(eb1->nodes,traction_nodes->ive[0],'s');
-	//iv_addNode(eb1->nodes,traction_nodes->ive[traction_nodes->max_dim -1  ],'s');
+	iv_addNode(eb1->nodes,traction_nodes->ive[traction_nodes->max_dim -1  ],'s');
 
 	int num_nodes_eb1 = eb1->nodes->max_dim;
 	setUpBC(eb1,inv_nodal_mass,&mfree);
@@ -626,6 +641,20 @@ int main(int argc, char** argv) {
 
 
 	m_foutput(stdout,eb2->coords);
+
+
+	// /*  EB5 */
+	// EBC * eb5 = malloc(1*sizeof(EBC));
+	// eb5->dofFixed = 3;
+	// getBoundary(&eb5->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,7);
+
+	// int num_nodes_eb5 = eb5->nodes->max_dim;
+	// setUpBC(eb5,inv_nodal_mass,&mfree);
+
+	// m_foutput(stdout,eb5->coords);
+
+
+
 
 
 
@@ -669,6 +698,7 @@ int main(int argc, char** argv) {
 	shape_function_container * phi_contact_mould = mls_shapefunction(contact_mould_nodes_coords,  1, &mfree);
 
 	m_foutput(stdout,contact_mould_nodes_coords);
+
 
 
 	/* ------------------------------------------*/
@@ -792,6 +822,8 @@ int main(int argc, char** argv) {
 	eb1->uBar2 = v_get(eb1->nodes->max_dim);
 	eb2->uBar1 = v_get(eb2->nodes->max_dim);
 	eb3->uBar2 = v_get(eb3->nodes->max_dim);
+	// eb5->uBar1 = v_get(eb5->nodes->max_dim);
+	// eb5->uBar2 = v_get(eb5->nodes->max_dim);
 
 
 	VEC * v_correct = v_get(num_dof);
@@ -965,10 +997,10 @@ int main(int argc, char** argv) {
 		/*  Update stretch rod */
 			//double x = t_n_1*smoothstep(t_n_1,0.05,0);
 			double x = t_n_1;
-			disp_rod_n_1 = a0*pow(x,7) + a1*pow(x,6) + a2*pow(x,5) + a3*pow(x,4) + a4*pow(x,3) + a5*pow(x,2) +a6*pow(x,1) + a7;
+			//disp_rod_n_1 = a0*pow(x,7) + a1*pow(x,6) + a2*pow(x,5) + a3*pow(x,4) + a4*pow(x,3) + a5*pow(x,2) +a6*pow(x,1) + a7;
 			//disp_rod_n_1 = disp_rod_n_1;
 
-			//disp_rod_n_1 += v_rod*delta_t;
+			disp_rod_n_1 += v_rod*delta_t;
 
 			for ( int i = 0 ; i < srNodes->m ; i++){
 	
@@ -1068,7 +1100,18 @@ int main(int argc, char** argv) {
 			v_n_h->ve[2*k] += v_correct->ve[k];
 		}
 
+		// // Symmetry boundary /
+		// enforceBC(eb5,d_n_1); 
+		// sv_mlt(1.00/(delta_t),eb5->uCorrect1,v_correct);
+		// for ( int k = 0 ; k < v_correct->max_dim; k++){
+		// 	v_n_h->ve[2*k] += v_correct->ve[k];
+		// }
 
+		// // Symmetry boundary /
+		// sv_mlt(1.00/(delta_t),eb5->uCorrect2,v_correct);
+		// for ( int k = 0 ; k < v_correct->max_dim; k++){
+		// 	v_n_h->ve[2*k+1] += v_correct->ve[k];
+		// }
 		// eb3 /
 
 
@@ -1116,13 +1159,18 @@ int main(int argc, char** argv) {
 			fprintf(fp,"%lf %lf\n",t_n_1,pre_n_1);
 			fclose(fp);
 
-	
+
 
 			/* ------------------------------------------*/
 			/* --------------Print Outputs--------------*/
 			/* ------------------------------------------*/
 			state_variables * stateNew = material_points->MP[PLOT_POINT]->stateNew;
+			int index = 0;
+			double maxSr = stateNew->maxSr;
+
 			stateNew->F->me[2][1] = t_n_1;
+			stateNew->F->me[2][0] = maxSr;
+			stateNew->F->me[1][2] = stateNew->critLambdaBar;
 
 			snprintf(filename, 50, "strain_%d%s",fileCounter,".txt");
 			mat2csv(stateNew->F,"./History/Strain",filename);
@@ -1134,8 +1182,10 @@ int main(int argc, char** argv) {
 			mat2csv(stateNew->Sb,"./History/Stress",filename);
 			snprintf(filename, 50, "Conformational_Stress_%d%s",fileCounter,".txt");
 			mat2csv(stateNew->Sc,"./History/Stress",filename);
-			stateNew->F->me[2][1] = 0;
 
+			stateNew->F->me[2][1] = 0;
+			stateNew->F->me[1][2] = 0;
+			stateNew->F->me[2][0] = 0;
 
 			fileCounter++;
 
@@ -1158,6 +1208,12 @@ int main(int argc, char** argv) {
 
 
 		volume = cavityVolume(traction_nodes,updatedNodes);
+
+
+		// if ( volume < volume_t)
+		// 	volume = volume_t;
+		// else
+		// 	volume_t = volume;
 
 		if ( t_n_1 > PRESASURE_DELAY)
 		{

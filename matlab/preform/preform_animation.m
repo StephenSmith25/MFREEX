@@ -70,7 +70,7 @@ disp_1 = csvread(filename,1);
 
     set(gcf,'color','w');
     
-   ylim([-140,height+5])
+   ylim([-250,0])
    xlim([-40,40])
     axis off
     axis equal

@@ -7,7 +7,7 @@ PLOT_DOMAINS_INFLUENCE = true;
 
 
 WITH_MOULD = false; 
-TMAX = 0.35;
+TMAX = 0.30;
 
 
 
@@ -28,7 +28,7 @@ numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
 
-plot_point =112; %%2241
+plot_point =314; % 112%%2241
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.csv');
 disp = csvread(filename,1);
 
@@ -89,8 +89,8 @@ ymax = max(disp(:,2));
 
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 
-[ix] = find(disp(:,2) >34);
-[iys] = ix(find(disp(ix,2) <36));
+[ix] = find(disp(:,2) >33);
+[iys] = ix(find(disp(ix,2) <35));
 ab = disp(iys,:);
 
 c = [[disp(:,1);-disp(:,1)],[disp(:,2);disp(:,2)]]
@@ -351,7 +351,8 @@ for i = 1:length(plotFiles)
         strain(2,1) strain(2,2) 0;
         0 0 strain(3,3)]  ;
     
-    
+        F = det(F)^(-1/3)*F;
+
     [R U V] = poldecomp(F);
     
     
@@ -471,7 +472,7 @@ save('strain_hoop_FE.dat', 'c', '-ascii', '-double', '-tabs')
 
 hold on
 plot(c(:,1),c(:,2),'r--')
-
+ylim([-0.1,1.5])
 xlim([0,TMAX])
 
 
@@ -632,12 +633,6 @@ grid on
 print -dpng2 stress.png
 
 figure 
-
-subplot(1,2,1)
-plot(time,gamma);
-
-
-subplot(1,2,2)
 plot(time,crit_lambda);
 
 

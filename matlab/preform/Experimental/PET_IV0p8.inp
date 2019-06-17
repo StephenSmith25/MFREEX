@@ -1,0 +1,21 @@
+** MATERIAL constants of PET, v2.8
+** prepared and licensed by BMT, 2017
+** 
+** 
+** add '*Include, Input = PETcalib1.inp' in the main input deck
+** specify 'material=PET, poisson=Material' in '*shell section' or '*membrane section'
+** element type of the preform could be S4R or M3D4R
+** unit used in the material model is SI (mm) (e.g. mm, N, tonne, K, s, mJ, MPa etc.)
+** valid temperature range of the material is 75 - 115 C
+**
+** virgin PET, IV of 0.80
+**
+*Material, name=PET 
+*Density 
+ 1.33e-09, 
+*Depvar
+     30,
+*User Material, constants=20 
+2.1537E+06, 	1.8700E-01, 	4.9117E+00, 	3.4891E+02, 	2.2516E+01, 	1.5058E-01, 	1.8859E+17, 	0.0000E+00
+-1.1254E-02, 	4.5850E+00, 	9.7884E-01, 	-2.5322E-02, 	1.1552E+01, 	3.8300E+02, 	1.6322E+00, 	3.3400E-01
+1.4758E+00, 	3.3491E+02, 	2.5895E+02, 	4.9500E-01  

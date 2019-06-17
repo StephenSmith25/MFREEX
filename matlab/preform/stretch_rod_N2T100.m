@@ -37,7 +37,7 @@ a7 = 0;
 
 p = @(x) a0*x.^7 + a1 * x.^6 + a2*x.^5 + a3*x.^4 + a4*x.^3 + a5*x.^2 + a6*x + a7;
 p1 = @(x) 7*a0*x.^6 + 6*a1*x.^5 + 5*a2 *x.^4 + 4*a3*x.^3 + a4*3*x.^2 + 2*a5*x + a6;
-t = linspace(0,0.4,50);
+t = linspace(0,0.5,50);
 
 figure
 plot(x,y,'ro');

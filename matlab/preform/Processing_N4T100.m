@@ -7,7 +7,7 @@ PLOT_DOMAINS_INFLUENCE = true;
 
 
 WITH_MOULD = false;
-TMAX = 0.3;
+TMAX = 0.4;
 
 
 
@@ -27,7 +27,7 @@ numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
 
-plot_point =113; %%2241
+plot_point =316; %%2241
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.csv');
 disp = csvread(filename,1);
 
@@ -117,6 +117,22 @@ Rout = max(disp(:,1));
 height = max(disp(:,2));
 
 
+hold on
+filename = strcat(pathSR,'srRod_',num2str(plotFiles(1)),'.csv');
+disp = csvread(filename,1);
+hold on
+plot(disp(:,1),disp(:,2),'r');
+hold on
+plot(-disp(:,1),disp(:,2),'r');
+
+
+c = [[disp(1:end-1,1);-disp(end:-1:1,1)],[disp(1:end-1,2);disp(end:-1:1,2)]]
+
+
+save('disp_rod_tstart.dat', 'c', '-ascii', '-double', '-tabs')
+
+
+
 
 
 hold on
@@ -167,7 +183,25 @@ hold on
 %plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 %plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
-filename = strcat(pathSR,'srRod_',num2str(plotFiles(6)),'.csv');
+
+hold on
+filename = strcat(pathSR,'srRod_',num2str(plotFiles(5)),'.csv');
+disp = csvread(filename,1);
+hold on
+plot(disp(:,1),disp(:,2),'r');
+hold on
+plot(-disp(:,1),disp(:,2),'r');
+
+
+c = [[disp(1:end-1,1);-disp(end:-1:1,1)],[disp(1:end-1,2);disp(end:-1:1,2)]]
+
+
+save('disp_rod_tmid.dat', 'c', '-ascii', '-double', '-tabs')
+
+
+
+
+
 xlim([-50,50])
 ylim([-170,ymax])
 
@@ -214,6 +248,24 @@ save('disp_tend.dat', 'c', '-ascii', '-double', '-tabs')
 
 axis equal
 hold on
+
+
+hold on
+filename = strcat(pathSR,'srRod_',num2str(plotFiles(10)),'.csv');
+disp = csvread(filename,1);
+hold on
+plot(disp(:,1),disp(:,2),'r');
+hold on
+plot(-disp(:,1),disp(:,2),'r');
+
+
+c = [[disp(1:end-1,1);-disp(end:-1:1,1)],[disp(1:end-1,2);disp(end:-1:1,2)]]
+
+
+save('disp_rod_tend.dat', 'c', '-ascii', '-double', '-tabs')
+
+
+
 
 xlim([-50,50])
 ylim([-170,ymax])
@@ -325,7 +377,7 @@ for i = 1:length(plotFiles)
     [R U V] = poldecomp(F);
     
     
-    true_strain = logm(U);
+    true_strain = logm(V);
 
     
     hoop_strain(i) =true_strain(3,3);
@@ -342,7 +394,7 @@ for i = 1:length(plotFiles)
     
     jacobian(i) = det(F);
     crit_lambda(i) = strain(2,3);
-    gamma(i) = strain(3,1);
+    maxSr(i) = strain(3,1);
     max_lambda_n(i) = strain(1,3);
     time(i) = strain(3,2);
   
@@ -516,6 +568,9 @@ for i = 1:length(plotFiles)
     axial_stress_conf(i) = stress(2,2);
     radial_stress_conf(i) = stress(1,1);
      shear_stress_conf(i) = stress(1,2);
+     
+     
+   volumetric_stress(i) = 1.8e9*log(jacobian(i)) ;
 
   
 end
@@ -530,6 +585,8 @@ hold on
 plot(time,shear_stress_bond,'m')
 hold on
 plot(time,shear_stress_conf,'g')
+hold on
+plot(time,volumetric_stress,'y');
 %set axis
 set(gca, 'FontName', 'cmr12')
 % set x tics and y tics
@@ -601,6 +658,22 @@ grid on
 
 print -dpng2 stress.png
 
+figure 
+yyaxis left
+plot(time,crit_lambda);
+hold on
+yyaxis right
+plot(time,maxSr);
+hold on
+ax = exp(axial_strain)-1;
+hoop = exp(hoop_strain)-1;
+
+diff_ax = diff(ax)./diff(time);
+diff_hoop = diff(hoop)./diff(time);
+hold on
+plot(time(2:end),diff_ax(1:end),'g-');
+hold on
+plot(time(2:end),diff_hoop(1:end),'m-');
 
 
  end

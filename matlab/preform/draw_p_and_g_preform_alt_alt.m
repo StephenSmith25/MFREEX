@@ -5,7 +5,7 @@ close all;
 
 %% RADII
 
-tempProfile = xlsread('IRprofile_P_AND_G.xlsx');
+tempProfile = xlsread('IRprofile_P_AND_G_105.xlsx');
 
 
 

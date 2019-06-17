@@ -356,7 +356,7 @@ for i = 1:length(plotFiles)
     [R U V] = poldecomp(F);
     
     
-    true_strain = logm(V);
+    true_strain = logm(U);
 
     
     hoop_strain(i) =true_strain(3,3);

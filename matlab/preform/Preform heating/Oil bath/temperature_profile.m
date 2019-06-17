@@ -29,7 +29,7 @@ function [X,Y,C_2D] = temperature_profile(temperature, time)
             C_0D = mean(T_profile);
         end
     end
-
+% 
 %     h1 = figure(1);
 %     h1 = pcolor(X,Y,C_1D);
 %     set(h1, 'LineStyle','none')
@@ -37,7 +37,7 @@ function [X,Y,C_2D] = temperature_profile(temperature, time)
 %     axis([0,80,-80,0]);
 %     %%caxis([101 102])
 %     colorbar;
-
+% 
 %     h2 = figure(2);
 %     h2 = pcolor(X,Y,C_2D);
 %     set(h2, 'LineStyle','none')

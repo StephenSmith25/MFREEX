@@ -1,4 +1,4 @@
-function [nodes,segments] = get_node_temperature(OIL_TEMPERATURE,COOLING_TIME)
+function [nodes,segments,X,Y,TEMPERATURE] = get_node_temperature(OIL_TEMPERATURE,COOLING_TIME)
 
 
 % if less lose the through thickness temperature profile

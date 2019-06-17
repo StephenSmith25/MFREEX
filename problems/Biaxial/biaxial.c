@@ -58,36 +58,45 @@ int main(void)
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
 	matParams->ve[9] = 1.8e9; // Kb
-	matParams->ve[10] = 6e7;// Gb
+	matParams->ve[10] = 6e8;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
 	matParams->ve[14] = 0.001;// eta_c
 	matParams->ve[15] = 1.8098e17;// Ns_c
 	matParams->ve[16] = 1.38e-17;// boltzmann constant kB
-	// slippage
+	
+	//slippage
 	matParams->ve[17] = 100;// lambdaCrit
 	matParams->ve[18] = 383.15;// Ts 
-	matParams->ve[19] = 0.359e6;// gamma0_ref = 0.653
+	matParams->ve[19] = 0.359e6;// gamma0_ref = 0.359
 	matParams->ve[20] = 7307.8;// Cs 10612
-	matParams->ve[21] = 152.95;// Tinf 95.48
+	matParams->ve[21] = 152.94;// Tinf 95.48
 	matParams->ve[22] = 0.1565;// C1
 	matParams->ve[23] = 39.937;// C2
 	matParams->ve[24] = 0.9878;// beta
 	matParams->ve[25] = 0.33;// poissons ratio
 
-
+	matParams->ve[0] = 2.1537e-3; // VS
+	matParams->ve[1] = 0.4027419e-3; // VP
+	matParams->ve[2] = 4.9117e6; // mu*_0
+	matParams->ve[3] = 348.91; // Tinf
+	matParams->ve[4] = 358.15; // T*
+	matParams->ve[6] = 2.2516e1; // Cv
 
 	// matParams->ve[17] = 100;// lambdaCrit
 	// matParams->ve[18] = 383.15;// Ts 
-	// matParams->ve[19] = 0.653e6;// gamma0_ref = 0.653
-	// matParams->ve[20] = 10612;// Cs 10612
+	// matParams->ve[19] = (0.653e6);// gamma0_ref = 0.653
+	// matParams->ve[20] = (10612)/2.00;// Cs 10612
 	// matParams->ve[21] = 95.48;// Tinf 95.48
 	// matParams->ve[22] = 0.1565;// C1
 	// matParams->ve[23] = 39.937;// C2
 	// matParams->ve[24] = 0.9878;// beta
 	// matParams->ve[25] = 0.33;// poissons ratio
 
-
+	// matParams->ve[2] = (1.8165e6 + (1.7057e6))/2.00; // mu*_0
+	// matParams->ve[3] = (342.61 + (328.76) )/2.00 ; // Tinf
+	// matParams->ve[6] = (56.09+(67.47))/2.00; // Cv
+	
 	//crit lambda properties
 	matParams->ve[26] = -0.0111; // C1
 	matParams->ve[27] = 3.627; // C2
@@ -123,9 +132,9 @@ int main(void)
 	MAT * sigma = m_get(3,3);
 	FILE * fp;
 	int IS_AXI = 0;
+	double maxStrain = 0;
 
 	fp = fopen("Stress_11_nominal.txt","w");
-	double maxStrain = 0;
 
 	fclose(fp);
 	MAT * invF = m_get(3,3);
