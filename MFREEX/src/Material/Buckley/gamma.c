@@ -54,11 +54,11 @@ double gammaV(state_variables * state, double maxLambdaN,double critLambda,
 	maxSr = max(maxSr,V3);
 	state->maxSr = maxSr;
 
-	if (maxSr > 50){
-		maxSr = 50;
-	}
+	// if (maxSr > 50){
+	// 	maxSr = 50;
+	// }
 
-	//maxSr = v_max(state->lambdaDot, &indx);
+	maxSr = v_max(state->lambdaDot, &indx);
 
 	if ( maxSr < 1)
 	{

@@ -50,8 +50,8 @@ N_JOIN = 0;
 N_THETA = 15;
 N_wall_in = 60;
 
-N_taper_in =4;
-N_taper_angle =4;
+N_taper_in =8;
+N_taper_angle =6;
 N_wall_out = N_wall_in;
 N_wall_bot = 3;
 N_THETA_OUT = 15;
@@ -344,7 +344,7 @@ end
 
 end
 
-[ix,iy] = uniquetol(nodes,'ByRows',true)
+[ix,iy] = uniquetol(nodes,'ByRows',true);
 nodes = nodes(sort(iy),:);
 
 %% boundary segments
@@ -381,8 +381,12 @@ count = count + N_neck_top+2*N_neck_in;
 
 
 
+
+segments(count+1:count+12,3) = 6;
+count = count + 12;
+
 % contact
-segments(count+1:count+N_taper_in + N_wall_out+N_THETA_OUT-2,3) = 6;
+segments(count+1:count+N_taper_in + N_wall_out+N_THETA_OUT-2-12,3) = 9;
 % r = 0 , symmetry
 segments(end:-1:end-(N_wall_bot)+1,3) = 4;
 
@@ -400,7 +404,11 @@ Y = nodes(:,2)./min(nodes(:,2));
 inner_X = nodes(1:length(ix)+4,:);
 count = length(inner_X);
 
+[~,iy] = find(segments(:,3) == 9);
+
 [~,ix] = find(segments(:,3) == 6);
+ix = [iy;ix];
+
 outer_X = nodes(count+3:count+length(ix)+8,:);
 %outer_X = [outer_X ;nodes(1:4,:) ];
 
@@ -424,17 +432,17 @@ outer_X_cool(:,2) = outer_X_cool(:,2)./min(outer_X_cool(:,2));
 for i = 1:length(inner_X)
    
    inner_X(i,3) =  interp1(inner_X_cool(:,2),inner_X_cool(:,3),inner_X(i,2)/min(inner_X(:,2)));
-   inner_X(i,3) = 104;
+  % inner_X(i,3) = 104;
    
-   
-     if ( inner_X(i,2) < -30)
-       inner_X(i,3) = 104-(inner_X(i,2)/-90)*4 ;
+%    
+     if ( inner_X(i,2) < -70)
+       inner_X(i,3) = 104+((inner_X(i,2)+70)/20)*12 ;
    end 
    
-   if ( inner_X(i,2) < -94)
-       inner_X(i,3) = 85 ;
+   if ( inner_X(i,2) >- 15)
+       inner_X(i,3) = 104 - ((1-inner_X(i,2)/-15))*4 ;
    end
-   
+%    
    
 
 end
@@ -442,7 +450,7 @@ end
 for i = 1:length(outer_X)
    
    outer_X(i,3) =  interp1(outer_X_cool(:,2),outer_X_cool(:,3),outer_X(i,2)/min(outer_X(:,2)));
-   outer_X(i,3) = 97;
+   %outer_X(i,3) = 97;
     
 end
 
@@ -517,10 +525,10 @@ for i = 1:length(segments)
         hold on
         plot(nodes(segments(i,1:2),1),nodes(segments(i,1:2),2),color);
         
-    elseif ( segments(i,3) == 7)
+    elseif ( segments(i,3) ==9)
         color = 'y';
         hold on
-        plot(nodes(segments(i,1:2),1),nodes(segments(i,1:2),2),color);
+        plot(nodes(segments(i,1:2),1),nodes(segments(i,1:2),2),'y');
     else
         hold on
         plot(nodes(segments(i,1:2),1),nodes(segments(i,1:2),2),'m');

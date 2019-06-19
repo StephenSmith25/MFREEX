@@ -41,7 +41,7 @@ double lambdaCrit(double critLambda_n, state_variables * state, VEC * para, doub
 	maxSr = max(maxSr,V3);
 	state->maxSr = maxSr;
 
-	//maxSr = v_max(state->lambdaDot, &index);
+	maxSr = v_max(state->lambdaDot, &index);
 
 
 	if ( maxSr < 1.0){

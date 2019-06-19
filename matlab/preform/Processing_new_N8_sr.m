@@ -7,7 +7,7 @@ PLOT_DOMAINS_INFLUENCE = true;
 
 
 WITH_MOULD = false;
-TMAX = 0.2;
+TMAX = 0.25;
 
 
 
@@ -27,7 +27,7 @@ numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,10));
 
-plot_point =138; %%2241
+plot_point =120; %%2241
 filename = strcat(path,'displacement_',num2str(plotFiles(1)),'.csv');
 disp = csvread(filename,1);
 
@@ -42,26 +42,7 @@ top_point = 48.920;
 
 
 
-mould_nodes = [];
-mould_nodes = [mould_nodes ; [Radius_out,height+5]   ];
-mould_nodes = [mould_nodes ; [Radius_out,68.92]   ];
-mould_nodes = [mould_nodes ; [Radius_out+Radius_mould,top_point]   ];
-mould_nodes = [mould_nodes ; [Radius_out+Radius_mould,height-mould_length]   ];
-mould_nodes = [mould_nodes ; [0,height-mould_length]   ];
-
-
-mould_nodes = [mould_nodes ; [0,height-mould_length-thickness_mould]   ];
-mould_nodes = [mould_nodes ; [Radius_out+Radius_mould+thickness_mould,height-mould_length-thickness_mould]   ];
-mould_nodes = [mould_nodes ; [Radius_out+Radius_mould+thickness_mould,top_point]   ];
-mould_nodes = [mould_nodes ; [Radius_out+thickness_mould,68.92]   ];
-mould_nodes = [mould_nodes ; [Radius_out+thickness_mould,height+5]   ];
-mould_nodes = [mould_nodes ; [Radius_out,height+5]   ];
-
-if ( WITH_MOULD == false)
-    mould_nodes = zeros(1,2);
-end
-
-
+mould_nodes = [12.23,0;25,0;25,-2.5;12.23,-2.5];
 
 
 figure
@@ -77,9 +58,9 @@ figure
 subplot(1,3,1)       % add first plot in 2 x 2 grid
 
 hold on 
-fill(mould_nodes(:,1),mould_nodes(:,2),'w');
+fill(mould_nodes(:,1),mould_nodes(:,2),'b');
 hold on
-fill(-mould_nodes(:,1),mould_nodes(:,2),'w');
+fill(-mould_nodes(:,1),mould_nodes(:,2),'b');
 hold on
 plot(disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
 hold on
@@ -152,9 +133,9 @@ filename = strcat(path,'displacement_',num2str(plotFiles(5)),'.csv');
 disp = csvread(filename,1);
 subplot(1,3,2)       % add first plot in 2 x 2 grid
 hold on 
-fill(mould_nodes(:,1),mould_nodes(:,2),'w');
+fill(mould_nodes(:,1),mould_nodes(:,2),'b');
 hold on
-fill(-mould_nodes(:,1),mould_nodes(:,2),'w');
+fill(-mould_nodes(:,1),mould_nodes(:,2),'b');
 hold on
 
 
@@ -221,9 +202,9 @@ disp = csvread(filename,1);
 subplot(1,3,3)       % add first plot in 2 x 2 grid
 
 hold on 
-fill(mould_nodes(:,1),mould_nodes(:,2),'w');
+fill(mould_nodes(:,1),mould_nodes(:,2),'b');
 hold on
-fill(-mould_nodes(:,1),mould_nodes(:,2),'w');
+fill(-mould_nodes(:,1),mould_nodes(:,2),'b');
 hold on
 
 plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
@@ -267,7 +248,7 @@ save('disp_rod_tend.dat', 'c', '-ascii', '-double', '-tabs')
 
 
 
-xlim([-50,50])
+xlim([-60,60])
 ylim([-300,ymax])
 
 
@@ -393,11 +374,11 @@ for i = 1:length(plotFiles)
 end
 
 
+
 strain = figure('Position', get(0, 'Screensize'));
 subplot(1,2,1)
 plot(time,(axial_strain),'k','linewidth',2);
-% hold on
-% plot(time,log(1+shear_strain),'k');
+
 xlim([0,TMAX])
 
 

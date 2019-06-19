@@ -4,7 +4,7 @@ clear all
 
 load ./Experimental/20190515_forStephen.mat
 
-a = process_data(4);
+a = process_data(6);
 b = a.outer_strain;
 c = a.middle_strain;
 time = a.time;
@@ -90,8 +90,8 @@ xlim([0,0.35])
 
 
 
-csvwrite("./Experimental/N5_sr_exp_axial_TOP.csv",y_axial);
-csvwrite("./Experimental/N5_sr_exp_hoop_TOP.csv",y_hoop);
+csvwrite("./Experimental/N8_sr_exp_axial_TOP.csv",y_axial);
+csvwrite("./Experimental/N8_sr_exp_hoop_TOP.csv",y_hoop);
 y_axial = [];
 y_hoop = [];
 
@@ -115,8 +115,8 @@ for i = 1:size(b,3)
     t = t + dt;
 end
 xlim([0,0.35])
-csvwrite("./Experimental/N5_sr_exp_axial_MIDDLE.csv",y_axial);
-csvwrite("./Experimental/N5_sr_exp_hoop_MIDDLE.csv",y_hoop);
+csvwrite("./Experimental/N8_sr_exp_axial_MIDDLE.csv",y_axial);
+csvwrite("./Experimental/N8_sr_exp_hoop_MIDDLE.csv",y_hoop);
 
 
 
@@ -145,8 +145,8 @@ end
 xlim([0,0.35])
 
 
-csvwrite("./Experimental/N5_sr_exp_axial_BOT.csv",y_axial);
-csvwrite("./Experimental/N5_sr_exp_hoop_BOT.csv",y_hoop);
+csvwrite("./Experimental/N8_sr_exp_axial_BOT.csv",y_axial);
+csvwrite("./Experimental/N8_sr_exp_hoop_BOT.csv",y_hoop);
 
 
 
@@ -168,7 +168,7 @@ iy = find(time < 0.01);
 pressure_grad = mean(ab(iy));
 
 y = [time,pressure];
-csvwrite("./Experimental/N5_sr_pressure.csv",y);
+csvwrite("./Experimental/N8_sr_pressure.csv",y);
 
 
 

@@ -40,7 +40,7 @@ const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
 // time step parameters
-const double TMAX = 0.8;
+const double TMAX = 0.7;
 double delta_t = 5e-7;
 
 // Meshfree parameters
@@ -71,6 +71,9 @@ const int is_stabalised = 0;
 const int is_constant_support_size = 0;
 
 const int PLOT_POINT = 128;
+const int PLOT_POINT_BOT = 154;
+const int PLOT_POINT_TOP = 121;
+const int PLOT_POINT_MIDDLE = 139;
 
 // stretch rod
 //const double DISP_ROD_MAX = 132; // N4T100;
@@ -78,7 +81,7 @@ const double DISP_ROD_MAX = 100; // N2T100;
 	double v_rod = 1000; // mm/s
 
 // 
-const int WITH_MOULD = 0;
+const int WITH_MOULD = 1;
 
 const int WRITE_FREQ = 250;
 
@@ -116,13 +119,13 @@ int main(int argc, char** argv) {
 	matParams->ve[0] = 2.814e-3; // VS
 	matParams->ve[1] = 0.526e-3; // VP
 	matParams->ve[2] = (1.7057e6); // mu*_0
-	matParams->ve[3] = (336.61); // Tinf 328.76
+	matParams->ve[3] = (337.0); // Tinf 328.76
 	matParams->ve[4] = 358.15; // T*
 	matParams->ve[5] = matParams->ve[4]; // Tf*
 	matParams->ve[6] = (67.47); // Cv 67.47
 	matParams->ve[7] = 1.23e5; // H0
 	matParams->ve[8] = 8.314; // R
-	matParams->ve[9] = 0.35e9; // Kb
+	matParams->ve[9] = 0.5e9; // Kb
 	matParams->ve[10] = 6e8;// Gb
 	// conformational constants
 	matParams->ve[13] = 0.1553;// alpha_c
@@ -197,8 +200,8 @@ int main(int argc, char** argv) {
 	double Rg = 8.314;
 	double rLine = Rg/molarMass;
 	double gammaLine = 1.4;
-	double aReduced = 7.67e-5;//0.0003924; // 0.000154 // 0.000614 // 0.000585
-	// Flow rates N8 - 0.00092, N5 - 0.00049 , N2 - 7.67e-5
+	double aReduced = 8.41e-5;//0.0003924; // 0.000154 // 0.000614 // 0.000585
+	// Flow rates N8 - 0.00092, N5 - 0.00049 , N2 - 8.41e-5
 	double vDead = (85*1000) ; /*  dead volume in mL -> mm^3 */
 
 	/* ------------------------------------------*/
@@ -237,7 +240,7 @@ int main(int argc, char** argv) {
 	double a7 = 0;
 
 
-	double stretchRodRad = 5.00;
+	double stretchRodRad = 6;
 	int numPointsRod = 15;
 
 	MAT * srNodes = m_get(numPointsRod+2,2);
@@ -247,7 +250,7 @@ int main(int argc, char** argv) {
 		double theta = -PI/2.00 + (PI/2/(numPointsRod-1))*i;
 		srNodes->me[i][0] = stretchRodRad*cos(theta);
 		// either 10.3 or 9
-		srNodes->me[i][1] = -88.5 + stretchRodRad*sin(theta);
+		srNodes->me[i][1] = -87.5 + stretchRodRad*sin(theta);
 		srNodes_O->me[i][0] = srNodes->me[i][0];
 		srNodes_O->me[i][1] = srNodes->me[i][1];
 	}
@@ -266,19 +269,19 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 	/* ---------------Mould----------------*/
 	/* ------------------------------------------*/
-	int numPoints_mould = 5;
+	int numPoints_mould = 2;
 	MAT * mould_Nodes = m_get(numPoints_mould,2);
 
-	mould_Nodes->me[0][0] = 11.25;
-	mould_Nodes->me[0][1] = 80;
-	mould_Nodes->me[1][0] = 11.25;
-	mould_Nodes->me[1][1] = 68.920;
-	mould_Nodes->me[2][0] = 35.25;
-	mould_Nodes->me[2][1] = 48.920;
-	mould_Nodes->me[3][0] = mould_Nodes->me[2][0];
-	mould_Nodes->me[3][1] = -105.7350;
-	mould_Nodes->me[4][0] = 0;
-	mould_Nodes->me[4][1] = mould_Nodes->me[3][1];
+	mould_Nodes->me[0][0] = 12.4;
+	mould_Nodes->me[0][1] = -2.5;
+	mould_Nodes->me[1][0] = 25;
+	mould_Nodes->me[1][1] = -2.5;
+	// mould_Nodes->me[2][0] = 35.25;
+	// mould_Nodes->me[2][1] = 48.920;
+	// mould_Nodes->me[3][0] = mould_Nodes->me[2][0];
+	// mould_Nodes->me[3][1] = -105.7350;
+	// mould_Nodes->me[4][0] = 0;
+	// mould_Nodes->me[4][1] = mould_Nodes->me[3][1];
 
 
 
@@ -1164,6 +1167,7 @@ int main(int argc, char** argv) {
 			/* ------------------------------------------*/
 			/* --------------Print Outputs--------------*/
 			/* ------------------------------------------*/
+
 			state_variables * stateNew = material_points->MP[PLOT_POINT]->stateNew;
 			int index = 0;
 			double maxSr = stateNew->maxSr;
@@ -1174,6 +1178,59 @@ int main(int argc, char** argv) {
 
 			snprintf(filename, 50, "strain_%d%s",fileCounter,".txt");
 			mat2csv(stateNew->F,"./History/Strain",filename);
+
+
+			stateNew->F->me[2][1] = 0;
+			stateNew->F->me[1][2] = 0;
+			stateNew->F->me[2][0] = 0;
+
+
+
+
+			stateNew = material_points->MP[PLOT_POINT_BOT]->stateNew;
+			maxSr = stateNew->maxSr;
+
+			stateNew->F->me[2][1] = t_n_1;
+			stateNew->F->me[2][0] = maxSr;
+			stateNew->F->me[1][2] = stateNew->critLambdaBar;
+
+			snprintf(filename, 50, "strain_%d%s",fileCounter,".txt");
+			mat2csv(stateNew->F,"./History/Strain/Bot",filename);
+
+
+
+
+			stateNew->F->me[2][1] = 0;
+			stateNew->F->me[1][2] = 0;
+			stateNew->F->me[2][0] = 0;
+
+			// middle 
+			stateNew = material_points->MP[PLOT_POINT_MIDDLE]->stateNew;
+			maxSr = stateNew->maxSr;
+
+			stateNew->F->me[2][1] = t_n_1;
+			stateNew->F->me[2][0] = maxSr;
+			stateNew->F->me[1][2] = stateNew->critLambdaBar;
+
+			snprintf(filename, 50, "strain_%d%s",fileCounter,".txt");
+			mat2csv(stateNew->F,"./History/Strain/Middle",filename);
+
+	
+			stateNew->F->me[2][1] = 0;
+			stateNew->F->me[1][2] = 0;
+			stateNew->F->me[2][0] = 0;
+
+
+			// top 
+			stateNew = material_points->MP[PLOT_POINT_TOP]->stateNew;
+			maxSr = stateNew->maxSr;
+
+			stateNew->F->me[2][1] = t_n_1;
+			stateNew->F->me[2][0] = maxSr;
+			stateNew->F->me[1][2] = stateNew->critLambdaBar;
+
+			snprintf(filename, 50, "strain_%d%s",fileCounter,".txt");
+			mat2csv(stateNew->F,"./History/Strain/Top",filename);
 
 			//snprintf(filename, 50, "Stress_%d%s",print_count,".txt");
 			//mat2csv(stateNew[i]->sigma,"./History/Stress",filename);
@@ -1186,6 +1243,11 @@ int main(int argc, char** argv) {
 			stateNew->F->me[2][1] = 0;
 			stateNew->F->me[1][2] = 0;
 			stateNew->F->me[2][0] = 0;
+
+
+
+
+
 
 			fileCounter++;
 
