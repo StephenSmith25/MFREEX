@@ -386,7 +386,7 @@ segments(count+1:count+12,3) = 6;
 count = count + 12;
 
 % contact
-segments(count+1:count+N_taper_in + N_wall_out+N_THETA_OUT-2-12,3) = 9;
+segments(count+1:count+N_taper_in + N_wall_out+N_THETA_OUT-2-11,3) = 6;
 % r = 0 , symmetry
 segments(end:-1:end-(N_wall_bot)+1,3) = 4;
 

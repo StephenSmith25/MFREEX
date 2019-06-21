@@ -16,11 +16,13 @@ double contactDetection(MAT * point, MAT * masterNodes,MAT  * msNormal){
 
 	/*  Have to test each for the closest segment */
 	/*  Find closest master nodes*/
+
+
 	for ( int i = 0 ; i < masterNodes->m ; i++){
 		/*  Find closest master nodes */
 
 		double dist = sqrt(pow(masterNodes->me[i][0]-point->me[0][0],2) + pow(masterNodes->me[i][1]-point->me[0][1],2));
-
+		//printf("dist = %lf \n", dist);
 
 		if ( dist < distMin){
 
@@ -43,6 +45,8 @@ double contactDetection(MAT * point, MAT * masterNodes,MAT  * msNormal){
 		closestSeg = closestNode + 1;
 
 
+
+
 		double eA[2] = {masterNodes->me[closestNode+1][0]-masterNodes->me[closestNode][0],
 			masterNodes->me[closestNode+1][1]-masterNodes->me[closestNode][1]};
 		double masterDist[2] = {point->me[0][0] - masterNodes->me[closestNode][0],
@@ -50,18 +54,22 @@ double contactDetection(MAT * point, MAT * masterNodes,MAT  * msNormal){
 		double dot2 = masterDist[0]*eA[0] + masterDist[1]*eA[1];
 
 
+
 		segLength = sqrt(pow(eA[0],2) + pow(eA[1],2));
 		segNormal[0] = eA[1]/segLength;
 		segNormal[1] = -eA[0]/segLength;
+
+
 
 		if ( dot2 < 0){
 			closestSeg = closestNode;
 		}
 
+
+
 	}else if ( closestNode == (masterNodes->m -1)){
 
 		closestSeg = closestNode - 1;
-
 
 		double eAm1[2] = {masterNodes->me[closestNode][0]-masterNodes->me[closestNode-1][0],
 			masterNodes->me[closestNode][1]-masterNodes->me[closestNode-1][1]};
@@ -73,12 +81,17 @@ double contactDetection(MAT * point, MAT * masterNodes,MAT  * msNormal){
 		segLength = sqrt(pow(eAm1[0],2) + pow(eAm1[1],2));
 		segNormal[0] = eAm1[1]/segLength;
 		segNormal[1] = -eAm1[0]/segLength;
+
 		if ( dot1 > 0){
 			closestSeg = closestNode;
 		}
 
+
+
 	}else{
 		/* Find tangent vector to segment A-1---A  */
+
+		//printf("closestNode = %d\n", closestNode);
 		double eAm1[2] = {masterNodes->me[closestNode][0]-masterNodes->me[closestNode-1][0],
 			masterNodes->me[closestNode][1]-masterNodes->me[closestNode-1][1]};
 		/* Find tangent vector to segment A---A+1  */
@@ -147,6 +160,7 @@ double contactDetection(MAT * point, MAT * masterNodes,MAT  * msNormal){
 	 *
 	 *  */
 
+
 	double closestDistance = 0;
 
 	if ( closestSeg != closestNode){
@@ -186,8 +200,12 @@ double contactDetection(MAT * point, MAT * masterNodes,MAT  * msNormal){
 	/*  Return closest segment, and if it was in contact? */
 	//	delta = max(delta,0);
 
+
+
 	msNormal->me[0][0] = segNormal[0];
 	msNormal->me[0][1] = segNormal[1];
+	
+
 	return delta;
 
 

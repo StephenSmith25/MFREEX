@@ -200,7 +200,7 @@ int main(int argc, char** argv) {
 	double Rg = 8.314;
 	double rLine = Rg/molarMass;
 	double gammaLine = 1.4;
-	double aReduced = 8.41e-5;//0.0003924; // 0.000154 // 0.000614 // 0.000585
+	double aReduced = 0.00049;//0.0003924; // 0.000154 // 0.000614 // 0.000585
 	// Flow rates N8 - 0.00092, N5 - 0.00049 , N2 - 8.41e-5
 	double vDead = (85*1000) ; /*  dead volume in mL -> mm^3 */
 
@@ -250,7 +250,7 @@ int main(int argc, char** argv) {
 		double theta = -PI/2.00 + (PI/2/(numPointsRod-1))*i;
 		srNodes->me[i][0] = stretchRodRad*cos(theta);
 		// either 10.3 or 9
-		srNodes->me[i][1] = -87.5 + stretchRodRad*sin(theta);
+		srNodes->me[i][1] = -87.5+ stretchRodRad*sin(theta);
 		srNodes_O->me[i][0] = srNodes->me[i][0];
 		srNodes_O->me[i][1] = srNodes->me[i][1];
 	}
@@ -269,13 +269,34 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 	/* ---------------Mould----------------*/
 	/* ------------------------------------------*/
-	int numPoints_mould = 2;
+
+
+	fp = fopen("mould.coords","r");
+
+
+	// deliminator 
+	char delim[2] = " ";
+	char * token;
+	char buffer[50];
+	fgets(buffer, sizeof(buffer),fp);
+	token = strtok(buffer,delim );
+	int numPoints_mould= atoi(token);
+
 	MAT * mould_Nodes = m_get(numPoints_mould,2);
 
-	mould_Nodes->me[0][0] = 12.4;
-	mould_Nodes->me[0][1] = -2.5;
-	mould_Nodes->me[1][0] = 25;
-	mould_Nodes->me[1][1] = -2.5;
+	
+	for ( int i = 0 ; i < numPoints_mould ; i++)
+	{
+		fgets(buffer, sizeof(buffer),fp);
+		token = strtok(buffer,delim );
+		mould_Nodes->me[i][0] = atof(token);
+		token = strtok(NULL, delim);
+		mould_Nodes->me[i][1] = atof(token);
+
+	}
+
+	fclose(fp);
+
 	// mould_Nodes->me[2][0] = 35.25;
 	// mould_Nodes->me[2][1] = 48.920;
 	// mould_Nodes->me[3][0] = mould_Nodes->me[2][0];
@@ -680,7 +701,7 @@ int main(int argc, char** argv) {
 	setUpBC(eb3,inv_nodal_mass,&mfree);
 
 
-		// get shape function and contact nodes
+	// get shape function and contact nodes
 	shape_function_container * phi_contact = mls_shapefunction(contact_nodes_coords,1, &mfree);
 	m_foutput(stdout,contact_nodes_coords);
 
@@ -701,7 +722,6 @@ int main(int argc, char** argv) {
 	shape_function_container * phi_contact_mould = mls_shapefunction(contact_mould_nodes_coords,  1, &mfree);
 
 	m_foutput(stdout,contact_mould_nodes_coords);
-
 
 
 	/* ------------------------------------------*/
@@ -1049,10 +1069,8 @@ int main(int argc, char** argv) {
 
 			if (distanceProj > 0){
 
-
 				f1Cor = (2*distanceProj*msNormal->me[0][0]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
 				f2Cor = (2*distanceProj*msNormal->me[0][1]*nodal_mass->ve[eb4_nodes->ive[i]])/pow(delta_t,2);
-
 
 				for ( int k = 0 ; k < neighbours->max_dim ; k++){
 					Fcont_n_1->ve[2*neighbours->ive[k]] += phi->ve[k]*f1Cor; 
