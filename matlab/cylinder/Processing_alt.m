@@ -15,7 +15,8 @@ plotFiles = ceil(linspace(1,numFiles,10));
 
 figure
 
-
+boundary_nodes = csvread('./../../build/bin/cylinder/boundary.txt');
+boundary_nodes = [boundary_nodes;boundary_nodes(1)];
 
 %-------------------------------------------------------------------------%
 %                          Plot 1 
@@ -23,7 +24,7 @@ figure
 
 
 filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(1)),'.txt');
-material_points = csvread(filename,1);
+%material_points = csvread(filename,1);
 
 
 filename = strcat(path,'/displacement_',num2str(plotFiles(1)),'.txt');
@@ -34,19 +35,23 @@ hold on
 %plot(material_points(:,1),material_points(:,2),'b*');
 xlim([0,40])
 ylim([0,40])
+% 
+% filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(1)),'.txt');
+% domains = csvread(filename);
+% general_ellipse_drawer = @(t) draw_general_ellipse(domains(t,:),material_points(t,1),material_points(t,2));
+% 
+% general_ellipse_drawer(200);
+% 
+% ellipses = [];
+% 
+% for i = 1:200:length(domains)
+%     
+%    ellipses = [ellipses ; general_ellipse_drawer(i)]; 
+% end
 
-filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(1)),'.txt');
-domains = csvread(filename);
-general_ellipse_drawer = @(t) draw_general_ellipse(domains(t,:),material_points(t,1),material_points(t,2));
 
-general_ellipse_drawer(200);
-
-ellipses = [];
-
-for i = 1:200:length(domains)
-    
-   ellipses = [ellipses ; general_ellipse_drawer(i)]; 
-end
+start_disp = [disp];
+start_boundary = disp(boundary_nodes,:);
 
 %-------------------------------------------------------------------------%
 %                          Plot 2 
@@ -54,6 +59,23 @@ end
 
 
 
+
+
+
+filename = strcat(path,'/displacement_',num2str(plotFiles(5)),'.txt');
+disp = csvread(filename);
+hold on 
+plot(disp(:,1),disp(:,2),'k.')           % line plot
+axis equal
+hold on
+%plot(material_points(:,1),material_points(:,2),'r.');
+xlim([0,40])
+ylim([0,40])
+
+
+
+mid_disp = [disp];
+mid_boundary = disp(boundary_nodes,:);
 
 
 %material_points = csvread('./../../build/bin/cylinder/Domains/domainmaterialpoints.csv');
@@ -68,6 +90,7 @@ filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(
 
 filename = strcat(path,'/displacement_',num2str(plotFiles(10)),'.txt');
 disp = csvread(filename);
+hold on 
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 axis equal
 hold on
@@ -75,32 +98,36 @@ hold on
 xlim([0,40])
 ylim([0,40])
 
-filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(10)),'.txt');
-domains = csvread(filename);
-general_ellipse_drawer = @(t) draw_general_ellipse_alt(domains(t,1:4),domains(t,5),material_points(t,1),material_points(t,2));
-ellipses = [];
-for i = 1:200:length(domains)
-    
-   ellipses = [ellipses ; general_ellipse_drawer(i)]; 
-    
-end
+
+
+final_disp = [disp];
+final_boundary = disp(boundary_nodes,:);
+% %filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(10)),'.txt');
+% domains = csvread(filename);
+% general_ellipse_drawer = @(t) draw_general_ellipse_alt(domains(t,1:4),domains(t,5),material_points(t,1),material_points(t,2));
+% ellipses = [];
+% for i = 1:200:length(domains)
+%     
+%    ellipses = [ellipses ; general_ellipse_drawer(i)]; 
+%     
+% end
 
 
 saveas(gcf,'Displacement_cylinder','epsc')
 
 
 
-figure
-
-filename = strcat(path,'/displacement_',num2str(plotFiles(10)),'.txt');
-disp = csvread(filename);
-plot(disp(:,1),disp(:,2),'k.')           % line plot
-axis equal
-hold on
-%plot(material_points(:,1),material_points(:,2),'r.');
-xlim([0,40])
-ylim([0,40])
-
+% figure
+% 
+% filename = strcat(path,'/displacement_',num2str(plotFiles(10)),'.txt');
+% disp = csvread(filename);
+% plot(disp(:,1),disp(:,2),'k.')           % line plot
+% axis equal
+% hold on
+% %plot(material_points(:,1),material_points(:,2),'r.');
+% xlim([0,40])
+% ylim([0,40])
+% 
 
 
 
@@ -122,6 +149,9 @@ figure
 
 plot(A(1:25:end,1),A(1:25:end,2),'kx','markersize',6);
 % 
+A_mod = A(1:25:end,:);
+
+
 sizeA = [2 inf];
 formatSpec = '%f %f';
 fileID = fopen('./exactSol.txt','r');
@@ -132,6 +162,9 @@ B = B';
 
 hold on 
 plot(B(:,1),B(:,2)/1000,'r-');
+
+B_mod = [B(:,1),B(:,2)/1000]
+
 xlabel('dr')
 ylabel('Pressure')
 legend('Meshfree','Exact','Location','northwest');

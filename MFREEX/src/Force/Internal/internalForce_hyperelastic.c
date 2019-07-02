@@ -38,22 +38,41 @@ double internalForce_hyperelastic(VEC * Fint, MATERIAL_POINT * MP, VEC * disp, V
 		MAT * F_r;
 		VEC * fInt;
 
+		int num_neighbours = MP->num_neighbours;
 
 
 		/*  Find deformation gradient */
 		B = MP->B;
-		neighbours = MP->shape_function->neighbours;
+		neighbours = MP->neighbours;
 		F_r = MP->F_n;
 		fInt = MP->fInt;
 
 
 		/*  Find deformation gradient */
-		get_defgrad(F, B, neighbours,F_r, disp);
+		//get_defgrad(F, B, neighbours,F_r, disp);
+
+		defgrad_m(MP->inc_F, 
+		MP->B, 
+		MP->neighbours, 
+		num_neighbours, 
+		disp);
+
+
+
+		// Compute total deformation gradient 
+		m_mlt(MP->inc_F,
+		MP->F_n,
+		F);
+
+	
+
+
+
+
 		get_dot_defgrad(Fdot,B, neighbours,F_r,velocity);
 
 	
 
-		int num_neighbours = neighbours->max_dim;
 		
 
 		//double Jacobian ;

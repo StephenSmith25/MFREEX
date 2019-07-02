@@ -129,7 +129,9 @@ int setDomainMaterialPoint(MAT * nodes, CELLS * cells, MATERIAL_POINT * MP)
 
 
 			v_sort(distances,order);
+
 	
+			printf("distances = %lf \n", distances->ve[4]);
 
 			MP->r_cutoff = MP->beta *  distances->ve[4];
 
@@ -153,7 +155,6 @@ int setDomainMaterialPoint(MAT * nodes, CELLS * cells, MATERIAL_POINT * MP)
 #endif 
 
 
-
 			// Find neighbours 
 			RangeSearchMaterialPoint(MP, nodes, cells);
 
@@ -161,10 +162,14 @@ int setDomainMaterialPoint(MAT * nodes, CELLS * cells, MATERIAL_POINT * MP)
 			PX_FREE(order);
 			V_FREE(distances);
 
+
 			MP->l_0 = sqrt(MP->MI->me[0][0]);
 			MP->l_1 = sqrt(MP->MI->me[1][1]);
 
 	
+
+			printf("GOT TO THE END OF THIS CALL\n");
+
 
 
 	return 0;

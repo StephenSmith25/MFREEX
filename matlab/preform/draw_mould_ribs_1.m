@@ -3,7 +3,7 @@ clear all
 close all
 
 ylim = -300;
-thickness = 5;
+thickness = 10;
 radius = 40;
 radius_wall = 13.5;
 wall_length = 270;

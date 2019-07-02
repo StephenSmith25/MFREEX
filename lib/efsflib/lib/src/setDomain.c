@@ -1,7 +1,7 @@
 #include "setDomain.h"
 
 
-const int min_num_neighbours = 3;
+const int min_num_neighbours = 4;
 
 static inline double sq_distance(double *point_1, double * point_2, int  dim)
 {

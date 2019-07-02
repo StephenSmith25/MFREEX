@@ -51,10 +51,10 @@ char * kernel_shape = "radial";
 
 
 // how much larger can the domains get 
-double beta =1.6;
+double beta =2;
 
 // Meshfree parameters
-const double dmax =3;
+const double dmax =2;
 const double dmax_x = 1.5;
 const double dmax_y = 1.5;
 double tMax = 0.4;
@@ -71,7 +71,7 @@ const double T_RAMP_PRESSURE = 0.05;
 // Material type 
 MATERIAL_TYPE material_type = HYPERELASTIC;
 HYPERELASTIC_LAW hyperelastic_law = MOONEY_RIVLIN;
-char * integration_type = "TRIANGLE";
+char * integration_type = "SCNI";
 
 
 /*  Material  */
@@ -79,9 +79,9 @@ const double rho = 1000e-9;
 
  
 //#define IS_UPDATED
-#ifdef IS_UPDATED
-	#define UPDATE_FREQUENCEY 100
-#endif
+//#ifdef IS_UPDATED
+//	#define UPDATE_FREQUENCEY 100
+//#endif
 
 
 int main(int argc, char** argv) {
@@ -120,11 +120,11 @@ int main(int argc, char** argv) {
 	VEC * materialParameters = v_get(3);
 	materialParameters->ve[0] = 1.8350;
 	materialParameters->ve[1] = 0.1468;
-	materialParameters->ve[2] = 1e3;
+	materialParameters->ve[2] = 1e5;
 
 
 	// CREATE POINTS BASED ON DELAUNAY TRIANGULATION
-	char opt[20] = "p";
+	char opt[20] = "pYa0.5";
 	char fileName[30] = "cylinder";
 	double * points_out ;
 	int * boundaryNodes;
@@ -143,6 +143,19 @@ int main(int argc, char** argv) {
 	temperatures = tri->temperatures;
 	numnodes = tri->num_points;
 	points_out = tri->points;
+
+	int * triangles = tri->triangles;
+	int number_of_triangles = tri->num_triangles;
+
+
+		fp = fopen("triangles.csv","w");
+		for ( int i = 0 ; i < number_of_triangles ; i++)
+		{
+			fprintf(fp,"%d,%d,%d\n",triangles[3*i],triangles[3*i+1],triangles[3*i+2]);
+		}
+		fclose(fp);
+
+
 
 
 	MAT * xI = m_get(numnodes,dim);
@@ -233,55 +246,91 @@ int main(int argc, char** argv) {
 	/* ---------------------------------------------------------------------------*/
 
 	voronoi_diagram * vor = NULL;
-	MATERIAL_POINTS * material_points = NULL;
+	MATERIAL_POINTS * material_points = malloc(1*sizeof(material_points));
 
 
+	int is_stabalised = 0;
+	int is_AXI = 0;
+	SCNI_OBJ * _scni_obj = NULL;
+
+	int dim_s = dim;
+	int dim_stress = dim*dim ;
+	if ( is_AXI)
+	{
+		dim_s = dim_s +1;
+		dim_stress = dim_stress + 1;
+	}
 
 	if ( strcmp ( integration_type, "SCNI") == 0)
 	{
+		material_points->num_material_points = numnodes;
 
 		// generate clipped voronoi diagram
 		vor = generate_voronoi(xI->base, boundaryNodes, xI->m, numBoundary, 2);
-		
 
-		material_points = create_material_points(vor, 
-			is_AXI, dim, integration_type, material_type, cells, rho, beta,&mfree);
-		
-
-		// Write material points to file
-		write_material_points("materialpoints.csv", material_points);
-
-		// Print voronoi diagram to file 
 		fp = fopen("cells.txt","w");
 		print_voronoi_diagram(fp,vor);
 		fclose(fp);
+
+
+
+	 	// generate scni cells
+		_scni_obj = generate_scni(vor, NULL , is_stabalised, is_AXI, dim, &mfree);
+
+		// convert to material point representation
+		int number_of_material_points = numnodes;
+
+		material_points->MP = malloc(number_of_material_points*sizeof(MATERIAL_POINT*));
+		material_points->num_material_points = number_of_material_points;
+		material_points->dim = dim;
+		material_points->IS_AXI = is_AXI;
+
+		for ( int i = 0 ; i < number_of_material_points ; i++)
+		{
+			material_points->MP[i] = malloc(1*sizeof(MATERIAL_POINT));
+			material_points->MP[i]->inc_F = m_get(dim_s,dim_s);
+			material_points->MP[i]->temp = m_get(dim_s,dim_s);
+
+			material_points->MP[i]->temp_1 = m_get(dim_s,dim_s);
+			material_points->MP[i]->index = i;
+			material_points->MP[i]->fInt = _scni_obj->scni[i]->fInt;
+			material_points->MP[i]->F_n = m_get(dim_s,dim_s);
+			m_ident(material_points->MP[i]->inc_F);
+			m_ident(material_points->MP[i]->F_n);
+			material_points->MP[i]->Jn = 1;
+			material_points->MP[i]->stressVoigt = v_get(dim_stress);
+			material_points->MP[i]->coords_n = malloc(2*sizeof(double));
+			material_points->MP[i]->coords_n_1 = malloc(2*sizeof(double));
+			material_points->MP[i]->coords_n[0] = xI->me[i][0];
+			material_points->MP[i]->coords_n[1] = xI->me[i][1];
+			material_points->MP[i]->coords_n_1[0] = xI->me[i][0];
+			material_points->MP[i]->coords_n_1[1] = xI->me[i][1];
+			material_points->MP[i]->rho = rho;
+			material_points->MP[i]->neighbours = _scni_obj->scni[i]->sfIndex;
+			material_points->MP[i]->num_neighbours = _scni_obj->scni[i]->sfIndex->max_dim;
+			material_points->MP[i]->shape_function = malloc(1*sizeof(shape_function));
+			material_points->MP[i]->shape_function->phi = _scni_obj->scni[i]->phi;
+			material_points->MP[i]->INTEGRATION_FACTOR = 1;
+			material_points->MP[i]->volume = _scni_obj->scni[i]->area;
+			material_points->MP[i]->stateNew = new_material_state(0, HYPERELASTIC,
+					dim, is_AXI);
+			material_points->MP[i]->stateOld = new_material_state(0, HYPERELASTIC,
+					dim, is_AXI);
+			material_points->MP[i]->B = _scni_obj->scni[i]->B;
+		}
+
 	
 	}else if ( strcmp(integration_type, "TRIANGLE") == 0)
 	{
 
-		material_points = create_material_points(tri, 
+	material_points = create_material_points(tri, 
 			is_AXI, dim, integration_type, material_type,  cells, rho, beta,  &mfree);
-		
-		// Write material points to file
-		write_material_points("materialpoints_0.csv", material_points);
-
-
-		double * tri_points = tri->points;
-		int * triangles = tri->triangles;
-		int number_of_triangles = tri->num_triangles;
-
-
-		fp = fopen("triangles.csv","w");
-		for ( int i = 0 ; i < number_of_triangles ; i++)
-		{
-			fprintf(fp,"%d,%d,%d\n",triangles[3*i],triangles[3*i+1],triangles[3*i+2]);
-		}
-		fclose(fp);
 
 	}
 
 
 	int number_of_material_points = material_points->num_material_points;
+
 
 
 
@@ -307,6 +356,43 @@ int main(int argc, char** argv) {
 	IVEC * traction_nodes ;
 	getBoundary(&traction_nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,2);
 	pressure_boundary * pB = new_pressure_boundary(traction_nodes, &mfree);
+
+	// int num_nodes_eb1=0;
+	// int num_nodes_eb2=0;
+	// int num_nodes_traction = 0;
+
+	// for (int i = 0 ; i < mfree.num_nodes; i++)
+	// {
+
+	// 	double x = mfree.nodes->me[i][0];
+	// 	double y = mfree.nodes->me[i][1];
+
+
+	// 	if ( x < 1e-9)
+	// 	{
+	// 		++num_nodes_eb1;
+	// 	}
+
+	// 	if ( y < 1e-9)
+	// 	{
+	// 		++num_nodes_eb2;
+	// 	}
+
+	// 	double r = sqrt(x*x + y*y);
+	// 	if ( r < 20+1e-9)
+	// 	{
+	// 		++num_nodes_traction;
+	// 	}
+
+	// }
+
+	// IVEC * traction_nodes = iv_get(num_nodes_traction)
+
+
+
+
+
+
 	m_foutput(stdout,pB->coords);
 	pB->is_axi = is_AXI;
 	/*  Set up essential boundary  */
@@ -320,22 +406,47 @@ int main(int argc, char** argv) {
 
 
 	int count1 = 0;
-	eb1->nodes = iv_get(5);
-	eb2->nodes = iv_get(5);
 	int count = 0;
+
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
 		double x = mfree.nodes->me[i][0];
 		double y = mfree.nodes->me[i][1];
 
 
-		if ( x == 0)
+		if ( x < 1e-9)
+		{
+			++count;
+		}
+		if ( y < 1e-9)
+		{
+			++count1;
+		}
+
+	}
+
+	printf("got here \n");
+
+	printf("count = %d count1 = %d,\n",count,count1);
+
+	eb1->nodes = iv_get(count);
+	eb2->nodes = iv_get(count1);
+	count1 = 0;
+	count = 0;
+
+	for ( int i = 0 ; i < mfree.num_nodes ; i++)
+	{
+		double x = mfree.nodes->me[i][0];
+		double y = mfree.nodes->me[i][1];
+
+
+		if ( x < 1e-9)
 		{
 			eb1->nodes->ive[count] = i;
 
 			++count;
 		}
-		if ( y == 0)
+		if ( y < 1e-9)
 		{
 			eb2->nodes->ive[count1] = i;
 			++count1;
@@ -358,6 +469,26 @@ int main(int argc, char** argv) {
 	setUpBC(eb2,inv_nodal_mass,&mfree);
 	iv_foutput(stdout,eb2->nodes);
 	m_foutput(stdout, eb2->coords);
+
+
+
+	shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes,1, &mfree);
+
+	MAT * Lambda = m_get(2*mfree.num_nodes, 2*mfree.num_nodes);
+
+	// u = Lambda * u_g
+	for ( int i = 0 ; i < mfree.num_nodes ; i++)
+	{
+		VEC * phi = sf_nodes->sf_list[i]->phi;
+		IVEC * neighbours  = sf_nodes->sf_list[i]->neighbours;
+		for ( int k = 0 ; k < neighbours->max_dim ; k++)
+		{
+			Lambda->me[2*i][2*neighbours->ive[k]] += phi->ve[k]; 
+			Lambda->me[2*i+1][2*neighbours->ive[k]+1] += phi->ve[k]; 
+
+		}
+
+	}
 
 
 
@@ -405,8 +536,9 @@ int main(int argc, char** argv) {
 	VEC * Fint_n_1 = v_get(num_dof);
 	VEC * Fint_n = v_get(num_dof);
 	VEC * Fnet = v_get(num_dof);
-
-
+	VEC * v_correct = v_get(num_dof);
+	eb1->uBar1 = v_get(eb1->nodes->max_dim);
+	eb2->uBar2 = v_get(eb2->nodes->max_dim);
 	VEC * R_pen = v_get(num_dof);
 
 	MAT * nodes_X = m_copy(mfree.nodes,MNULL);
@@ -476,6 +608,7 @@ int main(int argc, char** argv) {
 
 
 	}
+	printf("NUMBER OF THREADS = %d \n", NUMBER_OF_THREADS);
 
 	while ( t_n < tMax){
 
@@ -494,26 +627,28 @@ int main(int argc, char** argv) {
 	// implement boundary conditions 
 	// Apply boundary conditions as corrective accelerations
 
+	/*  Implement BCs */
+	enforceBC(eb1,d_n_1); 
+	// find velocity correction
+	sv_mlt(1.00/(deltaT),eb1->uCorrect1,v_correct);
+		for ( int k = 0 ; k < v_correct->max_dim; k++){
+			v_n_h->ve[2*k] += v_correct->ve[k];
+		}
+	enforceBC(eb2,d_n_1); 
 
-		for ( int i =0 ; i < eb1->nodes->max_dim ; i++)
-		{
-			int index = eb1->nodes->ive[i];
-			d_n_1->ve[2*index] = 0;
-			v_n_h->ve[2*index] = 0;
+		sv_mlt(1.000/(deltaT),eb2->uCorrect2,v_correct);
+		for ( int k = 0 ; k < v_correct->max_dim; k++){
+			v_n_h->ve[2*k+1] += v_correct->ve[k];
 		}
 
-		for ( int i =0 ; i < eb2->nodes->max_dim ; i++)
-		{
-			int index = eb2->nodes->ive[i];
-			d_n_1->ve[2*index+1] = 0;
-			v_n_h->ve[2*index+1] = 0;
-		}
+
+
+		mv_mlt(Lambda,d_n_1,nodal_disp);
+		__add__(nodes_X->base, nodal_disp->ve, XI_n_1->base, num_dof);
 
 
 
-
-
-		__add__(nodes_X->base, d_n_1->ve, XI_n_1->base, num_dof);
+		//__add__(nodes_X->base, d_n_1->ve, XI_n_1->base, num_dof);
 
 #ifdef IS_UPDATED
 		move_nodes(cells, &active_cells, cell_size, XI_n_1);
@@ -584,6 +719,16 @@ int main(int argc, char** argv) {
 	 		__add__(FINT[i]->ve, Fint_n_1->ve,Fint_n_1->ve, num_dof);
 		}
 
+
+		if ( strcmp ( integration_type, "SCNI") == 0)
+		{
+			for ( int i = 0 ; i < numnodes ; i++)
+			{
+				material_points->MP[i]->coords_n_1[0] = XI_n_1->me[i][0];
+				material_points->MP[i]->coords_n_1[1] = XI_n_1->me[i][1];	
+			}
+		}
+
 		/*  Balance of forces */
 		__sub__(Fint_n_1->ve, R_pen->ve, Fint_n_1->ve, num_dof);
 		__sub__(Fext_n_1->ve,Fint_n_1->ve,Fnet->ve,num_dof);
@@ -632,11 +777,13 @@ int main(int argc, char** argv) {
 			char filename[50];
 			snprintf(filename, 50, "displacement_%d%s",fileCounter,".txt");
 			mat2csv(XI_n_1,"./Displacement",filename);
+			
+
 			snprintf(filename, 50, "MaterialPoints/materialpoints_%d%s",fileCounter,".txt");
 			write_material_points(filename, material_points);
 
-			snprintf(filename, 50, "MaterialPoints/Domains/domains_%d%s",fileCounter,".txt");
-			write_domains(filename, material_points);	
+			// snprintf(filename, 50, "MaterialPoints/Domains/domains_%d%s",fileCounter,".txt");
+			// write_domains(filename, material_points);	
 
 			fp = fopen("loadDisp.txt","a");
 			fprintf(fp,"%lf %lf\n",d_n_1->ve[0],pre_n_1);		

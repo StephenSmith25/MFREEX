@@ -33,8 +33,8 @@ SET(GCC_COVERAGE_COMPILE_FLAGS "-O3 -std=c99")
 add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
 
-add_executable(beam beam.c)
-target_link_libraries(beam CVLIB MFREEX EFSFLIB triangulate meschach m gpc util)
+add_executable(beam beam_triangle.c)
+target_link_libraries(beam CVLIB MFREEX EFSFLIB triangulate meschach Eigen m gpc util)
 
 
 # copy input files to location

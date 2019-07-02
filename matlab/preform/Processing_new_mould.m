@@ -19,6 +19,20 @@ path_base = './../../build/bin/preform/';
 
 boundaryNodes = [boundaryNodes;boundaryNodes(1)];
 
+
+
+segments = [];
+for i = 1:length(boundaryNodes)
+    segments(i,:) = [i,i+1];
+    
+    if ( i == length(boundaryNodes))
+        
+    segments(i,:) = [i,1];
+    end
+end
+        
+
+
 addpath(path)
 displacementdir = path ;
 d = dir(displacementdir);
@@ -91,6 +105,7 @@ boundary_nodes_xy = disp(boundaryNodes,1:2);
 Rout = max(disp(:,1));
 height = max(disp(:,2));
 
+boundarydisp = disp(boundaryNodes,:);
 
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(1)),'.csv');
@@ -108,6 +123,10 @@ save('disp_rod_tstart.dat', 'c', '-ascii', '-double', '-tabs')
 
 
 
+write_triangle_file(boundarydisp,segments,'bottle.poly');
+system('triangle -pDq30 bottle.poly')
+convert_tri_file_to_vtk('bottle.1','bottle_tstart.vtk',0)
+
 
 
 hold on
@@ -123,7 +142,7 @@ ylim([-350,ymax])
 
 
 
-filename = strcat(path,'displacement_',num2str(plotFiles(5)),'.csv');
+filename = strcat(path,'displacement_',num2str(plotFiles(3)),'.csv');
 disp = csvread(filename,1);
 subplot(1,3,2)       % add first plot in 2 x 2 grid
 hold on 
@@ -144,10 +163,11 @@ hold on
 plot(disp(plot_point,1),disp(plot_point,2),'r*')
 
 
-c = [[disp(:,1);-disp(:,1)],[disp(:,2);disp(:,2)]]
+c = [[disp(:,1);-disp(:,1)],[disp(:,2);disp(:,2)]];
 save('disp_tmid.dat', 'c', '-ascii', '-double', '-tabs')
 
 
+boundarydisp = disp(boundaryNodes,:);
 
 
 %plot(disp(plot_point,1),disp(plot_point,2),'r*')
@@ -168,8 +188,13 @@ hold on
 plot(-disp(:,1),disp(:,2),'r');
 
 
-c = [[disp(1:end-1,1);-disp(end:-1:1,1)],[disp(1:end-1,2);disp(end:-1:1,2)]]
+c = [[disp(1:end-1,1);-disp(end:-1:1,1)],[disp(1:end-1,2);disp(end:-1:1,2)]];
 
+
+
+write_triangle_file(boundarydisp,segments,'bottle.poly');
+system('triangle -pDq30 bottle.poly')
+convert_tri_file_to_vtk('bottle.1','bottle_tmid.vtk',0)
 
 save('disp_rod_tmid.dat', 'c', '-ascii', '-double', '-tabs')
 
@@ -210,6 +235,23 @@ hold on
 %plot(-disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 hold on
 %plot(disp(plot_point,1),disp(plot_point,2),'r*')
+
+
+
+
+
+    
+
+% write the triangle file
+
+boundarydisp = disp(boundaryNodes,:);
+write_triangle_file(boundarydisp,segments,'bottle.poly');
+system('triangle -pDq30 bottle.poly')
+convert_tri_file_to_vtk('bottle.1','bottle_tend.vtk',0)
+
+
+
+
 hold on
 plot(-disp(plot_point,1),disp(plot_point,2),'r*')
 hold on
@@ -226,6 +268,8 @@ axis equal
 hold on
 
 
+
+
 hold on
 filename = strcat(pathSR,'srRod_',num2str(plotFiles(10)),'.csv');
 disp = csvread(filename,1);
@@ -235,7 +279,7 @@ hold on
 plot(-disp(:,1),disp(:,2),'r');
 
 
-c = [[disp(1:end-1,1);-disp(end:-1:1,1)],[disp(1:end-1,2);disp(end:-1:1,2)]]
+c = [[disp(1:end-1,1);-disp(end:-1:1,1)],[disp(1:end-1,2);disp(end:-1:1,2)]];
 
 
 save('disp_rod_tend.dat', 'c', '-ascii', '-double', '-tabs')
@@ -245,6 +289,35 @@ save('disp_rod_tend.dat', 'c', '-ascii', '-double', '-tabs')
 
 xlim([-60,60])
 ylim([-350,ymax])
+
+
+
+
+
+function [] = write_triangle_file(X,segments,filename)
+
+
+fileID = fopen(filename,'w');
+
+fprintf(fileID,'%d %d %d \n',length(X),2,0);
+
+for i = 1:length(X)
+   fprintf(fileID,'%d %f %f\n',i,X(i,1),X(i,2));
+    
+end
+fprintf(fileID,'%d \n',length(segments));
+
+for i = 1:length(segments)
+   fprintf(fileID,'%d %d %d\n',i,segments(i,1),segments(i,2));
+    
+end
+fprintf(fileID,'%d \n',0);
+
+fclose(fileID);
+
+
+
+end
 
 
 

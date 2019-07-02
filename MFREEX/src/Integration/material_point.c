@@ -4,8 +4,11 @@
 #include "ShapeFunction/mls_shapefunction_materialpoint.h"
 #include "Integration/DomainMaterialPoint.h"
 #ifndef QUADRATURE_ORDER
-#define QUADRATURE_ORDER 1
+#define QUADRATURE_ORDER 2
 #endif
+
+
+#define APPROX_NEIGHBOUR_NUMBER 12
 
 
 
@@ -202,10 +205,10 @@ MATERIAL_POINTS * create_material_points(void * cells,
 		for ( int i = 0 ; i < number_of_triangles ; i++)
 		{
 			quad_orders[i] = QUADRATURE_ORDER;
-			if ( ( i == 21) || ( i == 77) || (i == 80) )
-			{
-				quad_orders[i] = 2;
-			}
+			// if ( ( i == 21) || ( i == 77) || (i == 80) )
+			// {
+			// 	quad_orders[i] = 2;
+			// }
 		}	
 
 		//  create quadrature points
@@ -241,7 +244,7 @@ MATERIAL_POINTS * create_material_points(void * cells,
 
 			MPS[i]->beta = beta;
 			MPS[i]->kernel_support=RADIAL;
-			MPS[i]->neighbours = iv_get(50);
+			MPS[i]->neighbours = iv_get(APPROX_NEIGHBOUR_NUMBER);
 
 
 			// Support parameters 
@@ -252,11 +255,12 @@ MATERIAL_POINTS * create_material_points(void * cells,
 			setDomainMaterialPoint(mfree->nodes, grid, MPS[i]);
 
 
-
 			MPS[i]->shape_function = NULL;
 			MPS[i]->shape_function = mls_shapefunction_materialpoint(MPS[i],2,mfree->nodes);
 
 
+
+			// getting Bmat 
 			// Strain Displacement relationship 
 			MPS[i]->B = BMAT(MNULL,MPS[i]->shape_function,dim,IS_AXI,MPS[i]->coords_n_1[0]);
 
@@ -556,7 +560,6 @@ MATERIAL_POINT * MP, MAT * nodes,CELLS * cells)
 
 
 	}
-
 	MP->num_neighbours = num_neighbours;
 
 	return 0;

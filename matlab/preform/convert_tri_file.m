@@ -3,13 +3,13 @@ clear all
 close all
 
 ylim = -300;
-thickness = 5;
+thickness = 10;
 radius = 40;
-radius_wall = 12.3;
+radius_wall = 13.5;
 wall_length = 270;
-taper_length = 20;
+taper_length =25;
 
-fillet_top = 5
+fillet_top = 5;
 fillet_bot = 10;
 
 % ribs 
@@ -22,7 +22,7 @@ first_location = (3/8) * wall_length;
 num_node_rib = 18;
 
 second_location = (5/8) * wall_length;
-
+extra_height = 10;
 
 % draw inside shape
 
@@ -61,7 +61,7 @@ mould_coords = [mould_coords ; [radius,ylim+wall_length]];
 mould_coords = [mould_coords ; [radius_wall,ylim + wall_length+taper_length]];
 
 %inside wall
-mould_coords = [mould_coords ; [radius_wall,0]];
+mould_coords = [mould_coords ; [radius_wall,0+extra_height]];
 
 
 %mould_coords = flip(mould_coords);
@@ -107,7 +107,7 @@ hold on
 
 
 %inside wall
-mould_coords = [mould_coords ; [radius_wall+thickness,0]];
+mould_coords = [mould_coords ; [radius_wall+thickness,0+extra_height]];
 %inside taper
 mould_coords = [mould_coords ; [radius_wall+thickness,ylim + wall_length+taper_length]];
 
@@ -125,11 +125,8 @@ mould_coords = [mould_coords ; [0,ylim-thickness]];
 
 % mould_coords = flip(mould_coords);
 
-
-figure
 hold on
 fill(mould_coords(:,1),mould_coords(:,2),'b');
-axis off
 axis equal 
 
 
@@ -235,9 +232,9 @@ figure
 plot(nodes(:,1),nodes(:,2),'r.');
 
 triplot(tri,nodes(:,1),nodes(:,2));
-z = zeros(length(nodes));
+z = zeros(length(nodes),1);
 
-vtkwrite('ms.vtk','polydata','triangle',x,y,z,tri);    
+vtkwrite('mould.vtk','polydata','triangle',nodes(:,1),nodes(:,2),z,tri);    
 
 
 

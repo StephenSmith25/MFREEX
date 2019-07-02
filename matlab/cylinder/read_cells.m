@@ -56,6 +56,92 @@ for i = 1:num_cells
     fill(poly(:,1),poly(:,2),rand(1,3));
 end
 axis equal
+path_base = './../../build/bin/cylinder/';
+
+
+%material_points = csvread(filename,1);
+
+path = './../../build/bin/cylinder/Displacement';
+
+filename = strcat(path,'/displacement_','1','.txt');
+disp = csvread(filename);
+hold on
+plot(disp(:,1),disp(:,2),'kd','markersize',5,...
+    'MarkerEdgeColor','black',...
+    'MarkerFaceColor',[1 1 1])    
+xlim([0,22])
+ylim([0,22])
+
+
+
+% Y label
+ylabel({'y'},...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% X label
+xlabel('x',...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+
+
+
+set(gcf,'color','white');
+
+
+
+export_fig voronoi_cylinder.png -m8
+
+
+
+
+figure
+triangles = csvread('./../../build/bin/cylinder/triangles.csv');
+
+
+for i = 1:length(triangles)
+    
+   poly = disp(triangles(i,:),:) ;
+   
+       
+    hold on 
+    fill(poly(:,1),poly(:,2),rand(1,3));
+   
+end
+
+%triplot(triangles,disp(:,1),disp(:,2));
+hold on
+plot(disp(:,1),disp(:,2),'kd','markersize',5,...
+    'MarkerEdgeColor','black',...
+    'MarkerFaceColor',[1 1 1])    
+
+
+axis equal
+
+
+
+xlim([0,22])
+ylim([0,22])
+
+% Y label
+ylabel({'y'},...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% X label
+xlabel('x',...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+
+
+
+set(gcf,'color','white');
+
+
+
+export_fig triangles_cylinder.png -m8
 
 % while ischar(tline)
 %     disp(tline)

@@ -16,8 +16,10 @@ void get_defgrad(MAT * f, MAT * B, IVEC * neighbours, MAT * F_r, VEC * disp){
 	{
 		int indx = neighbours->ive[i];
 
+
 		if ( B->m == 4)
-		{
+		{		
+
 			f11 += B->me[0][2*i]*disp->ve[2*indx];
 			f22 += B->me[1][2*i+1]*disp->ve[2*indx+1];
 			f12 += B->me[2][2*i]*disp->ve[2*indx];
@@ -104,14 +106,17 @@ void defgrad_m(MAT * f, MAT * B, IVEC * neighbours, int num_neighbours, VEC * di
 
 	m_ident(f);
 
+	// m_foutput(stdout, B);
+	// iv_foutput(stdout,neighbours);
 
-		// Find incremental deformation gradient (f)
+	// Find incremental deformation gradient (f)
 	for ( int i = 0 ; i < num_neighbours ; i++)
 	{
 		int indx = neighbours->ive[i];
 
 		if ( B->m == 4)
 		{
+
 			f->me[0][0] += B->me[0][2*i]*disp->ve[2*indx];
 			f->me[1][1] += B->me[1][2*i+1]*disp->ve[2*indx+1];
 			f->me[0][1] += B->me[2][2*i]*disp->ve[2*indx];
@@ -130,7 +135,6 @@ void defgrad_m(MAT * f, MAT * B, IVEC * neighbours, int num_neighbours, VEC * di
 
 
 	}
-
 
 	return;
 

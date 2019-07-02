@@ -12,7 +12,13 @@
 #include "smoothstep.h"
 #include "Force/Internal/internalForce_hyperelastic.h"
 #include "Force/Internal/internalForce_hyperelastic_S.h"
-
+#include "Boundary/Contact/contactDetection.h"
+#include "Boundary/Displacement/setUpBC.h"
+#include "Boundary/Displacement/enforceBC.h"
+#include "Integration/SCNI/scni_update_B.h"
+#include "Integration/material_point.h"
+#include "Integration/mass_matrix.h"
+#include "Integration/DomainMaterialPoint.h"
 #include "mat2csv.h"
 #include "trigen.h"
 
@@ -20,16 +26,29 @@
 
 char * basis_type = "linear";
 char * weight = "cubic";
-char * kernel_shape = "elliptical";
+char * kernel_shape = "radial";
+
+
+int t_node = 1;
+
+//char * integration_type = "TRIANGLE";
+char * integration_type = "SCNI";
+
+
+
+
+MATERIAL_TYPE material_type = HYPERELASTIC;
 
 int is_AXI = 0;
 
 // Meshfree parameters
-const double dmax = 2.5;
+	double dmax = 1.8;
 const double dmax_x = 1.5;
 const double dmax_y = 2.0;
-double beta = 1.01;
+double beta = 1.5;
 int constant_support_size = 0;
+
+double delta_t = 1e-6;
 
 
 int main(void )
@@ -87,7 +106,7 @@ int main(void )
 
 
 	// Read PLSG 
-	char opt[20] = "pDq0a0.05";
+	char opt[20] = "pq20a0.1";
 	char fileName[30] = "square";
 	double * points_out ;
 	int * boundaryNodes;
@@ -117,25 +136,14 @@ int main(void )
 
 	struct timeval start, end;
 
-	// generate clipped voronoi diagram
-	gettimeofday(&start, NULL);
-	voronoi_diagram * vor = NULL;
-	vor = generate_voronoi(xI->base, boundaryNodes, xI->m, numBoundary, 2);
- 	// get time took to run
-	gettimeofday(&end, NULL);
-	double delta = ((end.tv_sec  - start.tv_sec) * 1000000u + 
-         end.tv_usec - start.tv_usec) / 1.e6;
-
-	// get time taken to run
-	printf("voronoi took %lf seconds to run\n", delta);
-
-
-	// Print voronoi diagram to file 
-	FILE * fp = fopen("cells.txt","w");
-	print_voronoi_diagram(fp,vor);
+	FILE * fp;
+	fp = fopen("boundary.txt","w");
+	for (int i = 0; i < numBoundary; ++i)
+	{
+		/* code */
+		fprintf(fp,"%i\n",boundaryNodes[i]+1);
+	}
 	fclose(fp);
-
-
 
 
 	/* ------------------------------------------*/
@@ -143,7 +151,6 @@ int main(void )
 	/* ------------------------------------------*/
 
 	// shape function parameters
-	double dmax = 1.6;
 	int compute = 3;
 	VEC * dI = v_get(xI->m);
 
@@ -153,6 +160,8 @@ int main(void )
 
 
 	// meshfree domain
+	printf("got here \n");
+
 	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI,
 		.weight_function = weight, .kernel_shape = kernel_shape, 
 		.basis_type = basis_type,.is_constant_support_size = constant_support_size,
@@ -161,11 +170,11 @@ int main(void )
 	setDomain(&mfree);
 
 
-	//m_foutput(stdout,mfree.di_tensor);
 
 	// get transformation matrix at nodal points
+	printf("getting shape functions \n ");
 
-	shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes,1, &mfree);
+	shape_function_container * sf_nodes = mls_shapefunction(mfree.nodes,2, &mfree);
 
 	MAT * Lambda = m_get(2*mfree.num_nodes, 2*mfree.num_nodes);
 
@@ -183,108 +192,162 @@ int main(void )
 
 	}
 
+
+
+
+
+
+	// create saerch celsl
+	BOUNDING_BOX * bounding_box = create_bounding_box(0, 21,
+	0, 2, 0, 0);
+
+	double cell_size[2] = {4,1.5};
+
+	MAT * xI_copy = m_copy(xI,MNULL);
+	CELLS * cells = create_cells(bounding_box, cell_size, dim, xI_copy);
+	NODELIST * nodelist;
+
+	FILE * fp1 = fopen("search_cells.csv","w");
+	for ( int i = 0 ; i < cells->ny ; i++)
+	{
+
+		for ( int j = 0 ; j < cells->nx ; j++)
+		{
+
+		fprintf(fp1,"%lf,%lf,%lf,%lf\n",cells->cells[i][j].x[0],cells->cells[i][j].x[1],
+			cells->cells[i][j].y[0],cells->cells[i][j].y[1]);
+		
+		}
+
+	}
+	fclose(fp1);
+
+	fp1 = fopen("nodes.csv","w");
+	for ( int i =0 ; i < numnodes ; i++)
+	{
+		for ( int k = 0 ; k < dim ; k++)
+		{
+			fprintf(fp1, "%lf",xI->me[i][k]);
+
+			if ( k < dim - 1)
+			{
+				fprintf(fp1,",");
+			}
+
+		}
+		fprintf(fp1, "\n");
+	}
+	fclose(fp1);
+
+
+
+
 	/* ------------------------------------------*/
-	/* ----------------SCNI CELLS----------------*/
+	/* ----------------MATERIAL POINTS----------------*/
 	/* ------------------------------------------*/
+
+	printf("-----------CREATING MATERIAL POINTS --------------\n");
+
+	voronoi_diagram * vor = NULL;
+	MATERIAL_POINTS * material_points = malloc(1*sizeof(material_points));
+
 
 	int is_stabalised = 0;
 	int is_AXI = 0;
 	SCNI_OBJ * _scni_obj = NULL;
-	MSCNI_OBJ * _mscni_obj = NULL;
 
-	struct timeval start2, end2;
-	gettimeofday(&start2, NULL);
-	// set up return container
-	// generate shape functions at sample points 
-	_scni_obj = generate_scni(vor, NULL , is_stabalised, is_AXI, dim, &mfree);
-	gettimeofday(&end2, NULL);
-	 delta = ((end2.tv_sec  - start2.tv_sec) * 1000000u + 
-         end2.tv_usec - start2.tv_usec) / 1.e6;
-	printf("scni function took %lf seconds to run\n", delta);
-
-
-	gettimeofday(&start2, NULL);
-
-	_mscni_obj = generate_mscni(vor, NULL , is_stabalised, is_AXI, &mfree);
-	gettimeofday(&end2, NULL);
-
-	 delta = ((end2.tv_sec  - start2.tv_sec) * 1000000u + 
-         end2.tv_usec - start2.tv_usec) / 1.e6;
-
-	printf("mscni function took %lf seconds to run\n", delta);
-
-
-	// printf("checking scni \n \n");
-	// iv_foutput(stdout, _scni_obj->scni[1]->sfIndex);
-	// iv_foutput(stdout, _scni_obj->scni[57]->sfIndex);
-	// iv_foutput(stdout, _scni_obj->scni[33]->sfIndex);
-	// iv_foutput(stdout, _scni_obj->scni[156]->sfIndex);
-	// printf("checking mscni \n \n");
-	// iv_foutput(stdout, _mscni_obj->scni[1]->sfIndex);
-	// iv_foutput(stdout, _mscni_obj->scni[57]->sfIndex);
-	// iv_foutput(stdout, _mscni_obj->scni[33]->sfIndex);
-	// iv_foutput(stdout, _mscni_obj->scni[156]->sfIndex);
-
-	// Test divergence free condition
-	IVEC * index ;
-	MAT * B; 
-	MAT * check_B = m_get(dim*dim,2);
-	printf("checking scni \n \n");
-	int checkPoint = 45;
-
-	m_foutput(stdout,_scni_obj->scni[checkPoint]->B);
-	iv_foutput(stdout, _scni_obj->scni[checkPoint]->sfIndex);
-
-	printf("checking divergence free condition at point %d\n", checkPoint);
-	printf("with coordinates %lf %lf\n", mfree.nodes->me[checkPoint][0], mfree.nodes->me[checkPoint][1]);
-	printf("cell area = %lf \n", _scni_obj->scni[checkPoint]->area);
-	printf("and neighbours \n");
-	for ( int i = 0 ; i < _scni_obj->num_points ; i++)
+	int dim_s = dim;
+	int dim_stress = dim*dim ;
+	if ( is_AXI)
 	{
-		index = _scni_obj->scni[i]->sfIndex;
-		B = _scni_obj->scni[i]->B;
-
-		for (int k = 0 ; k < index->max_dim ; k++){
-			int indx = index->ive[k];
-
-			if ( indx == checkPoint)
-			{
-				check_B->me[0][0] += B->me[0][2*k]*_scni_obj->scni[i]->area;
-				check_B->me[1][1] += B->me[1][2*k+1]*_scni_obj->scni[i]->area;
-				check_B->me[2][0] += B->me[2][2*k]*_scni_obj->scni[i]->area;
-				check_B->me[3][1] += B->me[3][2*k+1]*_scni_obj->scni[i]->area;
-			}
-		}
+		dim_s = dim_s +1;
+		dim_stress = dim_stress + 1;
 	}
-	m_foutput(stdout, check_B);
 
-	printf("checking mscni \n \n");
-	//m_foutput(stdout,_mscni_obj->scni[checkPoint]->B);
-	//iv_foutput(stdout, _mscni_obj->scni[checkPoint]->sfIndex);
-	MAT * check_B1 = m_get(dim*dim,2);
-	printf("checking divergence free condition at point %d\n", checkPoint);
-	printf("with coordinates %lf %lf\n", mfree.nodes->me[checkPoint][0], mfree.nodes->me[checkPoint][1]);
-	printf("cell area = %lf \n", _mscni_obj->scni[checkPoint]->area);
-	printf("and neighbours \n");
-	for ( int i = 0 ; i < _scni_obj->num_points ; i++)
+	if ( strcmp ( integration_type, "SCNI") == 0)
 	{
-		index = _mscni_obj->scni[i]->sfIndex;
-		B = _mscni_obj->scni[i]->B;
+		material_points->num_material_points = numnodes;
 
-		for (int k = 0 ; k < index->max_dim ; k++){
-			int indx = index->ive[k];
+		// generate clipped voronoi diagram
+		vor = generate_voronoi(xI->base, boundaryNodes, xI->m, numBoundary, 2);
+	 	// generate scni cells
+		_scni_obj = generate_scni(vor, NULL , is_stabalised, is_AXI, dim, &mfree);
 
-			if ( indx == checkPoint)
-			{
-				check_B1->me[0][0] += B->me[0][2*k]*_mscni_obj->scni[i]->area;
-				check_B1->me[1][1] += B->me[1][2*k+1]*_mscni_obj->scni[i]->area;
-				check_B1->me[2][0] += B->me[2][2*k]*_mscni_obj->scni[i]->area;
-				check_B1->me[3][1] += B->me[3][2*k+1]*_mscni_obj->scni[i]->area;
-			}
+		// convert to material point representation
+		int number_of_material_points = numnodes;
+
+		material_points->MP = malloc(number_of_material_points*sizeof(MATERIAL_POINT*));
+		material_points->num_material_points = number_of_material_points;
+
+
+		for ( int i = 0 ; i < number_of_material_points ; i++)
+		{
+			material_points->MP[i] = malloc(1*sizeof(MATERIAL_POINT));
+			material_points->MP[i]->inc_F = m_get(dim_s,dim_s);
+			material_points->MP[i]->temp = m_get(dim_s,dim_s);
+
+			material_points->MP[i]->temp_1 = m_get(dim_s,dim_s);
+			material_points->MP[i]->index = i;
+			material_points->MP[i]->fInt = _scni_obj->scni[i]->fInt;
+			material_points->MP[i]->F_n = m_get(dim_s,dim_s);
+			m_ident(material_points->MP[i]->inc_F);
+			m_ident(material_points->MP[i]->F_n);
+			material_points->MP[i]->Jn = 1;
+			material_points->MP[i]->stressVoigt = v_get(dim_stress);
+			material_points->MP[i]->coords_n = malloc(2*sizeof(double));
+			material_points->MP[i]->coords_n_1 = malloc(2*sizeof(double));
+			material_points->MP[i]->coords_n[0] = xI->me[i][0];
+			material_points->MP[i]->coords_n[1] = xI->me[i][1];
+			material_points->MP[i]->coords_n_1[0] = xI->me[i][0];
+			material_points->MP[i]->coords_n_1[1] = xI->me[i][1];
+			material_points->MP[i]->rho = rho;
+			material_points->MP[i]->neighbours = _scni_obj->scni[i]->sfIndex;
+			material_points->MP[i]->num_neighbours = _scni_obj->scni[i]->sfIndex->max_dim;
+			material_points->MP[i]->shape_function = malloc(1*sizeof(shape_function));
+			material_points->MP[i]->shape_function->phi = _scni_obj->scni[i]->phi;
+			material_points->MP[i]->INTEGRATION_FACTOR = 1;
+			material_points->MP[i]->volume = _scni_obj->scni[i]->area;
+			material_points->MP[i]->stateNew = new_material_state(0, BUCKLEY,
+					dim, is_AXI);
+			material_points->MP[i]->stateOld = new_material_state(0, BUCKLEY,
+					dim, is_AXI);
+			material_points->MP[i]->B = _scni_obj->scni[i]->B;
 		}
-	}
-	m_foutput(stdout, check_B1);
 
+	
+	}else if ( strcmp(integration_type, "TRIANGLE") == 0)
+	{
+
+	material_points = create_material_points(tri, 
+			is_AXI, dim, integration_type, material_type,  cells, rho, beta,  &mfree);
+
+	}
+
+
+	int number_of_material_points = material_points->num_material_points;
+
+
+
+	// form tempory Bmat
+
+	// for ( int i = 0 ; i < numnodes ; i++)
+	// {
+		
+
+	// 		// getting Bmat 
+	// 		// Strain Displacement relationship 
+	// 		material_points->MP[i]->B = BMAT(MNULL,
+	// 			sf_nodes->sf_list[i],
+	// 			dim,
+	// 			0,
+	// 			material_points->MP[i]->coords_n_1[0]);
+
+	// 		material_points->MP[i]->neighbours = sf_nodes->sf_list[i]->neighbours;
+	// 		material_points->MP[i]->num_neighbours =  sf_nodes->sf_list[i]->neighbours->max_dim;
+	// 		material_points->MP[i]->fInt = v_resize(material_points->MP[i]->fInt, material_points->MP[i]->num_neighbours*2);
+
+
+	// }
 
 	/* ------------------------------------------*/
 	/* -------------Boundary Conditions----------*/
@@ -302,7 +365,7 @@ int main(void )
 	{
 		x = mfree.nodes->me[i];
 
-		if ( x[0] == 0)
+		if ( x[0] < 1e-3)
 		{
 			traction_nodes->ive[num_nodes_trac] = i;
 			++num_nodes_trac;
@@ -334,6 +397,9 @@ int main(void )
 	iv_foutput(stdout, eb_nodes);
 
 
+
+
+
 	// Traction nodes
 	MAT * traction_nodes_coords = m_get(num_nodes_trac,dim);
 	for ( int i = 0 ; i < num_nodes_trac ; i++)
@@ -349,23 +415,45 @@ int main(void )
 	/* ----------------Mass Vector---------------*/
 	/* ------------------------------------------*/
 
-	VEC * nodal_mass = v_get(mfree.num_nodes);
+	// VEC * nodal_mass = v_get(mfree.num_nodes);
+	// VEC * inv_nodal_mass = v_get(mfree.num_nodes);
+
+	// for ( int i = 0 ; i < mfree.num_nodes ; i++)
+	// {
+	// 	nodal_mass->ve[i] = _scni_obj->scni[i]->area*rho;
+	// 	inv_nodal_mass->ve[i] = 1.000/nodal_mass->ve[i];
+
+	// }
+
+	VEC * nodal_mass = mass_vector(material_points, &mfree);
+
 	VEC * inv_nodal_mass = v_get(mfree.num_nodes);
 
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
-		nodal_mass->ve[i] = _scni_obj->scni[i]->area*rho;
-		inv_nodal_mass->ve[i] = 1.000/nodal_mass->ve[i];
-
+		inv_nodal_mass->ve[i] = 1.00/nodal_mass->ve[i];
 	}
+
+
+	printf("nodal mass = %lf \n", v_sum(nodal_mass));
+
+	printf("----FINISHED BOUNDARY CONIDTION CREATION ---- \n");
+
+
+	// /*  EB1  */
+	EBC * eb1 = malloc(1*sizeof(EBC));
+	eb1->dofFixed = 3;
+	eb1->nodes = eb_nodes;
+	int num_nodes_eb1 = eb1->nodes->max_dim;
+	setUpBC(eb1,inv_nodal_mass,&mfree);
+
 
 	/* ------------------------------------------*/
 	/* ----------------Time stepping-------------*/
 	/* ------------------------------------------*/
 	
 	// time parameters
-	double t_max = 0.5; // 1s
-	double delta_t = 1.55e-6;
+	double t_max = 1; // 1s
 	double t_n = 0;
 	double t_n_1 = 0;
 
@@ -379,7 +467,8 @@ int main(void )
 
 	// Net Force
 	VEC * Fnet_n_1 = v_get(dim*mfree.num_nodes);
-
+	eb1->uBar1 = v_get(eb1->nodes->max_dim);
+	eb1->uBar2 = v_get(eb1->nodes->max_dim);
 
 	// Kinematic variables
 	// displacement
@@ -397,6 +486,9 @@ int main(void )
 	VEC * a_n = v_get(dim*mfree.num_nodes);
 
 	MAT * updatedNodes = m_get(mfree.num_nodes,2);
+
+	VEC * v_correct = v_get(dim*mfree.num_nodes);
+
 	// tip load
 	VEC * phi;
 	IVEC * neighbours;
@@ -425,6 +517,10 @@ int main(void )
 
 	struct timeval start3, end3;
 	gettimeofday(&start3, NULL);
+	double delta = 0;
+
+
+	printf("-----STARTING TIME STEPPING ------\n");
 
 	while ( t_n < t_max)
 	//while ( n < 1)
@@ -443,15 +539,33 @@ int main(void )
 		// update displacements
 		//v_mltadd(d_n,v_n_h,delta_t,d_n_1);
 		__mltadd__(d_n_1->ve,v_n_h->ve,delta_t, num_dof);
-		// implement boundary conditions
 
-		for ( int i = 0 ; i < num_nodes_eb ; i++)
-		{
-			d_n_1->ve[eb_nodes->ive[i]*2] = 0;
-			d_n_1->ve[eb_nodes->ive[i]*2 + 1] = 0;
-			v_n_h->ve[eb_nodes->ive[i]*2] = 0;
-			v_n_h->ve[eb_nodes->ive[i]*2 + 1] = 0;
+
+		// // implement boundary conditions
+
+		// for ( int i = 0 ; i < num_nodes_eb ; i++)
+		// {
+		// 	d_n_1->ve[eb_nodes->ive[i]*2] = 0;
+		// 	d_n_1->ve[eb_nodes->ive[i]*2 + 1] = 0;
+		// 	v_n_h->ve[eb_nodes->ive[i]*2] = 0;
+		// 	v_n_h->ve[eb_nodes->ive[i]*2 + 1] = 0;
+		// }
+
+		v_zero(v_correct);
+
+		/*  Implement BCs */
+		enforceBC(eb1,d_n_1); 
+		// find velocity correction
+		sv_mlt(1.00/(delta_t),eb1->uCorrect1,v_correct);
+		for ( int k = 0 ; k < v_correct->max_dim; k++){
+			v_n_h->ve[2*k] += v_correct->ve[k];
 		}
+
+		sv_mlt(1.000/(delta_t),eb1->uCorrect2,v_correct);
+		for ( int k = 0 ; k < v_correct->max_dim; k++){
+			v_n_h->ve[2*k+1] += v_correct->ve[k];
+		}
+
 
 		// find new nodal positions
 		mv_mlt(Lambda,d_n_1,nodal_disp);
@@ -460,7 +574,8 @@ int main(void )
 
 
 		// Find the x and y points requried for plotting
-		xPoint = nodal_disp->ve[traction_nodes->ive[2]*2+1]*xFactor;
+
+		xPoint = nodal_disp->ve[traction_nodes->ive[t_node]*2+1]*xFactor;
 		yPoint = tipLoad * pow(L,2)*(1/E)*(1/Ixx);
 
 
@@ -469,8 +584,8 @@ int main(void )
 		/* ------------------------------------------*/
 
 		/*  Manually find point load */
-		neighbours = phi_traction->sf_list[2]->neighbours;
-		phi = phi_traction->sf_list[2]->phi;
+		neighbours = phi_traction->sf_list[t_node]->neighbours;
+		phi = phi_traction->sf_list[t_node]->phi;
 		tipLoad = P*smoothstep(t_n_1,t_max,0);
 		v_zero(Fext_n_1);
 		for ( int i = 0 ; i < neighbours->max_dim; i++){
@@ -486,8 +601,18 @@ int main(void )
 
 
 		//double delta_t_min = internalForce_hyperelastic_S(Fint_n_1, _mscni_obj, d_n_1, v_n_h, materialParameters, "SVK", is_AXI, dim);
-		double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, v_n_h,
-		materialParameters, "SVK", is_AXI, dim,t_n_1);
+		// double delta_t_min = internalForce_hyperelastic(Fint_n_1, _scni_obj, d_n_1, v_n_h,
+		// materialParameters, "SVK", is_AXI, dim,t_n_1);
+
+		v_zero(Fint_n_1);
+		for ( int i = 0 ; i < number_of_material_points ; i++)
+		{
+
+			internalForce_hyperelastic(Fint_n_1, material_points->MP[i], d_n_1,v_n_h,
+ 				materialParameters, &SVK , t_n_1);
+		}
+
+
 
 		/* ------------------------------------------*/
 		/* ---------------Find Net Force-------------*/
@@ -571,7 +696,6 @@ int main(void )
 		printf("%i  \t  %lf  \t %lf \t  %10.2E %10.2E \n",n,t_n,tipLoad, Wbal, delta_t);
 
 	}
-
 
 	gettimeofday(&end3, NULL);
 	 delta = ((end3.tv_sec  - start3.tv_sec) * 1000000u + 

@@ -15,6 +15,7 @@ OPTION(PROBLEM_CYLINDER "Compile cylinder program" ON)
 OPTION(PROBLEM_TAYLOR_BAR "Compile cylinder program" ON)
 OPTION(PROBLEM_TEST "Compile TEST program" OFF)
 OPTION(PROBLEM_PREFORM_UPDATED "Compile UPDATED PREFORM program" ON)
+OPTION(PROBLEM_RUBBER "Compile RUBBER program" ON)
 
 
 add_subdirectory(lib)
@@ -52,6 +53,10 @@ endif(PROBLEM_CYLINDER)
 if(PROBLEM_TAYLOR_BAR)
 	add_subdirectory(problems/taylor_bar)
 endif(PROBLEM_TAYLOR_BAR)	
+
+if(PROBLEM_RUBBER)
+	add_subdirectory(problems/rubber)
+endif(PROBLEM_RUBBER)	
 
 
 if(PROBLEM_TEST)

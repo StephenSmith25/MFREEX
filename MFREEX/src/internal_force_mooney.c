@@ -5,9 +5,9 @@
 static double epsilon_penalty = 50; // NORMAL VLAUE = -50
 static double xi =0.01;
 
-#define HOURGLASS_CONTROL 
+//#define HOURGLASS_CONTROL 
 //#define VISCOUS_HOURGLASS
-#define STIFFNESS_HOURGLASS
+//#define STIFFNESS_HOURGLASS
 
 
 static int call_count ;
@@ -26,6 +26,8 @@ void internal_force_mooney(void *threadarg) {
 
 
 	// Compute incremental deformation gradient
+
+
 	defgrad_m(internal_force_struct->MP->inc_F, 
 		internal_force_struct->MP->B, 
 		internal_force_struct->MP->neighbours, 
