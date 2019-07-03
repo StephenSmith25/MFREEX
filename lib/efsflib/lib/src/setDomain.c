@@ -106,13 +106,13 @@ int setDomain(meshfreeDomain * mfree)
 		{
 
 
-		if ( mfree->di_tensor == MNULL)
-		{
-		mfree->di_tensor = m_get(num_nodes,dim);
-		}
+		// if ( mfree->di_tensor == MNULL)
+		// {
+		mfree->di_tensor = m_get(num_nodes,2);
+		//}
 
 
-
+		printf("got here \n");
 		VEC * distances = v_get(num_nodes); 
 		PERM * order = px_get(num_nodes);
 
@@ -141,7 +141,7 @@ int setDomain(meshfreeDomain * mfree)
 
 			// find dmx dmz based on this
 
-			for ( int j = 0 ; j < min_num_neighbours ; j++)
+			for ( int j = 0 ; j < num_nodes ; j++)
 			{
 				for ( int k = 0 ; k < dim ; k++){
 				double max_distance_j = fabs(nodes->me[i][k] - nodes->me[order->pe[j]][k]);

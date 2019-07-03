@@ -36,5 +36,6 @@ typedef struct internal_force_args
 
 void internal_force_mooney(void *threadarg);
 
+void internal_force_neo(void *threadarg);
 
 #endif

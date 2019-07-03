@@ -19,7 +19,7 @@ link_directories(${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
 
 
 
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin/rubber)
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin/rubber_comp)
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
@@ -34,18 +34,18 @@ find_package (Threads REQUIRED)
 SET(GCC_COVERAGE_COMPILE_FLAGS "-O3 -g -std=c99 -pthread -lpthread")
 add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
-add_executable(rubber ps_tension.c)
-target_link_libraries(rubber  CVLIB thread_pool triangulate MFREEX Eigen EFSFLIB meschach m gpc util )
+add_executable(rubber_comp ps_comp.c)
+target_link_libraries(rubber_comp  CVLIB thread_pool triangulate MFREEX Eigen EFSFLIB meschach m gpc util )
 
 
 # copy input files to location
 add_custom_command(
-        TARGET rubber POST_BUILD
+        TARGET rubber_comp POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
                 ${CMAKE_CURRENT_SOURCE_DIR}/rubber.segs
                 ${EXECUTABLE_OUTPUT_PATH}/rubber.segs)
 add_custom_command(
-        TARGET rubber POST_BUILD
+        TARGET rubber_comp POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
                 ${CMAKE_CURRENT_SOURCE_DIR}/rubber.nodes
                 ${EXECUTABLE_OUTPUT_PATH}/rubber.nodes)

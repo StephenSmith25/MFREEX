@@ -1,5 +1,5 @@
-#ifndef MOONEYRIVLIN_H_
-#define MOONEYRIVLIN_H_
+#ifndef COMPRESSNEO_H_
+#define COMPRESSNEO_H_
 
 
 
@@ -14,9 +14,8 @@
 #include <math.h>
 #include "m_inverse_small.h"
 
-int mooneyRivlin(VEC * stressVoigt, state_variables * states, VEC * params);
+int compress_neo(VEC * stressVoigt, state_variables * states, VEC * params);
 
-int cubicRivlin_mod(VEC * stressVoigt, state_variables * state, VEC * matParams);
 
 
 

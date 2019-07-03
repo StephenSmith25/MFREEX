@@ -1,5 +1,5 @@
-#ifndef INTERNAL_FORCE_BUCKLEY_H_
-#define INTERNAL_FORCE_BUCKLEY_H_
+#ifndef INTERNAL_FORCE_NEO_H_
+#define INTERNAL_FORCE_NEO_H_
 
 
 
@@ -12,7 +12,6 @@
 
 
 
-void internal_force_buckley(void *threadarg);
 void internal_force_neo(void *threadarg);
 
 #endif

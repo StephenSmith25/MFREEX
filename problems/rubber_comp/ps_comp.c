@@ -47,18 +47,18 @@
 int constant_support_size = 0;
 char * basis_type = "linear";
 char * weight = "cubic";
-char * kernel_shape = "radial";
+char * kernel_shape = "rectangular";
 
 
 // how much larger can the domains get 
 double beta =2;
 
 // Meshfree parameters
-const double dmax =4;
-const double dmax_x = 1.5;
-const double dmax_y = 1.5;
+const double dmax =3;
+const double dmax_x = 3;
+const double dmax_y = 3;
 double tMax = 1;
-double deltaT = 1e-7;
+double deltaT = 1e-8;
 
 int writeFreq = 1000;
 int printFreq = 1000;
@@ -75,7 +75,7 @@ char * integration_type = "SCNI";
 
 /*  Material  */
 
-const double V_PRESCRIBED = 50;
+const double V_PRESCRIBED = -5;
 
 const double T_RAMP_DISP =0;
 
@@ -86,12 +86,15 @@ const double T_RAMP_DISP =0;
 //#endif
 
 double X_MIN_DIM = 0;
-double X_MAX_DIM = 0.1;
+double X_MAX_DIM = 1;
 double Y_MIN_DIM = 00.00;
-double Y_MAX_DIM = 0.2;
+double Y_MAX_DIM = 0.1;
 
 int NUM_NODES_X = 15;
 int NUM_NODES_Y = 15;
+
+double R_X = 0.25;
+double R_Y  = 0.02;
 
 
 
@@ -128,11 +131,12 @@ int main(int argc, char** argv) {
 
  
 	/*  Material struct */
-	VEC * materialParameters = v_get(3);
-	materialParameters->ve[0] = 18.35;
-	materialParameters->ve[1] = 1.468;
-	materialParameters->ve[2] = 1.468e3;
-	const double rho = 1.4089e-4;
+	VEC * materialParameters = v_get(4);
+	materialParameters->ve[0] = 0.373;
+	materialParameters->ve[1] = -0.031;
+	materialParameters->ve[2] = 0.005;
+	materialParameters->ve[3] = 1e3;
+	const double rho = 1000e-9;
 
 
 	// CREATE POINTS BASED ON DELAUNAY TRIANGULATION
@@ -311,15 +315,27 @@ int main(int argc, char** argv) {
 	/* ------------------------------------------*/
 
 	VEC * dI = v_get(xI->m);
+
+
+	double * dmax_tensor = malloc(2*sizeof(double));
+	dmax_tensor[0] = dmax_x;
+	dmax_tensor[1] = dmax_y;
+
 	// meshfree domain
 	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI,
-		.weight_function = weight, .kernel_shape = kernel_shape, 
+		.weight_function = weight, .kernel_shape = kernel_shape, .dmax_tensor = dmax_tensor,
 		.basis_type = basis_type,.is_constant_support_size = constant_support_size,
 		.dmax_radial = dmax};
 	setDomain(&mfree);
 
+	m_foutput(stdout,mfree.di_tensor);
 
+	for ( int i = 0 ; i < numnodes ;i++)
+	{
+		mfree.di_tensor->me[i][0] = R_X;
+				mfree.di_tensor->me[i][1] = R_Y;
 
+	}
 	/* ---------------------------------------------------------------------------*/
 	/* ---------------CREATE THE MATERIAL ( INTEGRATION) POINTS-------------------*/
 	/* ---------------------------------------------------------------------------*/
@@ -482,10 +498,12 @@ int main(int argc, char** argv) {
 	/*  Set up essential boundary  */
 	EBC * eb1 = malloc(1*sizeof(EBC));
 	EBC * eb2 = malloc(1*sizeof(EBC));
+	EBC * eb3 = malloc(1*sizeof(EBC));
 
 
 	int count1 = 0;
 	int count = 0;
+	int count2 = 0;
 
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
@@ -493,11 +511,17 @@ int main(int argc, char** argv) {
 		double y = mfree.nodes->me[i][1];
 
 
-		if ( x < 1e-9)
+		if ( y < 1e-9)
 		{
 			++count;
 		}
-		if ( x > X_MAX_DIM - 1e-9)
+
+		if ( x == 0.5)
+		{
+			++count2;
+		}
+
+		if ( y > Y_MAX_DIM - 1e-9)
 		{
 			++count1;
 		}
@@ -510,7 +534,10 @@ int main(int argc, char** argv) {
 
 	eb1->nodes = iv_get(count);
 	eb2->nodes = iv_get(count1);
+		eb3->nodes = iv_get(count2);
+
 	count1 = 0;
+	count2 = 0;
 	count = 0;
 
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
@@ -519,17 +546,25 @@ int main(int argc, char** argv) {
 		double y = mfree.nodes->me[i][1];
 
 
-		if ( x < 1e-9)
+		if ( y < 1e-9)
 		{
 			eb1->nodes->ive[count] = i;
 
 			++count;
 		}
-		if ( x > X_MAX_DIM - 1e-9)
+		if ( y > Y_MAX_DIM - 1e-9)
 		{
 			eb2->nodes->ive[count1] = i;
 			++count1;
 		}
+
+		if ( x == 0.5)
+		{
+			eb3->nodes->ive[count2] = i;
+
+			++count2;
+		}
+
 
 	}
 	eb1->dofFixed = 3;
@@ -548,6 +583,15 @@ int main(int argc, char** argv) {
 	setUpBC(eb2,inv_nodal_mass,&mfree);
 	iv_foutput(stdout,eb2->nodes);
 	m_foutput(stdout, eb2->coords);
+
+
+	// eb3
+	eb3->dofFixed = 1;
+	//getBoundary(&eb1->nodes,boundaryNodes,numBoundary,nodalMarkers,numnodes,3);
+	setUpBC(eb3,inv_nodal_mass,&mfree);
+
+	iv_foutput(stdout,eb3->nodes);
+	m_foutput(stdout, eb3->coords);
 
 
 
@@ -618,6 +662,7 @@ int main(int argc, char** argv) {
 	eb1->uBar2 = v_get(eb1->nodes->max_dim);
 	eb2->uBar1 = v_get(eb2->nodes->max_dim);
 	eb2->uBar2 = v_get(eb2->nodes->max_dim);
+	eb3->uBar1 = v_get(eb3->nodes->max_dim);
 
 
 
@@ -719,7 +764,7 @@ int main(int argc, char** argv) {
 
 	for ( int k = 0 ; k < eb2->nodes->max_dim ; k++)
 	{
-		eb2->uBar1->ve[k] = u_pre;
+		eb2->uBar2->ve[k] = u_pre;
 	}
 
 
@@ -748,6 +793,13 @@ int main(int argc, char** argv) {
 		for ( int k = 0 ; k < v_correct->max_dim; k++){
 			v_n_h->ve[2*k+1] += v_correct->ve[k];
 	}
+
+	enforceBC(eb3,d_n_1); 
+	// find velocity correction
+	sv_mlt(1.00/(deltaT),eb3->uCorrect1,v_correct);
+		for ( int k = 0 ; k < v_correct->max_dim; k++){
+			v_n_h->ve[2*k] += v_correct->ve[k];
+		}
 
 
 	mv_mlt(Lambda,d_n_1,nodal_disp);
@@ -791,7 +843,7 @@ int main(int argc, char** argv) {
 				// assemble internal force
 				int ID = omp_get_thread_num();
 				INTERNAL_FORCE_ARGS[ID].MP = material_points->MP[i];
-				internal_force_mooney(&INTERNAL_FORCE_ARGS[ID]);
+				internal_force_neo(&INTERNAL_FORCE_ARGS[ID]);
 
 
 

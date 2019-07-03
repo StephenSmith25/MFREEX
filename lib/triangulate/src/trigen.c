@@ -187,7 +187,7 @@ TRIANGLE  *  trigen(char * options, char * fileName)
 	in.numberofholes = 0;
 	in.holelist = (double *) NULL;
 
-	report(&in, 1, 0, 0, 1, 0, 0);
+	//report(&in, 1, 0, 0, 1, 0, 0);
 
 	/* Make necessary initializations so that Triangle can return a */
 	/*   triangulation in `out' and a voronoi diagram in `vorout'.  */
