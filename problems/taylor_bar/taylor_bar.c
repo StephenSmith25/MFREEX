@@ -55,17 +55,21 @@ const double tMax = 10;
 double deltaT = 1e-11;
 
 // Meshfree
-const double dmax = 4;
-const int constant_support_size = 1;
+const double dmax = 2.5;
+const int constant_support_size = 0;
 const int is_stabalised = 0;
 char * basis_type = "linear";
 char * weight = "cubic";
-char * kernel_shape = "radial";
+char * kernel_shape = "rectangular";
 
-
+const double dmax_x = 1.5;
+const double dmax_y = 1.5;
 
 // writing files
-const int  writeFreq = 2000;
+const int  writeFreq = 200;
+
+double R_X = 3*0.000521;
+double R_Y  = 3*0.000782;
 
 
 char * MATERIAL_NAME = "J2";
@@ -141,16 +145,23 @@ int main(int argc, char** argv) {
 
 	// shape function parameters
 	VEC * dI = v_get(xI->m);
-
+	double * dmax_tensor = malloc(2*sizeof(double));
+	dmax_tensor[0] = dmax_x;
+	dmax_tensor[1] = dmax_y;
 	// meshfree domain
 	meshfreeDomain mfree = {.nodes = xI, .di = dI, .num_nodes = xI->m, .dim = dim, .IS_AXI = is_AXI,
-		.weight_function = weight, .kernel_shape = kernel_shape, 
+		.weight_function = weight, .kernel_shape = kernel_shape, .dmax_tensor = dmax_tensor,
 		.basis_type = basis_type,.is_constant_support_size = constant_support_size,
 		.dmax_radial = dmax};
 	
 	setDomain(&mfree);
 
+	for ( int i = 0 ; i < mfree.num_nodes ;i++)
+	{
+		mfree.di_tensor->me[i][0] = R_X;
+		mfree.di_tensor->me[i][1] = R_Y;
 
+	}
 	
 	/* ------------------------------------------*/
 	/* ------------------SCNI--------------------*/
@@ -496,7 +507,28 @@ int main(int argc, char** argv) {
 			char filename[50];
 			snprintf(filename, 50, "displacement_%d%s",fileCounter,".txt");
 			mat2csv(updatedNodes,"./Displacement",filename);
-			fileCounter++;	
+
+			snprintf(filename, 50, "MaterialPoints/material_%d%s",fileCounter,".csv");
+
+			fp = fopen(filename,"w");
+				fprintf(fp,"x,y,z,s11,s22,s12,DEPS\n");
+
+			for (int i = 0 ; i < numnodes ; i++)
+			{
+				double s11 = state_n_1[i]->sigma->me[0][0];
+				double s22 = state_n_1[i]->sigma->me[1][1];
+				double s12 =state_n_1[i]->sigma->me[0][0];
+				double DEPS = state_n_1[i]->Deps;
+
+
+			fprintf(fp,"%lf,%lf,%lf,%lf,%lf,%lf,%lf\n",updatedNodes->me[i][0],updatedNodes->me[i][1],0.00,
+			s11,s22,s12,DEPS
+			);
+
+			}
+			fclose(fp);
+
+			fileCounter++;
 
 		}
 		/* ------------------------------------------*/

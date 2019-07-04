@@ -23,6 +23,8 @@ int j2_plasticity(state_variables * stateNew, state_variables * stateOld, VEC * 
 	double mu = params->ve[1];
 	double sigma_yield = params->ve[2];
 
+	int dim = stateNew->d->m;
+
 	// Initial variables
 	MAT * d_n_1 = stateNew->d;
 	MAT * sigma_n_1_t = stateNew->m_temp1;
@@ -98,6 +100,10 @@ int j2_plasticity(state_variables * stateNew, state_variables * stateOld, VEC * 
 		m_sub(sigma_n_1_t,delta_sigma,sigma_n_1);
 
 		// Find increment in plastic strain
+
+		stateNew->Deps += delta_gamma * ROOT_2_OVER_3;
+
+
 
 			// Find deviatoric trial stress
 		double trace_sigma= sigma_n_1->me[0][0]+sigma_n_1->me[1][1] + sigma_n_1->me[2][2];

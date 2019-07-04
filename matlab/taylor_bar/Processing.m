@@ -64,13 +64,13 @@ disp = csvread(filename);
 
 
 subplot(1,3,3)       % add first plot in 2 x 2 grid
-plot(disp(:,1),disp(:,2),'k.','markersize',3)           % line plot
+plot(disp(:,1),disp(:,2),'k.','markersize',5)           % line plot
 
 hold on
-plot(-disp(:,1), disp(:,2),'k.','markersize',3);
+plot(-disp(:,1), disp(:,2),'k.','markersize',5);
 
 hold on
-plot([-plate_width,plate_width],[0,0],'r-');
+%plot([-plate_width,plate_width],[0,0],'r-');
 axis equal
 ylim([min_Y - 0.1*max_Y,1.2*max_Y])
 xlim([-plate_width - 0.1*plate_width,plate_width + 0.1*plate_width])
