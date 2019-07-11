@@ -44,7 +44,7 @@
 #define DIM = 2
 #endif 
 /*  Function definitions */
-int constant_support_size = 0;
+int constant_support_size = 1;
 char * basis_type = "linear";
 char * weight = "cubic";
 char * kernel_shape = "radial";
@@ -58,7 +58,7 @@ const double dmax =4;
 const double dmax_x = 1.5;
 const double dmax_y = 1.5;
 double tMax = 1;
-double deltaT = 1e-7;
+double deltaT = 5e-8;
 
 int writeFreq = 1000;
 int printFreq = 1000;
@@ -77,7 +77,7 @@ char * integration_type = "SCNI";
 
 const double V_PRESCRIBED = 50;
 
-const double T_RAMP_DISP =0;
+const double T_RAMP_DISP =1e-2;
 
  
 //#define IS_UPDATED
@@ -110,13 +110,13 @@ int main(int argc, char** argv) {
 	FILE * fp;
 	int i;
 
-	int NUMBER_OF_THREADS = 2;
+	int NUMBER_OF_THREADS = 3;
 	if ( argv[2] != NULL)
 	{
 		NUMBER_OF_THREADS = atoi(argv[2]);
 
 	}else{
-		NUMBER_OF_THREADS = 2;	
+		NUMBER_OF_THREADS = 1;	
 	}
 
 
@@ -216,7 +216,7 @@ int main(int argc, char** argv) {
 	int number_of_stress_points = stress_points->m;
 
 
-	number_of_stress_points = 0;
+	//number_of_stress_points = 0;
 
 
 
@@ -269,37 +269,38 @@ int main(int argc, char** argv) {
 
 	
 
+	CELLS * cells = NULL;
 
 	// CREATE NODES
 	// 
-	BOUNDING_BOX * bounding_box = create_bounding_box(0, 3,
-	0,3, 0, 0);
+	// BOUNDING_BOX * bounding_box = create_bounding_box(0, 3,
+	// 0,3, 0, 0);
 
-	double cell_size[2] = {0.05,0.01};
+	// double cell_size[2] = {0.05,0.01};
 
-	MAT * xI_copy = m_copy(xI,MNULL);
-	CELLS * cells = create_cells(bounding_box, cell_size, dim, xI_copy);
-	NODELIST * nodelist;
+	// MAT * xI_copy = m_copy(xI,MNULL);
+	// CELLS * cells = create_cells(bounding_box, cell_size, dim, xI_copy);
+	// NODELIST * nodelist;
 
-	fp = fopen("search_cells.csv","w");
-	for ( int i = 0 ; i < cells->ny ; i++)
-	{
+	// fp = fopen("search_cells.csv","w");
+	// for ( int i = 0 ; i < cells->ny ; i++)
+	// {
 
-		for ( int j = 0 ; j < cells->nx ; j++)
-		{
+	// 	for ( int j = 0 ; j < cells->nx ; j++)
+	// 	{
 
-		fprintf(fp,"%lf,%lf,%lf,%lf\n",cells->cells[i][j].x[0],cells->cells[i][j].x[1],
-			cells->cells[i][j].y[0],cells->cells[i][j].y[1]);
+	// 	fprintf(fp,"%lf,%lf,%lf,%lf\n",cells->cells[i][j].x[0],cells->cells[i][j].x[1],
+	// 		cells->cells[i][j].y[0],cells->cells[i][j].y[1]);
 		
-		}
+	// 	}
 
-	}
+	// }
 
-	fclose(fp);
+	// fclose(fp);
 
-	int num_active_cells = 0;
-	active_cell * active_cells = get_active_cells(cells, &num_active_cells);
-	write_active_cells("active_cells.csv",active_cells);
+	// int num_active_cells = 0;
+	// active_cell * active_cells = get_active_cells(cells, &num_active_cells);
+	// write_active_cells("active_cells.csv",active_cells);
 	
 
 
@@ -319,7 +320,7 @@ int main(int argc, char** argv) {
 	setDomain(&mfree);
 
 
-
+	v_foutput(stdout,mfree.di);
 	/* ---------------------------------------------------------------------------*/
 	/* ---------------CREATE THE MATERIAL ( INTEGRATION) POINTS-------------------*/
 	/* ---------------------------------------------------------------------------*/
@@ -711,7 +712,7 @@ int main(int argc, char** argv) {
 	v_pre = V_PRESCRIBED* smoothstep(t_n_1,T_RAMP_DISP,0);
 	u_pre += v_pre*deltaT;
 
-	if (u_pre > 1)
+	if (u_pre > 10)
 	{
 		exit(0);
 	}
@@ -827,7 +828,6 @@ int main(int argc, char** argv) {
 		__sub__(Fint_n_1->ve, R_pen->ve, Fint_n_1->ve, num_dof);
 		v_zero(Fext_n_1);
 		__sub__(Fext_n_1->ve,Fint_n_1->ve,Fnet->ve,num_dof);
-
 
 		// if ( n==10)
 		// {

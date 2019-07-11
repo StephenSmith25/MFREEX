@@ -5,7 +5,7 @@ clear all
 
 
 
-nnx = 30;
+nnx =31;
 
 nny = 60;
 

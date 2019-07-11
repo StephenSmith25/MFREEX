@@ -93,7 +93,7 @@ double Y_MAX_DIM = 0.1;
 int NUM_NODES_X = 15;
 int NUM_NODES_Y = 15;
 
-double R_X = 0.25;
+double R_X = 0.20;
 double R_Y  = 0.02;
 
 

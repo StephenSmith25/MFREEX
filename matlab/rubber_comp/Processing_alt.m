@@ -76,7 +76,7 @@ plot(start_bot_boundary(:,1),start_bot_boundary(:,2),'b','linewidth',3);hold on
 subplot(1,3,2)
 
 
-filename = strcat(path,'/displacement_',num2str(plotFiles(55)),'.txt');
+filename = strcat(path,'/displacement_',num2str(plotFiles(38)),'.txt');
 disp = csvread(filename);
 hold on 
 plot(disp(:,1),disp(:,2),'k.')           % line plot
@@ -101,7 +101,7 @@ plot(mid_bot_boundary(:,1),mid_bot_boundary(:,2),'b','linewidth',3);
 
 subplot(1,3,3)
 
-filename = strcat(path,'/displacement_',num2str(plotFiles(86)),'.txt');
+filename = strcat(path,'/displacement_',num2str(plotFiles(100)),'.txt');
 disp = csvread(filename);
 hold on 
 plot(disp(:,1),disp(:,2),'k.')           % line plot

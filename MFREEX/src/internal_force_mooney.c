@@ -34,6 +34,7 @@ void internal_force_mooney(void *threadarg) {
 		num_neighbours, internal_force_struct->inc_disp);
 
 
+
 	/*  Find Rate of deformation tensors at n+h*/
 	velocity_grad(MP->stateNew,MP->stateOld, DT, 0.500);
 
@@ -47,8 +48,16 @@ void internal_force_mooney(void *threadarg) {
 		internal_force_struct->MP->F_n,
 		internal_force_struct->MP->stateNew->F);
 
-	
 
+	if ( isnan(MP->stateNew->F->me[0][0]))
+	{
+			m_foutput(stdout,internal_force_struct->MP->stateNew->F);
+			m_foutput(stdout,internal_force_struct->MP->B);
+			v_foutput(stdout,internal_force_struct->MP->shape_function->phi);
+			printf("volume = %lf \n", internal_force_struct->MP->volume);
+			printf("coorinate = %lf %lf \n", MP->coords_n_1[0],MP->coords_n_1[1]);
+		exit(0);
+	}
 	MP->stateNew->Jacobian = determinant(MP->stateNew->F);
 
 	// Integration factor

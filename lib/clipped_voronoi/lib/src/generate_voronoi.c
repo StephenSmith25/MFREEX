@@ -10,7 +10,7 @@ int is_member(double * point, double ** points, int numPoints, int dim ){
 
 
 
-	double tol_equal = 1e-14;
+	double tol_equal = 1e-15;
 
 	int is_member_row = 0;
 	int i = 0;

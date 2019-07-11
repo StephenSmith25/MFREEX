@@ -5,9 +5,9 @@ clear all
 
 
 
-nnx = 21;
+nnx = 31;
 
-nny = 31;
+nny = 21;
 
 h = 0.1;
 w = 1;
@@ -38,6 +38,12 @@ for i = 1:length(segments)
     plot(nodes(segments(i,1:2),1),nodes(segments(i,1:2),2),'r-');
     
 end
+
+
+hold on
+
+
+
 
 
 

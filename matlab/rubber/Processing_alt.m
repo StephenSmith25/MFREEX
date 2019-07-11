@@ -9,7 +9,7 @@ d = dir(displacementdir);
 d1 = dir([displacementdir,'*.txt']);
 numFiles = size(d,1) -3 ;
 
-plotFiles = ceil(linspace(1,numFiles,10));
+plotFiles = ceil(linspace(1,numFiles,100));
 
 
 
@@ -26,8 +26,7 @@ boundary_nodes = [boundary_nodes;boundary_nodes(1)];
 filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(1)),'.txt');
 %material_points = csvread(filename,1);
 
-
-filename = strcat(path,'/displacement_',num2str(plotFiles(2)),'.txt');
+filename = strcat(path,'/displacement_',num2str(plotFiles(19)),'.txt');
 disp = csvread(filename);
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 axis equal
@@ -91,7 +90,7 @@ plot(mid_boundary(:,1),mid_boundary(:,2),'b-');
 subplot(1,3,3)
 
 
-filename = strcat(path,'/displacement_',num2str(plotFiles(8)),'.txt');
+filename = strcat(path,'/displacement_',num2str(plotFiles(100)),'.txt');
 disp = csvread(filename);
 hold on 
 plot(disp(:,1),disp(:,2),'k.')           % line plot
