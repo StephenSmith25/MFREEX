@@ -51,7 +51,7 @@ char * kernel_shape = "radial";
 
 
 // how much larger can the domains get 
-double beta =1.6;
+double beta =1.25;
 
 // Meshfree parameters
 const double dmax =3;
@@ -78,7 +78,7 @@ char * integration_type = "TRIANGLE";
 const double rho = 1000e-9;
 
  
-//#define IS_UPDATED
+#define IS_UPDATED
 #ifdef IS_UPDATED
 	#define UPDATE_FREQUENCEY 100
 #endif
