@@ -51,7 +51,7 @@ char * kernel_shape = "radial";
 
 
 // how much larger can the domains get 
-double beta =1.25;
+double beta =1.01;
 
 // Meshfree parameters
 const double dmax =3;
@@ -80,7 +80,7 @@ const double rho = 1000e-9;
  
 #define IS_UPDATED
 #ifdef IS_UPDATED
-	#define UPDATE_FREQUENCEY 100
+	#define UPDATE_FREQUENCEY 150
 #endif
 
 
@@ -320,8 +320,8 @@ int main(int argc, char** argv) {
 
 
 	int count1 = 0;
-	eb1->nodes = iv_get(5);
-	eb2->nodes = iv_get(5);
+	eb1->nodes = iv_get(4);
+	eb2->nodes = iv_get(4);
 	int count = 0;
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{

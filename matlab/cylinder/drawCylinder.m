@@ -8,8 +8,8 @@ r1 = 21.57;
 
 
 
-numCircle = 70;
-num_thickness = 3;
+numCircle = 55;
+num_thickness = 2;
 
 
 % draw boundary first

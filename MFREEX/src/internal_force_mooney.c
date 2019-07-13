@@ -2,11 +2,11 @@
 #include "internal_force_mooney.h"
 #include "Deformation/velocity_grad.h"
 
-static double epsilon_penalty = 10; // NORMAL VLAUE = -50
-static double xi =0.01;
+static double epsilon_penalty =0; // NORMAL VLAUE = -50
+static double xi =1e-4;
 
 #define HOURGLASS_CONTROL 
-//#define VISCOUS_HOURGLASS
+#define VISCOUS_HOURGLASS
 #define STIFFNESS_HOURGLASS
 
 
@@ -222,7 +222,7 @@ void internal_force_mooney(void *threadarg) {
 
 		double e_x  = epsilon[0] /norm_X;
 		double e_y = epsilon[1] /norm_X;
-
+		intFactor = 1.0;
 		// assemble forces 
 		internal_force_struct->RPEN->ve[2*index] += epsilon_penalty*MP->shape_function->phi->ve[k]*e_x*intFactor;
 		internal_force_struct->RPEN->ve[2*index+1] += epsilon_penalty*MP->shape_function->phi->ve[k]*e_y*intFactor;
