@@ -51,7 +51,7 @@ char * kernel_shape = "radial";
 
 
 // how much larger can the domains get 
-double beta =1.01;
+double beta =1.1;
 
 // Meshfree parameters
 const double dmax =3;
@@ -80,7 +80,7 @@ const double rho = 1000e-9;
  
 #define IS_UPDATED
 #ifdef IS_UPDATED
-	#define UPDATE_FREQUENCEY 150
+	#define UPDATE_FREQUENCEY 100
 #endif
 
 
@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
 	VEC * materialParameters = v_get(3);
 	materialParameters->ve[0] = 1.8350;
 	materialParameters->ve[1] = 0.1468;
-	materialParameters->ve[2] = 1e3;
+	materialParameters->ve[2] = 100;
 
 
 	// CREATE POINTS BASED ON DELAUNAY TRIANGULATION
@@ -411,6 +411,10 @@ int main(int argc, char** argv) {
 
 	MAT * nodes_X = m_copy(mfree.nodes,MNULL);
 
+	VEC * v_correct = v_get(num_dof);
+	eb1->uBar1 = v_get(eb1->nodes->max_dim);
+	eb2->uBar2 = v_get(eb2->nodes->max_dim);
+
 	// Energy
 	double Wext = 0;
 	double Wint = 0;
@@ -493,6 +497,21 @@ int main(int argc, char** argv) {
 
 	// implement boundary conditions 
 	// Apply boundary conditions as corrective accelerations
+
+	/*  Implement BCs */
+	// enforceBC(eb1,d_n_1); 
+	// // find velocity correction
+	// sv_mlt(1.00/(deltaT),eb1->uCorrect1,v_correct);
+	// 	for ( int k = 0 ; k < v_correct->max_dim; k++){
+	// 		v_n_h->ve[2*k] += v_correct->ve[k];
+	// 	}
+	// enforceBC(eb2,d_n_1); 
+
+	// 	sv_mlt(1.000/(deltaT),eb2->uCorrect2,v_correct);
+	// 	for ( int k = 0 ; k < v_correct->max_dim; k++){
+	// 		v_n_h->ve[2*k+1] += v_correct->ve[k];
+	// 	}
+
 
 
 		for ( int i =0 ; i < eb1->nodes->max_dim ; i++)

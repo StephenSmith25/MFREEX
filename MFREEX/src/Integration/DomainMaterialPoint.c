@@ -189,6 +189,10 @@ int updateDomainMaterialPoint(MAT * nodes, CELLS * cells,  MATERIAL_POINT * MP)
 	//mtrm_mlt(F,F,C);
 	mmtr_mlt(F, F,C);
 
+
+	C->me[0][1] = 0;
+	C->me[1][0] = 0;
+
 	// Find eigen values of network strain
 	//m_inverse_small(MP->inc_F,MP->stateNew->m_temp4);
 	double lambda1 = 0;
@@ -214,6 +218,10 @@ int updateDomainMaterialPoint(MAT * nodes, CELLS * cells,  MATERIAL_POINT * MP)
 	// 	exit(0);
 	// }
 
+
+	// using diagonal elements of C and ignoring
+	// double l_0 = MP->l_0*C->me[0][0];
+	// double l_1 = MP->l_1*C->me[1][1];
 	// Find new lengths of the ellipse
 	double l_0 = MP->l_0*lambda1;
 	double l_1 = MP->l_1*lambda2;

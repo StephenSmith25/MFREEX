@@ -2,11 +2,11 @@
 #include "internal_force_mooney.h"
 #include "Deformation/velocity_grad.h"
 
-static double epsilon_penalty =0; // NORMAL VLAUE = -50
+static double epsilon_penalty =15; // NORMAL VLAUE = -50
 static double xi =1e-4;
 
 #define HOURGLASS_CONTROL 
-#define VISCOUS_HOURGLASS
+//#define VISCOUS_HOURGLASS
 #define STIFFNESS_HOURGLASS
 
 
@@ -73,23 +73,23 @@ void internal_force_mooney(void *threadarg) {
 	/* ------------------------------------------*/
 	/* -----------------Damping -----------------*/
 	/* ------------------------------------------*/
-	// double b1 = 1000;
-	// double b2 =2000;
-	// double Le =	MP->r_cutoff/1000;
+	double b1 = 0.06;
+	double b2 =1.44;
+	double Le =	MP->r_cutoff/1000;
 	double rho = 1180;
 	double mu = 4e6;
 	double lambda = 1e3; 
 	double Cd = sqrt(((lambda+2*mu)/rho));
 	Cd = Cd*1000;
-	// double div_v = MP->stateNew->div_v;
-	// double qv =  rho*Le*b1*Cd * div_v;
-	// if ( div_v < 0)
-	// {
-	// 	qv += rho*Le*(b2 * Le * pow(div_v,2)) ;
+	double div_v = MP->stateNew->div_v;
+	double qv =  rho*Le*b1*Cd * div_v;
+	if ( div_v < 0)
+	{
+		qv += rho*Le*(b2 * Le * pow(div_v,2)) ;
 
-	// }
-	// qv = qv/pow(10,6);
-	double qv = 0;
+	}
+	qv = qv/pow(10,6);
+	//double qv = 0;
 
 	// if ( call_count % 10000000 == 0)
 	// {
@@ -101,8 +101,8 @@ void internal_force_mooney(void *threadarg) {
 
 	//printf("qv = %10.2E \n ",qv*MP->stateNew->invF->me[1][1]);
 
-	// internal_force_struct->MP->stressVoigt->ve[0] += qv*MP->stateNew->invF->me[0][0] * MP->stateNew->Jacobian;
-	// internal_force_struct->MP->stressVoigt->ve[1] += qv*MP->stateNew->invF->me[1][1] * MP->stateNew->Jacobian;
+	internal_force_struct->MP->stressVoigt->ve[0] += qv*MP->stateNew->invF->me[0][0] * MP->stateNew->Jacobian;
+	internal_force_struct->MP->stressVoigt->ve[1] += qv*MP->stateNew->invF->me[1][1] * MP->stateNew->Jacobian;
 
 	// push forward piola kirchoff stress to Omega_n configuration
 	sv_mlt(1.00/internal_force_struct->MP->Jn,

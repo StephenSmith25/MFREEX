@@ -79,7 +79,7 @@ filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles
 domains = csvread(filename);
 general_ellipse_drawer = @(t) draw_general_ellipse_alt(domains(t,1:4),domains(t,5),material_points(t,1),material_points(t,2));
 ellipses = [];
-for i = 1:200:length(domains)
+for i = 1:25:length(domains)
     
    ellipses = [ellipses ; general_ellipse_drawer(i)]; 
     

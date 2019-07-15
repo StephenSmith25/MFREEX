@@ -1,0 +1,95 @@
+close all
+clear all
+
+lambda = 1;
+rad = 1;
+M_start = [ 1/rad^2 0 ; 0 1/rad^2];
+F = [1+lambda 0 ; 0 1+0.5*lambda];
+C = F'*F;
+
+
+M_end = [M_start(1,1)*(1/C(1,1)) 0;
+0 M_start(2,2)*(1/C(2,2))];
+
+
+a = sqrt(1/M_end(1,1));
+b = sqrt(1/M_end(2,2));
+
+
+%
+
+k = 1.5;
+rad = 1;
+M_start = [ 1/rad^2 0 ; 0 1/rad^2];
+F = [1 k ; 0 1];
+C = F'*F;
+
+
+M_end = [M_start(1,1)*(1/C(1,1)) 0;
+0 M_start(2,2)*(1/C(2,2))];
+
+
+a = sqrt(1/M_end(1,1));
+b = sqrt(1/M_end(2,2));
+
+
+
+k = 1.5;
+rad = 1;
+M_start = [ 1/rad^2 0 ; 0 1/rad^2];
+F = [1 k ; 0 1];
+
+C = F'*F;
+U = sqrtm(C);
+[V,D] = eig(U);
+
+a = D(1,1)*rad;
+b = D(2,2)*rad;
+
+
+N1 = [V(1,1),V(2,1)]';
+
+theta=acosd(V(2,1));
+R = [cosd(theta) -sind(theta) ; sind(theta) cosd(theta)];
+
+
+
+
+alpha = linspace(0,360,50);
+
+
+x = a.*cosd(alpha).*cosd(theta) - b.*sind(alpha).*sind(theta);
+y = a.*cosd(alpha).*cosd(theta) + b.*sind(alpha).*cosd(theta);
+
+plot(x,y,'b.');
+
+general_ellipse_drawer = @(t) draw_general_ellipse_alt(domains(t,1:4),domains(t,5),material_points(t,1),material_points(t,2));
+
+
+function [output] = draw_general_ellipse_alt(M,theta,Cx,Cy)
+
+    t = linspace(0,360,50);
+    
+    MI = [M(1),M(2); M(3), M(4)];
+    
+    [V,D] = eig(MI);
+    
+    
+    a = 1.00/sqrt(D(1,1));
+    b = 1.00/sqrt(D(2,2));
+    x = a*cosd(t)*cos(theta) - b*sind(t)*sin(theta);
+    y = a*cosd(t)*sin(theta) + b*sind(t)*cos(theta);
+    X = [x;y];
+    
+        
+   
+    hold on
+    plot(x+Cx,y+Cy,'r-');
+    
+    output = [x'+Cx,y'+Cy];
+    
+    
+    
+
+
+end
