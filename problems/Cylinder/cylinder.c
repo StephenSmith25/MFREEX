@@ -51,7 +51,7 @@ char * kernel_shape = "radial";
 
 
 // how much larger can the domains get 
-double beta =1.1;
+double beta =1.05;
 
 // Meshfree parameters
 const double dmax =3;
@@ -62,6 +62,8 @@ double deltaT = 5e-7;
 
 int writeFreq = 1000;
 int printFreq = 1000;
+
+int NUM_NODES_EB = 4;
 
 const int dim = 2;
 const int is_AXI = 0;
@@ -77,10 +79,12 @@ char * integration_type = "TRIANGLE";
 /*  Material  */
 const double rho = 1000e-9;
 
- 
+//#define WITH_TIMER
+#define HOURGLASS 
+
 #define IS_UPDATED
 #ifdef IS_UPDATED
-	#define UPDATE_FREQUENCEY 100
+	#define UPDATE_FREQUENCEY 10
 #endif
 
 
@@ -320,8 +324,8 @@ int main(int argc, char** argv) {
 
 
 	int count1 = 0;
-	eb1->nodes = iv_get(4);
-	eb2->nodes = iv_get(4);
+	eb1->nodes = iv_get(NUM_NODES_EB);
+	eb2->nodes = iv_get(NUM_NODES_EB);
 	int count = 0;
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
 	{
@@ -329,13 +333,13 @@ int main(int argc, char** argv) {
 		double y = mfree.nodes->me[i][1];
 
 
-		if ( x == 0)
+		if ( x < 1e-9)
 		{
 			eb1->nodes->ive[count] = i;
 
 			++count;
 		}
-		if ( y == 0)
+		if ( y < 1e-9)
 		{
 			eb2->nodes->ive[count1] = i;
 			++count1;
@@ -391,6 +395,17 @@ int main(int argc, char** argv) {
 	MAT * XI_n_1 = m_get(numnodes,dim);
 	m_copy(mfree.nodes,XI_n);
 
+	struct timeval start_explicit, end_explicit;
+	struct timeval start_int, end_int;
+	struct timeval start_ext, end_ext;
+	struct timeval start_update, end_update;
+
+	double time_int = 0;
+	double time_update = 0;
+
+	double time_external = 0;
+
+	double time_total_explicit = 0;
 
 
 	VEC * inc_disp = v_get(num_dof);
@@ -480,7 +495,7 @@ int main(int argc, char** argv) {
 
 
 	}
-
+	gettimeofday(&start_explicit, NULL);
 	while ( t_n < tMax){
 
 
@@ -534,9 +549,20 @@ int main(int argc, char** argv) {
 
 		__add__(nodes_X->base, d_n_1->ve, XI_n_1->base, num_dof);
 
+
+		#ifdef WITH_TIMER
+		gettimeofday(&start_update, NULL);
+		#endif
 #ifdef IS_UPDATED
 		move_nodes(cells, &active_cells, cell_size, XI_n_1);
 #endif
+
+
+		#ifdef WITH_TIMER
+		gettimeofday(&end_update, NULL);
+		time_update += ((end_update.tv_sec  - start_update.tv_sec) * 1000000u + 
+        end_update.tv_usec - start_update.tv_usec) / 1.e6;
+        #endif
 
 		/* --------------------------------------------------------------*/
 		/* --------------------------------------------------------------*/
@@ -546,20 +572,25 @@ int main(int argc, char** argv) {
 
 		/*  Update pressureload */
 
-	
+		gettimeofday(&start_ext, NULL);
+
 		pre_n_1 = pressure* smoothstep(t_n_1,tMax,0);
 
 		update_pressure_boundary(pB, XI_n_1);
 		v_zero(Fext_n_1);
 		assemble_pressure_load(Fext_n_1, pre_n_1, pB);
 
+		gettimeofday(&end_ext, NULL);
 
+		time_external += ((end_ext.tv_sec  - start_ext.tv_sec) * 1000000u + 
+         end_ext.tv_usec - start_ext.tv_usec) / 1.e6;
 
 		/* --------------------------------------------------------------*/
 		/* --------------------------------------------------------------*/
 		/*      			 INTERNAL FORCE ROUTINE 					 */
 		/* --------------------------------------------------------------*/
 		/* --------------------------------------------------------------*/
+
 		__zero__(R_pen->ve,num_dof);
 		__zero__(Fint_n_1->ve,Fint_n_1->max_dim);
 		
@@ -570,13 +601,20 @@ int main(int argc, char** argv) {
 
 		for ( i = 0 ; i  < NUMBER_OF_THREADS ; i++)
 		{
+
+			#ifdef HOURGLASS
 			__zero__(RPEN[i]->ve, num_dof);
+			#endif
 			__zero__(FINT[i]->ve, num_dof);
+
 
 		}
 		#pragma omp parallel for num_threads(NUMBER_OF_THREADS) schedule(guided)
 			for (i=0; i < number_of_material_points; i++){
 
+				#ifdef WITH_TIMER
+				gettimeofday(&start_int, NULL);
+				#endif
 
 				// assemble internal force
 				int ID = omp_get_thread_num();
@@ -585,6 +623,15 @@ int main(int argc, char** argv) {
 
 
 
+				#ifdef WITH_TIMER
+
+				gettimeofday(&end_int, NULL);
+				time_int += ((end_int.tv_sec  - start_int.tv_sec) * 1000000u + 
+         		end_int.tv_usec - start_int.tv_usec) / 1.e6;
+				gettimeofday(&start_update, NULL);
+
+
+				#endif
 				// update_material points
 				#ifdef IS_UPDATED
 				if ( n % UPDATE_FREQUENCEY == 0){
@@ -594,17 +641,30 @@ int main(int argc, char** argv) {
 				#endif
 
 
+				#ifdef WITH_TIMER
+				gettimeofday(&end_update, NULL);
+				time_update += ((end_update.tv_sec  - start_update.tv_sec) * 1000000u + 
+         		end_update.tv_usec - start_update.tv_usec) / 1.e6;
+				#endif
+
+
+
 			}
 
 
 		for (i=0; i < NUMBER_OF_THREADS; i++){
 		
+			#ifdef HOURGLASS
 	 		__add__(RPEN[i]->ve, R_pen->ve,R_pen->ve, num_dof);
+	 		#endif
 	 		__add__(FINT[i]->ve, Fint_n_1->ve,Fint_n_1->ve, num_dof);
 		}
 
 		/*  Balance of forces */
+		#ifdef HOURGLASS
 		__sub__(Fint_n_1->ve, R_pen->ve, Fint_n_1->ve, num_dof);
+	 	#endif
+
 		__sub__(Fext_n_1->ve,Fint_n_1->ve,Fnet->ve,num_dof);
 
 
@@ -717,10 +777,19 @@ int main(int argc, char** argv) {
 
 	/*////////////////////////////////////////////////////////// */
 	/*////////////////////////////////////////////////////////// */
+gettimeofday(&end_explicit, NULL);
+
+double delta = ((end_explicit.tv_sec  - start_explicit.tv_sec) * 1000000u + 
+         end_explicit.tv_usec - start_explicit.tv_usec) / 1.e6;
 
 
 
-
+	printf("time to run = %lf \n",delta);
+	#ifdef WITH_TIMER
+	printf("time to run int = %lf \n",time_int);
+	printf("time to run update = %lf \n",time_update);
+	printf("time to run ext = %lf \n",time_external);
+	#endif
 
 	/*  Program exit */
 	exit(0);

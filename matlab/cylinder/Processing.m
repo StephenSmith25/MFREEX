@@ -31,7 +31,7 @@ disp = csvread(filename);
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 axis equal
 hold on
-%plot(material_points(:,1),material_points(:,2),'b*');
+plot(material_points(:,1),material_points(:,2),'b*');
 xlim([0,40])
 ylim([0,40])
 
@@ -39,13 +39,12 @@ filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles
 domains = csvread(filename);
 general_ellipse_drawer = @(t) draw_general_ellipse(domains(t,:),material_points(t,1),material_points(t,2));
 
-general_ellipse_drawer(200);
 
-ellipses = [];
-
-for i = 1:200:length(domains)
+ellipses_1 = [];
+disp_1 = disp;
+for i = 1:25:length(domains)
     
-   ellipses = [ellipses ; general_ellipse_drawer(i)]; 
+   ellipses_1 = [ellipses_1 ; general_ellipse_drawer(i)]; 
 end
 
 %-------------------------------------------------------------------------%
@@ -71,7 +70,7 @@ disp = csvread(filename);
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 axis equal
 hold on
-%plot(material_points(:,1),material_points(:,2),'r.');
+plot(material_points(:,1),material_points(:,2),'r.');
 xlim([0,40])
 ylim([0,40])
 
@@ -80,9 +79,7 @@ domains = csvread(filename);
 general_ellipse_drawer = @(t) draw_general_ellipse_alt(domains(t,1:4),domains(t,5),material_points(t,1),material_points(t,2));
 ellipses = [];
 for i = 1:25:length(domains)
-    
-   ellipses = [ellipses ; general_ellipse_drawer(i)]; 
-    
+   ellipses = [ellipses ; general_ellipse_drawer(i)];  
 end
 
 
@@ -129,7 +126,7 @@ legend('Meshfree','Exact','Location','northwest');
 saveas(gcf,'Solution_cylinder','epsc')
 
 latex_var_1 = [B(:,1),B(:,2)/1000];
-latex_var_2 = A(1:25:end,:);
+latex_var_2 = A(1:15:end,:);
 
 
 function [output] = draw_general_ellipse_alt(M,theta,Cx,Cy)

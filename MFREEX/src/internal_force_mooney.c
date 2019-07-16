@@ -2,13 +2,13 @@
 #include "internal_force_mooney.h"
 #include "Deformation/velocity_grad.h"
 
-static double epsilon_penalty =15; // NORMAL VLAUE = -50
+static double epsilon_penalty =0; // NORMAL VLAUE = -50
 static double xi =1e-4;
 
 #define HOURGLASS_CONTROL 
-//#define VISCOUS_HOURGLASS
 #define STIFFNESS_HOURGLASS
 
+//#define VISCOUS_HOURGLASS
 
 static int call_count ;
 
