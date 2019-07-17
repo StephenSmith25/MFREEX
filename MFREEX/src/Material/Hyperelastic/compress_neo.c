@@ -7,8 +7,8 @@ int compress_neo(VEC * stressVoigt, state_variables * state, VEC * params){
 
 
 
-	double mu = params->ve[1];
-	double lambda = params->ve[2];
+	double mu = params->ve[0];
+	double lambda = params->ve[1];
 
 
 	m_zero(state->m_temp1);
@@ -20,7 +20,7 @@ int compress_neo(VEC * stressVoigt, state_variables * state, VEC * params){
 	/*  Find C */
 	mtrm_mlt(state->F,state->F,state->C);
 
-
+	// inverse C = m_temp_1
 	m_inverse_small(state->C, state->m_temp1);
 
 

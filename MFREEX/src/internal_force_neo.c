@@ -4,7 +4,7 @@
 static double epsilon_penalty = 50; // NORMAL VLAUE = -50
 static double xi =0.01;
 
-//#define HOURGLASS_CONTROL 
+#define HOURGLASS_CONTROL 
 //#define VISCOUS_HOURGLASS
 //#define STIFFNESS_HOURGLASS
 
@@ -55,7 +55,7 @@ void internal_force_neo(void *threadarg) {
 	internal_force_struct->MP->INTEGRATION_FACTOR;
 
 	// Material law 
-	cubicRivlin_mod(internal_force_struct->MP->stressVoigt,
+	compress_neo(internal_force_struct->MP->stressVoigt,
 		internal_force_struct->MP->stateNew,
 		internal_force_struct->materialParameters);
 
@@ -212,6 +212,7 @@ void internal_force_neo(void *threadarg) {
 
 		double e_x  = epsilon[0] /norm_X;
 		double e_y = epsilon[1] /norm_X;
+		intFactor = 1.0;
 
 		// assemble forces 
 		internal_force_struct->RPEN->ve[2*index] += epsilon_penalty*MP->shape_function->phi->ve[k]*e_x*intFactor;

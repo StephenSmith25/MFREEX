@@ -17,6 +17,7 @@ OPTION(PROBLEM_TEST "Compile TEST program" OFF)
 OPTION(PROBLEM_PREFORM_UPDATED "Compile UPDATED PREFORM program" ON)
 OPTION(PROBLEM_RUBBER "Compile RUBBER program" ON)
 OPTION(PROBLEM_RUBBER_COMP "Compile RUBBER_COMP program" ON)
+OPTION(PROBLEM_PUNCH "Compile PUNCH program" ON)
 
 
 add_subdirectory(lib)
@@ -68,3 +69,7 @@ endif(PROBLEM_RUBBER_COMP)
 if(PROBLEM_TEST)
 	add_subdirectory(problems/test)
 endif(PROBLEM_TEST)	
+
+if(PROBLEM_PUNCH)
+	add_subdirectory(problems/rigid_punch)
+endif(PROBLEM_PUNCH)	
