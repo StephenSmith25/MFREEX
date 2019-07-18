@@ -64,8 +64,8 @@ double PUNCH_SPEED = 10;
 double tMax = 0.5;
 double deltaT = 4e-7;
 
-int writeFreq = 1000;
-int printFreq = 1000;
+int writeFreq = 100;
+int printFreq = 10;
 
 int NUM_NODES_EB = 4;
 
@@ -86,7 +86,7 @@ const double rho = 1000e-9;
 //#define WITH_TIMER
 #define HOURGLASS 
 
-//#define IS_UPDATED
+#define IS_UPDATED
 #ifdef IS_UPDATED
 	#define UPDATE_FREQUENCEY 100
 #endif
@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
 	}else{
 		NUMBER_OF_THREADS = 2;	
 	}
-
+	NUMBER_OF_THREADS = 3;
 
 	/*////////////////////////////////////////////////////////// */
 	/*                                                           */

@@ -34,7 +34,7 @@ b = sqrt(1/M_end(2,2));
 
 
 k_total =2; 
-k = 0.5*k_total;
+k = k_total;
 rad = 1;
 M_start = [ 1/rad^2 0 ; 0 1/rad^2];
 F = [1 k ; 0 1];
@@ -78,10 +78,10 @@ b = D(2,2)*rad;
 theta=acosd(V(1,2));
 
 theta = -theta;
+theta = 90+theta;
 
 
-
-theta = 31.7175;
+%theta = 31.7175;
 R = [cosd(theta) -sind(theta) ; sind(theta) cosd(theta)];
 
 S = [1/D(2,2)^2 0 ; 0 1/D(1,1)^2];
@@ -90,7 +90,7 @@ S = [1/D(2,2)^2 0 ; 0 1/D(1,1)^2];
 M_elli = R*S*M*R'
 
 alpha = linspace(0,360,50);
-theta = 31.7175;
+%theta = 31.7175;
 
 x = b.*cosd(alpha).*cosd(theta) - a.*sind(alpha).*sind(theta);
 y = b.*cosd(alpha).*sind(theta) + a.*sind(alpha).*cosd(theta);

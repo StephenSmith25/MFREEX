@@ -91,14 +91,14 @@ ellipses_1 = [];
 %material_points = csvread('./../../build/bin/cylinder/Domains/domainmaterialpoints.csv');
 
 subplot(1,2,2)
-filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(100)),'.txt');
+filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(98)),'.txt');
 material_points = csvread(filename,1);
 
 
 
 
 
-filename = strcat(path,'/displacement_',num2str(plotFiles(100)),'.txt');
+filename = strcat(path,'/displacement_',num2str(plotFiles(97)),'.txt');
 disp = csvread(filename);
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 axis equal
@@ -111,7 +111,7 @@ xlim([0,40])
 ylim([0,15])
 hold on
 plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
-filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(100)),'.txt');
+filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(98)),'.txt');
 domains = csvread(filename);
 general_ellipse_drawer = @(t) draw_general_ellipse_alt(domains(t,1:4),domains(t,5),material_points(t,1),material_points(t,2));
 ellipses = [];
@@ -184,10 +184,10 @@ initial_mat_point = mat_1(plot_point,1:2);
 axis equal
 subplot(1,2,2)
 
-filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(100)),'.txt');
+filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(98)),'.txt');
 domains = csvread(filename);
 
-filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(100)),'.txt');
+filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(98)),'.txt');
 material_points = csvread(filename,1);
 
 
