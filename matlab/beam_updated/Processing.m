@@ -9,7 +9,7 @@ d = dir(displacementdir);
 d1 = dir([displacementdir,'*.txt']);
 numFiles = size(d,1) -3 ;
 
-plotFiles = ceil(linspace(1,numFiles,10));
+plotFiles = ceil(linspace(1,numFiles,100));
 
 boundaryNodes = csvread('/home/stephen/Documents/Meshless/build/bin/rigid_punch/boundary.txt');
 boundaryNodes = [boundaryNodes ; boundaryNodes(1)]
@@ -63,7 +63,7 @@ ix = ix(ia);
 
 
 iy = find(disp(:,2) > 8);
-ia = find(disp(iy,1) > 8);
+ia = find(disp(iy,1) > 7);
 iy = iy(ia);
 ia = find(disp(iy,1) <12);
 iy = iy(ia);
@@ -91,26 +91,27 @@ ellipses_1 = [];
 %material_points = csvread('./../../build/bin/cylinder/Domains/domainmaterialpoints.csv');
 
 subplot(1,2,2)
-filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(10)),'.txt');
+filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(98)),'.txt');
 material_points = csvread(filename,1);
 
 
 
 
 
-filename = strcat(path,'/displacement_',num2str(plotFiles(10)),'.txt');
+filename = strcat(path,'/displacement_',num2str(plotFiles(97)),'.txt');
 disp = csvread(filename);
 plot(disp(:,1),disp(:,2),'k.')           % line plot
 axis equal
 hold on
-
+final_boundary = disp(boundaryNodes,:);
+final_nodes = disp;
 
 %plot(material_points(:,1),material_points(:,2),'r.');
 xlim([0,40])
 ylim([0,15])
 hold on
 plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
-filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(10)),'.txt');
+filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(98)),'.txt');
 domains = csvread(filename);
 general_ellipse_drawer = @(t) draw_general_ellipse_alt(domains(t,1:4),domains(t,5),material_points(t,1),material_points(t,2));
 ellipses = [];
@@ -141,7 +142,7 @@ general_ellipse_drawer = @(t) draw_general_ellipse(domains(t,:),material_points(
 
 iaa = find(disp_1(:,2) > 9.90);
 
-plot_point = 31;
+plot_point = 39;
 
 subplot(1,2,1)
 hold on
@@ -164,23 +165,29 @@ ica = find(sqrt(sum(a.^2, 2)) <= r);
 
 hold on
 
-initial_connectivity = disp_1(ica,:);
-initial_zoom_nodes = disp_1;
-initial_
 
 plot(disp_1(ica,1),disp_1(ica,2),'g.','markersize',10);
 
 
  ellipses_1 = general_ellipse_drawer(ix(plot_point));  
 
+ 
+ 
+initial_connectivity = disp_1(ica,:);
+initial_zoom_nodes = disp_1;
+initial_zoom_ellipse = ellipses_1;
+initial_boundary = boundary_1;
+initial_mat_point = mat_1(plot_point,1:2);
+ 
+ 
 
 axis equal
 subplot(1,2,2)
 
-filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(10)),'.txt');
+filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(98)),'.txt');
 domains = csvread(filename);
 
-filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(10)),'.txt');
+filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(98)),'.txt');
 material_points = csvread(filename,1);
 
 
@@ -204,6 +211,16 @@ hold on
 plot(boundary_2(:,1),boundary_2(:,2),'b');
 hold on
 plot(disp_2(ica,1),disp_2(ica,2),'g.','markersize',10);
+
+
+final_connectivity = disp_2(ica,:);
+final_zoom_nodes = disp_2;
+final_zoom_ellipse = ellipses_2;
+final_zoom_boundary = boundary_2;
+final_mat_point = mat_2(plot_point,1:2);
+ 
+
+
 
 
 saveas(gcf,'Displacement_cylinder','epsc')

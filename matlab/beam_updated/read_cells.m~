@@ -1,7 +1,7 @@
 clear all
 close all 
 
-fileID = fopen("./../../build/bin/beamUL/cells1.txt");
+fileID = fopen("./../../build/bin/cylinder/cells.txt");
 
 
 tline = fgetl(fileID);
@@ -36,6 +36,7 @@ C = strsplit(tline);
 num_cells = str2double(C{1});
 
 figure
+
 for i = 1:num_cells
 
     tline = fgetl(fileID);
@@ -54,9 +55,17 @@ for i = 1:num_cells
     hold on 
     fill(poly(:,1),poly(:,2),rand(1,3));
 end
-sum(area)
-max(area)
 axis equal
+
+
+filename = strcat(path_base,'/MaterialPoints/materialpoints_',num2str(plotFiles(1)),'.txt');
+%material_points = csvread(filename,1);
+
+
+filename = strcat(path,'/displacement_',num2str(plotFiles(1)),'.txt');
+disp = csvread(filename);
+plot(disp(:,1),disp(:,2),'k.')    
+
 
 % while ischar(tline)
 %     disp(tline)

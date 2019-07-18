@@ -38,4 +38,8 @@ void internal_force_mooney(void *threadarg);
 
 void internal_force_neo(void *threadarg);
 
+
+
+void internal_force_svk(void *threadarg);
+
 #endif
