@@ -1,8 +1,9 @@
 #include "internal_force_neo.h"
 #include "Deformation/velocity_grad.h"
+#include "Material/Hyperelastic/svk.h"
 
-static double epsilon_penalty = 100; // NORMAL VLAUE = -50
-static double xi =0.01;
+static double epsilon_penalty = 0; // NORMAL VLAUE = -50
+static double xi =0.0;
 
 #define HOURGLASS_CONTROL 
 //#define VISCOUS_HOURGLASS
@@ -55,7 +56,7 @@ void internal_force_svk(void *threadarg) {
 	internal_force_struct->MP->INTEGRATION_FACTOR;
 
 	// Material law 
-	compress_neo(internal_force_struct->MP->stressVoigt,
+	svk(internal_force_struct->MP->stressVoigt,
 		internal_force_struct->MP->stateNew,
 		internal_force_struct->materialParameters);
 
@@ -66,20 +67,20 @@ void internal_force_svk(void *threadarg) {
 	// double b1 = 1000;
 	// double b2 =2000;
 	// double Le =	MP->r_cutoff/1000;
-	double rho = 1180;
-	double mu = 4e6;
-	double lambda = 1e3; 
-	double Cd = sqrt(((lambda+2*mu)/rho));
-	Cd = Cd*1000;
-	// double div_v = MP->stateNew->div_v;
-	// double qv =  rho*Le*b1*Cd * div_v;
-	// if ( div_v < 0)
-	// {
-	// 	qv += rho*Le*(b2 * Le * pow(div_v,2)) ;
+	// double rho = 1180;
+	// double mu = 4e6;
+	// double lambda = 1e3; 
+	// double Cd = sqrt(((lambda+2*mu)/rho));
+	// Cd = Cd*1000;
+	// // double div_v = MP->stateNew->div_v;
+	// // double qv =  rho*Le*b1*Cd * div_v;
+	// // if ( div_v < 0)
+	// // {
+	// // 	qv += rho*Le*(b2 * Le * pow(div_v,2)) ;
 
-	// }
-	// qv = qv/pow(10,6);
-	double qv = 0;
+	// // }
+	// // qv = qv/pow(10,6);
+	// double qv = 0;
 
 	// if ( call_count % 10000000 == 0)
 	// {

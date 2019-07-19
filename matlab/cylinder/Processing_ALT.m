@@ -1,8 +1,8 @@
 clear all
 
 close all 
-path = './../../build/bin/beam_updated/Displacement';
-path_base = './../../build/bin/beam_updated/';
+path = './../../build/bin/cylinder/Displacement';
+path_base = './../../build/bin/cylinder/';
 addpath(path)
 displacementdir = path ;
 d = dir(displacementdir);
@@ -11,7 +11,7 @@ numFiles = size(d,1) -3 ;
 
 plotFiles = ceil(linspace(1,numFiles,100));
 
-boundaryNodes = csvread('/home/stephen/Documents/Meshless/build/bin/beam_updated/boundary.txt');
+boundaryNodes = csvread('/home/stephen/Documents/Meshless/build/bin/cylinder/boundary.txt');
 boundaryNodes = [boundaryNodes ; boundaryNodes(1)]
 figure
 
@@ -48,25 +48,25 @@ hold on
 axis equal
 hold on
 %plot(material_points(:,1),material_points(:,2),'b*');
-xlim([0,40])
-ylim([0,15])
+xlim([0,35])
+ylim([0,35])
 
 filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(1)),'.txt');
 domains = csvread(filename);
 domains_1 = domains;
 general_ellipse_drawer = @(t) draw_general_ellipse(domains(t,:),material_points(t,1),material_points(t,2));
 
-ix = find(material_points(:,2) < 0.5);
-ia = find(material_points(ix,1) >0.1);
+ix = find(material_points(:,2) < 20);
+ia = find(material_points(ix,1) >13);
 ix = ix(ia);
-ia = find(material_points(ix,1) <6);
+ia = find(material_points(ix,1) <18);
 ix = ix(ia);
 
 
-iy = find(disp(:,2) < 1);
-ia = find(disp(iy,1) > 0.1);
+iy = find(disp(:,2) < 25 );
+ia = find(disp(iy,1) > 5);
 iy = iy(ia);
-ia = find(disp(iy,1) <8);
+ia = find(disp(iy,1) <20);
 iy = iy(ia);
 
 disp_1 = disp(iy,:);
@@ -108,8 +108,8 @@ final_boundary = disp(boundaryNodes,:);
 final_nodes = disp;
 
 %plot(material_points(:,1),material_points(:,2),'r.');
-xlim([0,40])
-ylim([0,15])
+xlim([0,35])
+ylim([0,35])
 hold on
 plot(disp(boundaryNodes,1),disp(boundaryNodes,2),'b-')
 filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(98)),'.txt');
@@ -130,6 +130,7 @@ saveas(gcf,'Displacement_cylinder','epsc')
 
 
 figure
+for i = 1:30
 
 filename = strcat(path_base,'/MaterialPoints/Domains/domains_',num2str(plotFiles(1)),'.txt');
 domains = csvread(filename);
@@ -143,8 +144,11 @@ general_ellipse_drawer = @(t) draw_general_ellipse(domains(t,:),material_points(
 
 iaa = find(disp_1(:,2) > 9.90);
 
-plot_point = 5;
+iaa = [];
 
+
+plot_point = i;
+figure
 subplot(1,2,1)
 hold on
 plot(disp_1(:,1),disp_1(:,2),'bo');
@@ -222,9 +226,8 @@ final_mat_point = mat_2(plot_point,1:2);
  
 
 
+end
 
-
-saveas(gcf,'Displacement_cylinder','epsc')
 
 
 function [output] = draw_general_ellipse_alt(M,theta,Cx,Cy)

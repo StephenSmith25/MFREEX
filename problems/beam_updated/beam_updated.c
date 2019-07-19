@@ -51,34 +51,30 @@ char * kernel_shape = "radial";
 
 
 // how much larger can the domains get 
-double beta =1.2;
+double beta =1.1;
 
 // Meshfree parameters
-const double dmax =3;
+const double dmax =2;
 const double dmax_x = 1.5;
 const double dmax_y = 1.5;
 
 
-double PUNCH_SPEED = 10;
-
 double tMax = 0.5;
-double deltaT = 4e-7;
+double deltaT = 1e-6;
 
 int writeFreq = 100;
-int printFreq = 10;
+int printFreq = 100;
 
-int NUM_NODES_EB = 4;
 
 const int dim = 2;
 const int is_AXI = 0;
-const double pressure = 0.230;
-const double T_RAMP_PRESSURE = 0.05;
+
 
 // Material type 
 MATERIAL_TYPE material_type = HYPERELASTIC;
 HYPERELASTIC_LAW hyperelastic_law = MOONEY_RIVLIN;
 char * integration_type = "TRIANGLE";
-
+int t_node = 2;
 
 /*  Material  */
 const double rho = 1000e-9;
@@ -125,11 +121,27 @@ int main(int argc, char** argv) {
 
  
 	/*  Material struct */
-	VEC * materialParameters = v_get(3);
-	materialParameters->ve[0] = 0.3571;
-	materialParameters->ve[1] = 1.432;
-	materialParameters->ve[2] = -10000;
+	double nu = 0.0;
+	double E = 4.8e3;
+	VEC * materialParameters = v_get(2);
+	materialParameters->ve[0] = (E*nu)/((1+nu)*(1-2*nu));
+	materialParameters->ve[1] = E/(2*(1+nu));
 
+
+	// materialParameters->ve[0] = 1.8350;
+	// materialParameters->ve[1] = 0.1468;
+	// materialParameters->ve[2] = 100;
+
+	// tip load
+	double P = 10.00;
+	// direction of the load
+	VEC * dir_load = v_get(dim);
+	dir_load->ve[0] = 0;
+	dir_load->ve[1] = 1;
+
+	// Beam dimensions 
+	double h = 1.00;
+	double L = 20.00;
 
 	// CREATE POINTS BASED ON DELAUNAY TRIANGULATION
 	char opt[20] = "p";
@@ -140,6 +152,16 @@ int main(int argc, char** argv) {
 	int * nodalMarkers;
 	int  numnodes;
 	double * temperatures;
+
+
+	// Plotting parameters
+	double Ixx = 1.000/12.000;
+	double yFactor = pow(L,2)/(E*Ixx);
+	double xFactor = 1/L;
+	double yPoint = P*yFactor;
+	double xPoint = 0;
+
+
 
 	// TRIANGULATION
 	TRIANGLE * tri = trigen(opt,fileName);	
@@ -191,10 +213,10 @@ int main(int argc, char** argv) {
 
 	// CREATE NODES
 	// 
-	BOUNDING_BOX * bounding_box = create_bounding_box(-1, 20,
-	-1, 1, 0, 0);
+	BOUNDING_BOX * bounding_box = create_bounding_box(-1, L+5,
+	-1, 20, 0, 0);
 
-	double cell_size[2] = {1,0.5};
+	double cell_size[2] = {2,1};
 
 	MAT * xI_copy = m_copy(xI,MNULL);
 	CELLS * cells = create_cells(bounding_box, cell_size, dim, xI_copy);
@@ -318,6 +340,7 @@ int main(int argc, char** argv) {
 	EBC * eb1 = malloc(1*sizeof(EBC));
 
 	int count = 0;
+	int count1 = 0;
 
 
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
@@ -332,14 +355,25 @@ int main(int argc, char** argv) {
 			++count;
 		}
 
+		if ( x > L- 1e-9)
+		{
+
+			++count1;
+		}
+
 
 	}
+
 
 
 	printf("count_1 = %d count = %d \n",count1,count);
 
 	eb1->nodes = iv_get(count);
 
+	IVEC * traction_nodes = iv_get(count1);
+
+
+	count1 =0;
 	count = 0;
 
 	for ( int i = 0 ; i < mfree.num_nodes ; i++)
@@ -356,13 +390,48 @@ int main(int argc, char** argv) {
 			++count;
 		}
 
+		if ( x > L- 1e-9)
+		{
+			traction_nodes->ive[count1]= i;
+			++count1;
+		}
+
+
+
 
 	}
+
+
+
+
+
+	// Traction nodes
+	int num_nodes_trac = count1;
+	MAT * traction_nodes_coords = m_get(num_nodes_trac,dim);
+	for ( int i = 0 ; i < num_nodes_trac ; i++)
+	{
+		traction_nodes_coords->me[i][0] = mfree.nodes->me[traction_nodes->ive[i]][0];
+		traction_nodes_coords->me[i][1] = mfree.nodes->me[traction_nodes->ive[i]][1];
+
+	}
+	// get shape function and traction nodes 
+	shape_function_container * phi_traction = mls_shapefunction(traction_nodes_coords,1, &mfree);
+
+
 
 	/* First boundary*/
 	eb1->dofFixed = 3;
 	setUpBC(eb1,inv_nodal_mass,&mfree);
 
+
+	m_foutput(stdout,eb1->coords);
+	m_foutput(stdout,traction_nodes_coords);
+
+
+
+
+
+	// set up traction loading 
 
 
 	///////////////////////////////////////////////////////////////
@@ -428,7 +497,6 @@ int main(int argc, char** argv) {
 
 	VEC * v_correct = v_get(num_dof);
 	eb1->uBar1 = v_get(eb1->nodes->max_dim);
-	eb2->uBar2 = v_get(eb2->nodes->max_dim);
 
 	// Energy
 	double Wext = 0;
@@ -436,6 +504,13 @@ int main(int argc, char** argv) {
 	double Wkin = 0;
 	double Wbal = 0;
 	double tStop = 0;
+
+
+	// tip load
+	VEC * phi;
+	IVEC * neighbours;
+	double tipLoad = 0;
+
 
 
 	double preStop = 0;
@@ -548,9 +623,31 @@ int main(int argc, char** argv) {
 		/* --------------------------------------------------------------*/
 		/* --------------------------------------------------------------*/
 
-		// FInd the external force 
+		// Find the x and y points requried for plotting
+		xPoint = d_n_1->ve[traction_nodes->ive[t_node]*2+1]*xFactor;
+		yPoint = tipLoad * pow(L,2)*(1/E)*(1/Ixx);
 
 
+		/* ------------------------------------------*/
+		/* ------------Find External Force-----------*/
+		/* ------------------------------------------*/
+
+		/*  Manually find point load */
+		neighbours = phi_traction->sf_list[t_node]->neighbours;
+		phi = phi_traction->sf_list[t_node]->phi;
+
+
+
+		// v_foutput(stdout,phi);
+		// iv_foutput(stdout,neighbours);
+		tipLoad = P*smoothstep(t_n_1,tMax,0);
+		v_zero(Fext_n_1);
+		for ( int i = 0 ; i < neighbours->max_dim; i++){
+			// x
+			Fext_n_1->ve[2*neighbours->ive[i]] = phi->ve[i]*tipLoad*dir_load->ve[0];
+			 // y
+			Fext_n_1->ve[2*neighbours->ive[i]+1] = phi->ve[i]*tipLoad*dir_load->ve[1];
+		}
 
 
 		/* --------------------------------------------------------------*/
@@ -651,7 +748,7 @@ int main(int argc, char** argv) {
 		{
 			int indx = 2*eb1->nodes->ive[i];
 			v_n_1->ve[indx] = 0;
-			v_n_1->ve[indx]+1 = 0;
+			v_n_1->ve[indx+1] = 0;
 
 		}
 
@@ -682,9 +779,13 @@ int main(int argc, char** argv) {
 			write_domains(filename, material_points);	
 
 			fp = fopen("loadDisp.txt","a");
-			fprintf(fp,"%lf %lf\n",d_n_1->ve[0],pre_n_1);		
+			fprintf(fp,"%lf %lf\n",xPoint,yPoint);
 			fclose(fp);
 			fileCounter++;	
+
+
+
+
 		}
 		/* ------------------------------------------*/
 		/* -----------------Find Energy--------------*/
@@ -718,8 +819,6 @@ int main(int argc, char** argv) {
 		// Store previous time step quanities for the kinematic, and force variables.
 		v_copy(Fint_n_1,Fint_n);
 		v_copy(Fext_n_1,Fext_n);
-		//deltaT = 0.85*delta_t_min; //delta_t_min;
-		//v_copy(v_n_h,v_n_mh);
 		v_copy(d_n_1,d_n);
 		v_copy(v_n_1,v_n);
 
