@@ -77,10 +77,10 @@ xlim([0,TMAX])
 
 
 cc = [time',axial_strain'];
-save('strain_axial_num.dat', 'cc', '-ascii', '-double', '-tabs')
+save('N2_strain_axial_num_top.dat', 'cc', '-ascii', '-double', '-tabs')
 
 cc = [time',hoop_strain'];
-save('strain_hoop_num.dat', 'cc', '-ascii', '-double', '-tabs')
+save('N2_strain_hoop_num_top.dat', 'cc', '-ascii', '-double', '-tabs')
 
 
 
@@ -217,10 +217,11 @@ xlim([0,TMAX])
 
 
 cc = [time',axial_strain'];
-save('strain_axial_num.dat', 'cc', '-ascii', '-double', '-tabs')
+save('N2_strain_axial_num_middle.dat', 'cc', '-ascii', '-double', '-tabs')
 
 cc = [time',hoop_strain'];
-save('strain_hoop_num.dat', 'cc', '-ascii', '-double', '-tabs')
+save('N2_strain_hoop_num_middle.dat', 'cc', '-ascii', '-double', '-tabs')
+
 
 
 
@@ -343,10 +344,10 @@ xlim([0,TMAX])
 
 
 cc = [time',axial_strain'];
-save('strain_axial_num.dat', 'cc', '-ascii', '-double', '-tabs')
+save('N2_strain_axial_num_bot.dat', 'cc', '-ascii', '-double', '-tabs')
 
 cc = [time',hoop_strain'];
-save('strain_hoop_num.dat', 'cc', '-ascii', '-double', '-tabs')
+save('N2_strain_hoop_num_bot.dat', 'cc', '-ascii', '-double', '-tabs')
 
 
 

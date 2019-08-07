@@ -2,7 +2,7 @@
 #include "Deformation/velocity_grad.h"
 #include "Material/Hyperelastic/svk.h"
 
-static double epsilon_penalty = 0; // NORMAL VLAUE = -50
+static double epsilon_penalty = 25; // NORMAL VLAUE = -50
 static double xi =0.0;
 
 #define HOURGLASS_CONTROL 

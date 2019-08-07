@@ -40,7 +40,7 @@ const int BUCKLEY_MATERIAL = 1;
 const int PLASTIC_MATERIAL = 0;
 
 // time step parameters
-const double TMAX = 0.7;
+const double TMAX = 0.2;
 double delta_t = 5e-7;
 
 // Meshfree parameters
@@ -77,11 +77,11 @@ const int PLOT_POINT_MIDDLE = 139;
 
 // stretch rod
 //const double DISP_ROD_MAX = 132; // N4T100;
-const double DISP_ROD_MAX = 100; // N2T100;
+const double DISP_ROD_MAX = 115; // N2T100;
 	double v_rod = 1000; // mm/s
 
 // 
-const int WITH_MOULD = 1;
+const int WITH_MOULD = 0;
 
 const int WRITE_FREQ = 250;
 
@@ -200,7 +200,7 @@ int main(int argc, char** argv) {
 	double Rg = 8.314;
 	double rLine = Rg/molarMass;
 	double gammaLine = 1.4;
-	double aReduced = 0.00049;//0.0003924; // 0.000154 // 0.000614 // 0.000585
+	double aReduced = 0.00092;//0.0003924; // 0.000154 // 0.000614 // 0.000585
 	// Flow rates N8 - 0.00092, N5 - 0.00049 , N2 - 8.41e-5
 	double vDead = (85*1000) ; /*  dead volume in mL -> mm^3 */
 

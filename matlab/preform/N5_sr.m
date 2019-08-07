@@ -63,6 +63,57 @@ pressure = pressure(ix);
 
 
 t=0;
+
+outer_coords_i = outer_coord(:,:,floor(end));
+
+% 
+hold on
+plot(outer_coords_i(:,1),outer_coords_i(:,2),'b.');
+
+plot(outer_coords_i(element_top,1),outer_coords_i(element_top,2),'r*');
+hold on
+plot(outer_coords_i(element_middle,1),outer_coords_i(element_middle,2),'r*');
+hold on
+plot(outer_coords_i(element_bot,1),outer_coords_i(element_bot,2),'r*');
+
+
+
+disp_end = [outer_coords_i(:,1),outer_coords_i(:,2)];
+
+
+
+hold on
+outer_coords_i = outer_coord(:,:,1);
+plot(outer_coords_i(:,1),outer_coords_i(:,2),'b.');
+hold on
+plot(outer_coords_i(element_top,1),outer_coords_i(element_top,2),'r*');
+hold on
+plot(outer_coords_i(element_middle,1),outer_coords_i(element_middle,2),'r*');
+hold on
+plot(outer_coords_i(element_bot,1),outer_coords_i(element_bot,2),'r*');
+
+
+disp_start = [outer_coords_i(:,1),outer_coords_i(:,2)];
+
+
+
+hold on
+outer_coords_i = outer_coord(:,:,floor(end/2));
+plot(outer_coords_i(:,1),outer_coords_i(:,2),'b.');
+hold on
+plot(outer_coords_i(element_top,1),outer_coords_i(element_top,2),'r*');
+hold on
+plot(outer_coords_i(element_middle,1),outer_coords_i(element_middle,2),'r*');
+hold on
+plot(outer_coords_i(element_bot,1),outer_coords_i(element_bot,2),'r*');
+
+disp_middle = [outer_coords_i(:,1),outer_coords_i(:,2)];
+
+
+
+
+
+
 figure
 
 y_axial = [];

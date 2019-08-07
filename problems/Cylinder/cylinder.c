@@ -84,7 +84,7 @@ const double rho = 1000e-9;
 
 #define IS_UPDATED
 #ifdef IS_UPDATED
-	#define UPDATE_FREQUENCEY 100
+	#define UPDATE_FREQUENCEY 1000
 #endif
 
 

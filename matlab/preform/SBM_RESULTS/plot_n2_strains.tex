@@ -1,0 +1,82 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\usepackage{pgfplots}
+
+
+
+\usepackage{filecontents}
+\newcommand*{\equal}{=}
+\newcommand{\imagefolder}{./Experimental}
+\newcommand{\flowrate}{N2}
+\newcommand{\numfolder}{./N2}
+\begin{document}
+\begin{tikzpicture}
+
+\begin{axis}[xmin=0, ymin=-0.2, xmax=0.7,ylabel=True Strain,title=Top ($y\equal -26$),
+xlabel=Time (s),
+    legend style={at={(0.95,0.05)},anchor=south east}]
+    
+    
+    
+\addplot[red,mark size=1pt] table[col sep=comma] {\imagefolder/\flowrate_sr_exp_axial_TOP.csv};
+\addplot[red,mark size=1.5pt,mark=*] table[] {\numfolder/\flowrate_strain_axial_num_top.dat};
+\addplot[blue,mark size=1pt] table[col sep=comma] {\imagefolder/\flowrate_sr_exp_hoop_TOP.csv};
+\addplot[blue,mark size=1.5pt,mark=x] table[] {\numfolder/\flowrate_strain_hoop_num_top.dat};
+\legend{Axial(Exp), Axial(Num), Hoop(Exp), Hoop(Num)}
+
+\end{axis}
+
+\end{tikzpicture}
+
+
+% middle
+\begin{tikzpicture}
+
+\begin{axis}[xmin=0, ymin=-0.2, xmax=0.7,title=Middle ($y\equal -46$),
+xlabel=Time (s),
+legend style={at={(0.95,0.05)},anchor=south east}]
+
+
+
+\addplot[red,mark size=1pt] table[col sep=comma] {\imagefolder/\flowrate_sr_exp_axial_MIDDLE.csv};
+\addplot[red,mark size=1.5pt,mark=*] table[] {\numfolder/\flowrate_strain_axial_num_middle.dat};
+\addplot[blue,mark size=1pt] table[col sep=comma] {\imagefolder/\flowrate_sr_exp_hoop_MIDDLE.csv};
+\addplot[blue,mark size=1.5pt,mark=x] table[] {\numfolder/\flowrate_strain_hoop_num_middle.dat};
+\legend{Axial(Exp), Axial(Num), Hoop(Exp), Hoop(Num)}
+
+\end{axis}
+
+\end{tikzpicture}
+
+% top 
+\begin{tikzpicture}
+
+\begin{axis}[xmin=0, ymin=-0.2, xmax=0.7,title=Middle ($y\equal -64$),
+xlabel=Time (s),
+legend style={at={(0.95,0.05)},anchor=south east}]
+
+
+
+\addplot[red,mark size=1pt] table[col sep=comma] {\imagefolder/\flowrate_sr_exp_axial_BOT.csv};
+\addplot[red,mark size=1.5pt,mark=*] table[] {\numfolder/\flowrate_strain_axial_num_bot.dat};
+\addplot[blue,mark size=1pt] table[col sep=comma] {\imagefolder/\flowrate_sr_exp_hoop_BOT.csv};
+\addplot[blue,mark size=1.5pt,mark=x] table[] {\numfolder/\flowrate_strain_hoop_num_bot.dat};
+\legend{Axial(Exp), Axial(Num), Hoop(Exp), Hoop(Num)}
+
+\end{axis}
+
+\end{tikzpicture}
+
+
+%\begin{tikzpicture}
+%
+%\begin{axis}[xmin=0, ymin=-0.1, xmax=0.5,ylabel=True Strain, title=Hoop Strain,
+%xlabel=Time (s),
+%legend style={at={(0.02,0.98)},anchor=north west}]
+%\addplot[mark=*,mark size=1pt,mark repeat=5] table {\imagefolder/strain_hoop_num.dat};
+%%\addplot[red,mark size=1pt,mark=x,mark repeat=5] table {\imagefolder/strain_hoop_FE.dat};
+%\addplot[blue, mark size=1pt,mark=o,mark repeat=5] table {\imagefolder/strain_hoop_exp.dat};
+%\legend{Meshfree,Experimental}
+%\end{axis}
+%\end{tikzpicture}
+\end{document}

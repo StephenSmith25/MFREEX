@@ -85,8 +85,9 @@ plot(disp(plot_point,1),disp(plot_point,2),'r*')
 c = [[disp(:,1);-disp(:,1)],[disp(:,2);disp(:,2)]]
 
 
+boundary_coords = disp(boundaryNodes,:);
 
-
+c_b =  [[boundary_coords(:,1);-boundary_coords(:,1)],[boundary_coords(:,2);boundary_coords(:,2)]]
 
 
 

@@ -17,7 +17,7 @@ d = dir(displacementdir);
 d1 = dir([displacementdir,'*.txt']);
 numFiles = size(d,1) -3 ;
 
-plotFiles = ceil(linspace(1,numFiles,25));
+plotFiles = ceil(linspace(1,numFiles,60));
 
 
 hoop_strain = [];
@@ -79,10 +79,10 @@ xlim([0,TMAX])
 
 
 cc = [time',axial_strain'];
-save('strain_axial_num.dat', 'cc', '-ascii', '-double', '-tabs')
+save('N5_strain_axial_num_top.dat', 'cc', '-ascii', '-double', '-tabs')
 
 cc = [time',hoop_strain'];
-save('strain_hoop_num.dat', 'cc', '-ascii', '-double', '-tabs')
+save('N5_strain_hoop_num_top.dat', 'cc', '-ascii', '-double', '-tabs')
 
 
 
@@ -158,7 +158,7 @@ d = dir(displacementdir);
 d1 = dir([displacementdir,'*.txt']);
 numFiles = size(d,1) -3 ;
 
-plotFiles = ceil(linspace(1,numFiles,25));
+plotFiles = ceil(linspace(1,numFiles,60));
 
 
 hoop_strain = [];
@@ -219,10 +219,11 @@ xlim([0,TMAX])
 
 
 cc = [time',axial_strain'];
-save('strain_axial_num.dat', 'cc', '-ascii', '-double', '-tabs')
+save('N5_strain_axial_num_middle.dat', 'cc', '-ascii', '-double', '-tabs')
 
 cc = [time',hoop_strain'];
-save('strain_hoop_num.dat', 'cc', '-ascii', '-double', '-tabs')
+save('N5_strain_hoop_num_middle.dat', 'cc', '-ascii', '-double', '-tabs')
+
 
 
 
@@ -300,7 +301,7 @@ d = dir(displacementdir);
 d1 = dir([displacementdir,'*.txt']);
 numFiles = size(d,1) -3 ;
 
-plotFiles = ceil(linspace(1,numFiles,25));
+plotFiles = ceil(linspace(1,numFiles,60));
 
 hoop_strain = [];
 axial_strain = [];
@@ -345,10 +346,10 @@ xlim([0,TMAX])
 
 
 cc = [time',axial_strain'];
-save('strain_axial_num.dat', 'cc', '-ascii', '-double', '-tabs')
+save('N5_strain_axial_num_bot.dat', 'cc', '-ascii', '-double', '-tabs')
 
 cc = [time',hoop_strain'];
-save('strain_hoop_num.dat', 'cc', '-ascii', '-double', '-tabs')
+save('N5_strain_hoop_num_bot.dat', 'cc', '-ascii', '-double', '-tabs')
 
 
 

@@ -1,6 +1,13 @@
 clear all
 
 close all 
+
+cells = csvread('./../../build/bin/rigid_punch/search_cells.csv');
+
+
+
+
+
 path = './../../build/bin/rigid_punch/Displacement';
 path_base = './../../build/bin/rigid_punch/';
 addpath(path)
@@ -122,6 +129,16 @@ ellipses = [];
 
 disp_2 = disp(iy,:);
 mat_2 = material_points(ix,:); 
+
+
+for k = 1:length(cells)
+hold on
+    i = k;
+rectangle('Position',[cells(i,1), cells(i,3), cells(i,2)-cells(i,1), cells(i,4)-cells(i,3)])
+end
+
+
+
 
 saveas(gcf,'Displacement_cylinder','epsc')
 

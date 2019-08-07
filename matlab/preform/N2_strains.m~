@@ -1,0 +1,418 @@
+
+clear all
+close all
+
+TMAX = 0.7;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% PLOT 1 %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+path = './../../build/bin/preform/History/Strain/Top';
+
+addpath(path)
+displacementdir = path ;
+d = dir(displacementdir);
+d1 = dir([displacementdir,'*.txt']);
+numFiles = size(d,1) -3 ;
+
+plotFiles = ceil(linspace(1,numFiles,25));
+
+
+hoop_strain = [];
+axial_strain = [];
+time = [];
+shear_strain = [];
+radial_strain = [];
+
+for i = 1:length(plotFiles)
+    
+    
+
+    filename = strcat('./../../build/bin/preform/History/Strain/Top/strain_',num2str(plotFiles(i)),'.txt');
+
+    strain = csvread(filename);
+    
+ 
+    F =  [strain(1,1) strain(1,2) 0 ;
+        strain(2,1) strain(2,2) 0;
+        0 0 strain(3,3)]  ;
+    
+    
+    [R U V] = poldecomp(F);
+    
+    
+    true_strain = logm(U);
+
+    
+    hoop_strain(i) =true_strain(3,3);
+    axial_strain(i) = true_strain(2,2);
+    radial_strain(i) = true_strain(1,1);
+    shear_strain(i) = true_strain(1,2);
+    
+
+
+    
+
+
+    
+    
+    jacobian(i) = det(F);
+    crit_lambda(i) = strain(2,3);
+    maxSr(i) = strain(3,1);
+    max_lambda_n(i) = strain(1,3);
+    time(i) = strain(3,2);
+  
+    
+end
+
+strain = figure('Position', get(0, 'Screensize'));
+
+
+
+subplot(1,3,1)
+plot(time,(axial_strain),'k-x','linewidth',2);
+% hold on
+xlim([0,TMAX])
+
+
+cc = [time',axial_strain'];
+save('strain_axial_num_top.dat', 'cc', '-ascii', '-double', '-tabs')
+
+cc = [time',hoop_strain'];
+save('strain_hoop_num_top.dat', 'cc', '-ascii', '-double', '-tabs')
+
+
+
+c = csvread("Experimental/N2_sr_exp_axial_TOP.csv");
+
+
+save('strain_axial_exp.dat', 'c', '-ascii', '-double', '-tabs')
+
+
+hold on
+plot(c(1:10:end,1),c(1:10:end,2),'r-x')
+ 
+
+plot(time,(hoop_strain),'k-o','linewidth',2);
+
+
+c = csvread("Experimental/N2_sr_exp_hoop_TOP.csv");
+save('strain_hoop_exp.dat', 'c', '-ascii', '-double', '-tabs')
+
+hold on
+plot(c(1:10:end,1),c(1:10:end,2),'b-o')
+
+
+
+xlim([0,TMAX])
+
+
+title('Top')
+axis square
+grid on
+
+%set axis
+set(gca, 'FontName', 'cmr12')
+% set x tics and y tics
+set(gca,...
+'Units','normalized',...
+'FontWeight','normal',...
+'FontSize',14,... % size ofiguref numbers on axis
+'FontName','cmr14') % font name
+set(gca,'TickLabelInterpreter', 'latex');
+
+
+legend({'Meshfree(Axial)','Experimental (Axial)', 'Meshfree (Hoop)', 'Experimental (Hoop)'},... % { 'legend1', 'legend2',...}
+'interpreter','latex',...
+'FontSize',12,...
+'FontName','cmr14',...
+'Location','SouthEast')
+
+% Y label
+ylabel({'True Strain'},...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% X label
+xlabel('Time (s)',...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+
+title('Top',...
+'interpreter','latex',...
+'FontSize',14,...
+'FontName','cmr14')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% PLOT 2 %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+path = './../../build/bin/preform/History/Strain/Middle';
+
+
+addpath(path)
+displacementdir = path ;
+d = dir(displacementdir);
+d1 = dir([displacementdir,'*.txt']);
+numFiles = size(d,1) -3 ;
+
+plotFiles = ceil(linspace(1,numFiles,25));
+
+
+hoop_strain = [];
+axial_strain = [];
+time = [];
+shear_strain = [];
+radial_strain = [];
+
+for i = 1:length(plotFiles)
+    
+    
+
+    filename = strcat('./../../build/bin/preform/History/Strain/Middle/strain_',num2str(plotFiles(i)),'.txt');
+
+    strain = csvread(filename);
+    
+ 
+    F =  [strain(1,1) strain(1,2) 0 ;
+        strain(2,1) strain(2,2) 0;
+        0 0 strain(3,3)]  ;
+    
+    
+    [R U V] = poldecomp(F);
+    
+    
+    true_strain = logm(U);
+
+    
+    hoop_strain(i) =true_strain(3,3);
+    axial_strain(i) = true_strain(2,2);
+    radial_strain(i) = true_strain(1,1);
+    shear_strain(i) = true_strain(1,2);
+    
+
+
+    
+
+
+    
+    
+    jacobian(i) = det(F);
+    crit_lambda(i) = strain(2,3);
+    maxSr(i) = strain(3,1);
+    max_lambda_n(i) = strain(1,3);
+    time(i) = strain(3,2);
+  
+    
+end
+
+
+
+
+subplot(1,3,2)
+plot(time,(axial_strain),'k-x','linewidth',2);
+% hold on
+% plot(time,log(1+shear_strain),'k');
+xlim([0,TMAX])
+
+
+cc = [time',axial_strain'];
+save('strain_axial_num.dat', 'cc', '-ascii', '-double', '-tabs')
+
+cc = [time',hoop_strain'];
+save('strain_hoop_num.dat', 'cc', '-ascii', '-double', '-tabs')
+
+
+
+c = csvread("Experimental/N2_sr_exp_axial_MIDDLE.csv");
+
+
+save('strain_axial_exp.dat', 'c', '-ascii', '-double', '-tabs')
+
+
+hold on
+plot(c(1:5:end,1),c(1:5:end,2),'r-x')
+
+
+
+hold on
+plot(time,(hoop_strain),'k-o','linewidth',2);
+
+
+c = csvread("Experimental/N2_sr_exp_hoop_MIDDLE.csv");
+save('strain_hoop_exp.dat', 'c', '-ascii', '-double', '-tabs')
+
+hold on
+plot(c(1:10:end,1),c(1:10:end,2),'b-o')
+
+
+
+xlim([0,TMAX])
+
+
+grid on 
+axis square
+
+title('Middle')
+
+%set axis
+set(gca, 'FontName', 'cmr12')
+% set x tics and y tics
+set(gca,...
+'Units','normalized',...
+'FontWeight','normal',...
+'FontSize',14,... % size ofiguref numbers on axis
+'FontName','cmr14') % font name
+set(gca,'TickLabelInterpreter', 'latex');
+
+
+legend({'Meshfree(Axial)','Experimental (Axial)', 'Meshfree (Hoop)', 'Experimental (Hoop)'},... % { 'legend1', 'legend2',...}
+'interpreter','latex',...
+'FontSize',12,...
+'FontName','cmr14',...
+'Location','SouthEast')
+
+% Y label
+ylabel({'True Strain'},...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% X label
+xlabel('Time (s)',...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+title('Middle',...
+'interpreter','latex',...
+'FontSize',14,...
+'FontName','cmr14')
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% PLOT 3 %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+path = './../../build/bin/preform/History/Strain/Bot';
+
+addpath(path)
+displacementdir = path ;
+d = dir(displacementdir);
+d1 = dir([displacementdir,'*.txt']);
+numFiles = size(d,1) -3 ;
+
+plotFiles = ceil(linspace(1,numFiles,25));
+
+hoop_strain = [];
+axial_strain = [];
+time = [];
+shear_strain = [];
+radial_strain = [];
+
+for i = 1:length(plotFiles)
+    
+    
+
+    filename = strcat('./../../build/bin/preform/History/Strain/Bot/strain_',num2str(plotFiles(i)),'.txt');
+
+    strain = csvread(filename);
+    
+ 
+    F =  [strain(1,1) strain(1,2) 0 ;
+        strain(2,1) strain(2,2) 0;
+        0 0 strain(3,3)]  ;
+    
+    
+    [R U V] = poldecomp(F);
+    
+    
+    true_strain = logm(U);
+
+    
+    hoop_strain(i) =true_strain(3,3);
+    axial_strain(i) = true_strain(2,2);
+    radial_strain(i) = true_strain(1,1);
+    shear_strain(i) = true_strain(1,2);
+
+    time(i) = strain(3,2);
+  
+    
+end
+
+subplot(1,3,3)
+plot(time,(axial_strain),'k-x','linewidth',2);
+
+xlim([0,TMAX])
+
+
+cc = [time',axial_strain'];
+save('strain_axial_num.dat', 'cc', '-ascii', '-double', '-tabs')
+
+cc = [time',hoop_strain'];
+save('strain_hoop_num.dat', 'cc', '-ascii', '-double', '-tabs')
+
+
+
+c = csvread("Experimental/N2_sr_exp_axial_BOT.csv");
+
+
+save('strain_axial_exp.dat', 'c', '-ascii', '-double', '-tabs')
+
+
+hold on
+plot(c(1:10:end,1),c(1:10:end,2),'r-x')
+
+plot(time,(hoop_strain),'k-o','linewidth',2);
+
+
+c = csvread("Experimental/N2_sr_exp_hoop_BOT.csv");
+save('strain_hoop_exp.dat', 'c', '-ascii', '-double', '-tabs')
+
+hold on
+plot(c(1:10:end,1),c(1:10:end,2),'b-o')
+
+
+
+xlim([0,TMAX])
+
+
+title('Bottom')
+axis square
+grid on 
+set(gcf, 'Color', 'w');
+
+
+%set axis
+set(gca, 'FontName', 'cmr12')
+% set x tics and y tics
+set(gca,...
+'Units','normalized',...
+'FontWeight','normal',...
+'FontSize',14,... % size ofiguref numbers on axis
+'FontName','cmr14') % font name
+set(gca,'TickLabelInterpreter', 'latex');
+
+
+legend({'Meshfree(Axial)','Experimental (Axial)', 'Meshfree (Hoop)', 'Experimental (Hoop)'},... % { 'legend1', 'legend2',...}
+'interpreter','latex',...
+'FontSize',12,...
+'FontName','cmr14',...
+'Location','SouthEast')
+
+% Y label
+ylabel({'True Strain'},...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% X label
+xlabel('Time (s)',...
+'interpreter','latex',...
+'FontSize',14,... % font size
+'FontName','cmr14')
+% title
+
+title('Bottom',...
+'interpreter','latex',...
+'FontSize',14,...
+'FontName','cmr14')
+
+
+export_fig n2strains.png -m4
+

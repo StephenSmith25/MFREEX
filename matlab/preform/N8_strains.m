@@ -17,7 +17,7 @@ d = dir(displacementdir);
 d1 = dir([displacementdir,'*.txt']);
 numFiles = size(d,1) -3 ;
 
-plotFiles = ceil(linspace(1,numFiles,25));
+plotFiles = ceil(linspace(1,numFiles,60));
 
 
 hoop_strain = [];
@@ -66,8 +66,8 @@ for i = 1:length(plotFiles)
   
     
 end
-axial_strain(12:end) = smoothdata(axial_strain(12:end));
-hoop_strain(10:end) = smoothdata(hoop_strain(10:end));
+% axial_strain(12:end) = smoothdata(axial_strain(12:end));
+% hoop_strain(10:end) = smoothdata(hoop_strain(10:end));
 strain = figure('Position', get(0, 'Screensize'));
 
 
@@ -80,10 +80,10 @@ xlim([0,TMAX])
 
 
 cc = [time',axial_strain'];
-save('strain_axial_num.dat', 'cc', '-ascii', '-double', '-tabs')
+save('N8_strain_axial_num_top.dat', 'cc', '-ascii', '-double', '-tabs')
 
 cc = [time',hoop_strain'];
-save('strain_hoop_num.dat', 'cc', '-ascii', '-double', '-tabs')
+save('N8_strain_hoop_num_top.dat', 'cc', '-ascii', '-double', '-tabs')
 
 
 
@@ -159,7 +159,7 @@ d = dir(displacementdir);
 d1 = dir([displacementdir,'*.txt']);
 numFiles = size(d,1) -3 ;
 
-plotFiles = ceil(linspace(1,numFiles,25));
+plotFiles = ceil(linspace(1,numFiles,60));
 
 
 hoop_strain = [];
@@ -211,7 +211,7 @@ for i = 1:length(plotFiles)
 end
 
 
-axial_strain(6:end) = smoothdata(axial_strain(6:end));
+% axial_strain(6:end) = smoothdata(axial_strain(6:end));
 hoop_strain(10:end) = smoothdata(hoop_strain(10:end));
 
 
@@ -226,11 +226,10 @@ xlim([0,TMAX])
 
 
 cc = [time',axial_strain'];
-save('strain_axial_num.dat', 'cc', '-ascii', '-double', '-tabs')
+save('N8_strain_axial_num_middle.dat', 'cc', '-ascii', '-double', '-tabs')
 
 cc = [time',hoop_strain'];
-save('strain_hoop_num.dat', 'cc', '-ascii', '-double', '-tabs')
-
+save('N8_strain_hoop_num_middle.dat', 'cc', '-ascii', '-double', '-tabs')
 
 
 c = csvread("Experimental/N8_sr_exp_axial_MIDDLE.csv");
@@ -307,7 +306,7 @@ d = dir(displacementdir);
 d1 = dir([displacementdir,'*.txt']);
 numFiles = size(d,1) -3 ;
 
-plotFiles = ceil(linspace(1,numFiles,25));
+plotFiles = ceil(linspace(1,numFiles,60));
 
 hoop_strain = [];
 axial_strain = [];
@@ -346,9 +345,9 @@ for i = 1:length(plotFiles)
     
 end
 
-
-axial_strain(8:end) = smoothdata(axial_strain(8:end));
-hoop_strain(10:end) = smoothdata(hoop_strain(10:end));
+% 
+% axial_strain(8:end) = smoothdata(axial_strain(8:end));
+% hoop_strain(10:end) = smoothdata(hoop_strain(10:end));
 subplot(1,3,3)
 plot(time,(axial_strain),'k-x','linewidth',2);
 
@@ -356,10 +355,10 @@ xlim([0,TMAX])
 
 
 cc = [time',axial_strain'];
-save('strain_axial_num.dat', 'cc', '-ascii', '-double', '-tabs')
+save('N8_strain_axial_num_bot.dat', 'cc', '-ascii', '-double', '-tabs')
 
 cc = [time',hoop_strain'];
-save('strain_hoop_num.dat', 'cc', '-ascii', '-double', '-tabs')
+save('N8_strain_hoop_num_bot.dat', 'cc', '-ascii', '-double', '-tabs')
 
 
 

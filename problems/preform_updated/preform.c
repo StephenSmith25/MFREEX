@@ -80,7 +80,7 @@ char * integration_type = "TRIANGLE";
 
 #define IS_UPDATED
 #ifdef IS_UPDATED
-	#define UPDATE_FREQUENCEY 10000000000
+	#define UPDATE_FREQUENCEY 1000
 #endif
 
 const int WRITE_FREQ =250;
