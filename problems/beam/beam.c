@@ -20,7 +20,7 @@
 
 char * basis_type = "linear";
 char * weight = "cubic";
-char * kernel_shape = "elliptical";
+char * kernel_shape = "circular";
 
 int is_AXI = 0;
 
@@ -29,7 +29,7 @@ const double dmax = 2.5;
 const double dmax_x = 1.5;
 const double dmax_y = 2.0;
 double beta = 1.01;
-int constant_support_size = 0;
+int constant_support_size = 1;
 
 
 int main(void )
@@ -65,6 +65,7 @@ int main(void )
 	dir_load->ve[0] = 0;
 	dir_load->ve[1] = 1;
 
+	print("WITH CIRUCLAR DOMAIN OF INFLEUNCE \n");
 	// Beam dimensions 
 	double h = 1.00;
 	double L = 20.00;

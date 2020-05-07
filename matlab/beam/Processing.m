@@ -41,7 +41,7 @@ filename = strcat(path,'/displacement_',num2str(plotFiles(1)),'.txt');
 disp = csvread(filename);
 figure
 subplot(1,3,1)       % add first plot in 2 x 2 grid
-plot(disp(:,1),disp(:,2),'k.')           % line plot
+plot(disp(:,1),disp(:,2),'k.', 'markersize', 5)           % line plot
 axis equal 
 hold on
 plot(disp(boundary_nodes,1),disp(boundary_nodes,2),'r-');
@@ -98,7 +98,7 @@ B = fscanf(fileID,formatSpec,sizeA);
 B = B';
 
 hold on 
-plot(B(:,1),B(:,2),'k-','markersize',6);
+plot(B(:,1),B(:,2),'k-','markersize',11);
 
 
 
