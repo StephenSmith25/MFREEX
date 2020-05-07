@@ -35,7 +35,7 @@ MATERIAL_TYPE material_type = HYPERELASTIC;
 int is_AXI = 0;
 
 // Meshfree parameters
-double dmax = 2;
+double dmax = 2.5;
 const double dmax_x = 1.5;
 const double dmax_y = 2.0;
 double beta = 0.8;
@@ -332,6 +332,7 @@ int main(void) {
       mls_shapefunction(traction_nodes_coords, 1, &mfree);
 
   m_foutput(stdout, traction_nodes_coords);
+  exit(0);
 
   /* ------------------------------------------*/
   /* ----------------Mass Vector---------------*/
