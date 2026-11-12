@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  SVK.h
+ *       Filename:  svk_defgrad.h
  *
  *    Description:  St Venant Kirchhoff Material
  *
@@ -17,8 +17,8 @@
  */
 
 
-#ifndef SVK_H_
-#define SVK_H_
+#ifndef SVK_DEFGRAD_H_
+#define SVK_DEFGRAD_H_
 #include "matrix.h"
 #include "matrix2.h"
 #include <stdlib.h>
