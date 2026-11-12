@@ -32,37 +32,14 @@ static inline double rectangle_area(double x1, double y1, double x2, double y2,
 static inline bool inside_rectangle(double x1, double y1, double x2, double y2, double x3, double y3,
 	double x4, double y4, double x, double y)
 {
-	
-  /* Calculate area of rectangle ABCD */
-    double A = rectangle_area(x1, y1, x2, y2, x3, y3) +  
-              rectangle_area(x1, y1, x4, y4, x3, y3); 
-  
-    /* Calculate area of triangle PAB */
-    double A1 = rectangle_area(x, y, x1, y1, x2, y2); 
-  
-    /* Calculate area of triangle PBC */
-    double A2 = rectangle_area(x, y, x2, y2, x3, y3); 
-  
-    /* Calculate area of triangle PCD */
-    double A3 = rectangle_area(x, y, x3, y3, x4, y4); 
-  
-    /* Calculate area of triangle PAD */
-    double A4 = rectangle_area(x, y, x1, y1, x4, y4); 
-  
-    /* Check if sum of A1, A2, A3 and A4  
-       is same as A */
-    double A_sum = A1+A2+A3+A4;
-
-    if ( ((fabs(A-A_sum))) < TOLEREANCE)
-    {
-    	return true;
-
-    }else{
-    	return false;
-    }
-
+	/* Axis-aligned rectangle with corners (x1,y1) [bottom-left] ...
+	   (x3,y3) [top-right]. Compare coordinates directly: the previous
+	   area-sum test used an absolute 1e-12 tolerance, so the result
+	   depended on the units of the model. Boundary points count as
+	   inside, as before. */
+	(void)x2; (void)y2; (void)x4; (void)y4;
+	return (x >= x1) && (x <= x3) && (y >= y1) && (y <= y3);
 }
-
 
 IVEC * get_point_neighbours(IVEC * neighbours, double * x, meshfreeDomain * mfree)
 {

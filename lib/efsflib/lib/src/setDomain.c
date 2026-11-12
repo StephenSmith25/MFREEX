@@ -138,6 +138,10 @@ int setDomain(meshfreeDomain * mfree)
 			v_sort(distances,order);
 			double di_k[3];
 			double max_distance[dim];
+			for ( int k = 0 ; k < dim ; k++)
+			{
+				max_distance[k] = 0;   /* was uninitialised */
+			}
 
 			// find dmx dmz based on this
 

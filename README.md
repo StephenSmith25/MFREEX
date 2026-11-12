@@ -76,6 +76,23 @@ set it explicitly (see *Known issues*).
 Post-processing scripts are in `matlab/` and `python/`
 (`pip install -r python/requirements.txt`).
 
+## Testing
+
+```bash
+cmake --preset release && cmake --build --preset release
+ctest --test-dir build/release --output-on-failure   # ~2 s
+ctest --test-dir build/release -L unit               # unit tests only
+```
+
+- `unit_*`: property tests of the EFG building blocks. They cover MLS
+  reproduction and derivative consistency, the SCNI/MSCNI patch tests,
+  support domains versus brute-force neighbour search, the kernel functions,
+  the 3x3 linear algebra and eigen-solvers, polar decomposition, and
+  hyperelastic energy consistency (P = dW/dF).
+- `golden_*`: rerun the `biaxial` (Buckley model) and `beam` (meshing)
+  problems and compare their output with reference results in `tests/golden/`.
+- `memcheck_*`: unit tests run under valgrind, if it is installed.
+
 ## Repository layout
 
 ```
@@ -83,6 +100,7 @@ MFREEX/          core library (include/, src/)
 problems/        example problems, one executable each
 lib/             vendored dependencies (see below)
 cmake/           CMake helper modules
+tests/           regression tests (unit, golden output, memcheck)
 input/           experimental input-deck parser
 matlab/, python/ post-processing scripts and reference data
 userguide/       LaTeX user guide (userguide.pdf)

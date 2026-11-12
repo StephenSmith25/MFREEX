@@ -23,7 +23,7 @@ double contraction(MAT * A, MAT * B){
 
 	double returnValue = 0;
 	for ( int i = 0 ; i < A->m ; i++){
-		for ( int j = 0 ; j < A->m; j++){
+		for ( int j = 0 ; j < A->n; j++){
 			returnValue += A->me[i][j]*B->me[i][j];
 		}
 	}

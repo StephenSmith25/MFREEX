@@ -21,7 +21,7 @@ m_inverse_small(MAT *A, MAT * OUT)
 
 	if ( OUT == MNULL)
 	{
-		MAT * OUT = m_get(dim,dim);
+		OUT = m_get(dim,dim);   /* was a shadowing local: OUT stayed NULL */
 
 	}
 

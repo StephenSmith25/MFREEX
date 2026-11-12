@@ -150,6 +150,24 @@ voronoi_diagram * generate_voronoi(double *points, int * boundary, int numPoints
 			}// end of else
 
 		}// end of loop over verticies
+
+		/* Drop repeated consecutive vertices, including a closing vertex
+		   equal to the first: they create zero-length edges (0/0 in the
+		   SCNI edge normals) and bias the vertex-average cell centre. */
+		{
+			int m = 0;
+			for ( int k = 0 ; k < num_vertices ; ++k )
+			{
+				int id = vor_out->index[i][k];
+				if ( m > 0 && vor_out->index[i][m-1] == id )
+					continue;
+				vor_out->index[i][m++] = id;
+			}
+			while ( m > 1 && vor_out->index[i][m-1] == vor_out->index[i][0] )
+				--m;
+			vor_out->num_cell_verticies[i] = m;
+		}
+
 		gpc_free_polygon(voronoi_1[i]);
 		free(voronoi_1[i]);
 	} // end of loop over points

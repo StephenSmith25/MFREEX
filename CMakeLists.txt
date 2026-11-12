@@ -32,6 +32,7 @@ option(MFREEX_ENABLE_WARNINGS "Compile MFREEX sources with -Wall -Wextra"       
 option(MFREEX_WARNINGS_AS_ERRORS "Treat warnings in MFREEX sources as errors"    OFF)
 option(MFREEX_SANITIZE       "Build with AddressSanitizer + UBSan (debugging)"   OFF)
 option(MFREEX_BUILD_PROBLEMS "Build the example problems in problems/"           ON)
+option(MFREEX_BUILD_TESTS    "Build the regression test suite (ctest)"           ON)
 
 # Individual example problems (names kept from the original build)
 option(PROBLEM_BEAM            "Build beam problem"                         ON)
@@ -88,6 +89,11 @@ add_subdirectory(MFREEX)
 
 if(MFREEX_BUILD_PROBLEMS)
   add_subdirectory(problems)
+endif()
+
+if(MFREEX_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
 endif()
 
 # ---------------------------------------------------------------------------

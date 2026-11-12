@@ -1,12 +1,16 @@
 
 #include "callVoronoi.h"
 #define JC_VORONOI_IMPLEMENTATION
-// #define JCV_REAL_TYPE double
-// #define JCV_ATAN2 atan2
-// #define JCV_FLT_MAX 1.7976931348623157E+308
-// #define JCV_CEIL ceil
-// #define JCV_FLOOR floor
-// #define JCV_FABS fabs
+/* Build the Voronoi diagram in double precision. jc_voronoi defaults to
+   float, which rounds node and vertex coordinates to ~7 digits, so the
+   clipped cells used for nodal integration overlapped/left gaps of ~1e-8. */
+#include <float.h>
+#include <math.h>
+#define JCV_REAL_TYPE double
+#define JCV_ATAN2(_Y_, _X_) atan2(_Y_, _X_)
+#define JCV_SQRT(_X_) sqrt(_X_)
+#define JCV_FLT_MAX DBL_MAX
+#define JCV_PI 3.14159265358979323846264338327950288
 #include "jc_voronoi.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
