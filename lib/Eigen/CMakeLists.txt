@@ -1,28 +1,13 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-project(Eigen)
-SET(EIGEN_INTERNAL_SRC
-	${CMAKE_CURRENT_SOURCE_DIR}/src/dsyev2.c 
-	${CMAKE_CURRENT_SOURCE_DIR}/src/dsytrd3.c 
-	${CMAKE_CURRENT_SOURCE_DIR}/src/dsyevc3.c 
-	${CMAKE_CURRENT_SOURCE_DIR}/src/dsyevj3.c 
-	${CMAKE_CURRENT_SOURCE_DIR}/src/dsyevq3.c 
-	${CMAKE_CURRENT_SOURCE_DIR}/src/dsyevv3.c 
-	${CMAKE_CURRENT_SOURCE_DIR}/src/dsyevh3.c 
-	${CMAKE_CURRENT_SOURCE_DIR}/src/dsyevd3.c 
-)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-
-FILE(GLOB EIGEN_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
-SET(EIGEN_LIB_OUT_PATH ${PROJECT_BINARY_DIR}/lib)
-
-set(ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-
-
-SET(EIGEN_LIBRARY_SOURCE
-    ${EIGEN_INTERNAL_SRC}
-    ${EIGEN_HEADERS})
-
-SET(GCC_COVERAGE_COMPILE_FLAGS " -O3 -Wall -fPIC -std=c99 ")
-add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
-
-add_library(Eigen STATIC ${EIGEN_LIBRARY_SOURCE})
+# Joachim Kopp's analytical/iterative eigen-solvers for 3x3 symmetric matrices.
+# (Directory is historically named "Eigen"; this is unrelated to the C++ Eigen library.)
+add_library(eig3 STATIC
+  src/dsyev2.c
+  src/dsytrd3.c
+  src/dsyevc3.c
+  src/dsyevj3.c
+  src/dsyevq3.c
+  src/dsyevv3.c
+  src/dsyevh3.c
+  src/dsyevd3.c)
+target_include_directories(eig3 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(eig3 PUBLIC mfreex_compat)

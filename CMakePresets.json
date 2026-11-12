@@ -1,0 +1,44 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "release",
+      "displayName": "Release (OpenMP if available)",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "debug",
+      "displayName": "Debug + AddressSanitizer/UBSan, serial",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "MFREEX_SANITIZE": "ON",
+        "MFREEX_USE_OPENMP": "OFF",
+        "MFREEX_ENABLE_WARNINGS": "ON"
+      }
+    },
+    {
+      "name": "serial",
+      "displayName": "Release, no OpenMP",
+      "inherits": "release",
+      "cacheVariables": { "MFREEX_USE_OPENMP": "OFF" }
+    },
+    {
+      "name": "macos",
+      "displayName": "Release on macOS with Homebrew libomp",
+      "inherits": "release",
+      "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Darwin" },
+      "cacheVariables": {
+        "OpenMP_ROOT": "$env{HOMEBREW_PREFIX}/opt/libomp"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "release", "configurePreset": "release" },
+    { "name": "debug",   "configurePreset": "debug" },
+    { "name": "serial",  "configurePreset": "serial" },
+    { "name": "macos",   "configurePreset": "macos" }
+  ]
+}

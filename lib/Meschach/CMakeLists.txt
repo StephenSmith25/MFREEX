@@ -1,5 +1,4 @@
-# Author: petter.strandmark@gmail.com (Petter Strandmark)
-project(Meschach)
+# Meschach matrix library (vendored; build originally by Petter Strandmark)
 SET(MESCHACH_INTERNAL_SRC
   bdfactor.c
   bkpfacto.c
@@ -63,37 +62,7 @@ SET(MESCHACH_INTERNAL_SRC
 #  zvecop.c
 )
 
-FILE(GLOB MESCHACH_HEADERS *.h)
-
-SET(MESCHACH_LIBRARY_SOURCE
-    ${MESCHACH_INTERNAL_SRC}
-    ${MESCHACH_HEADERS})
-
-add_definitions("-O2 -DTHREADSAFE ")
-
-ADD_LIBRARY(meschach STATIC ${MESCHACH_LIBRARY_SOURCE})
-
-# INSTALL(TARGETS meschach
-#         RUNTIME DESTINATION bin
-#         LIBRARY DESTINATION lib
-#         ARCHIVE DESTINATION lib)
-
-# ADD_EXECUTABLE(test_meschach_torture torture.c)
-#     TARGET_LINK_LIBRARIES(test_meschach_torture meschach)
-#     IF (NOT MSVC)
-#       TARGET_LINK_LIBRARIES(test_meschach_torture m)
-#     ENDIF (NOT MSVC)
-
-# ADD_TEST(NAME meschach_torture
-#          COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_meschach_torture)
-# SET_PROPERTY(TARGET test_meschach_torture         PROPERTY FOLDER "Tests")
-
-# ADD_EXECUTABLE(test_meschach_sptort sptort.c)
-#     TARGET_LINK_LIBRARIES(test_meschach_sptort meschach)
-#     IF (NOT MSVC)
-#       TARGET_LINK_LIBRARIES(test_meschach_sptort m)
-#     ENDIF (NOT MSVC)
-
-# ADD_TEST(NAME meschach_sptort
-#          COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test_meschach_sptort)
-# SET_PROPERTY(TARGET test_meschach_sptort         PROPERTY FOLDER "Tests")
+add_library(meschach STATIC ${MESCHACH_INTERNAL_SRC})
+target_include_directories(meschach PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_definitions(meschach PUBLIC THREADSAFE)
+target_link_libraries(meschach PUBLIC mfreex_compat)
