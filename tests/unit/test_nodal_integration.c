@@ -94,6 +94,26 @@ static double cell_strain(MAT *B, IVEC *idx, MAT *nodes, int row) {
   return s;
 }
 
+/* Clipped Voronoi cells must be simple polygons: no vertex repeated
+ * consecutively (a zero-length edge gives 0/0 in the SCNI normal, and skews
+ * the vertex-average "centre" used as r in axisymmetric problems). */
+static void check_voronoi_cells(patch *p) {
+  voronoi_diagram *v = p->vor;
+  CHECK(v->num_cells == (int)p->nodes->m);
+  for (int i = 0; i < v->num_cells; ++i) {
+    int m = v->num_cell_verticies[i];
+    CHECK(m >= 3);
+    for (int k = 0; k < m; ++k)
+      CHECK(v->index[i][k] != v->index[i][(k + 1) % m]);
+  }
+}
+
+TEST_CASE(voronoi_cells_have_no_repeated_vertices) {
+  check_voronoi_cells(make_patch(9, 0.0, 1.0, 0.0));
+  check_voronoi_cells(make_patch(9, 0.0, 1.0, 0.25));
+  check_voronoi_cells(make_patch(7, 0.5, 1.0, 0.0));
+}
+
 static void check_scni_patch(double perturb) {
   patch *p = make_patch(9, 0.0, 1.0, perturb);
   SCNI_OBJ *s = generate_scni(p->vor, NULL, 0, 0, 2, &p->mfree);
@@ -152,6 +172,7 @@ TEST_CASE(mscni_linear_patch_test) {
 }
 
 int main(void) {
+  RUN(voronoi_cells_have_no_repeated_vertices);
   RUN(scni_linear_patch_test_regular);
   RUN(scni_linear_patch_test_irregular);
   RUN(scni_axisymmetric_hoop_strain);
