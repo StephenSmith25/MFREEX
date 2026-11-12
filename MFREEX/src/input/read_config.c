@@ -43,7 +43,7 @@ return str;
 
 
 // Displacement bcs are read into nodesets
-static int read_displacementBCs(DOMAIN * domain, FILE * fp)
+static int read_displacementBCs(MESH_DOMAIN * domain, FILE * fp)
 {
 
 	/* TO DO 
@@ -204,7 +204,7 @@ static int read_displacementBCs(DOMAIN * domain, FILE * fp)
 }
 
 // material parameters are read into blockset 
-static int read_material_parameters(DOMAIN * domain, FILE * fp)
+static int read_material_parameters(MESH_DOMAIN * domain, FILE * fp)
 {
 	/* TO DO 
 
@@ -368,7 +368,7 @@ static int read_timestep_parameters()
 
 
 // pressure conditions are read into sidesets
-static int read_pressure_loads(DOMAIN * domain, FILE * fp)
+static int read_pressure_loads(MESH_DOMAIN * domain, FILE * fp)
 {
 
 
@@ -499,7 +499,7 @@ static int read_pressure_loads(DOMAIN * domain, FILE * fp)
 
 
 
-int read_config_file(DOMAIN * domain, char * filename)
+int read_config_file(MESH_DOMAIN * domain, char * filename)
 {
 
 

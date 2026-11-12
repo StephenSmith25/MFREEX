@@ -1,7 +1,7 @@
 #include "BLOCKS.h"
 
 // Domain constructors  
-int AddBlockSetToDomain(DOMAIN * domain, int ID )
+int AddBlockSetToDomain(MESH_DOMAIN * domain, int ID )
 {
 	// create a new blockset with ID
 	BLOCKSET * newBlockset = malloc(1*sizeof(BLOCKSET)) ;
@@ -15,7 +15,7 @@ int AddBlockSetToDomain(DOMAIN * domain, int ID )
 
 	return 0;
 }
-int AddSideSetToDomain(DOMAIN * domain, int ID )
+int AddSideSetToDomain(MESH_DOMAIN * domain, int ID )
 {
 	// create a new sideset with ID
 	SIDESET * newSideSet = malloc(1*sizeof(SIDESET)) ;
@@ -29,7 +29,7 @@ int AddSideSetToDomain(DOMAIN * domain, int ID )
 
 	return 0;
 }
-int AddNodeSetToDomain(DOMAIN * domain, int ID )
+int AddNodeSetToDomain(MESH_DOMAIN * domain, int ID )
 {
 	// create a new nodeset with ID
 	NODESET * newNodeSet = malloc(1*sizeof(NODESET));
@@ -47,7 +47,7 @@ int AddNodeSetToDomain(DOMAIN * domain, int ID )
 	return 0;
 }
 
-int AddPhysicalNameToDomain(DOMAIN * domain, PHYSICAL_TYPE type, int ID)
+int AddPhysicalNameToDomain(MESH_DOMAIN * domain, PHYSICAL_TYPE type, int ID)
 {
 	// create a new physical name with ID and Type
 	PHYSICAL_NAME * physical_name = malloc(1*sizeof(PHYSICAL_NAME));
@@ -66,7 +66,7 @@ int AddPhysicalNameToDomain(DOMAIN * domain, PHYSICAL_TYPE type, int ID)
 }
 
 
-PHYSICAL_NAME * FindPhysicalNameByID(DOMAIN * domain, int ID)
+PHYSICAL_NAME * FindPhysicalNameByID(MESH_DOMAIN * domain, int ID)
 {
 	PHYSICAL_NAME * current = domain->physical_names;
 	int testID;
@@ -84,7 +84,7 @@ PHYSICAL_NAME * FindPhysicalNameByID(DOMAIN * domain, int ID)
 	return NULL;
 }
 
-BLOCKSET * FindBlockSetByID(DOMAIN * domain, int ID)
+BLOCKSET * FindBlockSetByID(MESH_DOMAIN * domain, int ID)
 {
 	BLOCKSET * current = domain->blocksets;
 	int testID = -1;
@@ -109,7 +109,7 @@ BLOCKSET * FindBlockSetByID(DOMAIN * domain, int ID)
 
 }
 
-SIDESET * FindSideSetByID(DOMAIN * domain, int ID)
+SIDESET * FindSideSetByID(MESH_DOMAIN * domain, int ID)
 {
 
 
@@ -136,7 +136,7 @@ SIDESET * FindSideSetByID(DOMAIN * domain, int ID)
 
 }
 
-NODESET * FindNodeSetByID(DOMAIN * domain, int ID)
+NODESET * FindNodeSetByID(MESH_DOMAIN * domain, int ID)
 {
 
 
@@ -421,7 +421,7 @@ DOF_CONSTRAINT * FindDOFConstraintInNodeSet(NODESET * nodeset, DIRECTION dir)
 }
 
 
-int GetMaterialPointsBlockSet(DOMAIN * domain , int order)
+int GetMaterialPointsBlockSet(MESH_DOMAIN * domain , int order)
 {
 
 	int number_of_quadrature_points = 0;
@@ -434,7 +434,7 @@ int GetMaterialPointsBlockSet(DOMAIN * domain , int order)
 
 	//  create quadrature points
     // LOOP OVER EACH ELEMENT 
-	ELEMENT * element;
+	ELEMENT * element = blockset->elements;
 	while ( element != NULL)
 	{	
 		// GET QUADRATURE POINTS AT EACH ELEMENT 
@@ -588,4 +588,6 @@ int GetMaterialPointsBlockSet(DOMAIN * domain , int order)
 
 
 
+	// TODO: unfinished prototype - material points are not yet created here.
+	return number_of_quadrature_points;
 }

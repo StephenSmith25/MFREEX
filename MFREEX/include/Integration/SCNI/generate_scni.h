@@ -9,7 +9,7 @@
 #include "Bmat/generate_Bmat.h"
 #include "Integration/integration_structure.h"
 #include <math.h>
-#include <omp.h>
+#include "mfreex_omp.h"
 
 
 typedef struct SCNI {

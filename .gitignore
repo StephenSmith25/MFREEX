@@ -1,14 +1,37 @@
+# Build trees
 build/
-build-dir/
+build-*/
+out/
+cmake-build-*/
+CMakeUserPresets.json
+compile_commands.json
+.cache/
+
+# Editors / OS
 *.sublime-project
 *.sublime-workspace
+.vscode/
+.idea/
+*~
+*.swp
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Simulation output written next to executables / in problem dirs
+*.avi
+tmp/
 arch/
 Arch/
-*.avi
-*.pdf 
-tmp/
-!userguide.pdf
+
+# LaTeX (keep the built user guide)
+*.pdf
+!userguide/userguide.pdf
 *.aux
 *.gz
 *.toc
 *.log
+*.out

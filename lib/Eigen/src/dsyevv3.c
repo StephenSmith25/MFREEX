@@ -66,8 +66,11 @@ int dsyevv3(double A[3][3], double Q[3][3], double w[3])
   int i, j;             // Loop counters
 #endif
 
-  // Calculate eigenvalues
-  dsyevc3(A, w);
+  // Calculate eigenvalues (dsyevc3 takes row pointers, not a 2-D array)
+  {
+    double *A_rows[3] = { A[0], A[1], A[2] };
+    dsyevc3(A_rows, w);
+  }
 
 #ifndef EVALS_ONLY
   wmax = fabs(w[0]);

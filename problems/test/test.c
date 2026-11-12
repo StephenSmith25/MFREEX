@@ -3,7 +3,7 @@
 #include "matrix.h"
 #include "matrix2.h"
 #include <sys/time.h>
-#include <omp.h>
+#include "mfreex_omp.h"
 #include "mat2csv.h"
 #include "trigen.h"
 #include "Integration/material_point.h"

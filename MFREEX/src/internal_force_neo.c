@@ -1,5 +1,6 @@
 #include "internal_force_neo.h"
 #include "Deformation/velocity_grad.h"
+#include "Material/Hyperelastic/compress_neo.h"
 
 static double epsilon_penalty = 100; // NORMAL VLAUE = -50
 static double xi =0.01;

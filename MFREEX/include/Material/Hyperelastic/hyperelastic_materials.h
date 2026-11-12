@@ -6,7 +6,7 @@
 #include "Material/material.h"
 #include "cubicRivlin.h"
 #include "mooneyRivlin.h"
-#include "SVK.h"
+#include "svk_defgrad.h"
 #include "yeoh.h"
 
 

@@ -145,6 +145,6 @@ MATERIAL_POINT * MP, MAT * nodes, CELLS * cells);
 
 
 
-//int CreateMaterialPoints(DOMAIN * domain, int quad_order);
+//int CreateMaterialPoints(MESH_DOMAIN * domain, int quad_order);
 
 #endif

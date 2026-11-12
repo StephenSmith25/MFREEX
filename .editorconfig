@@ -1,0 +1,23 @@
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+
+[*.{c,h}]
+indent_style = space
+indent_size = 2
+
+[{CMakeLists.txt,*.cmake}]
+indent_style = space
+indent_size = 2
+
+[*.{py,m}]
+indent_style = space
+indent_size = 4
+
+[lib/**]
+# Vendored code: keep upstream formatting
+indent_style = unset
+indent_size = unset

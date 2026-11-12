@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  SVK.c
+ *       Filename:  svk_defgrad.c
  *
  *    Description:  Saint Venant-Kirchhoff Material model 
  *
@@ -15,7 +15,7 @@
  *
  * =====================================================================================
  */
-#include "Material/Hyperelastic/SVK.h"
+#include "Material/Hyperelastic/svk_defgrad.h"
 
 int SVK(VEC * stressVoigt, MAT * defGrad, VEC * params){
 

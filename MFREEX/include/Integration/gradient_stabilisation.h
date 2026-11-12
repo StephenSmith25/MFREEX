@@ -6,7 +6,7 @@
 #include "matrix2.h"
 #include "mls_shapefunction.h"
 #include <math.h>
-#include <omp.h>
+#include "mfreex_omp.h"
 #include "Integration/SCNI/generate_scni.h"
 
 
