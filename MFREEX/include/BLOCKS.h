@@ -80,7 +80,7 @@ typedef struct _SIDESET
 
 
 
-typedef struct DOMAIN
+typedef struct MESH_DOMAIN
 {
 
 
@@ -104,23 +104,23 @@ typedef struct DOMAIN
 
 
 
-}DOMAIN;
+}MESH_DOMAIN;
 
 
 
 
 // Domain constructors  
-int AddBlockSetToDomain(DOMAIN * domain, int ID );
-int AddSideSetToDomain(DOMAIN * domain, int ID );
-int AddNodeSetToDomain(DOMAIN * domain, int ID );
-int AddPhysicalNameToDomain(DOMAIN * domain, PHYSICAL_TYPE type, int ID);
+int AddBlockSetToDomain(MESH_DOMAIN * domain, int ID );
+int AddSideSetToDomain(MESH_DOMAIN * domain, int ID );
+int AddNodeSetToDomain(MESH_DOMAIN * domain, int ID );
+int AddPhysicalNameToDomain(MESH_DOMAIN * domain, PHYSICAL_TYPE type, int ID);
 
-PHYSICAL_NAME * FindPhysicalNameByID(DOMAIN * domain, int ID);
+PHYSICAL_NAME * FindPhysicalNameByID(MESH_DOMAIN * domain, int ID);
 
 // Find sets
-BLOCKSET * FindBlockSetByID(DOMAIN * domain, int ID);
-SIDESET * FindSideSetByID(DOMAIN * domain, int ID);
-NODESET * FindNodeSetByID(DOMAIN * domain, int ID);
+BLOCKSET * FindBlockSetByID(MESH_DOMAIN * domain, int ID);
+SIDESET * FindSideSetByID(MESH_DOMAIN * domain, int ID);
+NODESET * FindNodeSetByID(MESH_DOMAIN * domain, int ID);
 
 // Add elements to blocksets
 ELEMENT * AddElementToBlockSet(BLOCKSET * blockset, ELEMENT_TYPE etype, int * verticies);
@@ -138,6 +138,6 @@ DOF_CONSTRAINT *  FindDOFConstraintInNodeSet(NODESET * nodeset, DIRECTION dir);
 
 
 // integration
-int GetMaterialPointsBlockSet(DOMAIN * domain, int order);
+int GetMaterialPointsBlockSet(MESH_DOMAIN * domain, int order);
 
 #endif 

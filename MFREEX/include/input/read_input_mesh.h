@@ -13,6 +13,6 @@
 #define DIM 2
 #endif
 
-DOMAIN * read_intput_mesh(char * input_file_name);
+MESH_DOMAIN * read_intput_mesh(char * input_file_name);
 
 #endif 

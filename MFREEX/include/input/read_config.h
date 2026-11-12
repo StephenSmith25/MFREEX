@@ -14,7 +14,7 @@
 
 
 // read inputs into domain configuration
-int read_config_file(DOMAIN * domain, char * filename);
+int read_config_file(MESH_DOMAIN * domain, char * filename);
 
 
 // meshfree parameters are read into meshfree domain 
