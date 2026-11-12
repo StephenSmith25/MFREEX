@@ -10,3 +10,11 @@ add_subdirectory(triangulate)   # triangulate - Shewchuk's Triangle + wrappers
 add_subdirectory(efsflib)       # EFSFLIB     - EFG shape functions
 add_subdirectory(clipped_voronoi) # CVLIB     - clipped Voronoi diagrams
 add_subdirectory(thread_pool)   # thread_pool - C-Thread-Pool
+
+# Vendored code is used as-is: silence its (many, harmless) compiler warnings
+# so that warnings in MFREEX's own sources stand out.
+if(NOT MSVC)
+  foreach(vendored meschach gpc eig3 util triangulate EFSFLIB CVLIB thread_pool)
+    target_compile_options(${vendored} PRIVATE -w)
+  endforeach()
+endif()
