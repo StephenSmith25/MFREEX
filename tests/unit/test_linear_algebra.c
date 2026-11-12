@@ -11,6 +11,9 @@
 #include "determinant.h"
 #include "m_inverse_small.h"
 #include "trace.h"
+#include "contraction.h"
+#include "matop_3x3.h"
+#include "smoothstep.h"
 
 #include "dsyevc3.h"
 #include "dsyevh3.h"
@@ -69,6 +72,68 @@ TEST_CASE(inverse_small_3x3) {
   check_inverse(mat3(a));
   const double F[9] = {1.2, 0.3, 0.0, -0.1, 0.9, 0.05, 0.0, 0.02, 1.1};
   check_inverse(mat3(F));
+}
+
+/* The 3x3 helpers must agree with Meschach's general routines for any
+ * input, including matrices with zero entries (axisymmetric tensors are
+ * block-structured; an initial stretch tensor is the identity). */
+static const double DENSE[9] = {1.5, -0.2, 0.7, 0.3, 2.0, -1.1, 0.0, 0.4, 0.9};
+static const double PERMUT[9] = {0, 1, 0, 1, 0, 0, 0, 0, 1};   /* permutation */
+static const double IDENT[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
+static const double SHEAR[9] = {0, 0.25, 0, 0.25, 0, 0, 0, 0, 0}; /* like D */
+
+static void check_mlt_3x3(const double a[9], const double b[9]) {
+  MAT *A = mat3(a), *B = mat3(b), *C = m_get(3, 3), *Cref = m_get(3, 3);
+  m_mlt_3x3(A, B, C);
+  m_mlt(A, B, Cref);
+  for (int i = 0; i < 3; ++i)
+    for (int j = 0; j < 3; ++j) CHECK_CLOSE(C->me[i][j], Cref->me[i][j], TOL);
+}
+
+TEST_CASE(m_mlt_3x3_matches_m_mlt) {
+  check_mlt_3x3(DENSE, DENSE);
+  check_mlt_3x3(PERMUT, DENSE);
+  check_mlt_3x3(DENSE, PERMUT);
+  check_mlt_3x3(IDENT, SHEAR); /* V D with V = I at the first step */
+  check_mlt_3x3(SHEAR, DENSE);
+}
+
+TEST_CASE(m_add_sub_3x3_match_meschach) {
+  MAT *A = mat3(DENSE), *B = mat3(PERMUT), *C = m_get(3, 3), *R = m_get(3, 3);
+  m_add_3x3(A, B, C);
+  m_add(A, B, R);
+  for (int i = 0; i < 3; ++i)
+    for (int j = 0; j < 3; ++j) CHECK_CLOSE(C->me[i][j], R->me[i][j], TOL);
+  m_sub_3x3(A, B, C);
+  m_sub(A, B, R);
+  for (int i = 0; i < 3; ++i)
+    for (int j = 0; j < 3; ++j) CHECK_CLOSE(C->me[i][j], R->me[i][j], TOL);
+}
+
+TEST_CASE(contraction_is_frobenius_inner_product) {
+  MAT *A = mat3(DENSE), *B = mat3(PERMUT);
+  double ref = 0;
+  for (int i = 0; i < 9; ++i) ref += DENSE[i] * PERMUT[i];
+  CHECK_CLOSE(contraction(A, B), ref, TOL);
+  /* non-square tensors (e.g. 2x3) */
+  MAT *P = m_get(2, 3), *Q = m_get(2, 3);
+  double r2 = 0;
+  for (int i = 0; i < 2; ++i)
+    for (int j = 0; j < 3; ++j) {
+      P->me[i][j] = 1 + i + 2 * j;
+      Q->me[i][j] = 0.5 * j - i;
+      r2 += P->me[i][j] * Q->me[i][j];
+    }
+  CHECK_CLOSE(contraction(P, Q), r2, TOL);
+}
+
+TEST_CASE(smoothstep_endpoints_and_symmetry) {
+  CHECK_CLOSE(smoothstep(-1.0, 2.0, 0.0), 0.0, TOL);
+  CHECK_CLOSE(smoothstep(0.0, 2.0, 0.0), 0.0, TOL);
+  CHECK_CLOSE(smoothstep(2.0, 2.0, 0.0), 1.0, TOL);
+  CHECK_CLOSE(smoothstep(5.0, 2.0, 0.0), 1.0, TOL);
+  CHECK_CLOSE(smoothstep(1.0, 2.0, 0.0), 0.5, TOL);
+  CHECK_CLOSE(smoothstep(0.5, 2.0, 0.0) + smoothstep(1.5, 2.0, 0.0), 1.0, TOL);
 }
 
 /* ---------------------------------------------------------------- eig3 -- */
@@ -137,6 +202,10 @@ int main(void) {
   RUN(trace_3x3);
   RUN(inverse_small_2x2);
   RUN(inverse_small_3x3);
+  RUN(m_mlt_3x3_matches_m_mlt);
+  RUN(m_add_sub_3x3_match_meschach);
+  RUN(contraction_is_frobenius_inner_product);
+  RUN(smoothstep_endpoints_and_symmetry);
   RUN(dsyevh3_hybrid_solver);
   RUN(dsyevq3_ql_solver);
   RUN(dsyevc3_analytic_eigenvalues);
