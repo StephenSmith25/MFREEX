@@ -1,46 +1,44 @@
+#!/usr/bin/env python3
+"""Plot a preform profile (x, y) CSV, mirrored about the axis of symmetry.
+
+Usage: python3 plot.py [profile.csv]    (default: example.csv next to this script)
+"""
+
+import csv
+import sys
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
-import csv
-import os, os.path
-
-x = []
-y = []
-DIR = '/tmp'
-i =  len([name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name))])
-print i
 
 
-
-firstline = True
-with open('example.csv','r') as csvfile:
-
-    plots = csv.reader(csvfile, delimiter=',')
-
-    # skip first line
-    next(csvfile)
-
-    for row in plots:
-        x.append(float(row[0]))
-        y.append(float(row[1]))
+def read_xy(path):
+    x, y = [], []
+    with open(path, newline="") as csvfile:
+        reader = csv.reader(csvfile, delimiter=",")
+        next(reader)  # skip header
+        for row in reader:
+            x.append(float(row[0]))
+            y.append(float(row[1]))
+    return np.array(x), np.array(y)
 
 
-x1 = -1*np.array(x)
-plt.plot(x,y,x1,y, marker=".",linestyle='None')
+def main(argv):
+    path = Path(argv[0]) if argv else Path(__file__).with_name("example.csv")
+    x, y = read_xy(path)
 
-plt.xlabel('x')
-plt.ylabel('y')
-plt.title('Displacement')
-plt.legend()
+    plt.plot(x, y, marker=".", linestyle="None", label="profile")
+    plt.plot(-x, y, marker=".", linestyle="None", label="mirrored")
 
-plt.xlim([-40,40])
-plt.ylim([-140,77])
-plt.gca().set_aspect('equal', adjustable='box')
-plt.show()
-
-
-
-#f = open("/home/stephen/Documents/Meshless/build/bin/preform/History/Strain/strain_1.txt", "r")
-#print(f.read()) 
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.title("Displacement")
+    plt.legend()
+    plt.xlim([-40, 40])
+    plt.ylim([-140, 77])
+    plt.gca().set_aspect("equal", adjustable="box")
+    plt.show()
 
 
-
+if __name__ == "__main__":
+    main(sys.argv[1:])

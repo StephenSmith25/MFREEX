@@ -1,0 +1,61 @@
+name: build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  linux:
+    name: linux / ${{ matrix.cc }} / openmp=${{ matrix.openmp }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        cc: [gcc, clang]
+        openmp: [ON, OFF]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y ninja-build libomp-dev
+      - name: Configure
+        env:
+          CC: ${{ matrix.cc }}
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DMFREEX_USE_OPENMP=${{ matrix.openmp }}
+          -DPROBLEM_TUBE=ON -DPROBLEM_TEST=ON -DPROBLEM_BEAM_UL_LEGACY=ON
+          "-DCMAKE_C_FLAGS=-Werror=implicit-int -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -Werror=return-type"
+      - name: Build
+        run: cmake --build build --parallel
+
+  linux-debug-sanitizers:
+    name: linux / debug + sanitizers
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y ninja-build
+      - run: cmake --preset debug -G Ninja
+      - run: cmake --build --preset debug --parallel
+
+  macos:
+    name: macos / apple-clang + libomp
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: brew install libomp ninja
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DOpenMP_ROOT="$(brew --prefix libomp)"
+      - name: Build
+        run: cmake --build build --parallel
+
+  macos-serial:
+    name: macos / apple-clang, no OpenMP
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install ninja
+      - run: cmake --preset serial -G Ninja
+      - run: cmake --build --preset serial --parallel

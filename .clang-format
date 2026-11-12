@@ -1,0 +1,3 @@
+# Matches the style used for the recent `clang-format` passes (LLVM defaults).
+BasedOnStyle: LLVM
+SortIncludes: false
