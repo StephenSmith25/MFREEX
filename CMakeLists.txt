@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
 
 project(MFREEX)
 
+enable_testing()
+option(MFREEX_BUILD_TESTS "Build the regression test suite (ctest)" ON)
+
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # Whether to compile test program
@@ -79,3 +82,7 @@ endif(PROBLEM_PUNCH)
 if(PROBLEM_CELL_SEARCH)
 	add_subdirectory(problems/cell_search)
 endif(PROBLEM_CELL_SEARCH)	
+
+if(MFREEX_BUILD_TESTS)
+	add_subdirectory(tests)
+endif(MFREEX_BUILD_TESTS)
