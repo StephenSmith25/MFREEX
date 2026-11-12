@@ -7,7 +7,7 @@
 #include "polynomial_basis.h"
 #include "v_outer_product.h"
 #include <assert.h>
-#include <omp.h>
+#include "mfreex_omp.h"
 #include "Integration/material_point.h"
 #include "ShapeFunction/neighbours_materialpoint.h"
 #include "ShapeFunction/weight_function_materialpoint.h"

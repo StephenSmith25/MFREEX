@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
-#include <omp.h>
+#include "mfreex_omp.h"
 #include "determinant.h"
 #include "Integration/SCNI/generate_scni.h"
 #include "Material/Hyperelastic/hyperelastic_materials.h"

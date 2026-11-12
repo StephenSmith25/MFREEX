@@ -138,6 +138,6 @@ DOF_CONSTRAINT *  FindDOFConstraintInNodeSet(NODESET * nodeset, DIRECTION dir);
 
 
 // integration
-int GetMaterialPointsBlockSets(DOMAIN * domain, int order);
+int GetMaterialPointsBlockSet(DOMAIN * domain, int order);
 
 #endif 

@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
-#include <omp.h>
+#include "mfreex_omp.h"
 #include "Integration/SCNI/generate_scni.h"
 #include "Integration/SCNI/generate_mscni.h"
 

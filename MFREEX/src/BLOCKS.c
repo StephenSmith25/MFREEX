@@ -434,7 +434,7 @@ int GetMaterialPointsBlockSet(DOMAIN * domain , int order)
 
 	//  create quadrature points
     // LOOP OVER EACH ELEMENT 
-	ELEMENT * element;
+	ELEMENT * element = blockset->elements;
 	while ( element != NULL)
 	{	
 		// GET QUADRATURE POINTS AT EACH ELEMENT 
@@ -588,4 +588,6 @@ int GetMaterialPointsBlockSet(DOMAIN * domain , int order)
 
 
 
+	// TODO: unfinished prototype - material points are not yet created here.
+	return number_of_quadrature_points;
 }
