@@ -206,7 +206,7 @@ int main(void) {
   printf("-----------CREATING MATERIAL POINTS --------------\n");
 
   voronoi_diagram *vor = NULL;
-  MATERIAL_POINTS *material_points = malloc(1 * sizeof(material_points));
+  MATERIAL_POINTS *material_points = malloc(sizeof(*material_points));
 
   int is_stabalised = 0;
   int is_AXI = 0;

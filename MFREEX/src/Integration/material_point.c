@@ -15,7 +15,7 @@ static int IS_AXI = -1;
 #endif
 
 // distance function: returns normalised distance from x to x_I
-inline double distance_function(double *x_I, double *x, MAT *invMI) {
+static inline double distance_function(double *x_I, double *x, MAT *invMI) {
 
   // norm_distance = beta * (x-x_I)' * invM_I * (x-x_I)
   double norm_distance = 0;

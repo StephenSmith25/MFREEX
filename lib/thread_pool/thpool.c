@@ -9,6 +9,11 @@
  ********************************/
 
 #define _POSIX_C_SOURCE 200809L
+#if defined(__APPLE__) && defined(__MACH__)
+/* Strict POSIX mode hides pthread_setname_np() on macOS; re-enable Darwin
+   extensions (as upstream C-Thread-Pool does). Modified 2026-11-12 (MFREEX). */
+#define _DARWIN_C_SOURCE
+#endif
 #include <unistd.h>
 #include <signal.h>
 #include <stdio.h>

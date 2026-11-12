@@ -200,7 +200,9 @@ extern  BAND *bd_get(int,int,int), *bd_resize(BAND *,int,int,int);
 /* free (de-allocate) (band) matrices, vectors, permutations and 
    integer vectors */
 extern  int iv_free(IVEC *);
-extern	m_free(MAT *),v_free(VEC *),px_free(PERM *);
+/* Modified 2026-11-12 (MFREEX): added explicit 'int' return type, which
+   C99 and later require (implicit int is an error in modern compilers). */
+extern	int m_free(MAT *), v_free(VEC *), px_free(PERM *);
 extern   int bd_free(BAND *);
 
 #endif /* ANSI_C */

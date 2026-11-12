@@ -10,7 +10,7 @@
 #include "Material/Buckley/buckleyStress.h"
 #include "matrix.h"
 #include "matrix2.h"
-#include <omp.h>
+#include "mfreex_omp.h"
 #include "Integration/SCNI/generate_scni.h"
 #include "Material/material.h"
 #include "mat2csv.h"
@@ -30,7 +30,7 @@ const int PLASTIC_MATERIAL = 0;
 
 // deformaton
 const int SR = 16;
-const double TEMPERATURE = 105;
+static double TEMPERATURE = 105; /* non-const: passed to new_material_states(double *) */
 char * DEFORMATION_MODE = "BIAXIAL";
 const int DIM = 3;
 const int IS_AXI = 0;

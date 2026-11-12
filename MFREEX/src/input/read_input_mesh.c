@@ -44,7 +44,7 @@ if( frontp != str )
 return str;
 }
 
-static inline void read_physical_names(FILE * fp, DOMAIN * domain )
+static inline void read_physical_names(FILE * fp, MESH_DOMAIN * domain )
 {
 
 	// INITIALISE AND GET NUMBER OF PHYSICAL GROUPS 
@@ -129,7 +129,7 @@ static inline void read_physical_names(FILE * fp, DOMAIN * domain )
 }
 
 
-int read_elements(FILE * fp, DOMAIN * domain)
+int read_elements(FILE * fp, MESH_DOMAIN * domain)
 {
 	// INITIALISE AND GET NUMBER OF PHYSICAL GROUPS 
     char * line = NULL;
@@ -286,7 +286,7 @@ int read_elements(FILE * fp, DOMAIN * domain)
 }
 
 
-int read_nodes(FILE * fp, DOMAIN * domain)
+int read_nodes(FILE * fp, MESH_DOMAIN * domain)
 {
 	// initialise 
     char * line = NULL;
@@ -333,7 +333,7 @@ int read_nodes(FILE * fp, DOMAIN * domain)
 }
 
 
-DOMAIN * read_intput_mesh(char * input_file_name)
+MESH_DOMAIN * read_intput_mesh(char * input_file_name)
 {
 
 
@@ -350,7 +350,7 @@ DOMAIN * read_intput_mesh(char * input_file_name)
     MAT * nodes;
 
 	
-	DOMAIN * domain = malloc(1*sizeof(DOMAIN));
+	MESH_DOMAIN * domain = malloc(sizeof(*domain));
 	// read nodes
     fp = fopen(input_file_name, "r");
     if (fp == NULL){
