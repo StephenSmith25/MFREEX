@@ -142,6 +142,22 @@ TEST_CASE(svk_objectivity_P_rotates_with_F) {
   CHECK_CLOSE(Pr->ve[1], s * P12 + c * P22, 1e-9);
 }
 
+/* A plane deformation in 3D (F13=F23=F31=F32=0, F33=1) must give the same
+ * in-plane stress as the 2D model, in particular under simple shear. */
+TEST_CASE(svk_3d_matches_2d_for_plane_deformation) {
+  double g = 0.3;
+  VEC *P2 = svk_stress_2d(1.1, g, -0.05, 0.95);
+  MAT *F3 = m_get(3, 3);
+  F3->me[0][0] = 1.1; F3->me[0][1] = g; F3->me[1][0] = -0.05; F3->me[1][1] = 0.95; F3->me[2][2] = 1;
+  VEC *P3 = v_get(9);
+  SVK(P3, F3, svk_params());
+  /* 3D Voigt order in SVK.c: [P11, P22, P33, P23, P13, P12, P21, P31, P32] */
+  CHECK_CLOSE(P3->ve[0], P2->ve[0], TOL);
+  CHECK_CLOSE(P3->ve[1], P2->ve[1], TOL);
+  CHECK_CLOSE(P3->ve[5], P2->ve[2], TOL);
+  CHECK_CLOSE(P3->ve[6], P2->ve[3], TOL);
+}
+
 int main(void) {
   RUN(polar_decomposition_2d);
   RUN(polar_decomposition_3d);
@@ -151,5 +167,6 @@ int main(void) {
   RUN(svk_simple_shear_matches_analytic);
   RUN(svk_rigid_rotation_is_stress_free);
   RUN(svk_objectivity_P_rotates_with_F);
+  RUN(svk_3d_matches_2d_for_plane_deformation);
   return TEST_SUMMARY();
 }

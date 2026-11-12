@@ -65,6 +65,13 @@ static void check_inverse(MAT *A) {
     for (int j = 0; j < n; ++j) CHECK_CLOSE(Ainv->me[i][j], Aref->me[i][j], 1e-12);
 }
 
+TEST_CASE(inverse_small_allocates_output_when_null) {
+  MAT *A = mat2(4, 7, 2, 6);
+  MAT *Ainv = m_inverse_small(A, MNULL);
+  CHECK(Ainv != MNULL);
+  if (Ainv) CHECK_CLOSE(Ainv->me[0][0], 0.6, TOL);
+}
+
 TEST_CASE(inverse_small_2x2) { check_inverse(mat2(4, 7, 2, 6)); }
 
 TEST_CASE(inverse_small_3x3) {
@@ -201,6 +208,7 @@ int main(void) {
   RUN(determinant_2x2_and_3x3);
   RUN(trace_3x3);
   RUN(inverse_small_2x2);
+  RUN(inverse_small_allocates_output_when_null);
   RUN(inverse_small_3x3);
   RUN(m_mlt_3x3_matches_m_mlt);
   RUN(m_add_sub_3x3_match_meschach);

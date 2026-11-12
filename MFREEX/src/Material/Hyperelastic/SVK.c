@@ -86,11 +86,13 @@ int SVK(VEC * stressVoigt, MAT * defGrad, VEC * params){
 
 		/*Green lagrange strain tensor */
 		// row 1
-		E11 = 0.5*(F11*F11 + F12*F12 + F13*F13 -1 ); E12 = 0.5*(F11*F21 + F12*F22 + F13*F23 ); E13 = 0.5*(F11*F31 + F12*F32 + F13*F33);
+		/* E = 1/2 (F^T F - I) uses COLUMN products of F (this previously used
+		   rows, i.e. F F^T, which is wrong whenever F is not symmetric) */
+		E11 = 0.5*(F11*F11 + F21*F21 + F31*F31 -1 ); E12 = 0.5*(F11*F12 + F21*F22 + F31*F32 ); E13 = 0.5*(F11*F13 + F21*F23 + F31*F33);
 		// row 2
-		E21 = E12 ; E22 = 0.5*(F21*F21 + F22*F22 + F23*F23 -1 ); E23 = 0.5*(F21*F31+F22*F32+F23*F33);
+		E21 = E12 ; E22 = 0.5*(F12*F12 + F22*F22 + F32*F32 -1 ); E23 = 0.5*(F12*F13+F22*F23+F32*F33);
 		// row 3
-		E31 = E13 ; E32 = E23 ; E33 = 0.5*(F31*F31 + F32*F32 + F33*F33-1);
+		E31 = E13 ; E32 = E23 ; E33 = 0.5*(F13*F13 + F23*F23 + F33*F33-1);
 	}
 
 
