@@ -5,26 +5,23 @@
 
 MAT	*m_mlt_3x3(const MAT *A, const MAT *B, MAT *OUT)
 {
+	/* OUT = A B. Every entry is computed: the previous version skipped
+	   OUT[i][k] whenever A[i][k] == 0, which is not a valid shortcut
+	   (e.g. I * D lost the off-diagonal terms of D). Use temporaries so
+	   OUT may alias A or B. */
+	Real	**A_v = A->me, **B_v = B->me;
+	Real	tmp[3][3];
 
-	Real	**A_v, **B_v /*, *B_row, *OUT_row, sum, tmp */;
-
-	A_v = A->me;		B_v = B->me;
-
-	m_zero(OUT);
 	for ( int i=0; i<3; i++ )
 		for ( int k=0; k<3; k++ )
-		{
-			if ( A_v[i][k] != 0.0 )
-			OUT->me[i][k] += A_v[i][0]*B_v[0][k] + A_v[i][1]*B_v[1][k] + A_v[i][2]*B_v[2][k];
+			tmp[i][k] = A_v[i][0]*B_v[0][k] + A_v[i][1]*B_v[1][k] + A_v[i][2]*B_v[2][k];
 
-		    // if ( A_v[i][k] != 0.0 )
-		    //     __mltadd__(OUT->me[i],B_v[k],A_v[i][k],(int)3);
-		}
-
+	for ( int i=0; i<3; i++ )
+		for ( int k=0; k<3; k++ )
+			OUT->me[i][k] = tmp[i][k];
 
 	return OUT;
 }
-
 MAT	*m_sub_3x3(const MAT *A, const MAT *B, MAT *OUT)
 {
 
