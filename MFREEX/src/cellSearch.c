@@ -414,10 +414,11 @@ int move_nodes(CELLS * grid, active_cell ** active_cells, double * l, MAT * node
 			/* If node list is empty delete cell from active cells*/
 			if ( current_p == NULL)
 			{
-
+				/* deleteCell() frees active_cell_i, so step past it first */
+				active_cell * next_cell = active_cell_i->next;
 				deleteCell(active_cells, cell_number);
-
-
+				active_cell_i = next_cell;
+				continue;
 			}
 			previous_p = current_p;
 

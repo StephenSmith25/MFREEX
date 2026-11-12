@@ -465,7 +465,7 @@ int main(int argc, char **argv) {
 
   // CREATE material points and then move forward after that:
   // Create the material points
-  MATERIAL_POINTS *material_points = malloc(1 * sizeof(material_points));
+  MATERIAL_POINTS *material_points = malloc(sizeof(*material_points));
   material_points->MP =
       malloc(number_of_material_points * sizeof(MATERIAL_POINT *));
   material_points->num_material_points = number_of_material_points;
