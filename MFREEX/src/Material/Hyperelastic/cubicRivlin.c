@@ -24,6 +24,12 @@ int cubicRivlin(VEC * stressVoigt, MAT * defGrad, VEC * matParams){
 
 	/*  Find I1 */
 	double I1 = trace(C);
+	/*  Plane strain: include the out-of-plane stretch C33 = 1 in I1
+	    (as mooneyRivlin does); otherwise S(I) != 0 for a 2x2 F. */
+	if ( defGrad->m == 2 )
+	{
+		I1 = I1 + 1;
+	}
 	/*  Find I3 */
 	double I3 = determinant(C);
 	
