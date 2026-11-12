@@ -15,7 +15,8 @@
 /* #undef MALLOCDECL */
 #define NOT_SEGMENTED 1
 /* #undef HAVE_COMPLEX_H */
-#define HAVE_MALLOC_H 1
+/* Modified 2026-11-12 (MFREEX): HAVE_MALLOC_H is no longer hard-coded; it is
+   defined by CMake only if <malloc.h> exists (it does not on macOS). */
 #define STDC_HEADERS 1
 #define HAVE_BCOPY 1
 #define HAVE_BZERO 1

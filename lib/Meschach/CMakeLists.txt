@@ -65,4 +65,12 @@ SET(MESCHACH_INTERNAL_SRC
 add_library(meschach STATIC ${MESCHACH_INTERNAL_SRC})
 target_include_directories(meschach PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(meschach PUBLIC THREADSAFE)
+
+# <malloc.h> is glibc/MSVC only (absent on macOS); machine.h includes it
+# only when HAVE_MALLOC_H is defined.
+include(CheckIncludeFile)
+check_include_file(malloc.h MESCHACH_HAVE_MALLOC_H)
+if(MESCHACH_HAVE_MALLOC_H)
+  target_compile_definitions(meschach PUBLIC HAVE_MALLOC_H)
+endif()
 target_link_libraries(meschach PUBLIC mfreex_compat)
